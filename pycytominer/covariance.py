@@ -1,5 +1,9 @@
 """
-Compute covariance matrix and vectorize
+Compute covariance matrix and vectorize.
+
+This function is typically performed at the per well level. Therefore, the function
+will calculate covariance of features for the specific treatment, and will output a
+single row vector for each well.
 """
 
 import numpy as np
@@ -14,7 +18,7 @@ def covariance_base(population_df, variables="all"):
     population_df - pandas DataFrame to group and aggregate
     variables - [default: "all"] or list indicating variables that should be applied
 
-    Return:
+    Output:
     One row of a vectorized covariance matrix
     """
 
@@ -51,7 +55,7 @@ def covariance(population_df, variables="all", strata="none"):
     variables - [default: "all"] or list indicating variables that should be applied
     strata - [default: "none"] or list indicating the columns to groupby and covar
 
-    Return:
+    Output:
     One row of a vectorized covariance matrix
     """
     # If strata is specified, then group input before calculating covariance
