@@ -17,12 +17,14 @@ def test_correlation_threshold():
     Testing correlation_threshold pycytominer function
     """
     correlation_threshold_result = correlation_threshold(
-        variables=["x", "y", "z", "zz"],
-        data_df=data_df,
+        features=["x", "y", "z", "zz"],
+        population_df=data_df,
         threshold=0.9,
         method="pearson",
     )
 
-    expected_result = ['y']
+    expected_result = pd.DataFrame(
+        {"x": [1, 3, 8, 5, 2, 2], "z": [9, 3, 8, 9, 2, 9], "zz": [0, -3, 8, 9, 6, 9]}
+    ).reset_index(drop=True)
 
-    assert correlation_threshold_result == expected_result
+    assert pd.testing.assert_frame_equal(correlation_threshold_result, expected_result)

@@ -27,13 +27,13 @@ def test_normalize_standardize_allsamples():
     """
     Testing normalize pycytominer function
     method = "standardize"
-    meta_variables = "none"
+    meta_features = "none"
     samples="all"
     """
     normalize_result = normalize(
         population_df=data_df,
-        variables=["x", "y", "z", "zz"],
-        meta_variables="none",
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
         samples="all",
         method="standardize",
     ).round(1)
@@ -65,13 +65,13 @@ def test_normalize_standardize_ctrlsamples():
     """
     Testing normalize pycytominer function
     method = "standardize"
-    meta_variables = "none"
+    meta_features = "none"
     samples="Metadata_treatment == 'control'"
     """
     normalize_result = normalize(
         population_df=data_df,
-        variables=["x", "y", "z", "zz"],
-        meta_variables="none",
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
         samples="Metadata_treatment == 'control'",
         method="standardize",
     ).round(1)
@@ -103,13 +103,13 @@ def test_normalize_robustize_allsamples():
     """
     Testing normalize pycytominer function
     method = "standardize"
-    meta_variables = "none"
+    meta_features = "none"
     samples="all"
     """
     normalize_result = normalize(
         population_df=data_df,
-        variables=["x", "y", "z", "zz"],
-        meta_variables="none",
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
         samples="all",
         method="robustize",
     ).round(1)
@@ -141,13 +141,13 @@ def test_normalize_robustize_ctrlsamples():
     """
     Testing normalize pycytominer function
     method = "standardize"
-    meta_variables = "none"
+    meta_features = "none"
     samples="Metadata_treatment == 'control'"
     """
     normalize_result = normalize(
         population_df=data_df,
-        variables=["x", "y", "z", "zz"],
-        meta_variables="none",
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
         samples="Metadata_treatment == 'control'",
         method="robustize",
     ).round(1)

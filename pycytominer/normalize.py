@@ -1,5 +1,5 @@
 """
-Normalize observation variables based on specified normalization method
+Normalize observation features based on specified normalization method
 """
 
 import pandas as pd
@@ -7,16 +7,16 @@ from sklearn.preprocessing import StandardScaler, RobustScaler
 
 
 def normalize(
-    population_df, variables, meta_variables="none", samples="all", method="standardize"
+    population_df, features, meta_features="none", samples="all", method="standardize"
 ):
     """
-    Normalize variables
+    Normalize features
 
     Arguments:
-    population_df - pandas DataFrame that includes metadata and observation variables
-    variables - list of cell painting features
-    meta_variables - if specified, then output these with specified variables
-                     [default: "none"]
+    population_df - pandas DataFrame that includes metadata and observation features
+    features - list of cell painting features
+    meta_features - if specified, then output these with specified features
+                    [default: "none"]
     samples - string indicating which metadata column and values to use to subset
               the control samples are often used here [default: 'all']
               the format of this variable will be used in a pd.query() function. An
@@ -43,18 +43,18 @@ def normalize(
         )
 
     # Separate out the features and meta
-    feature_df = population_df.loc[:, variables]
-    if meta_variables == "none":
-        meta_df = population_df.drop(variables, axis='columns')
+    feature_df = population_df.loc[:, features]
+    if meta_features == "none":
+        meta_df = population_df.drop(features, axis="columns")
     else:
-        meta_df = population_df.loc[:, meta_variables]
+        meta_df = population_df.loc[:, meta_features]
 
     # Fit the sklearn scaler
     if samples == "all":
         fitted_scaler = scaler.fit(feature_df)
     else:
         # Subset to only the features measured in the sample query
-        fitted_scaler = scaler.fit(population_df.query(samples).loc[:, variables])
+        fitted_scaler = scaler.fit(population_df.query(samples).loc[:, features])
 
     # Scale the feature dataframe
     feature_df = pd.DataFrame(
