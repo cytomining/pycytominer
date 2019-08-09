@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 
-def variance_threshold(population_df, samples="none", freq_cut=0.05, unique_cut=0.1):
+def variance_threshold(population_df, samples="none", freq_cut=0.05, unique_cut=0.01):
     """
-    Exclude features that have correlations above a certain threshold
+    Exclude features that have correlations below a certain threshold
 
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
@@ -31,10 +31,12 @@ def variance_threshold(population_df, samples="none", freq_cut=0.05, unique_cut=
 
     # Test if excluded for low frequency
     excluded_features_freq = population_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="columns"
+        lambda x: calculate_frequency(x, freq_cut), axis="rows"
     )
 
-    excluded_features_freq = [x for x in excluded_features_freq if not np.isnan(x)]
+    excluded_features_freq = excluded_features_freq[
+        excluded_features_freq.isna()
+    ].index.tolist()
 
     # Test if excluded for uniqueness
     n = population_df.shape[0]
@@ -43,6 +45,9 @@ def variance_threshold(population_df, samples="none", freq_cut=0.05, unique_cut=
     unique_ratio = num_unique_features / n
     unique_ratio = unique_ratio < unique_cut
     excluded_features_unique = unique_ratio[unique_ratio].index.tolist()
+
+    excluded_features = list(set(excluded_features_freq + excluded_features_unique))
+    return excluded_features
 
 
 def calculate_frequency(feature_column, freq_cut):
@@ -59,10 +64,14 @@ def calculate_frequency(feature_column, freq_cut):
     """
     val_count = feature_column.value_counts()
     max_count = val_count.iloc[0]
-    second_max_count = val_count.iloc[1]
+    try:
+        second_max_count = val_count.iloc[1]
+    except IndexError:
+        return np.nan
+
     freq = second_max_count / max_count
 
-    if freq > freq_cut:
+    if freq < freq_cut:
         return np.nan
     else:
         return feature_column.name
