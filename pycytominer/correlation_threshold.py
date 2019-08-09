@@ -37,7 +37,7 @@ def correlation_threshold(
     if samples != "none":
         population_df = population_df.loc[samples, :]
 
-    data_cor_df = population_df.loc[samples, :].corr(method=method)
+    data_cor_df = population_df.corr(method=method)
 
     # Create a copy of the dataframe to generate upper triangle of zeros
     data_cor_zerotri_df = data_cor_df.copy()
