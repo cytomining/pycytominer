@@ -18,7 +18,7 @@ def test_correlation_threshold():
     """
     correlation_threshold_result = correlation_threshold(
         population_df=data_df,
-        samples=["x", "y", "z", "zz"],
+        samples="none",
         threshold=0.9,
         method="pearson",
     )
