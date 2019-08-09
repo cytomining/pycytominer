@@ -23,8 +23,22 @@ def test_correlation_threshold():
         method="pearson",
     )
 
-    expected_result = pd.DataFrame(
-        {"x": [1, 3, 8, 5, 2, 2], "z": [9, 3, 8, 9, 2, 9], "zz": [0, -3, 8, 9, 6, 9]}
-    ).reset_index(drop=True)
+    expected_result = ['y']
 
-    assert pd.testing.assert_frame_equal(correlation_threshold_result, expected_result)
+    assert correlation_threshold_result == expected_result
+
+
+def test_correlation_threshold_samples():
+    """
+    Testing correlation_threshold pycytominer function
+    """
+    correlation_threshold_result = correlation_threshold(
+        population_df=data_df,
+        samples=[0, 1, 3, 4, 5],
+        threshold=0.9,
+        method="pearson",
+    )
+
+    expected_result = ['y']
+
+    assert correlation_threshold_result == expected_result
