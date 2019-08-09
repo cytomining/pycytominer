@@ -17,8 +17,24 @@ def test_correlation_threshold():
     Testing correlation_threshold pycytominer function
     """
     correlation_threshold_result = correlation_threshold(
-        variables=["x", "y", "z", "zz"],
-        data_df=data_df,
+        population_df=data_df,
+        samples="none",
+        threshold=0.9,
+        method="pearson",
+    )
+
+    expected_result = ['y']
+
+    assert correlation_threshold_result == expected_result
+
+
+def test_correlation_threshold_samples():
+    """
+    Testing correlation_threshold pycytominer function
+    """
+    correlation_threshold_result = correlation_threshold(
+        population_df=data_df,
+        samples=[0, 1, 3, 4, 5],
         threshold=0.9,
         method="pearson",
     )

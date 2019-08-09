@@ -22,7 +22,7 @@ def covariance_base(population_df, variables="all"):
     One row of a vectorized covariance matrix
     """
 
-    # Get the covariance matrix for the given variables
+    # Get the covariance matrix for the given variablesd
     if variables != "all":
         pop_cov_df = population_df.loc[:, variables].cov()
     else:
@@ -35,11 +35,9 @@ def covariance_base(population_df, variables="all"):
     pop_cov_df = pop_cov_df.stack().reset_index()
     pop_cov_df.columns = ["var_1", "var_2", "covar"]
     pop_cov_df = pop_cov_df.query("covar > 0").reset_index(drop=True)
-    pop_cov_df = (
-        pop_cov_df
-        .assign(covar_feature=pop_cov_df.var_1 + "__" + pop_cov_df.var_2)
-        .transpose()
-        )
+    pop_cov_df = pop_cov_df.assign(
+        covar_feature=pop_cov_df.var_1 + "__" + pop_cov_df.var_2
+    ).transpose()
     pop_cov_df.columns = pop_cov_df.loc["covar_feature", :]
     pop_cov_df = pop_cov_df.loc[["covar"], :]
 
