@@ -1,3 +1,4 @@
+import pytest
 import pandas as pd
 from pycytominer.aggregate import aggregate
 
