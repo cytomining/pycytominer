@@ -39,12 +39,12 @@ def test_feature_select_get_na_columns():
     """
     Testing feature_select and get_na_columns pycytominer function
     """
-
-    result = feature_select(data_na_df, operation="drop_na_columns")
+    features = data_na_df.columns.tolist()
+    result = feature_select(data_na_df, features=features, operation="drop_na_columns")
     expected_result = pd.DataFrame({"yy": [1, 2, 8, 10, 2, 100]})
     pd.testing.assert_frame_equal(result, expected_result)
 
-    result = feature_select(data_na_df, operation="drop_na_columns", na_cutoff=0.3)
+    result = feature_select(data_na_df, features=features, operation="drop_na_columns", na_cutoff=0.3)
     expected_result = pd.DataFrame(
         {
             "x": [np.nan, 3, 8, 5, 2, 2],
@@ -60,8 +60,9 @@ def test_feature_select_variance_threshold():
     """
     Testing feature_select and variance_threshold pycytominer function
     """
+    features = data_unique_test_df.columns.tolist()
     result = feature_select(
-        data_unique_test_df, operation="variance_threshold", unique_cut=0.01
+        data_unique_test_df, features=features, operation="variance_threshold", unique_cut=0.01
     )
     expected_result = pd.DataFrame(
         {"b": b_feature, "c": c_feature, "d": d_feature}
@@ -70,8 +71,9 @@ def test_feature_select_variance_threshold():
 
     na_data_unique_test_df = data_unique_test_df.copy()
     na_data_unique_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
+    features = na_data_unique_test_df.columns.tolist()
     result = feature_select(
-        na_data_unique_test_df, operation=["drop_na_columns", "variance_threshold"]
+        na_data_unique_test_df, features=features, operation=["drop_na_columns", "variance_threshold"]
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -80,8 +82,9 @@ def test_feature_select_variance_threshold():
 
     na_data_unique_test_df = data_unique_test_df.copy()
     na_data_unique_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
+    features = na_data_unique_test_df.columns.tolist()
     result = feature_select(
-        na_data_unique_test_df, operation=["variance_threshold", "drop_na_columns"]
+        na_data_unique_test_df, features=features, operation=["variance_threshold", "drop_na_columns"]
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -100,8 +103,9 @@ def test_feature_select_correlation_threshold():
 
     data_cor_thresh_na_df = data_df.copy()
     data_cor_thresh_na_df.iloc[0, 2] = np.nan
+    features = data_cor_thresh_na_df.columns.tolist()
     result = feature_select(
-        data_cor_thresh_na_df, operation=["drop_na_columns", "correlation_threshold"]
+        data_cor_thresh_na_df, features=features, operation=["drop_na_columns", "correlation_threshold"]
     )
     expected_result = data_df.drop(["z", "x"], axis="columns")
     pd.testing.assert_frame_equal(result, expected_result)
@@ -111,9 +115,10 @@ def test_feature_select_all():
     data_all_test_df = data_unique_test_df.assign(zz=a_feature)
     data_all_test_df.iloc[1, 4] = 2
     data_all_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
-
+    features = data_all_test_df.columns.tolist()
     result = feature_select(
         population_df=data_all_test_df,
+        features=features,
         operation=["drop_na_columns", "correlation_threshold"],
         corr_threshold=0.7,
     )
@@ -125,6 +130,7 @@ def test_feature_select_all():
 
     result = feature_select(
         population_df=data_all_test_df,
+        features=features,
         operation=["drop_na_columns", "correlation_threshold", "variance_threshold"],
         corr_threshold=0.7,
     )
