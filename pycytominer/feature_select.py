@@ -3,7 +3,7 @@ Select features to use in downstream analysis based on specified selection metho
 """
 
 import pandas
-from correlation_threshold import correlation_threshold
+from pycytominer.correlation_threshold import correlation_threshold
 
 
 def feature_select(
