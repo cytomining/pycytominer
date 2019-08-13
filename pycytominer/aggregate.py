@@ -6,6 +6,113 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 
+class AggregateProfiles:
+    """
+    Class to aggregate single cell morphological profiles
+    """
+
+    def __init__(
+        self,
+        sql_file,
+        strata=["Metadata_Plate", "Metadata_Well"],
+        features="all",
+        operation="median",
+        output_file="none",
+        compartments=["cells", "cytoplasm", "nuclei"],
+        merge_cols=["TableNumber", "ImageNumber"],
+        subsample=1,
+    ):
+        """
+        Arguments:
+        sql_file - string or sqlalchemy connection
+        strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
+        features - [default: "all"] or list indicating features that should be aggregated
+        operation - [default: "median"] a string indicating how the data is aggregated
+                    currently only supports one of ['mean', 'median']
+        output_file - [default: "none"] string if specified, write to location
+        compartments - list of compartments to process
+        merge_cols - column indicating which columns to merge compartments using
+        subsample - [default: 1] float (0 < subsample <= 1) indicating percentage of
+                    single cells to select
+        """
+        # Check compartments specified
+        valid_compartments = ["cells", "cytoplasm", "nuclei"]
+        assert all(
+            [x in valid_compartments for x in compartments]
+        ), "compartment not supported, use one of {}".format(valid_compartments)
+
+        # Check if correct operation is specified
+        assert operation in [
+            "mean",
+            "median",
+        ], "operation must be one ['mean', 'median']"
+
+        self.sql_file = sql_file
+        self.strata = strata
+        self.features = features
+        self.operation = operation.lower()
+        self.output_file = output_file
+        self.compartments = compartments
+        self.merge_cols = merge_cols
+
+        # Connect to sqlite engine
+        self.engine = create_engine(self.sql_file)
+        self.conn = self.engine.connect()
+
+    def aggregate_compartment(self, compartment):
+        """
+        Aggregate morphological profiles
+
+        Arguments:
+
+        compartment - str indicating specific compartment to extract
+
+        Return:
+        Either the merged object file or write object to disk
+        """
+        # Extract image table
+        image_cols = (
+            "TableNumber, ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
+        )
+        image_query = "select {} from image".format(image_cols)
+        object_df = pd.read_sql(sql=image_query, con=conn)
+
+        compartment_query = "select * from {}".format(compartment)
+
+        object_df = object_df.merge(
+            aggregate(
+                population_df=(pd.read_sql(sql=compartment_query, con=self.conn)),
+                strata=self.strata,
+                features=self.features,
+                operation=self.operation,
+            ),
+            how="inner",
+            on=self.merge_cols,
+        )
+
+        return object_df
+
+    def aggregate_profiles(self):
+        aggregated = (
+            self.aggregate_compartment(sql_file=sql_file, compartment="cells")
+            .merge(
+                self.aggregate_compartment(sql_file=sql_file, compartment="cytoplasm"),
+                on=self.merge_cols,
+                how="inner",
+            )
+            .merge(
+                self.aggregate_compartment(sql_file=sql_file, compartment="nuclei"),
+                on=self.merge_cols,
+                how="inner",
+            )
+        )
+
+        if output_file != "none":
+            aggregated.to_csv(output_file)
+        else:
+            return aggregated
+
+
 def aggregate(
     population_df,
     strata=["Metadata_Plate", "Metadata_Well"],
@@ -25,11 +132,6 @@ def aggregate(
     Return:
     Pandas DataFrame of aggregated features
     """
-
-    operation = operation.lower()
-
-    assert operation in ["mean", "median"], "operation must be one ['mean', 'median']"
-
     # Subset dataframe to only specified variables if provided
     if features != "all":
         strata_df = population_df.loc[:, strata]
@@ -42,65 +144,3 @@ def aggregate(
         return population_df.median().reset_index()
     else:
         return population_df.mean().reset_index()
-
-
-def aggregate_objects(
-    sql_file,
-    compartments,
-    strata=["Metadata_Plate", "Metadata_Well"],
-    features="all",
-    operation="median",
-    output_file="none",
-):
-    """
-    Aggregate morphological profiles
-
-    Arguments:
-    sql_file - string or sqlalchemy connection
-    compartments - list of table names to extract in the sql_file
-    strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
-    features - [default: "all"] or list indicating features that should be aggregated
-    operation - [default: "median"] a string indicating how the data is aggregated
-                currently only supports one of ['mean', 'median']
-    output_file - [default: "none"] string if specified, write to location
-
-    Return:
-    Either the merged object file or write object to disk
-    """
-    # Check compartments specified
-    valid_compartments = ["cells", "cytoplasm", "nuclei"]
-    assert all(
-        [x in valid_compartments for x in compartments]
-    ), "compartment not supported, use one of {}".format(valid_compartments)
-
-    # Connect to sqlite engine
-    engine = create_engine(sql_file)
-    conn = engine.connect()
-
-    # Extract image table
-    image_cols = "TableNumber, ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
-    image_query = "select {} from image".format(image_cols)
-    object_df = pd.read_sql(sql=image_query, con=conn)
-
-    # Extract tables and join with image
-    merge_cols = ["TableNumber", "ImageNumber"]
-    for compartment in compartments:
-
-        compartment_query = "select * from {}".format(compartment)
-
-        object_df = object_df.merge(
-            aggregate(
-                population_df=(pd.read_sql(sql=compartment_query, con=conn)),
-                strata=strata,
-                features=features,
-                operation=operation,
-            ),
-            how="inner",
-            left_on=merge_cols,
-            right_on=merge_cols,
-        )
-
-    if output_file != "none":
-        object_df.to_csv(output_file)
-    else:
-        return object_df
