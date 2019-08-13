@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 from pycytominer.aggregate import aggregate
 
@@ -9,14 +8,6 @@ data_df = pd.concat(
         pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1]}),
     ]
 ).reset_index(drop=True)
-
-
-def test_aggregate_no_input():
-    """
-    Testing aggregate pycytominer function
-    """
-    with pytest.raises(ValueError) as e_info:
-        aggregate()
 
 
 def test_aggregate_median_allvar():
