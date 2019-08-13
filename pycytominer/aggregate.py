@@ -20,6 +20,7 @@ class AggregateProfiles:
         output_file="none",
         compartments=["cells", "cytoplasm", "nuclei"],
         merge_cols=["TableNumber", "ImageNumber"],
+        load_image_data=True,
         subsample=1,
     ):
         """
@@ -59,6 +60,17 @@ class AggregateProfiles:
         self.engine = create_engine(self.sql_file)
         self.conn = self.engine.connect()
 
+        if load_image_data:
+            self.load_image()
+
+    def load_image(self):
+        # Extract image metadata
+        image_cols = (
+            "TableNumber, ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
+        )
+        image_query = "select {} from image".format(image_cols)
+        self.image_df = pd.read_sql(sql=image_query, con=self.conn)
+
     def aggregate_compartment(self, compartment):
         """
         Aggregate morphological profiles
@@ -70,45 +82,38 @@ class AggregateProfiles:
         Return:
         Either the merged object file or write object to disk
         """
-        # Extract image table
-        image_cols = (
-            "TableNumber, ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
-        )
-        image_query = "select {} from image".format(image_cols)
-        object_df = pd.read_sql(sql=image_query, con=conn)
-
         compartment_query = "select * from {}".format(compartment)
 
-        object_df = object_df.merge(
-            aggregate(
-                population_df=(pd.read_sql(sql=compartment_query, con=self.conn)),
-                strata=self.strata,
-                features=self.features,
-                operation=self.operation,
+        object_df = aggregate(
+            population_df=self.image_df.merge(
+                pd.read_sql(sql=compartment_query, con=self.conn),
+                how="inner",
+                on=self.merge_cols,
             ),
-            how="inner",
-            on=self.merge_cols,
+            strata=self.strata,
+            features=self.features,
+            operation=self.operation,
         )
 
         return object_df
 
     def aggregate_profiles(self):
         aggregated = (
-            self.aggregate_compartment(sql_file=sql_file, compartment="cells")
+            self.aggregate_compartment(compartment="cells")
             .merge(
-                self.aggregate_compartment(sql_file=sql_file, compartment="cytoplasm"),
+                self.aggregate_compartment(compartment="cytoplasm"),
                 on=self.merge_cols,
                 how="inner",
             )
             .merge(
-                self.aggregate_compartment(sql_file=sql_file, compartment="nuclei"),
+                self.aggregate_compartment(compartment="nuclei"),
                 on=self.merge_cols,
                 how="inner",
             )
         )
 
-        if output_file != "none":
-            aggregated.to_csv(output_file)
+        if self.output_file != "none":
+            aggregated.to_csv(self.output_file)
         else:
             return aggregated
 
