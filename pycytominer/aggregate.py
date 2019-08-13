@@ -21,7 +21,7 @@ class AggregateProfiles:
         compartments=["cells", "cytoplasm", "nuclei"],
         merge_cols=["TableNumber", "ImageNumber"],
         load_image_data=True,
-        subsample=1,
+        subsample_frac=1,
     ):
         """
         Arguments:
@@ -33,20 +33,22 @@ class AggregateProfiles:
         output_file - [default: "none"] string if specified, write to location
         compartments - list of compartments to process
         merge_cols - column indicating which columns to merge compartments using
-        subsample - [default: 1] float (0 < subsample <= 1) indicating percentage of
-                    single cells to select
+        subsample_frac - [default: 1] float (0 < subsample <= 1) indicating percentage of
+                         single cells to select
         """
         # Check compartments specified
-        valid_compartments = ["cells", "cytoplasm", "nuclei"]
-        assert all(
-            [x in valid_compartments for x in compartments]
-        ), "compartment not supported, use one of {}".format(valid_compartments)
+        self._check_compartments(compartments)
 
         # Check if correct operation is specified
         assert operation in [
             "mean",
             "median",
         ], "operation must be one ['mean', 'median']"
+
+        # Check that the subsample_fraction is between 0 and 1
+        assert (
+            0 < subsample_frac and 1 >= subsample_frac
+        ), "subsample_frac must be between 0 and 1"
 
         self.sql_file = sql_file
         self.strata = strata
@@ -55,6 +57,7 @@ class AggregateProfiles:
         self.output_file = output_file
         self.compartments = compartments
         self.merge_cols = merge_cols
+        self.subsample_frac = subsample_frac
 
         # Connect to sqlite engine
         self.engine = create_engine(self.sql_file)
@@ -63,7 +66,23 @@ class AggregateProfiles:
         if load_image_data:
             self.load_image()
 
+    def _check_compartments(self, compartments):
+        valid_compartments = ["cells", "cytoplasm", "nuclei"]
+        error_str = "compartment not supported, use one of {}".format(
+            valid_compartments
+        )
+        if isinstance(compartments, list):
+            assert all([x in valid_compartments for x in compartments]), error_str
+        elif isinstance(compartments, str):
+            assert compartments in valid_compartments, error_str
+
+    def set_subsample_frac(self, subsample_frac):
+        self.subsample_frac = subsample_frac
+
     def load_image(self):
+        """
+        Load image table from sqlite file
+        """
         # Extract image metadata
         image_cols = (
             "TableNumber, ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
@@ -71,18 +90,45 @@ class AggregateProfiles:
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
-    def aggregate_compartment(self, compartment):
+    def subsample_profiles(self):
+        """
+        Sample a Pandas DataFrame given the subsampling fraction
+        """
+        return pd.DataFrame.sample(x, frac=self.subsample_frac)
+
+    def get_subsample(self, compartment="cells"):
+        """
+        Extract subsample from sqlite file
+
+        Arguments:
+        compartment - [default: "cells"] string indicating the compartment to subset
+        """
+        self._check_compartments(compartment)
+
+        subset_data = pd.read_sql(sql=compartment_query, con=self.conn).apply(
+            subsample_profiles
+        )
+
+        return subset_data
+
+    def aggregate_compartment(self, compartment, compute_subsample=False):
         """
         Aggregate morphological profiles
 
         Arguments:
-
         compartment - str indicating specific compartment to extract
 
         Return:
         Either the merged object file or write object to disk
         """
+        self._check_compartments(compartment)
+
         compartment_query = "select * from {}".format(compartment)
+
+        if self.subset_frac == 1 and not compute_subsample:
+            subset_data = "none"
+        else:
+            subset_data = self.get_subsample(compartment=compartment)
 
         object_df = aggregate(
             population_df=self.image_df.merge(
@@ -98,6 +144,8 @@ class AggregateProfiles:
         return object_df
 
     def aggregate_profiles(self):
+        # TODO: Might have data duplicated - check other columns
+        # TODO: Need to also join on ObjectNumber (check if this is actually consistent (assume))
         aggregated = (
             self.aggregate_compartment(compartment="cells")
             .merge(
@@ -123,6 +171,7 @@ def aggregate(
     strata=["Metadata_Plate", "Metadata_Well"],
     features="all",
     operation="median",
+    subset_data="none",
 ):
     """
     Combine population dataframe variables by strata groups using given operation
@@ -133,6 +182,7 @@ def aggregate(
     features - [default: "all"] or list indicating features that should be aggregated
     operation - [default: "median"] a string indicating how the data is aggregated
                 currently only supports one of ['mean', 'median']
+    subset_data - [default: "none"] a pandas dataframe indicating how to subset the input
 
     Return:
     Pandas DataFrame of aggregated features
@@ -142,6 +192,10 @@ def aggregate(
         strata_df = population_df.loc[:, strata]
         population_df = population_df.loc[:, features]
         population_df = pd.concat([strata_df, population_df], axis="columns")
+
+    # TODO: this needs to be fixed
+    if subset_data != "none":
+        population_df = population_df.subset(subset_data)
 
     population_df = population_df.groupby(strata)
 
