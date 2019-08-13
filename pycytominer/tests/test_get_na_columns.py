@@ -6,7 +6,7 @@ data_df = pd.DataFrame(
     {
         "x": [np.nan, 3, 8, 5, 2, 2],
         "y": [1, 2, 8, np.nan, 2, np.nan],
-        "z": [9, 3, 8, 9, 2, 9],
+        "z": [9, 3, 8, 9, 2, np.nan],
         "zz": [np.nan, np.nan, 8, np.nan, 6, 9],
     }
 ).reset_index(drop=True)
@@ -17,9 +17,46 @@ def test_get_na_columns():
     Testing get_na_columns pycytominer function
     """
     get_na_columns_result = get_na_columns(
-        population_df=data_df, variables=["x", "y", "zz"], cutoff=0.4
+        population_df=data_df, features=["x", "y", "zz"], cutoff=0.4
     )
-
     expected_result = ["zz"]
-
     assert get_na_columns_result == expected_result
+
+    get_na_columns_result = get_na_columns(
+        population_df=data_df, features="none", cutoff=0.1
+    )
+    expected_result = ["x", "y", "z", "zz"]
+    assert sorted(get_na_columns_result) == expected_result
+
+    get_na_columns_result = get_na_columns(
+        population_df=data_df, features=["x", "y", "zz"], cutoff=0.3
+    )
+    expected_result = ["y", "zz"]
+    assert sorted(get_na_columns_result) == expected_result
+
+    get_na_columns_result = get_na_columns(
+        population_df=data_df, features=["x", "y", "zz"], cutoff=0.5
+    )
+    assert len(get_na_columns_result) == 0
+
+
+def test_get_na_columns_sample():
+    """
+    Testing get_na_columns pycyominer function with samples option
+    """
+    get_na_columns_result = get_na_columns(
+        population_df=data_df,
+        samples=[1, 2, 3, 4, 5],
+        features=["x", "y", "zz"],
+        cutoff=0.4,
+    )
+    assert len(get_na_columns_result) == 0
+
+    get_na_columns_result = get_na_columns(
+        population_df=data_df,
+        samples=[1, 2, 3, 4, 5],
+        features=["x", "y", "zz"],
+        cutoff=0.1,
+    )
+    expected_result = ["y", "zz"]
+    assert sorted(get_na_columns_result) == expected_result

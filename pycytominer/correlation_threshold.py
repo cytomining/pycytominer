@@ -8,13 +8,15 @@ import pandas as pd
 
 
 def correlation_threshold(
-    population_df, samples="none", threshold=0.9, method="pearson"
+    population_df, features="none", samples="none", threshold=0.9, method="pearson"
 ):
     """
     Exclude features that have correlations above a certain threshold
 
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
+    features - a list of features present in the population dataframe
+               [default: "none"] - if "none", use all features
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     threshold - float between (0, 1) to exclude features [default: 0.9]
@@ -37,6 +39,9 @@ def correlation_threshold(
     if samples != "none":
         population_df = population_df.loc[samples, :]
 
+    if features != "none":
+        population_df = population_df.loc[:, features]
+
     data_cor_df = population_df.corr(method=method)
 
     # Create a copy of the dataframe to generate upper triangle of zeros
@@ -57,6 +62,10 @@ def correlation_threshold(
 
     # And subset to only variable combinations that pass the threshold
     pairwise_df = pairwise_df.query("correlation > @threshold")
+
+    # Return an empty list if nothing is over correlation threshold
+    if pairwise_df.shape[0] == 0:
+        return []
 
     # Output the excluded features
     excluded = pairwise_df.apply(
