@@ -7,12 +7,16 @@ import numpy as np
 import pandas as pd
 
 
-def variance_threshold(population_df, samples="none", freq_cut=0.05, unique_cut=0.01):
+def variance_threshold(
+    population_df, features="none", samples="none", freq_cut=0.05, unique_cut=0.01
+):
     """
     Exclude features that have correlations below a certain threshold
 
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
+    features - a list of features present in the population dataframe
+               [default: "none"] - if "none", use all features
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     freq_cut - float of ratio (second most common feature value / most common) [default: 0.1]
@@ -28,6 +32,9 @@ def variance_threshold(population_df, samples="none", freq_cut=0.05, unique_cut=
     # Subset dataframe and calculate correlation matrix across subset features
     if samples != "none":
         population_df = population_df.loc[samples, :]
+
+    if features != "none":
+        population_df = population_df.loc[:, features]
 
     # Test if excluded for low frequency
     excluded_features_freq = population_df.apply(
