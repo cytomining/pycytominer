@@ -22,6 +22,7 @@ class AggregateProfiles:
         merge_cols=["TableNumber", "ImageNumber"],
         load_image_data=True,
         subsample_frac=1,
+        subsample_n="all",
     ):
         """
         Arguments:
@@ -35,6 +36,7 @@ class AggregateProfiles:
         merge_cols - column indicating which columns to merge compartments using
         subsample_frac - [default: 1] float (0 < subsample <= 1) indicating percentage of
                          single cells to select
+        subsample_n - [default: "all"] int indicating how many samples to include
         """
         # Check compartments specified
         self._check_compartments(compartments)
@@ -58,6 +60,8 @@ class AggregateProfiles:
         self.compartments = compartments
         self.merge_cols = merge_cols
         self.subsample_frac = subsample_frac
+        self.subsample_n = subsample_n
+        self.subset_data = "none"
 
         # Connect to sqlite engine
         self.engine = create_engine(self.sql_file)
@@ -76,8 +80,16 @@ class AggregateProfiles:
         elif isinstance(compartments, str):
             assert compartments in valid_compartments, error_str
 
+    def set_output_file(self, output_file):
+        self.output_file = output_file
+
     def set_subsample_frac(self, subsample_frac):
+        self.subsample_n = "all"
         self.subsample_frac = subsample_frac
+
+    def set_subsample_n(self, subsample_n):
+        self.subsample_frac = 1
+        self.subsample_n = subsample_n
 
     def load_image(self):
         """
@@ -90,13 +102,16 @@ class AggregateProfiles:
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
-    def subsample_profiles(self):
+    def subsample_profiles(self, x):
         """
         Sample a Pandas DataFrame given the subsampling fraction
         """
-        return pd.DataFrame.sample(x, frac=self.subsample_frac)
+        if self.subsample_frac == 1:
+            return pd.DataFrame.sample(x, n=self.subsample_n)
+        else:
+            return pd.DataFrame.sample(x, frac=self.subsample_frac)
 
-    def get_subsample(self, compartment="cells"):
+    def get_subsample(self, compartment="cells", subsample_frac=1, subsample_n="all"):
         """
         Extract subsample from sqlite file
 
@@ -105,11 +120,26 @@ class AggregateProfiles:
         """
         self._check_compartments(compartment)
 
-        subset_data = pd.read_sql(sql=compartment_query, con=self.conn).apply(
-            subsample_profiles
+        if subsample_frac < 1:
+            self.set_subsample_frac(subsample_frac)
+
+        if isinstance(subsample_n, int):
+            self.set_subsample_n(subsample_n)
+
+        query_cols = "TableNumber, ImageNumber, ObjectNumber"
+        query = "select {} from {}".format(query_cols, compartment)
+
+        # Load query and merge with image_df
+        query_df = self.image_df.merge(
+            pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
         )
 
-        return subset_data
+        image_cols = ["Image_Metadata_Plate", "Image_Metadata_Well"]
+        self.subset_data = (
+            query_df.groupby(image_cols)
+            .apply(lambda x: self.subsample_profiles(x))
+            .reset_index(drop=True)
+        )
 
     def aggregate_compartment(self, compartment, compute_subsample=False):
         """
@@ -125,10 +155,8 @@ class AggregateProfiles:
 
         compartment_query = "select * from {}".format(compartment)
 
-        if self.subset_frac == 1 and not compute_subsample:
-            subset_data = "none"
-        else:
-            subset_data = self.get_subsample(compartment=compartment)
+        if (self.subsample_frac < 1 or self.subsample_n != "all") and compute_subsample:
+            self.get_subsample(compartment=compartment)
 
         object_df = aggregate(
             population_df=self.image_df.merge(
@@ -139,29 +167,45 @@ class AggregateProfiles:
             strata=self.strata,
             features=self.features,
             operation=self.operation,
+            subset_data=self.subset_data,
         )
 
         return object_df
 
-    def aggregate_profiles(self):
-        # TODO: Might have data duplicated - check other columns
-        # TODO: Need to also join on ObjectNumber (check if this is actually consistent (assume))
+    def aggregate_profiles(self, compute_subsample="False", output_file="none"):
+        """
+        Aggregate and merge compartments. This is the primary entry to this class.
+
+        Arguments:
+        compute_subsample - [default: False] boolean if subsample should be computed.
+                            NOTE: Must be specified to perform subsampling. Will not
+                            apply subsetting if set to False even if subsample is
+                            initialized
+
+        Return:
+        if output_file is set, then write to file. If not then return
+        """
+        if output_file != "none":
+            self.set_output_file(output_file)
+
         aggregated = (
-            self.aggregate_compartment(compartment="cells")
+            self.aggregate_compartment(
+                compartment="cells", compute_subsample=compute_subsample
+            )
             .merge(
                 self.aggregate_compartment(compartment="cytoplasm"),
-                on=self.merge_cols,
+                on=self.strata,
                 how="inner",
             )
             .merge(
                 self.aggregate_compartment(compartment="nuclei"),
-                on=self.merge_cols,
+                on=self.strata,
                 how="inner",
             )
         )
 
         if self.output_file != "none":
-            aggregated.to_csv(self.output_file)
+            aggregated.to_csv(self.output_file, index=False)
         else:
             return aggregated
 
@@ -193,13 +237,22 @@ def aggregate(
         population_df = population_df.loc[:, features]
         population_df = pd.concat([strata_df, population_df], axis="columns")
 
-    # TODO: this needs to be fixed
-    if subset_data != "none":
-        population_df = population_df.subset(subset_data)
+    if isinstance(subset_data, pd.DataFrame):
+        population_df = subset_data.merge(
+            population_df, how="left", on=subset_data.columns.tolist()
+        ).reindex(population_df.columns, axis="columns")
 
     population_df = population_df.groupby(strata)
 
     if operation == "median":
-        return population_df.median().reset_index()
+        return (
+            population_df.median()
+            .reset_index()
+            .drop(["ImageNumber", "ObjectNumber"], axis="columns")
+        )
     else:
-        return population_df.mean().reset_index()
+        return (
+            population_df.mean()
+            .reset_index()
+            .drop(["ImageNumber", "ObjectNumber"], axis="columns")
+        )
