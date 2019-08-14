@@ -17,6 +17,6 @@ setup(
     url="https://github.com/cytomining/pycytominer",
     packages=find_packages(),
     license="BSD 3-Clause License",
-    install_requires=["numpy", "pandas", "scikit-learn"],
+    install_requires=["numpy", "pandas", "scikit-learn", "sqlalchemy"],
     python_requires=">=3.4",
 )
