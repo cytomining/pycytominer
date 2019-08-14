@@ -2,6 +2,7 @@
 Aggregate single cell data based on given grouping variables
 """
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -23,6 +24,7 @@ class AggregateProfiles:
         load_image_data=True,
         subsample_frac=1,
         subsample_n="all",
+        subsampling_random_state="none",
     ):
         """
         Arguments:
@@ -37,6 +39,7 @@ class AggregateProfiles:
         subsample_frac - [default: 1] float (0 < subsample <= 1) indicating percentage of
                          single cells to select
         subsample_n - [default: "all"] int indicating how many samples to include
+        subsampling_random_state - [default: "none"] the random state to init subsample
         """
         # Check compartments specified
         self._check_compartments(compartments)
@@ -47,10 +50,15 @@ class AggregateProfiles:
             "median",
         ], "operation must be one ['mean', 'median']"
 
-        # Check that the subsample_fraction is between 0 and 1
+        # Check that the subsample_frac is between 0 and 1
         assert (
             0 < subsample_frac and 1 >= subsample_frac
         ), "subsample_frac must be between 0 and 1"
+
+        # Check that the user didn't specify both subset frac and
+        assert (
+            subsample_frac == 1 or subsample_n == "all"
+        ), "Do not set both subsample_frac and subsample_n"
 
         self.sql_file = sql_file
         self.strata = strata
@@ -62,6 +70,8 @@ class AggregateProfiles:
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
         self.subset_data = "none"
+        self.subsampling_random_state = subsampling_random_state
+        self.is_aggregated = False
 
         # Connect to sqlite engine
         self.engine = create_engine(self.sql_file)
@@ -102,14 +112,53 @@ class AggregateProfiles:
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
-    def subsample_profiles(self, x):
+    def count_cells(self, compartment="cells", count_subset=False):
+        """
+        Determine how many cells are measured per well
+
+        Arguments:
+        compartment - string indicating the compartment to subset
+        count_subset - [default: False] count the number of cells in subset partition
+        """
+        self._check_compartments(compartment)
+
+        if count_subset:
+            assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
+            count_df = pd.crosstab(
+                self.subset_data.Image_Metadata_Well,
+                self.subset_data.Image_Metadata_Plate,
+            ).reset_index()
+        else:
+            query_cols = "TableNumber, ImageNumber, ObjectNumber"
+            query = "select {} from {}".format(query_cols, compartment)
+            count_df = self.image_df.merge(
+                pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
+            )
+
+            count_df = pd.crosstab(
+                count_df.Image_Metadata_Well, count_df.Image_Metadata_Plate
+            ).reset_index()
+
+        return count_df
+
+    def subsample_profiles(self, x, random_state="none"):
         """
         Sample a Pandas DataFrame given the subsampling fraction
         """
+        if random_state == "none" and self.subsampling_random_state == "none":
+            self.subsampling_random_state = np.random.randint(0, 10000, size=1)[0]
+
         if self.subsample_frac == 1:
-            return pd.DataFrame.sample(x, n=self.subsample_n)
+            return pd.DataFrame.sample(
+                x,
+                n=self.subsample_n,
+                replace=True,
+                random_state=self.subsampling_random_state,
+            )
         else:
-            return pd.DataFrame.sample(x, frac=self.subsample_frac)
+            return pd.DataFrame.sample(
+                x, frac=self.subsample_frac, random_state=self.subsampling_random_state
+            )
 
     def get_subsample(self, compartment="cells", subsample_frac=1, subsample_n="all"):
         """
@@ -203,6 +252,8 @@ class AggregateProfiles:
                 how="inner",
             )
         )
+
+        self.is_aggregated = True
 
         if self.output_file != "none":
             aggregated.to_csv(self.output_file, index=False)
