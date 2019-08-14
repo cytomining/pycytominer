@@ -39,7 +39,6 @@ def test_feature_select_get_na_columns():
     """
     Testing feature_select and get_na_columns pycytominer function
     """
-
     result = feature_select(data_na_df, operation="drop_na_columns")
     expected_result = pd.DataFrame({"yy": [1, 2, 8, 10, 2, 100]})
     pd.testing.assert_frame_equal(result, expected_result)
@@ -80,8 +79,10 @@ def test_feature_select_variance_threshold():
 
     na_data_unique_test_df = data_unique_test_df.copy()
     na_data_unique_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
+
     result = feature_select(
         na_data_unique_test_df, operation=["variance_threshold", "drop_na_columns"]
+
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -100,8 +101,10 @@ def test_feature_select_correlation_threshold():
 
     data_cor_thresh_na_df = data_df.copy()
     data_cor_thresh_na_df.iloc[0, 2] = np.nan
+
     result = feature_select(
         data_cor_thresh_na_df, operation=["drop_na_columns", "correlation_threshold"]
+
     )
     expected_result = data_df.drop(["z", "x"], axis="columns")
     pd.testing.assert_frame_equal(result, expected_result)

@@ -15,7 +15,7 @@ def test_aggregate_median_allvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], variables="all", operation="median"
+        population_df=data_df, strata=["g"], features="all", operation="median"
     )
 
     expected_result = pd.concat(
@@ -33,7 +33,7 @@ def test_aggregate_mean_allvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], variables="all", operation="mean"
+        population_df=data_df, strata=["g"], features="all", operation="mean"
     )
 
     expected_result = pd.concat(
@@ -51,7 +51,7 @@ def test_aggregate_median_subsetvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], variables=["x"], operation="median"
+        population_df=data_df, strata=["g"], features=["x"], operation="median"
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "x": [3, 3]})
@@ -64,7 +64,7 @@ def test_aggregate_mean_subsetvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], variables=["x"], operation="mean"
+        population_df=data_df, strata=["g"], features=["x"], operation="mean"
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "x": [4, 3]})
