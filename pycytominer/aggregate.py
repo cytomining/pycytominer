@@ -101,6 +101,9 @@ class AggregateProfiles:
         self.subsample_frac = 1
         self.subsample_n = subsample_n
 
+    def set_subsample_random_state(self, random_state):
+        self.subsampling_random_state = random_state
+
     def load_image(self):
         """
         Load image table from sqlite file
@@ -147,6 +150,9 @@ class AggregateProfiles:
         """
         if random_state == "none" and self.subsampling_random_state == "none":
             self.subsampling_random_state = np.random.randint(0, 10000, size=1)[0]
+
+        if random_state != "none":
+            set_subsample_random_state(random_state)
 
         if self.subsample_frac == 1:
             return pd.DataFrame.sample(
