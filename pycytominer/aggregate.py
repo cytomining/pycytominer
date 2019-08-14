@@ -107,7 +107,7 @@ class AggregateProfiles:
         """
         # Extract image metadata
         image_cols = (
-            "TableNumber, ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
+            "TableNumber, ImageNumber, {}".format(", ".join(self.strata))
         )
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
@@ -125,8 +125,8 @@ class AggregateProfiles:
         if count_subset:
             assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
             count_df = pd.crosstab(
-                self.subset_data.Image_Metadata_Well,
-                self.subset_data.Image_Metadata_Plate,
+                self.subset_data.loc[:, self.strata[1]],
+                self.subset_data.loc[:, self.strata[0]],
             ).reset_index()
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
@@ -136,7 +136,7 @@ class AggregateProfiles:
             )
 
             count_df = pd.crosstab(
-                count_df.Image_Metadata_Well, count_df.Image_Metadata_Plate
+                count_df.loc[:, self.strata[1]], count_df.loc[:, self.strata[0]]
             ).reset_index()
 
         return count_df
@@ -183,9 +183,8 @@ class AggregateProfiles:
             pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
         )
 
-        image_cols = ["Image_Metadata_Plate", "Image_Metadata_Well"]
         self.subset_data = (
-            query_df.groupby(image_cols)
+            query_df.groupby(self.strata)
             .apply(lambda x: self.subsample_profiles(x))
             .reset_index(drop=True)
         )
@@ -296,14 +295,19 @@ def aggregate(
     population_df = population_df.groupby(strata)
 
     if operation == "median":
-        return (
+        population_df = (
             population_df.median()
             .reset_index()
-            .drop(["ImageNumber", "ObjectNumber"], axis="columns")
         )
     else:
-        return (
+        population_df = (
             population_df.mean()
             .reset_index()
-            .drop(["ImageNumber", "ObjectNumber"], axis="columns")
         )
+
+    # Aggregated image number and object number do not make sense
+    for col in ["ImageNumber", "ObjectNumber"]:
+        if col in population_df.columns:
+            population_df = population_df.drop([col], axis="columns")
+
+    return population_df
