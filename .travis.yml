@@ -1,5 +1,5 @@
 language: python
 script:
-  - py.test --cov-report=xml --cov=pycytominer pycytominer/tests/
+  - py.test --cov-report xml --cov pycytominer/tests/ -v
 after_success:
   - codecov
