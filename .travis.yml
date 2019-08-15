@@ -1,3 +1,5 @@
-  language: python
-  script:
-    - pytest
+language: python
+script:
+  - py.test --cov-report term --cov=pycytominer pycytominer/tests/
+after_success:
+  - codecov
