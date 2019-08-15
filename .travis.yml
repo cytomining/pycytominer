@@ -1,3 +1,6 @@
-  language: python
-  script:
-    - pytest
+language: python
+script:
+  - pip install pytest-cov codecov
+  - py.test -v --cov-report=xml --cov=pycytominer pycytominer/tests/
+after_success:
+  - codecov
