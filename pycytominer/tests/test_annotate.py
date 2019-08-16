@@ -59,7 +59,7 @@ def test_annotate_write():
         platemap=platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output=output_file
+        output_file=output_file
     )
 
     expected_result = pd.read_csv(output_file)
