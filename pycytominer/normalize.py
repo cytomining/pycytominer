@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler, RobustScaler
 
 def normalize(
     profiles,
-    features="none",
+    features="infer",
     meta_features="none",
     samples="all",
     method="standardize",

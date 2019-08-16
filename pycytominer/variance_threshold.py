@@ -8,15 +8,16 @@ import pandas as pd
 
 
 def variance_threshold(
-    population_df, features="none", samples="none", freq_cut=0.05, unique_cut=0.01
+    population_df, features="infer", samples="none", freq_cut=0.05, unique_cut=0.01
 ):
     """
     Exclude features that have correlations below a certain threshold
 
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
-    features - a list of features present in the population dataframe
-               [default: "none"] - if "none", use all features
+    features - a list of features present in the population dataframe [default: "infer"]
+               if "infer", then assume cell painting features are those that do not
+               start with "Metadata_"
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     freq_cut - float of ratio (second most common feature value / most common) [default: 0.1]
@@ -33,7 +34,11 @@ def variance_threshold(
     if samples != "none":
         population_df = population_df.loc[samples, :]
 
-    if features != "none":
+    if features == "infer":
+        features = [
+            x for x in population_df.columns.tolist() if not x.startswith("Metadata_")
+        ]
+    else:
         population_df = population_df.loc[:, features]
 
     # Test if excluded for low frequency
