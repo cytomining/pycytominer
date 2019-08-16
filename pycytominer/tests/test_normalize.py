@@ -1,5 +1,13 @@
+import os
+import tempfile
+import random
 import pandas as pd
 from pycytominer.normalize import normalize
+
+random.seed(123)
+
+# Get temporary directory
+tmpdir = tempfile.gettempdir()
 
 # Build data to use in tests
 data_df = pd.DataFrame(
@@ -22,6 +30,9 @@ data_df = pd.DataFrame(
     }
 ).reset_index(drop=True)
 
+data_file = os.path.join(tmpdir, "test_normalize.csv")
+data_df.to_csv(data_file, index=False, sep=",")
+
 
 def test_normalize_standardize_allsamples():
     """
@@ -31,7 +42,7 @@ def test_normalize_standardize_allsamples():
     samples="all"
     """
     normalize_result = normalize(
-        population_df=data_df,
+        profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="none",
         samples="all",
@@ -58,7 +69,7 @@ def test_normalize_standardize_allsamples():
         }
     ).reset_index(drop=True)
 
-    assert normalize_result.equals(expected_result)
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
 def test_normalize_standardize_ctrlsamples():
@@ -69,7 +80,7 @@ def test_normalize_standardize_ctrlsamples():
     samples="Metadata_treatment == 'control'"
     """
     normalize_result = normalize(
-        population_df=data_df,
+        profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="none",
         samples="Metadata_treatment == 'control'",
@@ -96,7 +107,7 @@ def test_normalize_standardize_ctrlsamples():
         }
     ).reset_index(drop=True)
 
-    assert normalize_result.equals(expected_result)
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
 def test_normalize_robustize_allsamples():
@@ -107,7 +118,7 @@ def test_normalize_robustize_allsamples():
     samples="all"
     """
     normalize_result = normalize(
-        population_df=data_df,
+        profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="none",
         samples="all",
@@ -134,7 +145,7 @@ def test_normalize_robustize_allsamples():
         }
     ).reset_index(drop=True)
 
-    assert normalize_result.equals(expected_result)
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
 def test_normalize_robustize_ctrlsamples():
@@ -145,7 +156,7 @@ def test_normalize_robustize_ctrlsamples():
     samples="Metadata_treatment == 'control'"
     """
     normalize_result = normalize(
-        population_df=data_df,
+        profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="none",
         samples="Metadata_treatment == 'control'",
@@ -172,4 +183,87 @@ def test_normalize_robustize_ctrlsamples():
         }
     ).reset_index(drop=True)
 
-    assert normalize_result.equals(expected_result)
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_standardize_allsamples_fromfile():
+    """
+    Testing normalize pycytominer function
+    data_file provided
+    method = "standardize"
+    meta_features = "none"
+    samples="all"
+    """
+    normalize_result = normalize(
+        profiles=data_file,
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
+        samples="all",
+        method="standardize",
+    ).round(1)
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+            "Metadata_treatment": [
+                "drug",
+                "drug",
+                "control",
+                "control",
+                "drug",
+                "drug",
+                "control",
+                "control",
+            ],
+            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+        }
+    ).reset_index(drop=True)
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_standardize_allsamples_output():
+    """
+    Testing normalize pycytominer function
+    data_file provided
+    method = "standardize"
+    meta_features = "none"
+    samples="all"
+    """
+    out_file = os.path.join(tmpdir, "test_normalize_output.csv")
+
+    _ = normalize(
+        profiles=data_file,
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
+        samples="all",
+        method="standardize",
+        output_file=out_file,
+    )
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+            "Metadata_treatment": [
+                "drug",
+                "drug",
+                "control",
+                "control",
+                "drug",
+                "drug",
+                "control",
+                "control",
+            ],
+            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+        }
+    ).reset_index(drop=True)
+
+    from_file_result = pd.read_csv(out_file).round(1)
+
+    pd.testing.assert_frame_equal(from_file_result, expected_result)
