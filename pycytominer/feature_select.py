@@ -2,7 +2,7 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
-import pandas
+import pandas as pd
 from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
@@ -87,7 +87,7 @@ def feature_select(
 
     excluded_features = list(set(excluded_features))
 
-    selected_df = population_df.drop(excluded_features, axis="columns")
+    selected_df = profiles.drop(excluded_features, axis="columns")
 
     if output_file != "none":
         selected_df.to_csv(output_file, index=False)
