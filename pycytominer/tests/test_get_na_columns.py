@@ -23,7 +23,7 @@ def test_get_na_columns():
     assert get_na_columns_result == expected_result
 
     get_na_columns_result = get_na_columns(
-        population_df=data_df, features="none", cutoff=0.1
+        population_df=data_df, features="infer", cutoff=0.1
     )
     expected_result = ["x", "y", "z", "zz"]
     assert sorted(get_na_columns_result) == expected_result
