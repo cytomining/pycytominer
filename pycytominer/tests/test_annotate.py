@@ -54,7 +54,7 @@ def test_annotate():
 
 
 def test_annotate_write():
-    result = annotate(
+    _ = annotate(
         profiles=data_df,
         platemap=platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
@@ -62,6 +62,13 @@ def test_annotate_write():
         output_file=output_file
     )
 
+    result = annotate(
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        add_metadata_id_to_platemap=False,
+        output_file="none"
+    )
     expected_result = pd.read_csv(output_file)
 
     pd.testing.assert_frame_equal(result, expected_result)
