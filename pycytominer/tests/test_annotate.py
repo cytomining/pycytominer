@@ -1,3 +1,4 @@
+import tempfile
 import random
 import pandas as pd
 from pycytominer.annotate import annotate
