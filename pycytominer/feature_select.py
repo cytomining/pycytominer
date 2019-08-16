@@ -28,7 +28,8 @@ def feature_select(
     operation - str or list of given operations to perform on input profiles
     output_file - [default: "none"] if provided, will write annotated profiles to file
                   if not specified, will return the annotated profiles. We recommend
-                  that this output file be suffixed with "_normalized.csv".
+                  that this output file be suffixed with
+                  "_normalized_variable_selected.csv".
     """
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
