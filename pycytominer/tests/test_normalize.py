@@ -202,6 +202,14 @@ def test_normalize_standardize_allsamples_fromfile():
         method="standardize",
     ).round(1)
 
+    infer_normalize_result = normalize(
+        profiles=data_file,
+        features="infer",
+        meta_features=["Metadata_plate", "Metadata_treatment"],
+        samples="all",
+        method="standardize",
+    ).round(1)
+
     expected_result = pd.DataFrame(
         {
             "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
@@ -223,6 +231,7 @@ def test_normalize_standardize_allsamples_fromfile():
     ).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
+    pd.testing.assert_frame_equal(normalize_result, infer_normalize_result)
 
 
 def test_normalize_standardize_allsamples_output():
