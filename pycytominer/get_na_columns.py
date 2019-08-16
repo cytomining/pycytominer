@@ -25,7 +25,11 @@ def get_na_columns(population_df, features="none", samples="none", cutoff=0.05):
     if samples != "none":
         population_df = population_df.loc[samples, :]
 
-    if features != "none":
+    if features == "infer":
+        features = [
+            x for x in population_df.columns.tolist() if not x.startswith("Metadata_")
+        ]
+    else:
         population_df = population_df.loc[:, features]
 
     num_rows = population_df.shape[0]

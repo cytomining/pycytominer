@@ -8,15 +8,16 @@ import pandas as pd
 
 
 def correlation_threshold(
-    population_df, features="none", samples="none", threshold=0.9, method="pearson"
+    population_df, features="infer", samples="none", threshold=0.9, method="pearson"
 ):
     """
     Exclude features that have correlations above a certain threshold
 
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
-    features - a list of features present in the population dataframe
-               [default: "none"] - if "none", use all features
+    features - a list of features present in the population dataframe [default: "infer"]
+               if "infer", then assume cell painting features are those that do not
+               start with "Metadata_"
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     threshold - float between (0, 1) to exclude features [default: 0.9]
@@ -39,7 +40,11 @@ def correlation_threshold(
     if samples != "none":
         population_df = population_df.loc[samples, :]
 
-    if features != "none":
+    if features == "infer":
+        features = [
+            x for x in population_df.columns.tolist() if not x.startswith("Metadata_")
+        ]
+    else:
         population_df = population_df.loc[:, features]
 
     data_cor_df = population_df.corr(method=method)

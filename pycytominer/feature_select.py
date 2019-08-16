@@ -10,7 +10,7 @@ from pycytominer.get_na_columns import get_na_columns
 
 def feature_select(
     profiles,
-    features="none",
+    features="infer",
     samples="none",
     operation="variance_threshold",
     output_file="none",
@@ -21,8 +21,9 @@ def feature_select(
 
     Arguments:
     profiles - either pandas DataFrame or a file that stores profile data
-    features - list of cell painting features
-               [default: "none"] - if "none", use all features
+    features - list of cell painting features [default: "infer"]
+               if "infer", then assume cell painting features are those that do not
+               start with "Metadata_"
     samples - if provided, a list of samples to provide operation on
               [default: "none"] - if "none", use all samples to calculate
     operation - str or list of given operations to perform on input profiles
@@ -31,13 +32,6 @@ def feature_select(
                   that this output file be suffixed with
                   "_normalized_variable_selected.csv".
     """
-    # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
-
     na_cutoff = kwargs.pop("na_cutoff", 0.05)
     corr_threshold = kwargs.pop("corr_threshold", 0.9)
     corr_method = kwargs.pop("corr_method", "pearson")
@@ -58,6 +52,18 @@ def feature_select(
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")
+
+    # Load Data
+    if not isinstance(profiles, pd.DataFrame):
+        try:
+            profiles = pd.read_csv(profiles)
+        except FileNotFoundError:
+            raise FileNotFoundError("{} profile file not found".format(profiles))
+
+    if features == "infer":
+        features = [
+            x for x in profiles.columns.tolist() if not x.startswith("Metadata_")
+        ]
 
     excluded_features = []
     for op in operation:
