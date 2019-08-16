@@ -2,30 +2,42 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
-import pandas
+import pandas as pd
 from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
 
 
 def feature_select(
-    population_df,
+    profiles,
     features="none",
     samples="none",
     operation="variance_threshold",
+    output_file="none",
     **kwargs
 ):
     """
     Performs feature selection based on the given operation
 
     Arguments:
-    population_df - pandas DataFrame that includes metadata and observation variables
+    profiles - either pandas DataFrame or a file that stores profile data
     features - list of cell painting features
                [default: "none"] - if "none", use all features
     samples - if provided, a list of samples to provide operation on
               [default: "none"] - if "none", use all samples to calculate
-    operation - str or list of given operations to perform on input population_df
+    operation - str or list of given operations to perform on input profiles
+    output_file - [default: "none"] if provided, will write annotated profiles to file
+                  if not specified, will return the annotated profiles. We recommend
+                  that this output file be suffixed with
+                  "_normalized_variable_selected.csv".
     """
+    # Load Data
+    if not isinstance(profiles, pd.DataFrame):
+        try:
+            profiles = pd.read_csv(profiles)
+        except FileNotFoundError:
+            raise FileNotFoundError("{} profile file not found".format(profiles))
+
     na_cutoff = kwargs.pop("na_cutoff", 0.05)
     corr_threshold = kwargs.pop("corr_threshold", 0.9)
     corr_method = kwargs.pop("corr_method", "pearson")
@@ -51,7 +63,7 @@ def feature_select(
     for op in operation:
         if op == "variance_threshold":
             exclude = variance_threshold(
-                population_df=population_df,
+                population_df=profiles,
                 features=features,
                 samples=samples,
                 freq_cut=freq_cut,
@@ -59,14 +71,14 @@ def feature_select(
             )
         elif op == "drop_na_columns":
             exclude = get_na_columns(
-                population_df=population_df,
+                population_df=profiles,
                 features=features,
                 samples=samples,
                 cutoff=na_cutoff,
             )
         elif op == "correlation_threshold":
             exclude = correlation_threshold(
-                population_df=population_df,
+                population_df=profiles,
                 features=features,
                 samples=samples,
                 threshold=corr_threshold,
@@ -76,4 +88,9 @@ def feature_select(
 
     excluded_features = list(set(excluded_features))
 
-    return population_df.drop(excluded_features, axis="columns")
+    selected_df = profiles.drop(excluded_features, axis="columns")
+
+    if output_file != "none":
+        selected_df.to_csv(output_file, index=False)
+    else:
+        return selected_df

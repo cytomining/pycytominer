@@ -1,4 +1,6 @@
+import os
 import random
+import tempfile
 import numpy as np
 import pandas as pd
 from pycytominer.feature_select import feature_select
@@ -116,7 +118,7 @@ def test_feature_select_all():
     data_all_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
 
     result = feature_select(
-        population_df=data_all_test_df,
+        profiles=data_all_test_df,
         operation=["drop_na_columns", "correlation_threshold"],
         corr_threshold=0.7,
     )
@@ -126,8 +128,24 @@ def test_feature_select_all():
     expected_result.iloc[1, 2] = 2
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # Get temporary directory
+    tmpdir = tempfile.gettempdir()
+
+    # Write file to output
+    data_file = os.path.join(tmpdir, "test_feature_select.csv")
+    data_all_test_df.to_csv(data_file, index=False, sep=",")
+    out_file = os.path.join(tmpdir, "test_feature_select_out.csv")
+    _ = feature_select(
+        profiles=data_file,
+        operation=["drop_na_columns", "correlation_threshold"],
+        corr_threshold=0.7,
+        output_file=out_file
+    )
+    from_file_result = pd.read_csv(out_file)
+    pd.testing.assert_frame_equal(from_file_result, expected_result)
+
     result = feature_select(
-        population_df=data_all_test_df,
+        profiles=data_all_test_df,
         operation=["drop_na_columns", "correlation_threshold", "variance_threshold"],
         corr_threshold=0.7,
     )
