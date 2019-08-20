@@ -115,7 +115,11 @@ def audit(
             groups=",".join(groups),
         )
     )
-    return audit_df
+
+    if output_file != "none":
+        audit_df.to_csv(output_file, index=False)
+    else:
+        return audit_df
 
 
 def get_median_pairwise_correlation(x, features, method="pearson"):
