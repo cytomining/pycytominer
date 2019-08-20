@@ -14,14 +14,6 @@ output_file = "{}/test.csv".format(tmpdir)
 # Build data to use in tests
 data_df = pd.concat(
     [
-        pd.DataFrame({"g": "a", "x": [1, 3, 8], "y": [5, 3, 1]}),
-        pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1]}),
-    ]
-).reset_index(drop=True)
-
-# Build data to use in tests
-data_df = pd.concat(
-    [
         pd.DataFrame(
             {"Metadata_Well": ["A01", "A02", "A03"], "x": [1, 3, 8], "y": [5, 3, 1]}
         ),
