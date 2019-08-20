@@ -67,6 +67,7 @@ class AggregateProfiles:
         self.subset_data = "none"
         self.subsampling_random_state = subsampling_random_state
         self.is_aggregated = False
+        self.is_subset_computed = False
 
         if self.subsample_n != "all":
             try:
@@ -133,6 +134,7 @@ class AggregateProfiles:
 
         if count_subset:
             assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
+            assert self.is_subset_computed, "Make sure to get_subsample() first!"
             count_df = pd.crosstab(
                 self.subset_data.loc[:, self.strata[1]],
                 self.subset_data.loc[:, self.strata[0]],
@@ -194,6 +196,7 @@ class AggregateProfiles:
             .apply(lambda x: self.subsample_profiles(x))
             .reset_index(drop=True)
         )
+        self.is_subset_computed = True
 
     def aggregate_compartment(self, compartment, compute_subsample=False):
         """
