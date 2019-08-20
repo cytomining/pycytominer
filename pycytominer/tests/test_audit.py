@@ -86,6 +86,7 @@ def test_audit():
             ],
         }
     ).assign(
+        quantile=0.95,
         iterations=100,
         cor_method="pearson",
         samples="all",
@@ -166,6 +167,7 @@ def test_audit_subset_sample():
             ],
         }
     ).assign(
+        quantile=0.95,
         iterations=100,
         cor_method="pearson",
         samples=subset_sample_string,
