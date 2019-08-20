@@ -8,7 +8,6 @@ import pandas as pd
 
 def audit(
     profiles,
-    platemap,
     operation="replicate_quality",
     groups=["Metadata_Well"],
     cor_method="pearson",
@@ -22,7 +21,6 @@ def audit(
 
     Arguments:
     profiles - either pandas DataFrame or a file that stores profile data
-    platemap - either pandas DataFrame or a file that stores platemap metadata
     operation - [default: "replicate_quality"] the operation to perform the audit.
     groups - [default: ["Metadata_Well"]] list of columns to identify replicates
     cor_method - [default: "pearson"] the method to obtain pairwise correlations.
@@ -50,12 +48,6 @@ def audit(
         except FileNotFoundError:
             raise FileNotFoundError("{} profile file not found".format(profiles))
 
-    if not isinstance(platemap, pd.DataFrame):
-        try:
-            platemap = pd.read_csv(platemap, sep="\t")
-        except FileNotFoundError:
-            raise FileNotFoundError("{} platemap file not found".format(platemap))
-
     if samples != "all":
         profiles = profiles.query(samples)
 
@@ -80,7 +72,7 @@ def audit(
         profiles.groupby(groups)
         .apply(
             lambda x: get_median_pairwise_correlation(
-                x, features=features, method=method
+                x, features=features, method=cor_method
             )
         )
         .reset_index()
@@ -89,12 +81,15 @@ def audit(
     )
 
     # Now, shuffle the groupby columns and calculate pairwise correlations
+    profile_shuff = profiles.copy()
     non_replicate_audit_iterations = []
     for i in range(0, iterations):
-        profiles.loc[:, groups] = (
-            profiles.loc[:, groups].sample(frac=1, axis="rows").reset_index(drop=True)
+        profile_shuff.loc[:, groups] = (
+            profile_shuff.loc[:, groups]
+            .sample(frac=1, axis="rows")
+            .reset_index(drop=True)
         )
-        non_replicate_audit = profiles.groupby(groups).apply(
+        non_replicate_audit = profile_shuff.groupby(groups).apply(
             lambda x: get_median_pairwise_correlation(x, features=features)
         )
         non_replicate_audit_iterations.append(non_replicate_audit)
@@ -109,7 +104,16 @@ def audit(
         .assign(replicate_type="non_replicate")
     )
 
-    audit_df = pd.concat([replicate_audit, non_replicate_audit]).reset_index(drop=True)
+    audit_df = (
+        pd.concat([replicate_audit, non_replicate_audit])
+        .reset_index(drop=True)
+        .assign(
+            iterations=iterations,
+            cor_method=cor_method,
+            samples=samples,
+            groups=",".join(groups),
+        )
+    )
     return audit_df
 
 
