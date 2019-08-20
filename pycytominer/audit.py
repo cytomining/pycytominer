@@ -108,6 +108,7 @@ def audit(
         pd.concat([replicate_audit, non_replicate_audit])
         .reset_index(drop=True)
         .assign(
+            quantile=quantile,
             iterations=iterations,
             cor_method=cor_method,
             samples=samples,
