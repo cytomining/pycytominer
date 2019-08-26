@@ -2,12 +2,14 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
+import os
 import pandas as pd
 
 from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
 from pycytominer.cyto_utils.compress import compress
+from pycytominer.cyto_utils.features import get_blacklist_features
 
 
 def feature_select(
@@ -41,8 +43,14 @@ def feature_select(
     unique_cut = kwargs.pop("unique_cut", 0.1)
     how = kwargs.pop("how", None)
     float_format = kwargs.pop("float_format", None)
+    blacklist_file = kwargs.pop("blacklist_file", None)
 
-    all_ops = ["variance_threshold", "correlation_threshold", "drop_na_columns"]
+    all_ops = [
+        "variance_threshold",
+        "correlation_threshold",
+        "drop_na_columns",
+        "blacklist",
+    ]
 
     # Make sure the user provides a supported operation
     if isinstance(operation, list):
@@ -94,6 +102,12 @@ def feature_select(
                 threshold=corr_threshold,
                 method=corr_method,
             )
+        elif op == "blacklist":
+            if blacklist_file:
+                exclude = get_blacklist_features(population_df=profiles, blacklist_file=blacklist_file)
+            else:
+                exclude = get_blacklist_features(population_df=profiles)
+
         excluded_features += exclude
 
     excluded_features = list(set(excluded_features))
