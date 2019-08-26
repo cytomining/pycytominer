@@ -60,7 +60,7 @@ def test_audit():
         quantile=0.95,
         output_file="none",
         samples="all",
-        iterations=100,
+        iterations=500,
     ).round(2)
 
     from_file_result = audit(
@@ -71,7 +71,7 @@ def test_audit():
         quantile=0.95,
         output_file="none",
         samples="all",
-        iterations=100,
+        iterations=500,
     ).round(2)
 
     expected_result = pd.DataFrame(
@@ -87,7 +87,7 @@ def test_audit():
         }
     ).assign(
         quantile=0.95,
-        iterations=100,
+        iterations=500,
         cor_method="pearson",
         samples="all",
         groups=",".join(["Metadata_treatment"]),
@@ -112,7 +112,7 @@ def test_audit_assertion_quantile_input():
             quantile=1.1,
             output_file="none",
             samples="all",
-            iterations=100,
+            iterations=500,
         )
 
 
@@ -125,7 +125,7 @@ def test_audit_assertion_groups_input():
             cor_method="pearson",
             output_file="none",
             samples="all",
-            iterations=100,
+            iterations=500,
         )
 
 
@@ -138,7 +138,7 @@ def test_audit_assertion_operations_input():
             cor_method="pearson",
             output_file="none",
             samples="all",
-            iterations=100,
+            iterations=500,
         )
 
 
@@ -152,7 +152,7 @@ def test_audit_subset_sample():
         quantile=0.95,
         output_file="none",
         samples=subset_sample_string,
-        iterations=100,
+        iterations=500,
     ).round(2)
 
     expected_result = pd.DataFrame(
@@ -168,7 +168,7 @@ def test_audit_subset_sample():
         }
     ).assign(
         quantile=0.95,
-        iterations=100,
+        iterations=500,
         cor_method="pearson",
         samples=subset_sample_string,
         groups=",".join(["Metadata_treatment"]),
@@ -186,7 +186,7 @@ def test_audit_compress():
         quantile=0.95,
         output_file=compress_file,
         samples=subset_sample_string,
-        iterations=100,
+        iterations=500,
         how="gzip",
     )
 
@@ -198,7 +198,7 @@ def test_audit_compress():
         quantile=0.95,
         output_file="none",
         samples=subset_sample_string,
-        iterations=100,
+        iterations=500,
     ).round(2)
 
     expected_result = pd.read_csv(compress_file).round(2)
