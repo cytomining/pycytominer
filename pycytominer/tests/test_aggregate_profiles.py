@@ -1,3 +1,4 @@
+import os
 import random
 import tempfile
 import pandas as pd
@@ -181,3 +182,31 @@ def test_aggregate_subsampling_profile():
     )
 
     pd.testing.assert_frame_equal(ap_subsample.subset_data, expected_subset)
+
+
+def test_aggregate_subsampling_profile_compress():
+    compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
+
+    _ = ap_subsample.aggregate_profiles(output_file=compress_file, how="gzip")
+    result = pd.read_csv(compress_file)
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "cells_a": [110.0, 680.5],
+            "cells_b": [340.5, 201.5],
+            "cells_c": [285.0, 481.0],
+            "cells_d": [352.0, 549.0],
+            "cytoplasm_a": [407.5, 705.5],
+            "cytoplasm_b": [650.0, 439.5],
+            "cytoplasm_c": [243.5, 78.5],
+            "cytoplasm_d": [762.5, 625.0],
+            "nuclei_a": [683.5, 171.0],
+            "nuclei_b": [50.5, 625.0],
+            "nuclei_c": [431.0, 483.0],
+            "nuclei_d": [519.0, 286.5],
+        }
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)

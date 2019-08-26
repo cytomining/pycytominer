@@ -7,6 +7,9 @@ from pycytominer.feature_select import feature_select
 
 random.seed(123)
 
+# Get temporary directory
+tmpdir = tempfile.gettempdir()
+
 data_df = pd.DataFrame(
     {
         "x": [1, 3, 8, 5, 2, 2],
@@ -84,7 +87,6 @@ def test_feature_select_variance_threshold():
 
     result = feature_select(
         na_data_unique_test_df, operation=["variance_threshold", "drop_na_columns"]
-
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -106,7 +108,6 @@ def test_feature_select_correlation_threshold():
 
     result = feature_select(
         data_cor_thresh_na_df, operation=["drop_na_columns", "correlation_threshold"]
-
     )
     expected_result = data_df.drop(["z", "x"], axis="columns")
     pd.testing.assert_frame_equal(result, expected_result)
@@ -139,7 +140,7 @@ def test_feature_select_all():
         profiles=data_file,
         operation=["drop_na_columns", "correlation_threshold"],
         corr_threshold=0.7,
-        output_file=out_file
+        output_file=out_file,
     )
     from_file_result = pd.read_csv(out_file)
     pd.testing.assert_frame_equal(from_file_result, expected_result)
@@ -152,4 +153,15 @@ def test_feature_select_all():
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
     )
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_feature_select_compress():
+    compress_file = os.path.join(tmpdir, "test_feature_select_compress.csv.gz")
+    _ = feature_select(
+        data_na_df, operation="drop_na_columns", output_file=compress_file, how="gzip"
+    )
+    expected_result = pd.DataFrame({"yy": [1, 2, 8, 10, 2, 100]})
+    result = pd.read_csv(compress_file)
+
     pd.testing.assert_frame_equal(result, expected_result)

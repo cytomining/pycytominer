@@ -4,6 +4,7 @@ Normalize observation features based on specified normalization method
 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
+from pycytominer.cyto_utils.compress import compress
 
 
 def normalize(
@@ -13,6 +14,7 @@ def normalize(
     samples="all",
     method="standardize",
     output_file="none",
+    **kwargs
 ):
     """
     Normalize features
@@ -37,6 +39,9 @@ def normalize(
     Return:
     A normalized DataFrame
     """
+    how = kwargs.pop("how", None)
+    float_format = kwargs.pop("float_format", None)
+
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
         try:
@@ -87,6 +92,11 @@ def normalize(
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
     if output_file != "none":
-        normalized.to_csv(output_file, index=False)
+        compress(
+            df=normalized,
+            output_filename=output_file,
+            how=how,
+            float_format=float_format,
+        )
     else:
         return normalized

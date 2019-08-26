@@ -1,3 +1,4 @@
+import os
 import tempfile
 import random
 import pandas as pd
@@ -9,7 +10,7 @@ random.seed(123)
 tmpdir = tempfile.gettempdir()
 
 # Lauch a sqlite connection
-output_file = "{}/test.csv".format(tmpdir)
+output_file = os.path.join(tmpdir, "test.csv")
 
 # Build data to use in tests
 data_df = pd.concat(
@@ -63,4 +64,26 @@ def test_annotate_write():
     )
     expected_result = pd.read_csv(output_file)
 
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_annotate_compress():
+    compress_file = os.path.join(tmpdir, "test_annotate_compress.csv.gz")
+    _ = annotate(
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        add_metadata_id_to_platemap=False,
+        output_file=compress_file,
+        how="gzip",
+    )
+
+    result = annotate(
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        add_metadata_id_to_platemap=False,
+        output_file="none"
+    )
+    expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)

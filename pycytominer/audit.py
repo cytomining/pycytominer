@@ -4,6 +4,7 @@ Compare replicate correlation to random pairwise correlations.
 
 import numpy as np
 import pandas as pd
+from pycytominer.cyto_utils.compress import compress
 
 
 def audit(
@@ -15,6 +16,7 @@ def audit(
     output_file="none",
     samples="all",
     iterations=10,
+    **kwargs,
 ):
     """
     Exclude features that have correlations above a certain threshold
@@ -40,6 +42,8 @@ def audit(
     Return:
     Pandas DataFrame of audits or written to file
     """
+    how = kwargs.pop("how", None)
+    float_format = kwargs.pop("float_format", None)
 
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
@@ -117,7 +121,12 @@ def audit(
     )
 
     if output_file != "none":
-        audit_df.to_csv(output_file, index=False)
+        compress(
+            df=audit_df,
+            output_filename=output_file,
+            how=how,
+            float_format=float_format,
+        )
     else:
         return audit_df
 
