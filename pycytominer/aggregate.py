@@ -5,6 +5,7 @@ Aggregate single cell data based on given grouping variables
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
+from pycytominer.cyto_utils.compress import compress
 
 
 class AggregateProfiles:
@@ -229,7 +230,7 @@ class AggregateProfiles:
 
         return object_df
 
-    def aggregate_profiles(self, compute_subsample="False", output_file="none"):
+    def aggregate_profiles(self, compute_subsample="False", output_file="none", **kwargs):
         """
         Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -242,6 +243,9 @@ class AggregateProfiles:
         Return:
         if output_file is set, then write to file. If not then return
         """
+        how = kwargs.pop("how", None)
+        float_format = kwargs.pop("float_format", None)
+
         if output_file != "none":
             self.set_output_file(output_file)
 
@@ -264,7 +268,12 @@ class AggregateProfiles:
         self.is_aggregated = True
 
         if self.output_file != "none":
-            aggregated.to_csv(self.output_file, index=False)
+            compress(
+                df=aggregated,
+                output_filename=self.output_file,
+                how=how,
+                float_format=float_format,
+            )
         else:
             return aggregated
 

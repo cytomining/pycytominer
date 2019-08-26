@@ -3,9 +3,11 @@ Select features to use in downstream analysis based on specified selection metho
 """
 
 import pandas as pd
+
 from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
+from pycytominer.cyto_utils.compress import compress
 
 
 def feature_select(
@@ -37,6 +39,8 @@ def feature_select(
     corr_method = kwargs.pop("corr_method", "pearson")
     freq_cut = kwargs.pop("freq_cut", 0.05)
     unique_cut = kwargs.pop("unique_cut", 0.1)
+    how = kwargs.pop("how", None)
+    float_format = kwargs.pop("float_format", None)
 
     all_ops = ["variance_threshold", "correlation_threshold", "drop_na_columns"]
 
@@ -97,6 +101,11 @@ def feature_select(
     selected_df = profiles.drop(excluded_features, axis="columns")
 
     if output_file != "none":
-        selected_df.to_csv(output_file, index=False)
+        compress(
+            df=selected_df,
+            output_filename=output_file,
+            how=how,
+            float_format=float_format,
+        )
     else:
         return selected_df

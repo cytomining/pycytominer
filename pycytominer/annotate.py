@@ -4,6 +4,7 @@ Annotates profiles with metadata information
 
 import numpy as np
 import pandas as pd
+from pycytominer.cyto_utils.compress import compress
 
 
 def annotate(
@@ -12,6 +13,7 @@ def annotate(
     join_on=["Metadata_well_position", "Metadata_Well"],
     output_file="none",
     add_metadata_id_to_platemap=True,
+    **kwargs,
 ):
     """
     Exclude features that have correlations above a certain threshold
@@ -32,6 +34,9 @@ def annotate(
     Return:
     Pandas DataFrame of annotated profiles or written to file
     """
+    how = kwargs.pop("how", None)
+    float_format = kwargs.pop("float_format", None)
+
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
         try:
@@ -53,9 +58,14 @@ def annotate(
 
     annotated = platemap.merge(
         profiles, left_on=join_on[0], right_on=join_on[1], how="inner"
-    ).drop(join_on[0], axis='columns')
+    ).drop(join_on[0], axis="columns")
 
     if output_file != "none":
-        annotated.to_csv(output_file, index=False)
+        compress(
+            df=annotated,
+            output_filename=output_file,
+            how=how,
+            float_format=float_format,
+        )
     else:
         return annotated
