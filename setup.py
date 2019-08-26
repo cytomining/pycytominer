@@ -19,4 +19,5 @@ setup(
     license="BSD 3-Clause License",
     install_requires=["numpy", "pandas", "scikit-learn", "sqlalchemy"],
     python_requires=">=3.4",
+    include_package_data=True,
 )
