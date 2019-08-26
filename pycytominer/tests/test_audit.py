@@ -173,3 +173,35 @@ def test_audit_subset_sample():
         samples=subset_sample_string,
         groups=",".join(["Metadata_treatment"]),
     )
+
+
+def test_audit_compress():
+    compress_file = os.path.join(tmpdir, "test_audit_compress.csv.gz")
+    subset_sample_string = "Metadata_treatment != 'drop_this'"
+    _ = audit(
+        profiles=data_df,
+        operation="replicate_quality",
+        groups=["Metadata_treatment"],
+        cor_method="pearson",
+        quantile=0.95,
+        output_file=compress_file,
+        samples=subset_sample_string,
+        iterations=100,
+        how="gzip",
+    )
+
+    result = audit(
+        profiles=data_df,
+        operation="replicate_quality",
+        groups=["Metadata_treatment"],
+        cor_method="pearson",
+        quantile=0.95,
+        output_file="none",
+        samples=subset_sample_string,
+        iterations=100,
+    ).round(2)
+
+    expected_result = pd.read_csv(compress_file).round(2)
+    pd.testing.assert_frame_equal(
+        result, expected_result, check_names=False, check_less_precise=1
+    )

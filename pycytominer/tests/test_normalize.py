@@ -276,3 +276,40 @@ def test_normalize_standardize_allsamples_output():
     from_file_result = pd.read_csv(out_file).round(1)
 
     pd.testing.assert_frame_equal(from_file_result, expected_result)
+
+
+def test_normalize_standardize_allsamples_compress():
+    compress_file = os.path.join(tmpdir, "test_normalize_compress.csv.gz")
+
+    _ = normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="none",
+        samples="all",
+        method="standardize",
+        output_file=compress_file,
+        how="gzip"
+    )
+    normalize_result = pd.read_csv(compress_file).round(1)
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+            "Metadata_treatment": [
+                "drug",
+                "drug",
+                "control",
+                "control",
+                "drug",
+                "drug",
+                "control",
+                "control",
+            ],
+            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+        }
+    ).reset_index(drop=True)
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
