@@ -165,3 +165,22 @@ def test_feature_select_compress():
     result = pd.read_csv(compress_file)
 
     pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_feature_select_blacklist():
+    """
+    Testing feature_select and get_na_columns pycytominer function
+    """
+
+    data_blacklist_df = pd.DataFrame(
+        {
+            "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
+            "y": [1, 2, 8, 5, 2, 1],
+            "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+            "zz": [0, -3, 8, 9, 6, 9],
+        }
+    ).reset_index(drop=True)
+
+    result = feature_select(data_blacklist_df, operation="blacklist")
+    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
+    pd.testing.assert_frame_equal(result, expected_result)
