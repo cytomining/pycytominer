@@ -5,6 +5,7 @@ Modified from caret::nearZeroVar()
 
 import numpy as np
 import pandas as pd
+from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def variance_threshold(
@@ -17,7 +18,7 @@ def variance_threshold(
     population_df - pandas DataFrame that includes metadata and observation features
     features - a list of features present in the population dataframe [default: "infer"]
                if "infer", then assume cell painting features are those that do not
-               start with "Metadata_"
+               start with "Cells", "Nuclei", or "Cytoplasm"
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     freq_cut - float of ratio (second most common feature value / most common) [default: 0.1]
@@ -35,9 +36,7 @@ def variance_threshold(
         population_df = population_df.loc[samples, :]
 
     if features == "infer":
-        features = [
-            x for x in population_df.columns.tolist() if not x.startswith("Metadata_")
-        ]
+        features = infer_cp_features(population_df)
     else:
         population_df = population_df.loc[:, features]
 

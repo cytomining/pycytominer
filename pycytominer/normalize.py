@@ -5,6 +5,7 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 from pycytominer.cyto_utils.compress import compress
+from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def normalize(
@@ -23,7 +24,7 @@ def normalize(
     profiles - either pandas DataFrame or a file that stores profile data
     features - list of cell painting features [default: "infer"]
                if "infer", then assume cell painting features are those that do not
-               start with "Metadata_"
+               start with "Cells", "Nuclei", or "Cytoplasm"
     meta_features - if specified, then output these with specified features
                     [default: "none"]
     samples - string indicating which metadata column and values to use to subset
@@ -64,9 +65,7 @@ def normalize(
         )
 
     if features == "infer":
-        features = [
-            x for x in profiles.columns.tolist() if not x.startswith("Metadata_")
-        ]
+        features = infer_cp_features(profiles)
 
     # Separate out the features and meta
     feature_df = profiles.loc[:, features]
