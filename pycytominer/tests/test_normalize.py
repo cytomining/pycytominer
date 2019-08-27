@@ -33,6 +33,29 @@ data_df = pd.DataFrame(
 data_file = os.path.join(tmpdir, "test_normalize.csv")
 data_df.to_csv(data_file, index=False, sep=",")
 
+data_feature_infer_df = pd.DataFrame(
+    {
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "Cells_x": [1, 2, 8, 2, 5, 5, 5, 1],
+        "Cells_y": [3, 1, 7, 4, 5, 9, 6, 1],
+        "Cytoplasm_z": [1, 8, 2, 5, 6, 22, 2, 2],
+        "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
+    }
+).reset_index(drop=True)
+
+data_feature_infer_file = os.path.join(tmpdir, "test_normalize_infer.csv")
+data_feature_infer_df.to_csv(data_feature_infer_file, index=False, sep=",")
+
 
 def test_normalize_standardize_allsamples():
     """
@@ -203,7 +226,7 @@ def test_normalize_standardize_allsamples_fromfile():
     ).round(1)
 
     infer_normalize_result = normalize(
-        profiles=data_file,
+        profiles=data_feature_infer_file,
         features="infer",
         meta_features=["Metadata_plate", "Metadata_treatment"],
         samples="all",
@@ -223,14 +246,16 @@ def test_normalize_standardize_allsamples_fromfile():
                 "control",
                 "control",
             ],
-            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
-            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
-            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
-            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+            "Cells_x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+            "Cells_y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+            "Cytoplasm_z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+            "Nuclei_zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
         }
     ).reset_index(drop=True)
 
-    pd.testing.assert_frame_equal(normalize_result, expected_result)
+    pd.testing.assert_frame_equal(infer_normalize_result, expected_result)
+
+    infer_normalize_result.columns = normalize_result.columns
     pd.testing.assert_frame_equal(normalize_result, infer_normalize_result)
 
 
@@ -288,7 +313,7 @@ def test_normalize_standardize_allsamples_compress():
         samples="all",
         method="standardize",
         output_file=compress_file,
-        how="gzip"
+        how="gzip",
     )
     normalize_result = pd.read_csv(compress_file).round(1)
 
