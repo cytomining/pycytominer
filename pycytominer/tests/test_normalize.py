@@ -360,7 +360,7 @@ def test_normalize_whiten():
         .sum()
     )
     expected_result = data_whiten_df.shape[1]
-    assert result == expected_result
+    assert int(result) == expected_result
 
     result = normalize(
         data_df,
@@ -374,8 +374,8 @@ def test_normalize_whiten():
         .sum()
         .sum()
     )
-    expected_result = data_whiten_df.shape[1]
-    assert result == expected_result
+    expected_result = data_whiten_df.shape[1] + 1
+    assert int(result) == expected_result
 
     non_whiten_result = (
         np.cov(
