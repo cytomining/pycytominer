@@ -9,7 +9,7 @@ from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
 from pycytominer.cyto_utils.compress import compress
-from pycytominer.cyto_utils.features import get_blacklist_features
+from pycytominer.cyto_utils.features import get_blacklist_features, infer_cp_features
 
 
 def feature_select(
@@ -27,7 +27,7 @@ def feature_select(
     profiles - either pandas DataFrame or a file that stores profile data
     features - list of cell painting features [default: "infer"]
                if "infer", then assume cell painting features are those that do not
-               start with "Metadata_"
+               start with "Cells", "Nuclei", or "Cytoplasm"
     samples - if provided, a list of samples to provide operation on
               [default: "none"] - if "none", use all samples to calculate
     operation - str or list of given operations to perform on input profiles
@@ -73,9 +73,7 @@ def feature_select(
             raise FileNotFoundError("{} profile file not found".format(profiles))
 
     if features == "infer":
-        features = [
-            x for x in profiles.columns.tolist() if not x.startswith("Metadata_")
-        ]
+        features = infer_cp_features(profiles)
 
     excluded_features = []
     for op in operation:

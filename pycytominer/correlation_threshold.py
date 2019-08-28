@@ -5,6 +5,7 @@ specified threshold
 
 import numpy as np
 import pandas as pd
+from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def correlation_threshold(
@@ -41,9 +42,7 @@ def correlation_threshold(
         population_df = population_df.loc[samples, :]
 
     if features == "infer":
-        features = [
-            x for x in population_df.columns.tolist() if not x.startswith("Metadata_")
-        ]
+        features = infer_cp_features(population_df)
     else:
         population_df = population_df.loc[:, features]
 

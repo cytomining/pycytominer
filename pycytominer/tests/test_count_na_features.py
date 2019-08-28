@@ -17,7 +17,7 @@ def test_count_na_features():
     Testing count_na_features pycytominer function
     """
     count_na_features_result = count_na_features(
-        population_df=data_df, variables=["x", "zz"]
+        population_df=data_df, features=["x", "zz"]
     )
 
     expected_result = pd.DataFrame({"num_na": [1, 3]})
