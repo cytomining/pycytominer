@@ -2,60 +2,53 @@
 Transform observation variables by specified groups
 """
 
-from scipy.cluster.vq import whiten
+import os
+import numpy as np
 import pandas as pd
+from scipy.linalg import eigh
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
-def transform(population_df, strata="none", variables="all", operation="whiten"):
+class Whiten(BaseEstimator, TransformerMixin):
     """
-    Transform a given population dataframe
-
-    Arguments:
-    population_df - pandas DataFrame to group and aggregate
-    strata - [default: "none"] list indicating the columns to groupby and transform
-    variables - [default: "all] or list indicating variables that should be aggregated
-    operation - [default: "generalized_log"] string indicating how to transform
-                currently only supports one of ['whiten']
-
-    Return:
-    Pandas DataFrame of transformed features
+    Class to whiten data in the base sklearn transform API
+    Note, this implementation is modified from a function written by Juan C. Caidedo
     """
 
-    operation = operation.lower()
+    def __init__(self, epsilon=1e-18, center=True):
+        """
+        Arguments:
+        epsilon - fudge factor parameter
+        center - option to center input X matrix
+        """
+        self.epsilon = epsilon
+        self.center = center
 
-    assert operation in ["whiten"], "operation must be one ['whiten']"
+    def fit(self, X, y=None):
+        """
+        Identify the whitening transform given self.X
 
-    if strata != "none":
-        assert variables != "all", "if strata is specified, must provide variables"
-        population_df = population_df.groupby(strata)
+        Argument:
+        X - dataframe to fit whitening transform
+        """
+        # Get the mean of the features (columns) and center if specified
+        self.mu = X.mean()
+        if self.center:
+            X = X - self.mu
 
-    if operation == "whiten":
-        transformed_df = whiten_transform(
-            population_df=population_df, variables=variables
-        )
+        # Get the covariance matrix
+        C = np.dot(X.transpose(), X) / X.shape[0]
 
-    return transformed_df
+        # Get the eigenvalues and eigenvectors of the covariance matrix
+        s, V = eigh(C)
+        D = np.diag(1.0 / np.sqrt(s + self.epsilon))
 
+        # Calculate the whitening matrix
+        self.W = np.dot(np.dot(V, D), V.transpose())
+        return self
 
-def whiten_transform(population_df, variables="all"):
-    """
-    Whitening removes linear correlation across variables by scaling by standard
-    deviation. Transforms the input covariance matrix into an identity matrix.
-    """
-
-    if type(population_df) == pd.core.groupby.generic.DataFrameGroupBy:
-        output_df = population_df[variables].apply(lambda x: pd.DataFrame(whiten(x)))
-        output_df.columns = variables
-        output_df = output_df.reset_index()
-        output_df = output_df.loc[:, ~output_df.columns.str.startswith("level_")]
-        return output_df
-
-    if variables != "all":
-        output_df = pd.DataFrame(
-            whiten(population_df.loc[:, variables]), columns=variables
-        )
-
-    else:
-        output_df = pd.DataFrame(whiten(population_df), columns=population_df.columns)
-
-    return output_df
+    def transform(self, X, y=None):
+        """
+        Whiten an input matrix a given population dataframe
+        """
+        return np.dot(X - self.mu, self.W)
