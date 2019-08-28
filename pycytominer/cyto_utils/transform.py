@@ -12,7 +12,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class Whiten(BaseEstimator, TransformerMixin):
     """
     Class to whiten data in the base sklearn transform API
-    Note, this implementation is modified from a function written by Juan C. Caidedo
+    Note, this implementation is modified from a function written by Juan C. Caicedo
     """
 
     def __init__(self, epsilon=1e-18, center=True):
