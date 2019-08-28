@@ -4,6 +4,7 @@ Normalize observation features based on specified normalization method
 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
+from pycytominer.cyto_utils.transform import Whiten
 from pycytominer.cyto_utils.compress import compress
 from pycytominer.cyto_utils.features import infer_cp_features
 
@@ -42,6 +43,7 @@ def normalize(
     """
     how = kwargs.pop("how", None)
     float_format = kwargs.pop("float_format", None)
+    whiten_center = kwargs.pop("whiten_center", True)
 
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
@@ -53,16 +55,15 @@ def normalize(
     # Define which scaler to use
     method = method.lower()
 
+    avail_methods = ["standardize", "robustize", "whiten"]
+    assert method in avail_methods, "operation must be one {}".format(avail_methods)
+
     if method == "standardize":
         scaler = StandardScaler()
     elif method == "robustize":
         scaler = RobustScaler()
-    else:
-        ValueError(
-            "Undefined method {}. Use one of ['standardize', 'robustize']".format(
-                method
-            )
-        )
+    elif method == "whiten":
+        scaler = Whiten(center=whiten_center)
 
     if features == "infer":
         features = infer_cp_features(profiles)
