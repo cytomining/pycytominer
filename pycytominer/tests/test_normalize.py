@@ -1,6 +1,7 @@
 import os
 import tempfile
 import random
+import numpy as np
 import pandas as pd
 from pycytominer.normalize import normalize
 
@@ -55,6 +56,16 @@ data_feature_infer_df = pd.DataFrame(
 
 data_feature_infer_file = os.path.join(tmpdir, "test_normalize_infer.csv")
 data_feature_infer_df.to_csv(data_feature_infer_file, index=False, sep=",")
+
+a_feature = random.sample(range(1, 100), 10)
+b_feature = random.sample(range(1, 100), 10)
+c_feature = random.sample(range(1, 100), 10)
+d_feature = random.sample(range(1, 100), 10)
+id_feature = ["control"] * 5 + ["treatment"] * 5
+
+data_whiten_df = pd.DataFrame(
+    {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature, "id": id_feature}
+).reset_index(drop=True)
 
 
 def test_normalize_standardize_allsamples():
@@ -338,3 +349,41 @@ def test_normalize_standardize_allsamples_compress():
     ).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_whiten():
+    result = normalize(data_whiten_df, features=["a", "b", "c", "d"], method="whiten")
+    result_cov = (
+        pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
+        .round()
+        .sum()
+        .sum()
+    )
+    expected_result = data_whiten_df.shape[1] - 1
+    assert result_cov == expected_result
+
+    result = normalize(
+        data_whiten_df,
+        samples="id == 'control'",
+        features=["a", "b", "c", "d"],
+        method="whiten",
+    )
+    result_cov = (
+        np.cov(np.transpose(result.query("id == 'control'").drop("id", axis="columns")))
+        .round()
+        .sum()
+        .sum()
+    )
+    # Add some tolerance to result b/c of low sample size
+    expected_result = data_whiten_df.shape[1] + 3
+    assert result_cov < expected_result
+
+    non_whiten_result_cov = (
+        np.cov(
+            np.transpose(result.query("id == 'treatment'").drop("id", axis="columns"))
+        )
+        .round()
+        .sum()
+        .sum()
+    )
+    assert non_whiten_result_cov >= expected_result - 3
