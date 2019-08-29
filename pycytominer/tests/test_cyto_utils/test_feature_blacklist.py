@@ -7,7 +7,7 @@ import pandas as pd
 from pycytominer.cyto_utils.features import get_blacklist_features
 
 blacklist_file = os.path.join(
-    os.path.dirname(__file__), "..", "data", "blacklist_features.txt"
+    os.path.dirname(__file__), "..", "..", "data", "blacklist_features.txt"
 )
 
 blacklist = pd.read_csv(blacklist_file).blacklist.tolist()
