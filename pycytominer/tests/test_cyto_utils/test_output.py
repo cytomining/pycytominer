@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import warnings
 import pandas as pd
-from pycytominer.cyto_utils.compress import compress, infer_compression_suffix
+from pycytominer.cyto_utils.output import output, infer_compression_suffix
 
 random.seed(123)
 
@@ -36,18 +36,28 @@ data_df = pd.DataFrame(
 def test_compress():
 
     output_filename = os.path.join(tmpdir, "test_compress.csv")
-    how = "gzip"
+    compression = "gzip"
 
-    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+    output(
+        df=data_df,
+        output_filename=output_filename,
+        compression=compression,
+        float_format=None,
+    )
     result = pd.read_csv("{}.gz".format(output_filename))
 
     pd.testing.assert_frame_equal(
         result, data_df, check_names=False, check_less_precise=1
     )
 
-    # Test input filename overwriting how
+    # Test input filename overwriting compression
     output_filename = os.path.join(tmpdir, "test_compress.csv.bz2")
-    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+    output(
+        df=data_df,
+        output_filename=output_filename,
+        compression=compression,
+        float_format=None,
+    )
 
     result = pd.read_csv(output_filename)
     pd.testing.assert_frame_equal(
@@ -58,9 +68,14 @@ def test_compress():
 def test_compress_no_csv():
     # Test the ability of a naked string input, appending csv.gz
     output_filename = os.path.join(tmpdir, "test_compress")
-    how = "gzip"
+    compression = "gzip"
 
-    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+    output(
+        df=data_df,
+        output_filename=output_filename,
+        compression=compression,
+        float_format=None,
+    )
     result = pd.read_csv("{}.csv.gz".format(output_filename))
 
     pd.testing.assert_frame_equal(
@@ -69,18 +84,28 @@ def test_compress_no_csv():
 
     # Test input filename of writing a tab separated file
     output_filename = os.path.join(tmpdir, "test_compress.tsv.bz2")
-    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+    output(
+        df=data_df,
+        output_filename=output_filename,
+        compression=compression,
+        float_format=None,
+    )
 
-    result = pd.read_csv(output_filename, sep='\t')
+    result = pd.read_csv(output_filename, sep="\t")
     pd.testing.assert_frame_equal(
         result, data_df, check_names=False, check_less_precise=1
     )
 
 
-def test_compress_none():
-    output_filename = os.path.join(tmpdir, "test_compress_none.csv")
-    how = None
-    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+def test_output_none():
+    output_filename = os.path.join(tmpdir, "test_output_none.csv")
+    compression = None
+    output(
+        df=data_df,
+        output_filename=output_filename,
+        compression=compression,
+        float_format=None,
+    )
 
     result = pd.read_csv(output_filename)
     pd.testing.assert_frame_equal(
@@ -93,8 +118,13 @@ def test_compress_warning():
         warnings.simplefilter("always")
 
         output_filename = os.path.join(tmpdir, "test_compress_warning.csv.zip")
-        how = "gzip"
-        compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+        compression = "gzip"
+        output(
+            df=data_df,
+            output_filename=output_filename,
+            compression=compression,
+            float_format=None,
+        )
 
         assert len(w) == 1
         assert issubclass(w[-1].category, UserWarning)
@@ -108,32 +138,32 @@ def test_compress_warning():
 def test_compress_exception():
     output_filename = os.path.join(tmpdir, "test_compress_warning.csv.zip")
     with pytest.raises(Exception) as e:
-        compress(df=data_df, output_filename=output_filename, how="not an option")
+        output(df=data_df, output_filename=output_filename, compression="not an option")
 
-    assert 'not supported' in str(e.value)
+    assert "not supported" in str(e.value)
 
 
 def test_compress_suffix():
 
-    suffix = infer_compression_suffix(how="gzip")
+    suffix = infer_compression_suffix(compression="gzip")
     expected_result = ".gz"
     assert suffix == expected_result
 
-    suffix = infer_compression_suffix(how="bz2")
+    suffix = infer_compression_suffix(compression="bz2")
     expected_result = ".bz2"
     assert suffix == expected_result
 
-    suffix = infer_compression_suffix(how="zip")
+    suffix = infer_compression_suffix(compression="zip")
     expected_result = ".zip"
     assert suffix == expected_result
 
-    suffix = infer_compression_suffix(how="xz")
+    suffix = infer_compression_suffix(compression="xz")
     expected_result = ".xz"
     assert suffix == expected_result
 
-    suffix = infer_compression_suffix(how=None)
+    suffix = infer_compression_suffix(compression=None)
     assert suffix == ""
 
     with pytest.raises(AssertionError) as e:
-        infer_compression_suffix(how="THIS WILL NOT WORK")
-    assert 'not supported' in str(e.value)
+        infer_compression_suffix(compression="THIS WILL NOT WORK")
+    assert "not supported" in str(e.value)

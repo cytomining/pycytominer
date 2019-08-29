@@ -187,7 +187,7 @@ def test_audit_compress():
         output_file=compress_file,
         samples=subset_sample_string,
         iterations=500,
-        how="gzip",
+        compression="gzip",
     )
 
     result = audit(
