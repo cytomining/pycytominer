@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import warnings
 import pandas as pd
-from pycytominer.cyto_utils.compress import compress
+from pycytominer.cyto_utils.compress import compress, infer_compression_suffix
 
 random.seed(123)
 
@@ -55,6 +55,28 @@ def test_compress():
     )
 
 
+def test_compress_no_csv():
+    # Test the ability of a naked string input, appending csv.gz
+    output_filename = os.path.join(tmpdir, "test_compress")
+    how = "gzip"
+
+    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+    result = pd.read_csv("{}.csv.gz".format(output_filename))
+
+    pd.testing.assert_frame_equal(
+        result, data_df, check_names=False, check_less_precise=1
+    )
+
+    # Test input filename of writing a tab separated file
+    output_filename = os.path.join(tmpdir, "test_compress.tsv.bz2")
+    compress(df=data_df, output_filename=output_filename, how=how, float_format=None)
+
+    result = pd.read_csv(output_filename, sep='\t')
+    pd.testing.assert_frame_equal(
+        result, data_df, check_names=False, check_less_precise=1
+    )
+
+
 def test_compress_none():
     output_filename = os.path.join(tmpdir, "test_compress_none.csv")
     how = None
@@ -88,4 +110,30 @@ def test_compress_exception():
     with pytest.raises(Exception) as e:
         compress(df=data_df, output_filename=output_filename, how="not an option")
 
+    assert 'not supported' in str(e.value)
+
+
+def test_compress_suffix():
+
+    suffix = infer_compression_suffix(how="gzip")
+    expected_result = ".gz"
+    assert suffix == expected_result
+
+    suffix = infer_compression_suffix(how="bz2")
+    expected_result = ".bz2"
+    assert suffix == expected_result
+
+    suffix = infer_compression_suffix(how="zip")
+    expected_result = ".zip"
+    assert suffix == expected_result
+
+    suffix = infer_compression_suffix(how="xz")
+    expected_result = ".xz"
+    assert suffix == expected_result
+
+    suffix = infer_compression_suffix(how=None)
+    assert suffix == ""
+
+    with pytest.raises(AssertionError) as e:
+        infer_compression_suffix(how="THIS WILL NOT WORK")
     assert 'not supported' in str(e.value)

@@ -6,6 +6,8 @@ import os
 import warnings
 import pandas as pd
 
+compress_options = {"gzip": ".gz", "bz2": ".bz2", "zip": ".zip", "xz": ".xz", None: ""}
+
 
 def compress(df, output_filename, how="gzip", float_format=None):
     """
@@ -22,22 +24,21 @@ def compress(df, output_filename, how="gzip", float_format=None):
     Nothing, write df to file
     """
 
-    compress_options = {
-        "gzip": ".gz",
-        "bz2": ".bz2",
-        "zip": ".zip",
-        "xz": ".xz",
-        None: "",
-    }
-
-    assert how in compress_options, "{} is not supported, select one of {}".format(
-        how, list(compress_options.keys())
-    )
-
-    suffix = compress_options[how]
-
+    # Extract suffixes from the provided output file name
     filename, input_file_extension = os.path.splitext(output_filename)
+    basefilename, non_compression_suffix = os.path.splitext(filename)
 
+    # if no additional suffix was provided, make it a csv
+    if len(non_compression_suffix) == 0:
+        output_filename = "{}.csv".format(output_filename)
+
+    # Set the delimiter
+    delim = ","
+    if non_compression_suffix == ".tsv":
+        delim = "\t"
+
+    # Determine the compression suffix
+    suffix = infer_compression_suffix(how=how)
     if input_file_extension in compress_options.values():
         if input_file_extension != suffix:
             warnings.warn(
@@ -51,8 +52,22 @@ def compress(df, output_filename, how="gzip", float_format=None):
 
     df.to_csv(
         path_or_buf=output_filename,
-        sep=",",
+        sep=delim,
         index=False,
         float_format=float_format,
         compression=how,
     )
+
+
+def infer_compression_suffix(how="gzip"):
+    """
+    Determine the compression suffix
+
+    Arguments:
+    how - the mechanism to compress [default: "gzip"]
+    """
+    assert how in compress_options, "{} is not supported, select one of {}".format(
+        how, list(compress_options.keys())
+    )
+
+    return compress_options[how]
