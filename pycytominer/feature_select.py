@@ -8,7 +8,7 @@ import pandas as pd
 from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
-from pycytominer.cyto_utils.compress import compress
+from pycytominer.cyto_utils.output import output
 from pycytominer.cyto_utils.features import get_blacklist_features, infer_cp_features
 
 
@@ -41,7 +41,7 @@ def feature_select(
     corr_method = kwargs.pop("corr_method", "pearson")
     freq_cut = kwargs.pop("freq_cut", 0.05)
     unique_cut = kwargs.pop("unique_cut", 0.1)
-    how = kwargs.pop("how", None)
+    compression = kwargs.pop("compression", None)
     float_format = kwargs.pop("float_format", None)
     blacklist_file = kwargs.pop("blacklist_file", None)
 
@@ -113,10 +113,10 @@ def feature_select(
     selected_df = profiles.drop(excluded_features, axis="columns")
 
     if output_file != "none":
-        compress(
+        output(
             df=selected_df,
             output_filename=output_file,
-            how=how,
+            compression=compression,
             float_format=float_format,
         )
     else:

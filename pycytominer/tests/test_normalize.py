@@ -278,7 +278,7 @@ def test_normalize_standardize_allsamples_output():
     meta_features = "none"
     samples="all"
     """
-    out_file = os.path.join(tmpdir, "test_normalize_output.csv")
+    out_normalize_file = os.path.join(tmpdir, "test_normalize_output.csv")
 
     _ = normalize(
         profiles=data_file,
@@ -286,7 +286,7 @@ def test_normalize_standardize_allsamples_output():
         meta_features="none",
         samples="all",
         method="standardize",
-        output_file=out_file,
+        output_file=out_normalize_file,
     )
 
     expected_result = pd.DataFrame(
@@ -309,7 +309,7 @@ def test_normalize_standardize_allsamples_output():
         }
     ).reset_index(drop=True)
 
-    from_file_result = pd.read_csv(out_file).round(1)
+    from_file_result = pd.read_csv(out_normalize_file).round(1)
 
     pd.testing.assert_frame_equal(from_file_result, expected_result)
 
@@ -324,7 +324,7 @@ def test_normalize_standardize_allsamples_compress():
         samples="all",
         method="standardize",
         output_file=compress_file,
-        how="gzip",
+        how_compress="gzip",
     )
     normalize_result = pd.read_csv(compress_file).round(1)
 

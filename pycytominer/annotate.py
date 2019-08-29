@@ -4,7 +4,7 @@ Annotates profiles with metadata information
 
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.compress import compress
+from pycytominer.cyto_utils.output import output
 
 
 def annotate(
@@ -34,7 +34,7 @@ def annotate(
     Return:
     Pandas DataFrame of annotated profiles or written to file
     """
-    how = kwargs.pop("how", None)
+    compression = kwargs.pop("compression", None)
     float_format = kwargs.pop("float_format", None)
 
     # Load Data
@@ -61,10 +61,10 @@ def annotate(
     ).drop(join_on[0], axis="columns")
 
     if output_file != "none":
-        compress(
+        output(
             df=annotated,
             output_filename=output_file,
-            how=how,
+            compression=compression,
             float_format=float_format,
         )
     else:

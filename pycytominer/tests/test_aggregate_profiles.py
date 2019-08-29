@@ -187,7 +187,7 @@ def test_aggregate_subsampling_profile():
 def test_aggregate_subsampling_profile_compress():
     compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
 
-    _ = ap_subsample.aggregate_profiles(output_file=compress_file, how="gzip")
+    _ = ap_subsample.aggregate_profiles(output_file=compress_file, output="gzip")
     result = pd.read_csv(compress_file)
 
     expected_result = pd.DataFrame(
