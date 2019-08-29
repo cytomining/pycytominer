@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from pycytominer.cyto_utils.compress import compress
+from pycytominer.cyto_utils.util import check_compartments
 
 
 class AggregateProfiles:
@@ -43,7 +44,7 @@ class AggregateProfiles:
         subsampling_random_state - [default: "none"] the random state to init subsample
         """
         # Check compartments specified
-        self._check_compartments(compartments)
+        check_compartments(compartments)
 
         # Check if correct operation is specified
         assert operation in [
@@ -84,16 +85,6 @@ class AggregateProfiles:
         if load_image_data:
             self.load_image()
 
-    def _check_compartments(self, compartments):
-        valid_compartments = ["cells", "cytoplasm", "nuclei"]
-        error_str = "compartment not supported, use one of {}".format(
-            valid_compartments
-        )
-        if isinstance(compartments, list):
-            assert all([x in valid_compartments for x in compartments]), error_str
-        elif isinstance(compartments, str):
-            assert compartments in valid_compartments, error_str
-
     def _check_subsampling(self):
         # Check that the user didn't specify both subset frac and
         assert (
@@ -131,7 +122,7 @@ class AggregateProfiles:
         compartment - string indicating the compartment to subset
         count_subset - [default: False] count the number of cells in subset partition
         """
-        self._check_compartments(compartment)
+        check_compartments(compartment)
 
         if count_subset:
             assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
@@ -182,7 +173,7 @@ class AggregateProfiles:
         Arguments:
         compartment - [default: "cells"] string indicating the compartment to subset
         """
-        self._check_compartments(compartment)
+        check_compartments(compartment)
 
         query_cols = "TableNumber, ImageNumber, ObjectNumber"
         query = "select {} from {}".format(query_cols, compartment)
@@ -209,7 +200,7 @@ class AggregateProfiles:
         Return:
         Either the merged object file or write object to disk
         """
-        self._check_compartments(compartment)
+        check_compartments(compartment)
 
         compartment_query = "select * from {}".format(compartment)
 
