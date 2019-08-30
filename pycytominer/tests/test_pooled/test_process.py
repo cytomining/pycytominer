@@ -142,9 +142,9 @@ def test_pcp_build_file_list():
         assert pcp.file_structure[0]["site_directory"] == site_b_dir
         expected_paths = sorted(
             [
-                os.path.join(site_a_dir, "Cytoplasm.csv"),
-                os.path.join(site_a_dir, "Nuclei.csv"),
-                os.path.join(site_a_dir, "Cells.csv"),
+                os.path.join(site_b_dir, "Cytoplasm.csv"),
+                os.path.join(site_b_dir, "Nuclei.csv"),
+                os.path.join(site_b_dir, "Cells.csv"),
             ]
         )
         assert sorted(pcp.file_structure[0]["paths"]) == expected_paths
