@@ -122,11 +122,35 @@ def test_pcp_build_file_list():
     # dictionary are not ordered
     assert len(pcp.file_structure) == 2
     if pcp.file_structure[0]["site"] == "site_a":
-        assert pcp.file_structure[0] == expected_site_a_dictionary
-        assert pcp.file_structure[1] == expected_site_b_dictionary
+        assert pcp.file_structure[0]["batch"] == batch
+        assert pcp.file_structure[0]["site"] == "site_a"
+        assert pcp.file_structure[0]["site_directory"] == site_a_dir
+        expected_paths = sorted(
+            [
+                os.path.join(site_a_dir, "Cytoplasm.csv"),
+                os.path.join(site_a_dir, "Nuclei.csv"),
+                os.path.join(site_a_dir, "Cells.csv"),
+            ]
+        )
+        assert sorted(pcp.file_structure[0]["paths"]) == expected_paths
+        assert pcp.file_structure[0]["barcode_foci"] == os.path.join(
+            site_a_dir, "BarcodeFoci.csv"
+        )
     else:
-        assert pcp.file_structure[1] == expected_site_a_dictionary
-        assert pcp.file_structure[0] == expected_site_b_dictionary
+        assert pcp.file_structure[0]["batch"] == batch
+        assert pcp.file_structure[0]["site"] == "site_b"
+        assert pcp.file_structure[0]["site_directory"] == site_b_dir
+        expected_paths = sorted(
+            [
+                os.path.join(site_a_dir, "Cytoplasm.csv"),
+                os.path.join(site_a_dir, "Nuclei.csv"),
+                os.path.join(site_a_dir, "Cells.csv"),
+            ]
+        )
+        assert sorted(pcp.file_structure[0]["paths"]) == expected_paths
+        assert pcp.file_structure[0]["barcode_foci"] == os.path.join(
+            site_b_dir, "BarcodeFoci.csv"
+        )
 
 
 def test_pcp_label_features():
