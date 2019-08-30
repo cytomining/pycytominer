@@ -43,6 +43,6 @@ def load_known_metadata_dictionary(metadata_file=default_metadata_file):
             if compartment in metadata_dict:
                 metadata_dict[compartment].append(feature)
             else:
-                metadata_dict[compartment] = []
+                metadata_dict[compartment] = [feature]
 
     return metadata_dict
