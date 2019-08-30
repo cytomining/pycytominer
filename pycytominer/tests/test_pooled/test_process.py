@@ -96,32 +96,37 @@ def test_PCP_init():
 
 def test_pcp_build_file_list():
     pcp.build_file_list()
-    expected_dictionary = [
-        {
-            "batch": batch,
-            "site": "site_a",
-            "site_directory": site_a_dir,
-            "paths": [
-                os.path.join(site_a_dir, "Cytoplasm.csv"),
-                os.path.join(site_a_dir, "Nuclei.csv"),
-                os.path.join(site_a_dir, "Cells.csv"),
-            ],
-            "barcode_foci": os.path.join(site_a_dir, "BarcodeFoci.csv"),
-        },
-        {
-            "batch": batch,
-            "site": "site_b",
-            "site_directory": site_b_dir,
-            "paths": [
-                os.path.join(site_b_dir, "Cytoplasm.csv"),
-                os.path.join(site_b_dir, "Nuclei.csv"),
-                os.path.join(site_b_dir, "Cells.csv"),
-            ],
-            "barcode_foci": os.path.join(site_b_dir, "BarcodeFoci.csv"),
-        },
-    ]
+    expected_site_a_dictionary = {
+        "batch": batch,
+        "site": "site_a",
+        "site_directory": site_a_dir,
+        "paths": [
+            os.path.join(site_a_dir, "Cytoplasm.csv"),
+            os.path.join(site_a_dir, "Nuclei.csv"),
+            os.path.join(site_a_dir, "Cells.csv"),
+        ],
+        "barcode_foci": os.path.join(site_a_dir, "BarcodeFoci.csv"),
+    }
+    expected_site_b_dictionary = {
+        "batch": batch,
+        "site": "site_b",
+        "site_directory": site_b_dir,
+        "paths": [
+            os.path.join(site_b_dir, "Cytoplasm.csv"),
+            os.path.join(site_b_dir, "Nuclei.csv"),
+            os.path.join(site_b_dir, "Cells.csv"),
+        ],
+        "barcode_foci": os.path.join(site_b_dir, "BarcodeFoci.csv"),
+    }
 
-    assert pcp.file_structure == expected_dictionary
+    # dictionary are not ordered
+    assert len(pcp.file_structure) == 2
+    if pcp.file_structure[0]["site"] == "site_a":
+        assert pcp.file_structure[0] == expected_site_a_dictionary
+        assert pcp.file_structure[1] == expected_site_b_dictionary
+    else:
+        assert pcp.file_structure[1] == expected_site_a_dictionary
+        assert pcp.file_structure[0] == expected_site_b_dictionary
 
 
 def test_pcp_label_features():
@@ -322,7 +327,11 @@ def test_process_sites():
 
     pcp.process_site(file_info=pcp.file_structure[0], metadata_file=metadata_file)
 
-    process_file = os.path.join(site_a_dir, "site_a_merged_normalized.csv.gz")
+    merged_norm_site_dir = pcp.file_structure[0]["site_directory"]
+    merged_norm_site = pcp.file_structure[0]["site"]
+    process_file = os.path.join(
+        merged_norm_site_dir, "{}_merged_normalized.csv.gz".format(merged_norm_site)
+    )
     processed_df = pd.read_csv(process_file)
 
     assert processed_df.columns.tolist() == expected_columns
@@ -412,7 +421,7 @@ def test_pcp_concatenate_sites():
     ]
 
     assert concat_df.columns.tolist() == expected_columns
-    assert list(concat_df.Metadata_Site.unique()) == ["site_a", "site_b"]
+    assert sorted(list(concat_df.Metadata_Site.unique())) == ["site_a", "site_b"]
     assert list(list(concat_df.Metadata_Batch.unique())) == ["temp_batch"]
     assert concat_df.shape == (200, 23)
 
@@ -421,6 +430,6 @@ def test_pcp_concatenate_sites():
     concat_from_file_df = pd.read_csv(concat_file)
 
     assert concat_df.columns.tolist() == expected_columns
-    assert list(concat_df.Metadata_Site.unique()) == ["site_a", "site_b"]
+    assert sorted(list(concat_df.Metadata_Site.unique())) == ["site_a", "site_b"]
     assert list(list(concat_df.Metadata_Batch.unique())) == ["temp_batch"]
     assert concat_df.shape == (200, 23)
