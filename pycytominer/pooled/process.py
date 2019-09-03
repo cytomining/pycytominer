@@ -374,7 +374,9 @@ class PooledCellPainting:
             df.drop(metadata_columns, axis="columns").add_prefix(feature_prefix)
         ).astype(float)
 
-        return pd.concat([id_df, feature_df], axis="columns")
+        return pd.concat([id_df, feature_df], axis="columns").apply(
+            lambda x: pd.to_numeric(x, errors="ignore")
+        )
 
     def get_barcode_cols(self, df):
         """
