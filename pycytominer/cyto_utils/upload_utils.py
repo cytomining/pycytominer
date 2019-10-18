@@ -108,7 +108,6 @@ def upload_parts(token, file_info):
     with open(FILE_PATH, "rb") as fin:
         for part in result["parts"]:
             upload_part(token, file_info, fin, part)
-    print
 
 
 def upload_part(token, file_info, stream, part):
