@@ -13,7 +13,9 @@ from pycytominer.cyto_utils.upload_utils import (
 )
 
 
-def figshare_upload(token, file_name, append=True, title="none", article_id="none"):
+def figshare_upload(
+    token, file_name, append=True, title="none", article_id="none", chunk_size=1048576
+):
     """
     Create a new figshare article and upload to service
 
@@ -24,6 +26,7 @@ def figshare_upload(token, file_name, append=True, title="none", article_id="non
     append - boolean if the file being uploaded should be appended to existing artile
     title - string indicating the title of the upload document
     article_id - string of existing figshare article accessible with API token
+    chunk_size - how big each piece of the data to upload at one time
     """
 
     if append:
@@ -38,7 +41,7 @@ def figshare_upload(token, file_name, append=True, title="none", article_id="non
         article_id = get_article_id(token, title)
 
     # Get md5sum and size of the article to upload
-    file_info = initiate_new_upload(token, article_id, file_name)
+    file_info = initiate_new_upload(token, article_id, file_name, chunk_size)
 
     # Perform the upload in chunks
     upload_parts(token, file_info)
