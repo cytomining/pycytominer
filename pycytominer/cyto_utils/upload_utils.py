@@ -100,12 +100,12 @@ def complete_upload(token, article_id, file_id):
     )
 
 
-def upload_parts(token, file_info):
+def upload_parts(token, file_info, file_path):
     url = "{upload_url}".format(**file_info)
     result = raw_issue_request(token, "GET", url)
 
     print("Uploading parts:")
-    with open(FILE_PATH, "rb") as fin:
+    with open(file_path, "rb") as fin:
         for part in result["parts"]:
             upload_part(token, file_info, fin, part)
 

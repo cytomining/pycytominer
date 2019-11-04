@@ -44,7 +44,7 @@ def figshare_upload(
     file_info = initiate_new_upload(token, article_id, file_name, chunk_size)
 
     # Perform the upload in chunks
-    upload_parts(token, file_info)
+    upload_parts(token, file_info, file_name)
 
     # Finalize the upload
     complete_upload(token, article_id, file_info["id"])
