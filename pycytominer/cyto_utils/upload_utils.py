@@ -27,8 +27,8 @@ def raw_issue_request(token, method, url, data=None, binary=False):
         except ValueError:
             data = response.content
     except HTTPError as error:
-        print("Caught an HTTPError: {}".format(error.message))
-        print("Body:\n", response.content)
+        print(error.response)
+        print(response.content)
         raise
     return data
 
