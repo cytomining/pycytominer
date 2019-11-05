@@ -23,7 +23,7 @@ def figshare_upload(
     token - API token to authorize upload to your figshare account.
             Generate a token here: https://nih.figshare.com/account/applications
     file_name - location of the file to upload
-    append - boolean if the file being uploaded should be appended to existing artile
+    append - boolean if the file being uploaded should be appended to existing article
     title - string indicating the title of the upload document
     article_id - string of existing figshare article accessible with API token
     chunk_size - how big each piece of the data to upload at one time
