@@ -1,4 +1,5 @@
 import random
+import pytest
 import numpy as np
 import pandas as pd
 from pycytominer.variance_threshold import variance_threshold, calculate_frequency
@@ -62,13 +63,11 @@ def test_calculate_frequency():
 
 
 def test_variance_threshold():
-    """
-    Testing pycyominer variance threshold calculation
-    """
-
     unique_cut = 0.01
     excluded_features = variance_threshold(
-        population_df=data_unique_test_df, unique_cut=unique_cut
+        population_df=data_unique_test_df,
+        features=data_unique_test_df.columns.tolist(),
+        unique_cut=unique_cut
     )
     expected_result = ["a"]
 
@@ -76,7 +75,9 @@ def test_variance_threshold():
 
     unique_cut = 0.03
     excluded_features = variance_threshold(
-        population_df=data_unique_test_df, unique_cut=unique_cut
+        population_df=data_unique_test_df,
+        features=data_unique_test_df.columns.tolist(),
+        unique_cut=unique_cut
     )
     expected_result = ["a", "b"]
 
@@ -92,3 +93,28 @@ def test_variance_threshold():
     ].index.tolist()
 
     assert len(excluded_features_freq) == 0
+
+
+def test_cvariance_threshold_featureinfer():
+    unique_cut = 0.01
+    with pytest.raises(AssertionError) as nocp:
+        excluded_features = variance_threshold(
+            population_df=data_unique_test_df,
+            features="infer",
+            unique_cut=unique_cut
+        )
+
+    assert "No CP features found." in str(nocp.value)
+
+    data_cp_df = data_unique_test_df.copy()
+    data_cp_df.columns = ["Cells_{}".format(x) for x in data_unique_test_df.columns]
+
+    excluded_features = variance_threshold(
+        population_df=data_cp_df,
+        features="infer",
+        unique_cut=unique_cut
+    )
+
+    expected_result = ["Cells_a"]
+
+    assert excluded_features == expected_result

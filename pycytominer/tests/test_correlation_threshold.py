@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 from pycytominer.correlation_threshold import correlation_threshold
 
 # Build data to use in tests
@@ -23,32 +24,80 @@ data_uncorrelated_df = pd.DataFrame(
 
 
 def test_correlation_threshold():
-    """
-    Testing correlation_threshold pycytominer function
-    """
     correlation_threshold_result = correlation_threshold(
         population_df=data_df,
+        features=data_df.columns.tolist(),
         samples="none",
         threshold=0.9,
         method="pearson",
     )
 
-    expected_result = ['y']
+    expected_result = ["y"]
 
     assert correlation_threshold_result == expected_result
 
-
-def test_correlation_threshold_samples():
-    """
-    Testing correlation_threshold pycytominer function
-    """
     correlation_threshold_result = correlation_threshold(
         population_df=data_df,
+        features=data_df.columns.tolist(),
+        samples="none",
+        threshold=0.2,
+        method="pearson",
+    )
+
+    expected_result = sorted(["y", "zz", "x"])
+
+    assert sorted(correlation_threshold_result) == expected_result
+
+
+def test_correlation_threshold_uncorrelated():
+    correlation_threshold_result = correlation_threshold(
+        population_df=data_uncorrelated_df,
+        features=data_uncorrelated_df.columns.tolist(),
+        samples="none",
+        threshold=0.9,
+        method="pearson",
+    )
+
+    assert len(correlation_threshold_result) == 0
+
+
+def test_correlation_threshold_samples():
+    correlation_threshold_result = correlation_threshold(
+        population_df=data_df,
+        features=data_df.columns.tolist(),
         samples=[0, 1, 3, 4, 5],
         threshold=0.9,
         method="pearson",
     )
 
-    expected_result = ['y']
+    expected_result = ["y"]
+
+    assert correlation_threshold_result == expected_result
+
+
+def test_correlation_threshold_featureinfer():
+    with pytest.raises(AssertionError) as nocp:
+        correlation_threshold_result = correlation_threshold(
+            population_df=data_df,
+            features="infer",
+            samples="none",
+            threshold=0.9,
+            method="pearson",
+        )
+
+    assert "No CP features found." in str(nocp.value)
+
+    data_cp_df = data_df.copy()
+    data_cp_df.columns = ["Cells_{}".format(x) for x in data_df.columns]
+
+    correlation_threshold_result = correlation_threshold(
+        population_df=data_cp_df,
+        features="infer",
+        samples="none",
+        threshold=0.9,
+        method="pearson",
+    )
+
+    expected_result = ["Cells_y"]
 
     assert correlation_threshold_result == expected_result
