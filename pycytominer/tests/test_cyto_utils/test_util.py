@@ -6,6 +6,9 @@ import pandas as pd
 from pycytominer.cyto_utils.util import (
     check_compartments,
     load_known_metadata_dictionary,
+    get_pairwise_correlation,
+    check_correlation_method,
+    check_aggregate_operation,
 )
 
 tmpdir = tempfile.gettempdir()
@@ -68,3 +71,44 @@ def test_load_known_metadata_dictionary():
         "cytoplasm": meta_cols,
     }
     assert result == expected_result
+
+
+def test_check_correlation_method():
+    method = check_correlation_method(method="PeaRSon")
+    expected_method = "pearson"
+
+    assert method == expected_method
+
+    with pytest.raises(AssertionError) as nomethod:
+        method = check_correlation_method(method="DOES NOT EXIST")
+
+    assert "not supported, select one of" in str(nomethod.value)
+
+
+def test_check_aggregate_operation_method():
+    operation = check_aggregate_operation(operation="MEAn")
+    expected_op = "mean"
+
+    assert operation == expected_op
+
+    with pytest.raises(AssertionError) as nomethod:
+        method = check_aggregate_operation(operation="DOES NOT EXIST")
+
+    assert "not supported, select one of" in str(nomethod.value)
+
+
+def test_get_pairwise_correlation():
+    data_df = pd.concat(
+        [
+            pd.DataFrame({"x": [1, 3, 8], "y": [5, 3, 1]}),
+            pd.DataFrame({"x": [1, 3, 5], "y": [8, 3, 1]}),
+        ]
+    ).reset_index(drop=True)
+
+    cor_df, pair_df = get_pairwise_correlation(data_df, method="pearson")
+
+    pd.testing.assert_frame_equal(cor_df, data_df.corr(method="pearson"))
+
+    expected_result = -0.8
+    x_y_cor = pair_df.query("correlation != 0").round(1).correlation.values[0]
+    assert x_y_cor == expected_result
