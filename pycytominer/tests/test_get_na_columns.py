@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from pycytominer.get_na_columns import get_na_columns
 
 data_df = pd.DataFrame(
@@ -23,7 +24,7 @@ def test_get_na_columns():
     assert get_na_columns_result == expected_result
 
     get_na_columns_result = get_na_columns(
-        population_df=data_df, features="infer", cutoff=0.1
+        population_df=data_df, features=data_df.columns.tolist(), cutoff=0.1
     )
     expected_result = ["x", "y", "z", "zz"]
     assert sorted(get_na_columns_result) == expected_result
@@ -60,3 +61,15 @@ def test_get_na_columns_sample():
     )
     expected_result = ["y", "zz"]
     assert sorted(get_na_columns_result) == expected_result
+
+
+def test_get_na_columns_featureinfer():
+    with pytest.raises(AssertionError) as nocp:
+        na_result = get_na_columns(
+            population_df=data_df,
+            samples="none",
+            features="infer",
+            cutoff=0.1
+        )
+
+    assert "No CP features found." in str(nocp.value)
