@@ -17,8 +17,8 @@ def variance_threshold(
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
     features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that do not
-               start with "Cells", "Nuclei", or "Cytoplasm"
+               if "infer", then assume cell painting features are those that start with
+               "Cells_", "Nuclei_", or "Cytoplasm_"
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     freq_cut - float of ratio (second most common feature value / most common) [default: 0.1]
@@ -31,12 +31,13 @@ def variance_threshold(
     assert 0 <= freq_cut <= 1, "freq_cut variable must be between (0 and 1)"
     assert 0 <= unique_cut <= 1, "unique_cut variable must be between (0 and 1)"
 
-    # Subset dataframe and calculate correlation matrix across subset features
+    # Subset dataframe
     if samples != "none":
         population_df = population_df.loc[samples, :]
 
     if features == "infer":
         features = infer_cp_features(population_df)
+        population_df = population_df.loc[:, features]
     else:
         population_df = population_df.loc[:, features]
 

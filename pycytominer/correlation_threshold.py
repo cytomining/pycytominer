@@ -6,6 +6,10 @@ specified threshold
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.features import infer_cp_features
+from pycytominer.cyto_utils.util import (
+    get_pairwise_correlation,
+    check_correlation_method,
+)
 
 
 def correlation_threshold(
@@ -17,8 +21,8 @@ def correlation_threshold(
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
     features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that do not
-               start with "Metadata_"
+               if "infer", then assume cell painting features are those that start with
+               "Cells_", "Nuclei_", or "Cytoplasm_"
     samples - list samples to perform operation on
               [default: "none"] - if "none", use all samples to calculate
     threshold - float between (0, 1) to exclude features [default: 0.9]
@@ -28,14 +32,10 @@ def correlation_threshold(
     Return:
     list of features to exclude from the population_df
     """
-    method = method.lower()
+    # Check that the input method is supported
+    method = check_correlation_method(method)
 
     assert 0 <= threshold <= 1, "threshold variable must be between (0 and 1)"
-    assert method in [
-        "pearson",
-        "spearman",
-        "kendall",
-    ], "method not supported, select one of ['pearson', 'spearman', 'kendall']"
 
     # Subset dataframe and calculate correlation matrix across subset features
     if samples != "none":
@@ -43,26 +43,19 @@ def correlation_threshold(
 
     if features == "infer":
         features = infer_cp_features(population_df)
+        population_df = population_df.loc[:, features]
     else:
         population_df = population_df.loc[:, features]
 
-    data_cor_df = population_df.corr(method=method)
-
-    # Create a copy of the dataframe to generate upper triangle of zeros
-    data_cor_zerotri_df = data_cor_df.copy()
-
-    # Zero out upper triangle in correlation matrix
-    data_cor_zerotri_df.loc[:, :] = np.tril(data_cor_df, k=-1)
+    # Get correlation matrix and lower triangle of pairwise correlations in long format
+    data_cor_df, pairwise_df = get_pairwise_correlation(
+        population_df=population_df, method=method
+    )
 
     # Get absolute sum of correlation across features
     # The lower the index, the less correlation to the full data frame
     # We want to drop features with highest correlation, so drop higher index
     variable_cor_sum = data_cor_df.abs().sum().sort_values().index
-
-    # Acquire pairwise correlations in a long format
-    # Note that we are using the zero triangle DataFrame
-    pairwise_df = data_cor_zerotri_df.stack().reset_index()
-    pairwise_df.columns = ["pair_a", "pair_b", "correlation"]
 
     # And subset to only variable combinations that pass the threshold
     pairwise_df = pairwise_df.query("correlation > @threshold")

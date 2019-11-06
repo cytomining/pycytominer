@@ -20,6 +20,16 @@ data_df = pd.DataFrame(
 ).reset_index(drop=True)
 
 
+non_cp_data_df = pd.DataFrame(
+    {
+        "x": [1, 3, 8, 5, 2, 2],
+        "y": [1, 2, 8, 5, 2, 1],
+        "z": [9, 3, 8, 9, 2, 9],
+        "zz": [0, -3, 8, 9, 6, 9],
+    }
+).reset_index(drop=True)
+
+
 def test_feature_infer():
     features = infer_cp_features(population_df=data_df)
     expected = [
@@ -30,3 +40,10 @@ def test_feature_infer():
     ]
 
     assert features == expected
+
+
+def test_feature_infer_nocp():
+    with pytest.raises(AssertionError) as nocp:
+        features = infer_cp_features(population_df=non_cp_data_df)
+
+    assert "No CP features found." in str(nocp.value)

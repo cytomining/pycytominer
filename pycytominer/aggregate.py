@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.util import check_compartments
+from pycytominer.cyto_utils.util import check_compartments, check_aggregate_operation
 
 
 class AggregateProfiles:
@@ -47,10 +47,7 @@ class AggregateProfiles:
         check_compartments(compartments)
 
         # Check if correct operation is specified
-        assert operation in [
-            "mean",
-            "median",
-        ], "operation must be one ['mean', 'median']"
+        operation = check_aggregate_operation(operation)
 
         # Check that the subsample_frac is between 0 and 1
         assert (
@@ -80,13 +77,15 @@ class AggregateProfiles:
         # Connect to sqlite engine
         self.engine = create_engine(self.sql_file)
         self.conn = self.engine.connect()
+
+        # Throw an error if both subsample_frac and subsample_n is set
         self._check_subsampling()
 
         if load_image_data:
             self.load_image()
 
     def _check_subsampling(self):
-        # Check that the user didn't specify both subset frac and
+        # Check that the user didn't specify both subset frac and subsample all
         assert (
             self.subsample_frac == 1 or self.subsample_n == "all"
         ), "Do not set both subsample_frac and subsample_n"
@@ -221,7 +220,9 @@ class AggregateProfiles:
 
         return object_df
 
-    def aggregate_profiles(self, compute_subsample="False", output_file="none", **kwargs):
+    def aggregate_profiles(
+        self, compute_subsample="False", output_file="none", **kwargs
+    ):
         """
         Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -290,6 +291,9 @@ def aggregate(
     Return:
     Pandas DataFrame of aggregated features
     """
+    # Check that the operation is supported
+    operation = check_aggregate_operation(operation)
+
     # Subset dataframe to only specified variables if provided
     if features != "all":
         strata_df = population_df.loc[:, strata]

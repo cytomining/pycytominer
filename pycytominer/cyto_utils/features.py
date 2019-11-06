@@ -80,4 +80,8 @@ def infer_cp_features(population_df):
         )
     ]
 
+    assert (
+        len(features) > 0
+    ), "No CP features found. Are you sure this dataframe is from CellProfiler?"
+
     return features
