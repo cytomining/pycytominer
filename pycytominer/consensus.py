@@ -84,7 +84,7 @@ def modz(
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features.
                     rows are samples and columns are features
-    replicate_columns - a string or list of columns in the population dataframe that
+    replicate_columns - a string or list of column(s) in the population dataframe that
                         indicate replicate level information
     method - string indicating which correlation metric to use [default: "spearman"]
     min_weight - the minimum correlation to clip all non-negative values lower to
@@ -111,7 +111,7 @@ def modz(
         for replicate_column in replicate_columns:
             if replicate_column not in features:
                 add_replicate_columns.append(replicate_column)
-        features = add_replicate_features + features
+        features = add_replicate_columns + features
 
     population_df = population_df.loc[:, features]
 
