@@ -2,7 +2,7 @@ import os
 import random
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.consensus import modz_base, modz
+from pycytominer.consensus import modz_base, modz
 
 # No replicate information
 data_df = pd.DataFrame({"x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]})
@@ -11,14 +11,28 @@ data_df.index = ["sample_{}".format(x) for x in data_df.index]
 # Include replicate information
 data_replicate_df = pd.concat(
     [
-        pd.DataFrame({"g": "a", "x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]}),
-        pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1], "z": [5, -2, 1]}),
+        pd.DataFrame(
+            {
+                "Metadata_g": "a",
+                "Cells_x": [1, 1, -1],
+                "Cytoplasm_y": [5, 5, -5],
+                "Nuclei_z": [2, 2, -2],
+            }
+        ),
+        pd.DataFrame(
+            {
+                "Metadata_g": "b",
+                "Cells_x": [1, 3, 5],
+                "Cytoplasm_y": [8, 3, 1],
+                "Nuclei_z": [5, -2, 1],
+            }
+        ),
     ]
 ).reset_index(drop=True)
 data_replicate_df.index = ["sample_{}".format(x) for x in data_replicate_df.index]
 
 precision = 4
-replicate_columns = "g"
+replicate_columns = "Metadata_g"
 
 
 def test_modz_base():
@@ -41,7 +55,8 @@ def test_modz():
         data_replicate_df, replicate_columns, min_weight=0, precision=precision
     )
     expected_result = pd.DataFrame(
-        {"x": [1.0, 4.0], "y": [5.0, 2.0], "z": [2.0, -0.5]}, index=["a", "b"]
+        {"Cells_x": [1.0, 4.0], "Cytoplasm_y": [5.0, 2.0], "Nuclei_z": [2.0, -0.5]},
+        index=["a", "b"],
     )
     expected_result.index.name = replicate_columns
     pd.testing.assert_frame_equal(expected_result, consensus_df)
@@ -58,7 +73,38 @@ def test_modz():
 
 
 def test_modz_multiple_columns():
-    replicate_columns = ["g", "h"]
+    replicate_columns = ["Metadata_g", "Metadata_h"]
+    data_replicate_multi_df = data_replicate_df.assign(
+        Metadata_h=["c", "c", "c", "d", "d", "d"]
+    )
+    # The expected result is to completely remove influence of anticorrelated sample
+    consensus_df = modz(
+        data_replicate_multi_df, replicate_columns, min_weight=0, precision=precision
+    )
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_g": ["a", "b"],
+            "Metadata_h": ["c", "d"],
+            "Cells_x": [1.0, 4.0],
+            "Cytoplasm_y": [5.0, 2.0],
+            "Nuclei_z": [2.0, -0.5],
+        }
+    )
+    pd.testing.assert_frame_equal(expected_result, consensus_df.reset_index())
+
+    # With the min_weight = 1, then modz is mean
+    consensus_df = modz(
+        data_replicate_multi_df, replicate_columns, min_weight=1, precision=precision
+    )
+    expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
+    expected_result.index.name = replicate_columns
+    pd.testing.assert_frame_equal(
+        expected_result, consensus_df, check_less_precise=True
+    )
+
+
+def test_modz_multiple_columns_one_metadata_column():
+    replicate_columns = "Metadata_g"
     data_replicate_multi_df = data_replicate_df.assign(h=["c", "c", "c", "d", "d", "d"])
     # The expected result is to completely remove influence of anticorrelated sample
     consensus_df = modz(
@@ -66,11 +112,10 @@ def test_modz_multiple_columns():
     )
     expected_result = pd.DataFrame(
         {
-            "g": ["a", "b"],
-            "h": ["c", "d"],
-            "x": [1.0, 4.0],
-            "y": [5.0, 2.0],
-            "z": [2.0, -0.5],
+            "Metadata_g": ["a", "b"],
+            "Cells_x": [1.0, 4.0],
+            "Cytoplasm_y": [5.0, 2.0],
+            "Nuclei_z": [2.0, -0.5],
         }
     )
     pd.testing.assert_frame_equal(expected_result, consensus_df.reset_index())
