@@ -8,6 +8,7 @@ import pandas as pd
 from pycytominer.cyto_utils.util import (
     get_pairwise_correlation,
     check_correlation_method,
+    infer_cp_features,
 )
 
 
@@ -70,7 +71,12 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
 
 
 def modz(
-    population_df, replicate_columns, method="spearman", min_weight=0.01, precision=4
+    population_df,
+    replicate_columns,
+    features="infer",
+    method="spearman",
+    min_weight=0.01,
+    precision=4,
 ):
     """
     Collapse replicates into a consensus signature using a weighted transformation
@@ -96,6 +102,18 @@ def modz(
         replicate_columns = replicate_columns.split()
     else:
         return ValueError("replicate_columns must be a list or string")
+
+    if features == "infer":
+        features = infer_cp_features(population_df)
+        features = replicate_columns + features
+    else:
+        add_replicate_columns = []
+        for replicate_column in replicate_columns:
+            if replicate_column not in features:
+                add_replicate_columns.append(replicate_column)
+        features = add_replicate_features + features
+
+    population_df = population_df.loc[:, features]
 
     modz_df = population_df.groupby(replicate_columns).apply(
         lambda x: modz_base(
