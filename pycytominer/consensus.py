@@ -86,6 +86,9 @@ def modz(
                     rows are samples and columns are features
     replicate_columns - a string or list of column(s) in the population dataframe that
                         indicate replicate level information
+    features - a list of features present in the population dataframe [default: "infer"]
+               if "infer", then assume cell painting features are those that start with
+               "Cells_", "Nuclei_", or "Cytoplasm_"
     method - string indicating which correlation metric to use [default: "spearman"]
     min_weight - the minimum correlation to clip all non-negative values lower to
     precision - how many significant digits to round weights to
