@@ -47,3 +47,10 @@ def test_feature_infer_nocp():
         features = infer_cp_features(population_df=non_cp_data_df)
 
     assert "No CP features found." in str(nocp.value)
+
+
+def test_metadata_feature_infer():
+    features = infer_cp_features(population_df=data_df, metadata=True)
+    expected = ["Metadata_Something_Something"]
+
+    assert features == expected

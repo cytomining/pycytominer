@@ -66,7 +66,7 @@ def label_compartment(cp_features, compartment, metadata_cols):
     return cp_features
 
 
-def infer_cp_features(population_df):
+def infer_cp_features(population_df, metadata=False):
     """
     Given a dataframe, output features that we expect to be cell painting features
     """
@@ -79,6 +79,11 @@ def infer_cp_features(population_df):
             | x.startswith("Cytoplasm_")
         )
     ]
+
+    if metadata:
+        features = population_df.columns[
+            population_df.columns.str.startswith("Metadata_")
+        ].tolist()
 
     assert (
         len(features) > 0

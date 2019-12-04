@@ -48,30 +48,33 @@ append_data_df = pd.DataFrame(
 ).reset_index(drop=True)
 
 append_data_df = pd.concat([data_df, append_data_df]).reset_index(drop=True)
-append_data_df
 
 
 def test_audit():
     result = audit(
         profiles=data_df,
         operation="replicate_quality",
-        groups=["Metadata_treatment"],
+        cp_features=["x", "y", "z", "zz"],
+        audit_groups=["Metadata_treatment"],
         cor_method="pearson",
         quantile=0.95,
         output_file="none",
         samples="all",
         iterations=500,
+        audit_resolution="median",
     ).round(2)
 
     from_file_result = audit(
         profiles=output_audit_file,
         operation="replicate_quality",
-        groups=["Metadata_treatment"],
+        cp_features=["x", "y", "z", "zz"],
+        audit_groups=["Metadata_treatment"],
         cor_method="pearson",
         quantile=0.95,
         output_file="none",
         samples="all",
         iterations=500,
+        audit_resolution="median",
     ).round(2)
 
     expected_result = pd.DataFrame(
@@ -102,17 +105,56 @@ def test_audit():
     )
 
 
+def test_full_audit():
+    result_full = audit(
+        profiles=data_df,
+        operation="replicate_quality",
+        cp_features=["x", "y", "z", "zz"],
+        audit_groups=["Metadata_treatment"],
+        cor_method="pearson",
+        quantile=0.95,
+        output_file="none",
+        samples="all",
+        iterations=500,
+        audit_resolution="full",
+    )
+
+    # Get median pairwise correlation within groups
+    drug_cor = (
+        data_df.query("Metadata_treatment == 'drug'")
+        .loc[:, ["x", "y", "z", "zz"]]
+        .transpose()
+        .corr()
+        .melt()
+    )
+    median_result = drug_cor.query("value != 1").value.median().round(2)
+    expected_result = 0.99
+    assert median_result == expected_result
+
+    control_cor = (
+        data_df.query("Metadata_treatment == 'control'")
+        .loc[:, ["x", "y", "z", "zz"]]
+        .transpose()
+        .corr()
+        .melt()
+    )
+    median_result = control_cor.query("value != 1").value.median().round(2)
+    expected_result = -0.83
+    assert median_result == expected_result
+
+
 def test_audit_assertion_quantile_input():
     with pytest.raises(AssertionError):
         result = audit(
             profiles=data_df,
             operation="replicate_quality",
-            groups=["Metadata_treatment"],
+            audit_groups=["Metadata_treatment"],
             cor_method="pearson",
             quantile=1.1,
             output_file="none",
             samples="all",
             iterations=500,
+            audit_resolution="median",
         )
 
 
@@ -121,11 +163,12 @@ def test_audit_assertion_groups_input():
         result = audit(
             profiles=data_df,
             operation="replicate_quality",
-            groups=["Metadata_treatment", "Missing_Value"],
+            audit_groups=["Metadata_treatment", "Missing_Value"],
             cor_method="pearson",
             output_file="none",
             samples="all",
             iterations=500,
+            audit_resolution="median",
         )
 
 
@@ -134,7 +177,7 @@ def test_audit_assertion_operations_input():
         result = audit(
             profiles=data_df,
             operation="something_that_is_not_valid",
-            groups=["Metadata_treatment"],
+            audit_groups=["Metadata_treatment"],
             cor_method="pearson",
             output_file="none",
             samples="all",
@@ -147,12 +190,14 @@ def test_audit_subset_sample():
     result = audit(
         profiles=data_df,
         operation="replicate_quality",
-        groups=["Metadata_treatment"],
+        audit_groups=["Metadata_treatment"],
+        cp_features=["x", "y", "z", "zz"],
         cor_method="pearson",
         quantile=0.95,
         output_file="none",
         samples=subset_sample_string,
         iterations=500,
+        audit_resolution="median",
     ).round(2)
 
     expected_result = pd.DataFrame(
@@ -181,24 +226,28 @@ def test_audit_compress():
     _ = audit(
         profiles=data_df,
         operation="replicate_quality",
-        groups=["Metadata_treatment"],
+        cp_features=["x", "y", "z", "zz"],
+        audit_groups=["Metadata_treatment"],
         cor_method="pearson",
         quantile=0.95,
         output_file=compress_file,
         samples=subset_sample_string,
         iterations=500,
         compression="gzip",
+        audit_resolution="median",
     )
 
     result = audit(
         profiles=data_df,
         operation="replicate_quality",
-        groups=["Metadata_treatment"],
+        audit_groups=["Metadata_treatment"],
+        cp_features=["x", "y", "z", "zz"],
         cor_method="pearson",
         quantile=0.95,
         output_file="none",
         samples=subset_sample_string,
         iterations=500,
+        audit_resolution="median",
     ).round(2)
 
     expected_result = pd.read_csv(compress_file).round(2)

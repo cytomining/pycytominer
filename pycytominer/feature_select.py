@@ -18,7 +18,14 @@ def feature_select(
     samples="none",
     operation="variance_threshold",
     output_file="none",
-    **kwargs
+    na_cutoff=0.05,
+    corr_threshold=0.9,
+    corr_method="pearson",
+    freq_cut=0.05,
+    unique_cut=0.1,
+    compression=None,
+    float_format=None,
+    blacklist_file=None,
 ):
     """
     Performs feature selection based on the given operation
@@ -26,8 +33,8 @@ def feature_select(
     Arguments:
     profiles - either pandas DataFrame or a file that stores profile data
     features - list of cell painting features [default: "infer"]
-               if "infer", then assume cell painting features are those that do not
-               start with "Cells", "Nuclei", or "Cytoplasm"
+               if "infer", then assume cell painting features are those that start with
+               "Cells", "Nuclei", or "Cytoplasm"
     samples - if provided, a list of samples to provide operation on
               [default: "none"] - if "none", use all samples to calculate
     operation - str or list of given operations to perform on input profiles
@@ -35,16 +42,17 @@ def feature_select(
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with
                   "_normalized_variable_selected.csv".
+    na_cutoff - proportion of missing values in a column to tolerate before removing
+    corr_threshold - float between (0, 1) to exclude features above [default: 0.9]
+    freq_cut - float of ratio (2nd most common feature val / most common) [default: 0.1]
+    unique_cut - float of ratio (num unique features / num samples) [default: 0.1]
+    compression - the mechanism to compress [default: "gzip"]
+    float_format - decimal precision to use in writing output file [default: None]
+                   For example, use "%.3g" for 3 decimal precision.
+    blacklist_file - file location of dataframe with features to exclude [default: None]
+                     Note that if "blacklist" in operation then will remove standard
+                     blacklist
     """
-    na_cutoff = kwargs.pop("na_cutoff", 0.05)
-    corr_threshold = kwargs.pop("corr_threshold", 0.9)
-    corr_method = kwargs.pop("corr_method", "pearson")
-    freq_cut = kwargs.pop("freq_cut", 0.05)
-    unique_cut = kwargs.pop("unique_cut", 0.1)
-    compression = kwargs.pop("compression", None)
-    float_format = kwargs.pop("float_format", None)
-    blacklist_file = kwargs.pop("blacklist_file", None)
-
     all_ops = [
         "variance_threshold",
         "correlation_threshold",
@@ -64,7 +72,6 @@ def feature_select(
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")
-
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
         try:
@@ -102,7 +109,9 @@ def feature_select(
             )
         elif op == "blacklist":
             if blacklist_file:
-                exclude = get_blacklist_features(population_df=profiles, blacklist_file=blacklist_file)
+                exclude = get_blacklist_features(
+                    population_df=profiles, blacklist_file=blacklist_file
+                )
             else:
                 exclude = get_blacklist_features(population_df=profiles)
 

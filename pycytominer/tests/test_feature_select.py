@@ -66,6 +66,14 @@ def test_feature_select_get_na_columns():
         data_na_df,
         features=data_na_df.columns.tolist(),
         operation="drop_na_columns",
+        na_cutoff=1,
+    )
+    pd.testing.assert_frame_equal(result, data_na_df)
+
+    result = feature_select(
+        data_na_df,
+        features=data_na_df.columns.tolist(),
+        operation="drop_na_columns",
         na_cutoff=0.3,
     )
     expected_result = pd.DataFrame(
@@ -232,7 +240,7 @@ def test_feature_select_compress():
         features=data_na_df.columns.tolist(),
         operation="drop_na_columns",
         output_file=compress_file,
-        how="gzip",
+        compression="gzip",
     )
     expected_result = pd.DataFrame({"yy": [1, 2, 8, 10, 2, 100]})
     result = pd.read_csv(compress_file)
