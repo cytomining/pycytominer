@@ -9,7 +9,11 @@ from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
 from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.features import get_blacklist_features, infer_cp_features
+from pycytominer.cyto_utils.features import (
+    get_blacklist_features,
+    infer_cp_features,
+    drop_outlier_features,
+)
 
 
 def feature_select(
@@ -26,6 +30,7 @@ def feature_select(
     compression=None,
     float_format=None,
     blacklist_file=None,
+    outlier_cutoff=15,
 ):
     """
     Performs feature selection based on the given operation
@@ -52,12 +57,17 @@ def feature_select(
     blacklist_file - file location of dataframe with features to exclude [default: None]
                      Note that if "blacklist" in operation then will remove standard
                      blacklist
+    outlier_cutoff - the threshold at which the maximum or minimum value of a feature
+                     across a full experiment is excluded [default: 15]. Note that this
+                     procedure is typically applied (and therefore the default is
+                     suitable) for after normalization.
     """
     all_ops = [
         "variance_threshold",
         "correlation_threshold",
         "drop_na_columns",
         "blacklist",
+        "drop_outliers",
     ]
 
     # Make sure the user provides a supported operation
@@ -114,6 +124,13 @@ def feature_select(
                 )
             else:
                 exclude = get_blacklist_features(population_df=profiles)
+        elif op == "drop_outliers":
+            exclude = drop_outlier_features(
+                population_df=profiles,
+                features=features,
+                samples=samples,
+                outlier_cutoff=outlier_cutoff,
+            )
 
         excluded_features += exclude
 
