@@ -52,6 +52,27 @@ data_unique_test_df = pd.DataFrame(
 ).reset_index(drop=True)
 
 
+data_outlier_df = pd.DataFrame(
+    {
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "Cells_x": [1, 2, -8, 2, 5, 5, 5, -1],
+        "Cytoplasm_y": [3, -1, 7, 4, 5, -9, 6, 1],
+        "Nuclei_z": [-1, 8, 2, 5, -6, 20, 2, -2],
+        "Cells_zz": [14, -46, 1, 60, -30, -100, 2, 2],
+    }
+).reset_index(drop=True)
+
+
 def test_feature_select_get_na_columns():
     """
     Testing feature_select and get_na_columns pycytominer function
@@ -273,3 +294,25 @@ def test_feature_select_blacklist():
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_feature_select_drop_outlier():
+    """
+    Testing feature_select and get_na_columns pycytominer function
+    """
+    result = feature_select(
+        data_outlier_df, features="infer", operation="drop_outliers"
+    )
+    expected_result = data_outlier_df.drop(["Cells_zz", "Nuclei_z"], axis="columns")
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_outlier_df, features="infer", operation="drop_outliers", outlier_cutoff=30
+    )
+    expected_result = data_outlier_df.drop(["Cells_zz"], axis="columns")
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_outlier_df, features=["Cells_x", "Cytoplasm_y"], operation="drop_outliers"
+    )
+    pd.testing.assert_frame_equal(result, data_outlier_df)
