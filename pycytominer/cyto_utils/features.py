@@ -90,3 +90,41 @@ def infer_cp_features(population_df, metadata=False):
     ), "No CP features found. Are you sure this dataframe is from CellProfiler?"
 
     return features
+
+
+def drop_outlier_features(
+    population_df, features="infer", samples="none", outlier_cutoff=15
+):
+    """
+    Exclude a feature if its min or max absolute value is greater than the threshold
+
+    Arguments:
+    population_df - pandas DataFrame that includes metadata and observation features
+    features - a list of features present in the population dataframe [default: "infer"]
+               if "infer", then assume cell painting features are those that start with
+               "Cells_", "Nuclei_", or "Cytoplasm_"
+    samples - list samples to perform operation on
+              [default: "none"] - if "none", use all samples to calculate
+    outlier_cutoff - threshold to remove feature if absolute value is greater
+
+    Return:
+    list of features to exclude from the population_df
+    """
+    # Subset dataframe
+    if samples != "none":
+        population_df = population_df.loc[samples, :]
+
+    if features == "infer":
+        features = infer_cp_features(population_df)
+        population_df = population_df.loc[:, features]
+    else:
+        population_df = population_df.loc[:, features]
+
+    max_feature_values = population_df.max().abs()
+    min_feature_values = population_df.min().abs()
+
+    outlier_features = max_feature_values[
+        (max_feature_values > outlier_cutoff) | (min_feature_values > outlier_cutoff)
+    ].index.tolist()
+
+    return outlier_features
