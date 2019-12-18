@@ -73,10 +73,7 @@ class AggregateProfiles:
         self.is_subset_computed = False
 
         if self.subsample_n != "all":
-            try:
-                self.subsample_n = int(self.subsample_n)
-            except ValueError:
-                print("subsample n must be an integer or coercable")
+            self.set_subsample_n(self.subsample_n)
 
         # Connect to sqlite engine
         self.engine = create_engine(self.sql_file)
@@ -102,7 +99,10 @@ class AggregateProfiles:
         self._check_subsampling()
 
     def set_subsample_n(self, subsample_n):
-        self.subsample_n = subsample_n
+        try:
+            self.subsample_n = int(subsample_n)
+        except ValueError:
+            print("subsample n must be an integer or coercable")
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):
@@ -147,14 +147,12 @@ class AggregateProfiles:
 
         return count_df
 
-    def subsample_profiles(self, x, random_state="none"):
+    def subsample_profiles(self, x):
         """
         Sample a Pandas DataFrame given the subsampling fraction
         """
-        if random_state == "none" and self.subsampling_random_state == "none":
-            self.subsampling_random_state = np.random.randint(0, 10000, size=1)[0]
-
-        if random_state != "none":
+        if self.subsampling_random_state == "none":
+            random_state = np.random.randint(0, 10000, size=1)[0]
             self.set_subsample_random_state(random_state)
 
         if self.subsample_frac == 1:
