@@ -306,6 +306,11 @@ def aggregate(
     else:
         population_df = population_df.loc[:, features]
 
+    # Fix dtype of input features (they should all be floats!)
+    convert_dict = {x: float for x in features}
+    population_df = population_df.astype(convert_dict)
+
+    # Merge back metadata used to aggregate by
     population_df = pd.concat([strata_df, population_df], axis="columns")
 
     if isinstance(subset_data, pd.DataFrame):
