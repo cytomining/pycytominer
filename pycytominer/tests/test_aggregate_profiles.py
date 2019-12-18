@@ -3,8 +3,8 @@ import random
 import tempfile
 import pandas as pd
 from sqlalchemy import create_engine
+from pycytominer import aggregate
 from pycytominer.aggregate import AggregateProfiles
-from pycytominer.aggregate import aggregate
 
 random.seed(123)
 
@@ -18,7 +18,7 @@ def build_random_data(compartment="cells"):
         {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
     ).reset_index(drop=True)
 
-    data_df.columns = ["{}_{}".format(compartment, x) for x in data_df.columns]
+    data_df.columns = ["{}_{}".format(compartment.capitalize(), x) for x in data_df.columns]
 
     data_df = data_df.assign(
         ObjectNumber=list(range(1, 51)) * 2,
@@ -71,13 +71,13 @@ def test_AggregateProfiles_init():
     assert ap.sql_file == file
     assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
     assert ap.merge_cols == ["TableNumber", "ImageNumber"]
-    assert ap.features == "all"
+    assert ap.features == "infer"
     pd.testing.assert_frame_equal(image_df, ap.image_df)
     assert ap.subsample_frac == 1
     assert ap_subsample.subsample_frac == 1
     assert ap.subsample_n == "all"
     assert ap_subsample.subsample_n == 2
-    assert ap.subset_data == "none"
+    assert ap.subset_data_df == "none"
     assert ap.output_file == "none"
     assert ap.operation == "median"
     assert not ap.is_aggregated
@@ -100,10 +100,10 @@ def test_aggregate_comparment():
         {
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A02"],
-            "cells_a": [368.0, 583.5],
-            "cells_b": [482.0, 478.5],
-            "cells_c": [531.0, 461.5],
-            "cells_d": [585.5, 428.0],
+            "Cells_a": [368.0, 583.5],
+            "Cells_b": [482.0, 478.5],
+            "Cells_c": [531.0, 461.5],
+            "Cells_d": [585.5, 428.0],
         }
     )
 
@@ -119,18 +119,18 @@ def test_aggregate_profiles():
         {
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A02"],
-            "cells_a": [368.0, 583.5],
-            "cells_b": [482.0, 478.5],
-            "cells_c": [531.0, 461.5],
-            "cells_d": [585.5, 428.0],
-            "cytoplasm_a": [479.5, 495.5],
-            "cytoplasm_b": [445.5, 459.0],
-            "cytoplasm_c": [407.5, 352.0],
-            "cytoplasm_d": [533.0, 545.0],
-            "nuclei_a": [591.5, 435.5],
-            "nuclei_b": [574.0, 579.0],
-            "nuclei_c": [588.5, 538.5],
-            "nuclei_d": [483.0, 560.0],
+            "Cells_a": [368.0, 583.5],
+            "Cells_b": [482.0, 478.5],
+            "Cells_c": [531.0, 461.5],
+            "Cells_d": [585.5, 428.0],
+            "Cytoplasm_a": [479.5, 495.5],
+            "Cytoplasm_b": [445.5, 459.0],
+            "Cytoplasm_c": [407.5, 352.0],
+            "Cytoplasm_d": [533.0, 545.0],
+            "Nuclei_a": [591.5, 435.5],
+            "Nuclei_b": [574.0, 579.0],
+            "Nuclei_c": [588.5, 538.5],
+            "Nuclei_d": [483.0, 560.0],
         }
     )
 
@@ -166,22 +166,22 @@ def test_aggregate_subsampling_profile():
         {
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A02"],
-            "cells_a": [110.0, 680.5],
-            "cells_b": [340.5, 201.5],
-            "cells_c": [285.0, 481.0],
-            "cells_d": [352.0, 549.0],
-            "cytoplasm_a": [407.5, 705.5],
-            "cytoplasm_b": [650.0, 439.5],
-            "cytoplasm_c": [243.5, 78.5],
-            "cytoplasm_d": [762.5, 625.0],
-            "nuclei_a": [683.5, 171.0],
-            "nuclei_b": [50.5, 625.0],
-            "nuclei_c": [431.0, 483.0],
-            "nuclei_d": [519.0, 286.5],
+            "Cells_a": [110.0, 680.5],
+            "Cells_b": [340.5, 201.5],
+            "Cells_c": [285.0, 481.0],
+            "Cells_d": [352.0, 549.0],
+            "Cytoplasm_a": [407.5, 705.5],
+            "Cytoplasm_b": [650.0, 439.5],
+            "Cytoplasm_c": [243.5, 78.5],
+            "Cytoplasm_d": [762.5, 625.0],
+            "Nuclei_a": [683.5, 171.0],
+            "Nuclei_b": [50.5, 625.0],
+            "Nuclei_c": [431.0, 483.0],
+            "Nuclei_d": [519.0, 286.5],
         }
     )
 
-    pd.testing.assert_frame_equal(ap_subsample.subset_data, expected_subset)
+    pd.testing.assert_frame_equal(ap_subsample.subset_data_df, expected_subset)
 
 
 def test_aggregate_subsampling_profile_compress():
@@ -194,18 +194,18 @@ def test_aggregate_subsampling_profile_compress():
         {
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A02"],
-            "cells_a": [110.0, 680.5],
-            "cells_b": [340.5, 201.5],
-            "cells_c": [285.0, 481.0],
-            "cells_d": [352.0, 549.0],
-            "cytoplasm_a": [407.5, 705.5],
-            "cytoplasm_b": [650.0, 439.5],
-            "cytoplasm_c": [243.5, 78.5],
-            "cytoplasm_d": [762.5, 625.0],
-            "nuclei_a": [683.5, 171.0],
-            "nuclei_b": [50.5, 625.0],
-            "nuclei_c": [431.0, 483.0],
-            "nuclei_d": [519.0, 286.5],
+            "Cells_a": [110.0, 680.5],
+            "Cells_b": [340.5, 201.5],
+            "Cells_c": [285.0, 481.0],
+            "Cells_d": [352.0, 549.0],
+            "Cytoplasm_a": [407.5, 705.5],
+            "Cytoplasm_b": [650.0, 439.5],
+            "Cytoplasm_c": [243.5, 78.5],
+            "Cytoplasm_d": [762.5, 625.0],
+            "Nuclei_a": [683.5, 171.0],
+            "Nuclei_b": [50.5, 625.0],
+            "Nuclei_c": [431.0, 483.0],
+            "Nuclei_d": [519.0, 286.5],
         }
     )
 
