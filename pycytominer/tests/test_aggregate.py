@@ -1,5 +1,5 @@
 import pandas as pd
-from pycytominer.aggregate import aggregate
+from pycytominer import aggregate
 
 # Build data to use in tests
 data_df = pd.concat(
@@ -68,5 +68,28 @@ def test_aggregate_mean_subsetvar():
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "x": [4, 3]})
+
+
+def test_aggregate_median_dtype_confirm():
+    """
+    Testing aggregate pycytominer function
+    """
+
+    # Convert dtype of one variable to object
+    data_dtype_df = data_df.copy()
+    data_dtype_df.x = data_dtype_df.x.astype(str)
+
+    aggregate_result = aggregate(
+        population_df=data_dtype_df, strata=["g"], features="all", operation="median"
+    )
+    print(aggregate_result)
+    expected_result = pd.concat(
+        [
+            pd.DataFrame({"g": "a", "x": [3], "y": [3]}),
+            pd.DataFrame({"g": "b", "x": [3], "y": [3]}),
+        ]
+    ).reset_index(drop=True)
+
+    assert aggregate_result.equals(expected_result)
 
     assert aggregate_result.equals(expected_result)
