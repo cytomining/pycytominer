@@ -5,8 +5,12 @@ Aggregate single cell data based on given grouping variables
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.util import check_compartments, check_aggregate_operation
+from pycytominer.cyto_utils import (
+    output,
+    check_compartments,
+    check_aggregate_operation,
+    infer_cp_features,
+)
 
 
 class AggregateProfiles:
@@ -18,7 +22,7 @@ class AggregateProfiles:
         self,
         sql_file,
         strata=["Metadata_Plate", "Metadata_Well"],
-        features="all",
+        features="infer",
         operation="median",
         output_file="none",
         compartments=["cells", "cytoplasm", "nuclei"],
@@ -273,7 +277,7 @@ class AggregateProfiles:
 def aggregate(
     population_df,
     strata=["Metadata_Plate", "Metadata_Well"],
-    features="all",
+    features="infer",
     operation="median",
     subset_data="none",
 ):
@@ -295,10 +299,14 @@ def aggregate(
     operation = check_aggregate_operation(operation)
 
     # Subset dataframe to only specified variables if provided
-    if features != "all":
-        strata_df = population_df.loc[:, strata]
+    strata_df = population_df.loc[:, strata]
+    if features == "infer":
+        features = infer_cp_features(population_df)
         population_df = population_df.loc[:, features]
-        population_df = pd.concat([strata_df, population_df], axis="columns")
+    else:
+        population_df = population_df.loc[:, features]
+
+    population_df = pd.concat([strata_df, population_df], axis="columns")
 
     if isinstance(subset_data, pd.DataFrame):
         population_df = subset_data.merge(
