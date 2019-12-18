@@ -1,5 +1,6 @@
 import os
 import random
+import pytest
 import tempfile
 import pandas as pd
 from sqlalchemy import create_engine
@@ -83,6 +84,32 @@ def test_AggregateProfiles_init():
     assert not ap.is_aggregated
     assert ap.subsampling_random_state == "none"
     assert ap_subsample.subsampling_random_state == 123
+
+
+def test_AggregateProfiles_reset_variables():
+    """
+    Testing initialization of AggregateProfiles
+    """
+    ap_switch = AggregateProfiles(sql_file=file)
+    assert ap_switch.subsample_frac == 1
+    assert ap_switch.subsample_n == "all"
+    assert ap_switch.subsampling_random_state == "none"
+    ap_switch.set_subsample_frac(0.8)
+    assert ap_switch.subsample_frac == 0.8
+    ap_switch.set_subsample_frac(1)
+    ap_switch.set_subsample_n(4)
+    assert ap_switch.subsample_n == 4
+    ap_switch.set_subsample_random_state(42)
+    assert ap_switch.subsampling_random_state == 42
+
+    with pytest.raises(AssertionError) as errorinfo:
+        ap_switch.set_subsample_frac(0.8)
+        assert "Do not set both subsample_frac and subsample_n" in str(errorinfo.value)
+
+    with pytest.raises(TypeError) as errorinfo:
+        ap_switch.set_subsample_frac(1)
+        ap_switch.set_subsample_n("wont work")
+        assert "subsample n must be an integer or coercable" in str(errorinfo.value)
 
 
 def test_AggregateProfiles_count():
