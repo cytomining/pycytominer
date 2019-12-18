@@ -5,8 +5,12 @@ Aggregate single cell data based on given grouping variables
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.util import check_compartments, check_aggregate_operation
+from pycytominer.cyto_utils import (
+    output,
+    check_compartments,
+    check_aggregate_operation,
+    infer_cp_features,
+)
 
 
 class AggregateProfiles:
@@ -18,7 +22,7 @@ class AggregateProfiles:
         self,
         sql_file,
         strata=["Metadata_Plate", "Metadata_Well"],
-        features="all",
+        features="infer",
         operation="median",
         output_file="none",
         compartments=["cells", "cytoplasm", "nuclei"],
@@ -63,16 +67,13 @@ class AggregateProfiles:
         self.merge_cols = merge_cols
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
-        self.subset_data = "none"
+        self.subset_data_df = "none"
         self.subsampling_random_state = subsampling_random_state
         self.is_aggregated = False
         self.is_subset_computed = False
 
         if self.subsample_n != "all":
-            try:
-                self.subsample_n = int(self.subsample_n)
-            except ValueError:
-                print("subsample n must be an integer or coercable")
+            self.set_subsample_n(self.subsample_n)
 
         # Connect to sqlite engine
         self.engine = create_engine(self.sql_file)
@@ -98,7 +99,10 @@ class AggregateProfiles:
         self._check_subsampling()
 
     def set_subsample_n(self, subsample_n):
-        self.subsample_n = subsample_n
+        try:
+            self.subsample_n = int(subsample_n)
+        except ValueError:
+            print("subsample n must be an integer or coercable")
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):
@@ -127,8 +131,8 @@ class AggregateProfiles:
             assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
             assert self.is_subset_computed, "Make sure to get_subsample() first!"
             count_df = pd.crosstab(
-                self.subset_data.loc[:, self.strata[1]],
-                self.subset_data.loc[:, self.strata[0]],
+                self.subset_data_df.loc[:, self.strata[1]],
+                self.subset_data_df.loc[:, self.strata[0]],
             ).reset_index()
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
@@ -143,15 +147,13 @@ class AggregateProfiles:
 
         return count_df
 
-    def subsample_profiles(self, x, random_state="none"):
+    def subsample_profiles(self, x):
         """
         Sample a Pandas DataFrame given the subsampling fraction
         """
-        if random_state == "none" and self.subsampling_random_state == "none":
-            self.subsampling_random_state = np.random.randint(0, 10000, size=1)[0]
-
-        if random_state != "none":
-            set_subsample_random_state(random_state)
+        if self.subsampling_random_state == "none":
+            random_state = np.random.randint(0, 10000, size=1)[0]
+            self.set_subsample_random_state(random_state)
 
         if self.subsample_frac == 1:
             return pd.DataFrame.sample(
@@ -182,11 +184,12 @@ class AggregateProfiles:
             pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
         )
 
-        self.subset_data = (
+        self.subset_data_df = (
             query_df.groupby(self.strata)
             .apply(lambda x: self.subsample_profiles(x))
             .reset_index(drop=True)
         )
+
         self.is_subset_computed = True
 
     def aggregate_compartment(self, compartment, compute_subsample=False):
@@ -206,16 +209,18 @@ class AggregateProfiles:
         if (self.subsample_frac < 1 or self.subsample_n != "all") and compute_subsample:
             self.get_subsample(compartment=compartment)
 
+        population_df = self.image_df.merge(
+            pd.read_sql(sql=compartment_query, con=self.conn),
+            how="inner",
+            on=self.merge_cols
+        )
+
         object_df = aggregate(
-            population_df=self.image_df.merge(
-                pd.read_sql(sql=compartment_query, con=self.conn),
-                how="inner",
-                on=self.merge_cols,
-            ),
+            population_df=population_df,
             strata=self.strata,
             features=self.features,
             operation=self.operation,
-            subset_data=self.subset_data,
+            subset_data_df=self.subset_data_df,
         )
 
         return object_df
@@ -273,9 +278,9 @@ class AggregateProfiles:
 def aggregate(
     population_df,
     strata=["Metadata_Plate", "Metadata_Well"],
-    features="all",
+    features="infer",
     operation="median",
-    subset_data="none",
+    subset_data_df="none",
 ):
     """
     Combine population dataframe variables by strata groups using given operation
@@ -286,7 +291,7 @@ def aggregate(
     features - [default: "all"] or list indicating features that should be aggregated
     operation - [default: "median"] a string indicating how the data is aggregated
                 currently only supports one of ['mean', 'median']
-    subset_data - [default: "none"] a pandas dataframe indicating how to subset the input
+    subset_data_df - [default: "none"] a pandas dataframe indicating how to subset the input
 
     Return:
     Pandas DataFrame of aggregated features
@@ -294,17 +299,28 @@ def aggregate(
     # Check that the operation is supported
     operation = check_aggregate_operation(operation)
 
-    # Subset dataframe to only specified variables if provided
-    if features != "all":
-        strata_df = population_df.loc[:, strata]
-        population_df = population_df.loc[:, features]
-        population_df = pd.concat([strata_df, population_df], axis="columns")
-
-    if isinstance(subset_data, pd.DataFrame):
-        population_df = subset_data.merge(
-            population_df, how="left", on=subset_data.columns.tolist()
+    # Subset the data to specified samples
+    if isinstance(subset_data_df, pd.DataFrame):
+        population_df = subset_data_df.merge(
+            population_df, how="left", on=subset_data_df.columns.tolist()
         ).reindex(population_df.columns, axis="columns")
 
+    # Subset dataframe to only specified variables if provided
+    strata_df = population_df.loc[:, strata]
+    if features == "infer":
+        features = infer_cp_features(population_df)
+        population_df = population_df.loc[:, features]
+    else:
+        population_df = population_df.loc[:, features]
+
+    # Fix dtype of input features (they should all be floats!)
+    convert_dict = {x: float for x in features}
+    population_df = population_df.astype(convert_dict)
+
+    # Merge back metadata used to aggregate by
+    population_df = pd.concat([strata_df, population_df], axis="columns")
+
+    # Perform aggregating function
     population_df = population_df.groupby(strata)
 
     if operation == "median":
