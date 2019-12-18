@@ -69,6 +69,8 @@ def test_aggregate_mean_subsetvar():
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "Cells_x": [4, 3]})
 
+    assert aggregate_result.equals(expected_result)
+
 
 def test_aggregate_median_dtype_confirm():
     """
