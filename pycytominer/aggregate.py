@@ -212,7 +212,7 @@ class AggregateProfiles:
         population_df = self.image_df.merge(
             pd.read_sql(sql=compartment_query, con=self.conn),
             how="inner",
-            on=self.merge_cols
+            on=self.merge_cols,
         )
 
         object_df = aggregate(
@@ -226,7 +226,11 @@ class AggregateProfiles:
         return object_df
 
     def aggregate_profiles(
-        self, compute_subsample="False", output_file="none", **kwargs
+        self,
+        compute_subsample="False",
+        output_file="none",
+        compression=None,
+        float_format=None,
     ):
         """
         Aggregate and merge compartments. This is the primary entry to this class.
@@ -236,12 +240,16 @@ class AggregateProfiles:
                             NOTE: Must be specified to perform subsampling. Will not
                             apply subsetting if set to False even if subsample is
                             initialized
+        output_file - [default: "none"] if provided, will write annotated profiles to file
+                  if not specified, will return the annotated profiles. We recommend
+                  that this output file be suffixed with "_augmented.csv".
+        compression - the mechanism to compress [default: None]
+        float_format - decimal precision to use in writing output file [default: None]
+                           For example, use "%.3g" for 3 decimal precision.
 
         Return:
         if output_file is set, then write to file. If not then return
         """
-        float_format = kwargs.pop("float_format", None)
-        compression = kwargs.pop("compression", None)
 
         if output_file != "none":
             self.set_output_file(output_file)

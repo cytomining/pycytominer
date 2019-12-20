@@ -4,9 +4,9 @@ Normalize observation features based on specified normalization method
 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
+
+from pycytominer.cyto_utils import output, infer_cp_features
 from pycytominer.cyto_utils.transform import Whiten
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def normalize(
@@ -16,7 +16,9 @@ def normalize(
     samples="all",
     method="standardize",
     output_file="none",
-    **kwargs
+    compression=None,
+    float_format=None,
+    whiten_center=True,
 ):
     """
     Normalize features
@@ -37,13 +39,15 @@ def normalize(
     output_file - [default: "none"] if provided, will write annotated profiles to file
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with "_normalized.csv".
+    compression - the mechanism to compress [default: None]
+    float_format - decimal precision to use in writing output file [default: None]
+                       For example, use "%.3g" for 3 decimal precision.
+    whiten_center - if data should be centered before whitening transform [default: True]
+                    (only used if method = "whiten")
 
     Return:
     A normalized DataFrame
     """
-    compression = kwargs.pop("compression", None)
-    float_format = kwargs.pop("float_format", None)
-    whiten_center = kwargs.pop("whiten_center", True)
 
     # Load Data
     if not isinstance(profiles, pd.DataFrame):
