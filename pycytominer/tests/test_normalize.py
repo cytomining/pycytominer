@@ -324,7 +324,7 @@ def test_normalize_standardize_allsamples_compress():
         samples="all",
         method="standardize",
         output_file=compress_file,
-        how_compress="gzip",
+        compression="gzip",
     )
     normalize_result = pd.read_csv(compress_file).round(1)
 
