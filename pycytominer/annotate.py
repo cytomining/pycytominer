@@ -13,7 +13,8 @@ def annotate(
     join_on=["Metadata_well_position", "Metadata_Well"],
     output_file="none",
     add_metadata_id_to_platemap=True,
-    **kwargs,
+    compression=None,
+    float_format=None,
 ):
     """
     Exclude features that have correlations above a certain threshold
@@ -30,12 +31,13 @@ def annotate(
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with "_augmented.csv".
     add_metadata_id_to_platemap - boolean if the platemap variables should be recoded
+    compression - the mechanism to compress [default: None]
+    float_format - decimal precision to use in writing output file [default: None]
+                       For example, use "%.3g" for 3 decimal precision.
 
     Return:
     Pandas DataFrame of annotated profiles or written to file
     """
-    compression = kwargs.pop("compression", None)
-    float_format = kwargs.pop("float_format", None)
 
     # Load Data
     if not isinstance(profiles, pd.DataFrame):

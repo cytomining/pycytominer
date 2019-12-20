@@ -51,7 +51,7 @@ def feature_select(
     corr_threshold - float between (0, 1) to exclude features above [default: 0.9]
     freq_cut - float of ratio (2nd most common feature val / most common) [default: 0.1]
     unique_cut - float of ratio (num unique features / num samples) [default: 0.1]
-    compression - the mechanism to compress [default: "gzip"]
+    compression - the mechanism to compress [default: None]
     float_format - decimal precision to use in writing output file [default: None]
                    For example, use "%.3g" for 3 decimal precision.
     blacklist_file - file location of dataframe with features to exclude [default: None]
