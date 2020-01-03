@@ -37,9 +37,8 @@ def variance_threshold(
 
     if features == "infer":
         features = infer_cp_features(population_df)
-        population_df = population_df.loc[:, features]
-    else:
-        population_df = population_df.loc[:, features]
+
+    population_df = population_df.loc[:, features]
 
     # Test if excluded for low frequency
     excluded_features_freq = population_df.apply(

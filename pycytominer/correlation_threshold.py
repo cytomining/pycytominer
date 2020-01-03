@@ -43,9 +43,8 @@ def correlation_threshold(
 
     if features == "infer":
         features = infer_cp_features(population_df)
-        population_df = population_df.loc[:, features]
-    else:
-        population_df = population_df.loc[:, features]
+
+    population_df = population_df.loc[:, features]
 
     # Get correlation matrix and lower triangle of pairwise correlations in long format
     data_cor_df, pairwise_df = get_pairwise_correlation(
