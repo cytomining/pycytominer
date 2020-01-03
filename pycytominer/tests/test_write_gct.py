@@ -1,6 +1,7 @@
 import os
 import csv
 import tempfile
+import pytest
 import pandas as pd
 from pycytominer import write_gct
 
@@ -120,3 +121,71 @@ def test_write_gct_infer_features():
     assert gct_row_list[5] == ["x", "x", "1", "1", "-1", "1", "3", "5"]
     assert gct_row_list[6] == ["y", "y", "5", "5", "-5", "8", "3", "1"]
     assert gct_row_list[7] == ["z", "z", "2", "2", "-2", "5", "-2", "1"]
+
+
+def test_write_gct_with_feature_metadata():
+    output_filename = os.path.join(tmpdir, "test_gct_feature_meta.gct")
+
+    feature_metadata = pd.DataFrame(
+        {
+            "id": ["color", "shape"],
+            "Cells_x": ["blue", "triangle"],
+            "Cytoplasm_y": ["red", "square"],
+            "Nuclei_z": ["green", "oval"]
+        }
+    ).transpose()
+
+    write_gct(
+        profiles=data_replicate_df,
+        output_file=output_filename,
+        features="infer",
+        meta_features="infer",
+        feature_metadata=feature_metadata,
+        version="#1.3",
+    )
+    gct_row_list = []
+    with open(output_filename, "r") as gct_file:
+        gctreader = csv.reader(gct_file, delimiter="\t")
+        for row in gctreader:
+            gct_row_list.append(row)
+
+    assert gct_row_list[0] == ["#1.3"]
+    assert gct_row_list[1] == ["3", "6", "2", "2"]
+    assert gct_row_list[2] == [
+        "id",
+        "color",
+        "shape",
+        "SAMPLE_0",
+        "SAMPLE_1",
+        "SAMPLE_2",
+        "SAMPLE_3",
+        "SAMPLE_4",
+        "SAMPLE_5",
+    ]
+    assert gct_row_list[3] == ["g", "nan", "nan", "a", "a", "a", "b", "b", "b"]
+    assert gct_row_list[4] == ["h", "nan", "nan", "c", "c", "c", "d", "d", "d"]
+    assert gct_row_list[5] == ["Cells_x", "blue", "triangle", "1", "1", "-1", "1", "3", "5"]
+    assert gct_row_list[6] == ["Cytoplasm_y", "red", "square", "5", "5", "-5", "8", "3", "1"]
+    assert gct_row_list[7] == ["Nuclei_z", "green", "oval", "2", "2", "-2", "5", "-2", "1"]
+
+
+def test_write_gct_assert_error():
+    with pytest.raises(AssertionError) as ae:
+        output_filename = os.path.join(tmpdir, "test_gct_feature_meta_fail.gct")
+        feature_metadata = pd.DataFrame(
+            {
+                "Cells_x": ["blue", "triangle"],
+                "Cytoplasm_y": ["red", "square"],
+                "Nuclei_z": ["green", "oval"]
+            }
+        ).transpose()
+
+        write_gct(
+            profiles=data_replicate_df,
+            output_file=output_filename,
+            features="infer",
+            meta_features="infer",
+            feature_metadata=feature_metadata,
+            version="#1.3",
+        )
+    assert "make sure feature metadata has row named 'id'" in str(ae.value)

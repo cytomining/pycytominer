@@ -13,7 +13,14 @@ import pandas as pd
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
-def write_gct(profiles, output_file, features="infer", meta_features="infer", version="#1.3"):
+def write_gct(
+    profiles,
+    output_file,
+    features="infer",
+    meta_features="infer",
+    feature_metadata="none",
+    version="#1.3",
+):
     """
     Convert profiles to a .gct file
 
@@ -25,8 +32,7 @@ def write_gct(profiles, output_file, features="infer", meta_features="infer", ve
                "Cells_", "Nuclei_", or "Cytoplasm_"
     meta_features - if specified, then output these values in the gct file
          [default: "infer"]
-    create_row_annotations - [default: True]
-
+    feature_metadata - pandas DataFrame linking features to additional metadata [default: "none"]
 
     Return:
     Pandas DataFrame of audits or written to file
@@ -45,10 +51,6 @@ def write_gct(profiles, output_file, features="infer", meta_features="infer", ve
         meta_features = infer_cp_features(profiles, metadata=True)
     metadata_df = profiles.loc[:, meta_features]
 
-    nrow_feature, ncol_features = feature_df.shape
-    _, ncol_metadata = metadata_df.shape
-    data_dimensions = [nrow_feature, ncol_features, 1, ncol_metadata]
-
     # Step 2: Get the sample metadata portion of the output file
     metadata_part = metadata_df.transpose()
     metadata_part.columns = ["SAMPLE_{}".format(x) for x in metadata_part.columns]
@@ -60,15 +62,29 @@ def write_gct(profiles, output_file, features="infer", meta_features="infer", ve
     )
     metadata_part.index = metadata_part.index.str.lstrip("Metadata_")
 
-    # Step 3: Compile feature metadata (Note that this is not fully implemented)
-    feature_metadata = (
-        ["cp_feature_name"] + [np.nan] * ncol_metadata + feature_df.index.tolist()
-    )
+    nrow_feature, ncol_features = feature_df.shape
+    _, ncol_metadata = metadata_df.shape
 
-    # Step 4: Combine metadata and feature parts
+    # Step 3: Compile feature metadata
     full_df = pd.concat([metadata_part, feature_df], axis="rows")
-    full_df.insert(0, column="feature_metadata", value=feature_metadata)
+    if isinstance(feature_metadata, pd.DataFrame):
+        nrow_metadata = feature_metadata.shape[1]
+        assert (
+            "id" in feature_metadata.index.tolist()
+        ), "make sure feature metadata has row named 'id' that stores feature metadata names!"
+        full_df = feature_metadata.merge(
+            full_df, how="right", left_index=True, right_index=True
+        )
+    else:
+        feature_metadata = (
+            ["cp_feature_name"] + [np.nan] * ncol_metadata + feature_df.index.tolist()
+        )
+        nrow_metadata = 1
+        full_df.insert(0, column="feature_metadata", value=feature_metadata)
     full_df = full_df.reset_index()
+
+    # Step 4: Compile all data dimensions
+    data_dimensions = [nrow_feature, ncol_features, nrow_metadata, ncol_metadata]
 
     # Step 5: Write output gct file
     with open(output_file, "w", newline="") as gctfile:
