@@ -12,7 +12,7 @@ from pycytominer.cyto_utils.transform import Whiten
 def normalize(
     profiles,
     features="infer",
-    meta_features="none",
+    meta_features="infer",
     samples="all",
     method="standardize",
     output_file="none",
@@ -29,7 +29,7 @@ def normalize(
                if "infer", then assume cell painting features are those that do not
                start with "Cells", "Nuclei", or "Cytoplasm"
     meta_features - if specified, then output these with specified features
-                    [default: "none"]
+                    [default: "infer"]
     samples - string indicating which metadata column and values to use to subset
               the control samples are often used here [default: 'all']
               the format of this variable will be used in a pd.query() function. An
@@ -74,10 +74,10 @@ def normalize(
 
     # Separate out the features and meta
     feature_df = profiles.loc[:, features]
-    if meta_features == "none":
-        meta_df = profiles.drop(features, axis="columns")
-    else:
-        meta_df = profiles.loc[:, meta_features]
+    if meta_features == "infer":
+        meta_features = infer_cp_features(profiles, metadata=True)
+
+    meta_df = profiles.loc[:, meta_features]
 
     # Fit the sklearn scaler
     if samples == "all":

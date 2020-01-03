@@ -13,7 +13,7 @@ import pandas as pd
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
-def write_gct(profiles, output_file, features="infer", version="#1.3"):
+def write_gct(profiles, output_file, features="infer", meta_features="infer", version="#1.3"):
     """
     Convert profiles to a .gct file
 
@@ -23,6 +23,8 @@ def write_gct(profiles, output_file, features="infer", version="#1.3"):
     features - a list of features present in the population dataframe [default: "infer"]
                if "infer", then assume cell painting features are those that start with
                "Cells_", "Nuclei_", or "Cytoplasm_"
+    meta_features - if specified, then output these values in the gct file
+         [default: "infer"]
     create_row_annotations - [default: True]
 
 
@@ -34,10 +36,14 @@ def write_gct(profiles, output_file, features="infer", version="#1.3"):
     assert version == "#1.3", "Only version #1.3 is currently supported."
 
     # Step 1: Create first two rows of data
-    cp_features = infer_cp_features(profiles)
+    if features == "infer":
+        features = infer_cp_features(profiles)
+    feature_df = profiles.loc[:, features].reset_index(drop=True).transpose()
 
-    metadata_df = profiles.loc[:, profiles.columns.str.contains("Metadata_")]
-    feature_df = profiles.loc[:, cp_features].reset_index(drop=True).transpose()
+    # Separate out metadata features
+    if meta_features == "infer":
+        meta_features = infer_cp_features(profiles, metadata=True)
+    metadata_df = profiles.loc[:, meta_features]
 
     nrow_feature, ncol_features = feature_df.shape
     _, ncol_metadata = metadata_df.shape
