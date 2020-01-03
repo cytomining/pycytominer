@@ -78,7 +78,7 @@ def test_normalize_standardize_allsamples():
     normalize_result = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="all",
         method="standardize",
     ).round(1)
@@ -116,7 +116,7 @@ def test_normalize_standardize_ctrlsamples():
     normalize_result = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="Metadata_treatment == 'control'",
         method="standardize",
     ).round(1)
@@ -154,7 +154,7 @@ def test_normalize_robustize_allsamples():
     normalize_result = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="all",
         method="robustize",
     ).round(1)
@@ -192,7 +192,7 @@ def test_normalize_robustize_ctrlsamples():
     normalize_result = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="Metadata_treatment == 'control'",
         method="robustize",
     ).round(1)
@@ -231,7 +231,7 @@ def test_normalize_standardize_allsamples_fromfile():
     normalize_result = normalize(
         profiles=data_file,
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="all",
         method="standardize",
     ).round(1)
@@ -283,7 +283,7 @@ def test_normalize_standardize_allsamples_output():
     _ = normalize(
         profiles=data_file,
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="all",
         method="standardize",
         output_file=out_normalize_file,
@@ -320,7 +320,7 @@ def test_normalize_standardize_allsamples_compress():
     _ = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
-        meta_features="none",
+        meta_features="infer",
         samples="all",
         method="standardize",
         output_file=compress_file,
@@ -352,7 +352,12 @@ def test_normalize_standardize_allsamples_compress():
 
 
 def test_normalize_whiten():
-    result = normalize(data_whiten_df, features=["a", "b", "c", "d"], method="whiten")
+    result = normalize(
+        data_whiten_df,
+        features=["a", "b", "c", "d"],
+        meta_features=["id"],
+        method="whiten",
+    )
     result_cov = (
         pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
         .round()
@@ -366,6 +371,7 @@ def test_normalize_whiten():
         data_whiten_df,
         samples="id == 'control'",
         features=["a", "b", "c", "d"],
+        meta_features=["id"],
         method="whiten",
     )
     result_cov = (
