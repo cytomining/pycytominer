@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
 from pycytominer.cyto_utils import output, infer_cp_features
-from pycytominer.cyto_utils.transform import Whiten
+from pycytominer.cyto_utils.transform import Whiten, RobustMAD
 
 
 def normalize(
@@ -59,13 +59,15 @@ def normalize(
     # Define which scaler to use
     method = method.lower()
 
-    avail_methods = ["standardize", "robustize", "whiten"]
+    avail_methods = ["standardize", "robustize", "mad_robustize", "whiten"]
     assert method in avail_methods, "operation must be one {}".format(avail_methods)
 
     if method == "standardize":
         scaler = StandardScaler()
     elif method == "robustize":
         scaler = RobustScaler()
+    elif method == "mad_robustize":
+        scaler = RobustMAD()
     elif method == "whiten":
         scaler = Whiten(center=whiten_center)
 
