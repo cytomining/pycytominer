@@ -2,7 +2,8 @@ import os
 import random
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.transform import Whiten
+from scipy.stats import median_absolute_deviation
+from pycytominer.cyto_utils.transform import Whiten, RobustMAD
 
 random.seed(123)
 
@@ -42,6 +43,27 @@ def test_whiten_no_center():
 
     # The transfomed data is expected to have uncorrelated samples
     result = pd.DataFrame(np.cov(np.transpose(transform_df))).round().sum().sum()
+    expected_result = data_df.shape[1]
+
+    assert int(result) == expected_result
+
+
+def test_robust_mad():
+    """
+    Testing the RobustMAD class
+    """
+    scaler = RobustMAD()
+    scaler = scaler.fit(data_df)
+    transform_df = scaler.transform(data_df)
+
+    # The transfomed data is expected to have a median equal to zero
+    result = transform_df.median().sum()
+    expected_result = 0
+
+    assert int(result) == expected_result
+
+    # Check a median absolute deviation equal to the number of columns
+    result = median_absolute_deviation(transform_df).sum()
     expected_result = data_df.shape[1]
 
     assert int(result) == expected_result
