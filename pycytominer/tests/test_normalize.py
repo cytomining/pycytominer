@@ -262,44 +262,6 @@ def test_normalize_robustize_mad_allsamples():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
-def test_normalize_robustize_mad_ctrlsamples():
-    """
-    Testing normalize pycytominer function
-    method = "mad_robustize"
-    meta_features = "none"
-    samples="Metadata_treatment == 'control'"
-    """
-    normalize_result = normalize(
-        profiles=data_df.copy(),
-        features=["x", "y", "z", "zz"],
-        meta_features="infer",
-        samples="Metadata_treatment == 'control'",
-        method="mad_robustize",
-    ).round(1)
-
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-0.8, -0.5, 1.5, -0.5, 0.5, 0.5, 0.5, -0.8],
-            "y": [-0.9, -1.8, 0.9, -0.4, 0.0, 1.8, 0.4, -1.8],
-            "z": [-np.inf, np.inf, np.nan, np.inf, np.inf, np.inf, np.nan, np.nan],
-            "zz": [16.2, 59.4, -1.3, 5.4, 37.8, 132.2, 0.0, 0.0],
-        }
-    ).reset_index(drop=True)
-
-    pd.testing.assert_frame_equal(normalize_result, expected_result)
-
-
 def test_normalize_robustize_mad_allsamples_novar():
     """
     Testing normalize pycytominer function
@@ -339,7 +301,7 @@ def test_normalize_robustize_mad_allsamples_novar():
     ).reset_index(drop=True)
 
     # Check that infinite or nan values are not introduced
-    assert not np.isfinite(normalize_result.loc[:, features].values).any()
+    assert np.isfinite(normalize_result.loc[:, features].values).all()
     assert normalize_result.isna().sum().sum() == 0
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
