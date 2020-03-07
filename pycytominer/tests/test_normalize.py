@@ -67,6 +67,10 @@ data_whiten_df = pd.DataFrame(
     {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature, "id": id_feature}
 ).reset_index(drop=True)
 
+data_no_var_df = pd.concat(
+    [data_df, pd.DataFrame([1] * data_df.shape[0], columns=["yy"])], axis="columns"
+)
+
 
 def test_normalize_standardize_allsamples():
     """
@@ -147,7 +151,7 @@ def test_normalize_standardize_ctrlsamples():
 def test_normalize_robustize_allsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "robustize"
     meta_features = "none"
     samples="all"
     """
@@ -185,7 +189,7 @@ def test_normalize_robustize_allsamples():
 def test_normalize_robustize_ctrlsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "robustize"
     meta_features = "none"
     samples="Metadata_treatment == 'control'"
     """
@@ -223,7 +227,7 @@ def test_normalize_robustize_ctrlsamples():
 def test_normalize_robustize_mad_allsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "mad_robustize"
     meta_features = "none"
     samples="all"
     """
@@ -258,18 +262,20 @@ def test_normalize_robustize_mad_allsamples():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
-def test_normalize_robustize_mad_ctrlsamples():
+def test_normalize_robustize_mad_allsamples_novar():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "mad_robustize"
     meta_features = "none"
-    samples="Metadata_treatment == 'control'"
+    samples="all"
     """
+    features = ["x", "y", "z", "zz", "yy"]
+
     normalize_result = normalize(
-        profiles=data_df.copy(),
-        features=["x", "y", "z", "zz"],
+        profiles=data_no_var_df.copy(),
+        features=features,
         meta_features="infer",
-        samples="Metadata_treatment == 'control'",
+        samples="all",
         method="mad_robustize",
     ).round(1)
 
@@ -286,12 +292,17 @@ def test_normalize_robustize_mad_ctrlsamples():
                 "control",
                 "control",
             ],
-            "x": [-0.8, -0.5, 1.5, -0.5, 0.5, 0.5, 0.5, -0.8],
-            "y": [-0.9, -1.8, 0.9, -0.4, 0.0, 1.8, 0.4, -1.8],
-            "z": [-np.inf, np.inf, np.nan, np.inf, np.inf, np.inf, np.nan, np.nan],
-            "zz": [16.2, 59.4, -1.3, 5.4, 37.8, 132.2, 0.0, 0.0],
+            "x": [-1.1, -0.7, 2, -0.7, 0.7, 0.7, 0.7, -1.1],
+            "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
+            "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
+            "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
+            "yy": [0.0] * normalize_result.shape[0]
         }
     ).reset_index(drop=True)
+
+    # Check that infinite or nan values are not introduced
+    assert np.isfinite(normalize_result.loc[:, features].values).all()
+    assert normalize_result.isna().sum().sum() == 0
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 

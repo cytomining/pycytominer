@@ -62,8 +62,8 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         scaled = (x - median) / mad
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, epsilon=1e-18):
+        self.epsilon = epsilon
 
     def fit(self, X, y=None):
         """
@@ -74,7 +74,9 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         """
         # Get the mean of the features (columns) and center if specified
         self.median = X.median()
-        self.mad = pd.Series(median_absolute_deviation(X), index=self.median.index)
+        self.mad = pd.Series(
+            median_absolute_deviation(X, nan_policy="omit"), index=self.median.index
+        )
         return self
 
     def transform(self, X, copy=None):
@@ -84,4 +86,4 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         Argument:
         X - pandas dataframe to apply RobustMAD transform
         """
-        return (X - self.median) / self.mad
+        return (X - self.median) / (self.mad + self.epsilon)
