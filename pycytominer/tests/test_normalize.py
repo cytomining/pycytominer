@@ -67,6 +67,8 @@ data_whiten_df = pd.DataFrame(
     {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature, "id": id_feature}
 ).reset_index(drop=True)
 
+data_no_var_df = pd.concat([data_df, pd.DataFrame([1] * data_df.shape[0], columns=["yy"])], axis="columns")
+
 
 def test_normalize_standardize_allsamples():
     """
@@ -147,7 +149,7 @@ def test_normalize_standardize_ctrlsamples():
 def test_normalize_robustize_allsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "robustize"
     meta_features = "none"
     samples="all"
     """
@@ -185,7 +187,7 @@ def test_normalize_robustize_allsamples():
 def test_normalize_robustize_ctrlsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "robustize"
     meta_features = "none"
     samples="Metadata_treatment == 'control'"
     """
@@ -223,7 +225,7 @@ def test_normalize_robustize_ctrlsamples():
 def test_normalize_robustize_mad_allsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "mad_robustize"
     meta_features = "none"
     samples="all"
     """
@@ -261,7 +263,7 @@ def test_normalize_robustize_mad_allsamples():
 def test_normalize_robustize_mad_ctrlsamples():
     """
     Testing normalize pycytominer function
-    method = "standardize"
+    method = "mad_robustize"
     meta_features = "none"
     samples="Metadata_treatment == 'control'"
     """
@@ -292,6 +294,49 @@ def test_normalize_robustize_mad_ctrlsamples():
             "zz": [16.2, 59.4, -1.3, 5.4, 37.8, 132.2, 0.0, 0.0],
         }
     ).reset_index(drop=True)
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_robustize_mad_allsamples_novar():
+    """
+    Testing normalize pycytominer function
+    method = "mad_robustize"
+    meta_features = "none"
+    samples="all"
+    """
+    features = ["x", "y", "z", "zz", "yy"]
+    normalize_result = normalize(
+        profiles=data_no_var_df.copy(),
+        features=features,
+        meta_features="infer",
+        samples="all",
+        method="mad_robustize",
+    ).round(1)
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+            "Metadata_treatment": [
+                "drug",
+                "drug",
+                "control",
+                "control",
+                "drug",
+                "drug",
+                "control",
+                "control",
+            ],
+            "x": [-1.1, -0.7, 2, -0.7, 0.7, 0.7, 0.7, -1.1],
+            "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
+            "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
+            "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
+        }
+    ).reset_index(drop=True)
+
+    # Check that infinite or nan values are not introduced
+    assert not np.isfinite(normalize_result.loc[:, features].values).any()
+    assert normalize_result.isna().sum().sum() == 0
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
