@@ -67,7 +67,9 @@ data_whiten_df = pd.DataFrame(
     {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature, "id": id_feature}
 ).reset_index(drop=True)
 
-data_no_var_df = pd.concat([data_df, pd.DataFrame([1] * data_df.shape[0], columns=["yy"])], axis="columns")
+data_no_var_df = pd.concat(
+    [data_df, pd.DataFrame([1] * data_df.shape[0], columns=["yy"])], axis="columns"
+)
 
 
 def test_normalize_standardize_allsamples():
@@ -306,6 +308,7 @@ def test_normalize_robustize_mad_allsamples_novar():
     samples="all"
     """
     features = ["x", "y", "z", "zz", "yy"]
+
     normalize_result = normalize(
         profiles=data_no_var_df.copy(),
         features=features,
@@ -331,6 +334,7 @@ def test_normalize_robustize_mad_allsamples_novar():
             "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
             "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
             "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
+            "yy": [0.0] * normalize_result.shape[0]
         }
     ).reset_index(drop=True)
 
