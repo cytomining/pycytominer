@@ -10,12 +10,13 @@ from pycytominer.cyto_utils.output import output
 def annotate(
     profiles,
     platemap,
+    cell_id="unknown",
     join_on=["Metadata_well_position", "Metadata_Well"],
     output_file="none",
     add_metadata_id_to_platemap=True,
     format_broad_cmap=False,
     perturbation_mode="none",
-    external_metadata
+    external_metadata="none",
     compression=None,
     float_format=None,
 ):
@@ -131,14 +132,17 @@ def annotate(
         )
 
     if external_metadata != "none":
-        assert os.path.exists(external_metadata)
+        assert os.path.exists(
+            external_metadata
+        ), "external metadata at {} does not exist".format(external_metadata)
+
         external_metadata_df = pd.read_csv(external_metadata)
         external_metadata_df.columns = [
             "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
             for x in external_metadata_df.columns
         ]
 
-
+        annotated = annotated.merge(external_metadata_df, how="left")
 
     if output_file != "none":
         output(
