@@ -13,8 +13,12 @@ data_df = pd.concat(
 
 data_missing_df = pd.concat(
     [
-        pd.DataFrame({"g": "a", "Cells_x": [1, 3, 8, np.nan], "Nuclei_y": [5, np.nan, 3, 1]}),
-        pd.DataFrame({"g": "b", "Cells_x": [1, 3, np.nan, 5], "Nuclei_y": [np.nan, 8, 3, 1]}),
+        pd.DataFrame(
+            {"g": "a", "Cells_x": [1, 3, 8, np.nan], "Nuclei_y": [5, np.nan, 3, 1]}
+        ),
+        pd.DataFrame(
+            {"g": "b", "Cells_x": [1, 3, np.nan, 5], "Nuclei_y": [np.nan, 8, 3, 1]}
+        ),
     ]
 ).reset_index(drop=True)
 
@@ -134,4 +138,3 @@ def test_aggregate_median_with_missing_values():
     expected_result = expected_result.astype(dtype_convert_dict)
 
     assert aggregate_result.equals(expected_result)
-
