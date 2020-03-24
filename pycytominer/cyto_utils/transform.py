@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.linalg import eigh
+from scipy.stats import median_absolute_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -52,3 +53,37 @@ class Whiten(BaseEstimator, TransformerMixin):
         Whiten an input matrix a given population dataframe
         """
         return np.dot(X - self.mu, self.W)
+
+
+class RobustMAD(BaseEstimator, TransformerMixin):
+    """
+    Class to perform a "Robust" normalization with respect to median and mad
+
+        scaled = (x - median) / mad
+    """
+
+    def __init__(self, epsilon=1e-18):
+        self.epsilon = epsilon
+
+    def fit(self, X, y=None):
+        """
+        Compute the median and mad to be used for later scaling.
+
+        Argument:
+        X - pandas dataframe to fit RobustMAD transform
+        """
+        # Get the mean of the features (columns) and center if specified
+        self.median = X.median()
+        self.mad = pd.Series(
+            median_absolute_deviation(X, nan_policy="omit"), index=self.median.index
+        )
+        return self
+
+    def transform(self, X, copy=None):
+        """
+        Apply the RobustMAD calculation
+
+        Argument:
+        X - pandas dataframe to apply RobustMAD transform
+        """
+        return (X - self.median) / (self.mad + self.epsilon)
