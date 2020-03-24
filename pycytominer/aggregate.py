@@ -41,7 +41,7 @@ class AggregateProfiles:
                     currently only supports one of ['mean', 'median']
         output_file - [default: "none"] string if specified, write to location
         compartments - list of compartments to process
-        merge_cols - column indicating which columns to merge compartments using
+        merge_cols - column indicating which columns to merge images and compartments
         subsample_frac - [default: 1] float (0 < subsample <= 1) indicating percentage of
                          single cells to select
         subsample_n - [default: "all"] int indicating how many samples to include
@@ -130,20 +130,24 @@ class AggregateProfiles:
         if count_subset:
             assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
             assert self.is_subset_computed, "Make sure to get_subsample() first!"
-            count_df = pd.crosstab(
-                self.subset_data_df.loc[:, self.strata[1]],
-                self.subset_data_df.loc[:, self.strata[0]],
-            ).reset_index()
+            count_df = (
+                self.subset_data_df.groupby(self.strata)["ObjectNumber"]
+                .count()
+                .reset_index()
+                .rename({"ObjectNumber": "cell_count"}, axis="columns")
+            )
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
             query = "select {} from {}".format(query_cols, compartment)
             count_df = self.image_df.merge(
                 pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
             )
-
-            count_df = pd.crosstab(
-                count_df.loc[:, self.strata[1]], count_df.loc[:, self.strata[0]]
-            ).reset_index()
+            count_df = (
+                count_df.groupby(self.strata)["ObjectNumber"]
+                .count()
+                .reset_index()
+                .rename({"ObjectNumber": "cell_count"}, axis="columns")
+            )
 
         return count_df
 

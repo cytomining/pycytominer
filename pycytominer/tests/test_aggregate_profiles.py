@@ -10,7 +10,11 @@ from pycytominer.aggregate import AggregateProfiles
 random.seed(123)
 
 
-def build_random_data(compartment="cells"):
+def build_random_data(
+    compartment="cells",
+    ImageNumber=sorted(["x", "y"] * 50),
+    TableNumber=sorted(["x_hash", "y_hash"] * 50),
+):
     a_feature = random.sample(range(1, 1000), 100)
     b_feature = random.sample(range(1, 1000), 100)
     c_feature = random.sample(range(1, 1000), 100)
@@ -19,12 +23,14 @@ def build_random_data(compartment="cells"):
         {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
     ).reset_index(drop=True)
 
-    data_df.columns = ["{}_{}".format(compartment.capitalize(), x) for x in data_df.columns]
+    data_df.columns = [
+        "{}_{}".format(compartment.capitalize(), x) for x in data_df.columns
+    ]
 
     data_df = data_df.assign(
         ObjectNumber=list(range(1, 51)) * 2,
-        ImageNumber=sorted(["x", "y"] * 50),
-        TableNumber=sorted(["x_hash", "y_hash"] * 50),
+        ImageNumber=ImageNumber,
+        TableNumber=TableNumber,
     )
 
     return data_df
@@ -114,7 +120,13 @@ def test_AggregateProfiles_reset_variables():
 
 def test_AggregateProfiles_count():
     count_df = ap.count_cells()
-    expected_count = pd.DataFrame({"Metadata_Well": ["A01", "A02"], "plate": [50, 50]})
+    expected_count = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "cell_count": [50, 50],
+        }
+    )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
@@ -166,13 +178,25 @@ def test_aggregate_profiles():
 
 def test_aggregate_subsampling_count_cells():
     count_df = ap_subsample.count_cells()
-    expected_count = pd.DataFrame({"Metadata_Well": ["A01", "A02"], "plate": [50, 50]})
+    expected_count = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "cell_count": [50, 50],
+        }
+    )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
     profiles = ap_subsample.aggregate_profiles()
 
     count_df = ap_subsample.count_cells(count_subset=True)
-    expected_count = pd.DataFrame({"Metadata_Well": ["A01", "A02"], "plate": [2, 2]})
+    expected_count = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "cell_count": [2, 2],
+        }
+    )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
@@ -237,3 +261,76 @@ def test_aggregate_subsampling_profile_compress():
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_aggregate_count_cells_multiple_strata():
+    # Lauch a sqlite connection
+    file = "sqlite:///{}/test_strata.sqlite".format(tmpdir)
+
+    test_engine = create_engine(file)
+    test_conn = test_engine.connect()
+
+    # Setup data
+    base_image_number = sorted(["x", "y"] * 50)
+    base_table_number = sorted(["x_hash_a", "x_hash_b", "y_hash_a", "y_hash_b"] * 25)
+    cells_df = build_random_data(
+        compartment="cells",
+        ImageNumber=base_image_number,
+        TableNumber=base_table_number,
+    )
+    cytoplasm_df = build_random_data(
+        compartment="cytoplasm",
+        ImageNumber=base_image_number,
+        TableNumber=base_table_number,
+    )
+    nuclei_df = build_random_data(
+        compartment="nuclei",
+        ImageNumber=base_image_number,
+        TableNumber=base_table_number,
+    )
+    image_df = pd.DataFrame(
+        {
+            "TableNumber": ["x_hash_a", "x_hash_b", "y_hash_a", "y_hash_b"],
+            "ImageNumber": ["x", "x", "y", "y"],
+            "Metadata_Plate": ["plate"] * 4,
+            "Metadata_Well": ["A01", "A02"] * 2,
+            "Metadata_Site": [1, 1, 2, 2],
+        }
+    ).sort_values(by="Metadata_Well")
+
+    # Ingest data into temporary sqlite file
+    image_df.to_sql("image", con=test_engine, index=False, if_exists="replace")
+    cells_df.to_sql("cells", con=test_engine, index=False, if_exists="replace")
+    cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replace")
+    nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
+
+    # Setup AggregateProfiles Class
+    ap_strata = AggregateProfiles(
+        sql_file=file,
+        subsample_n="4",
+        strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+    )
+
+    count_df = ap_strata.count_cells()
+    expected_count = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate"] * 4,
+            "Metadata_Well": sorted(["A01", "A02"] * 2),
+            "Metadata_Site": [1, 2] * 2,
+            "cell_count": [25] * 4,
+        }
+    )
+    pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+    profiles = ap_strata.aggregate_profiles()
+
+    count_df = ap_strata.count_cells(count_subset=True)
+    expected_count = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate"] * 4,
+            "Metadata_Well": sorted(["A01", "A02"] * 2),
+            "Metadata_Site": [1, 2] * 2,
+            "cell_count": [4] * 4,
+        }
+    )
+    pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
