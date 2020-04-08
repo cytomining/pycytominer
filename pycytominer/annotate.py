@@ -159,20 +159,23 @@ def annotate(
                 Metadata_pert_type="", Metadata_broad_sample_type=""
             )
 
-    if external_metadata != "none":
+    # Add specific Connectivity Map (CMAP) formatting
+    if not isinstance(external_metadata, pd.DataFrame):
         assert os.path.exists(
             external_metadata
         ), "external metadata at {} does not exist".format(external_metadata)
 
-        external_metadata_df = pd.read_csv(external_metadata)
-        external_metadata_df.columns = [
+        external_metadata = pd.read_csv(external_metadata)
+
+    if isinstance(external_metadata, pd.DataFrame):
+        external_metadata.columns = [
             "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
-            for x in external_metadata_df.columns
+            for x in external_metadata.columns
         ]
 
         annotated = (
             annotated.merge(
-                external_metadata_df,
+                external_metadata,
                 left_on=external_join_left,
                 right_on=external_join_right,
                 how="left",
