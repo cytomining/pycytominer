@@ -2,9 +2,11 @@
 Annotates profiles with metadata information
 """
 
+import os
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.output import output
+from pycytominer.cyto_utils import infer_cp_features
 
 
 def annotate(
@@ -17,6 +19,8 @@ def annotate(
     format_broad_cmap=False,
     perturbation_mode="none",
     external_metadata="none",
+    external_join_left="none",
+    external_join_right="none",
     compression=None,
     float_format=None,
 ):
@@ -36,12 +40,14 @@ def annotate(
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with "_augmented.csv".
     add_metadata_id_to_platemap - boolean if the platemap variables should be recoded
-    external_metadata - [default: "none"] a string indicating a file with additional
-                        metadata information
     format_broad_cmap - [default: False] boolean if we need to add columns to make
                         compatible with Broad CMAP naming conventions.
     perturbation_mode - [default: "none"] - either "chemical", "genetic" or "none" and only
                         active if format_broad_cmap == True
+    external_metadata - [default: "none"] a string indicating a file with additional
+                        metadata information
+    external_join_left - [default: "none"] the merge column in the profile metadata
+    external_join_right - [default: "none"] the merge column in the external metadata
     compression - the mechanism to compress [default: None]
     float_format - decimal precision to use in writing output file [default: None]
                        For example, use "%.3g" for 3 decimal precision.
@@ -80,14 +86,24 @@ def annotate(
             perturbation_mode in pert_opts
         ), "perturbation mode must be one of {}".format(pert_opts)
 
+        assert (
+            "Metadata_broad_sample" in annotated.columns
+        ), "Are you sure this is a CMAP file? 'Metadata_broad_sample column not found.'"
+
         annotated = annotated.assign(
             Metadata_pert_id=annotated.Metadata_broad_sample.str.extract(
                 r"(BRD[-N][A-Z0-9]+)"
             ),
             Metadata_pert_mfc_id=annotated.Metadata_broad_sample,
-            Metadata_pert_well=join_on[0],
+            Metadata_pert_well=annotated.loc[:, join_on[1]],
             Metadata_pert_id_vendor="",
         )
+
+        if "Metadata_pert_iname" in annotated.columns:
+            annotated = annotated.assign(
+                Metadata_pert_mfc_desc=annotated.Metadata_pert_iname,
+                Metadata_pert_name=annotated.Metadata_pert_iname,
+            )
 
         if "Metadata_cell_id" not in annotated.columns:
             annotated = annotated.assign(Metadata_cell_id=cell_id)
@@ -97,10 +113,10 @@ def annotate(
                 Metadata_broad_sample_type=[
                     "control" if x in ["DMSO", np.nan] else "trt"
                     for x in annotated.Metadata_broad_sample
-                ],
-                Metadata_pert_vehicle=annotated.Metadata_solvent,
+                ]
             )
 
+            # Generate Metadata_broad_sample column
             annotated.loc[
                 annotated.Metadata_broad_sample_type == "control",
                 "Metadata_broad_sample",
@@ -108,11 +124,17 @@ def annotate(
             annotated.loc[
                 annotated.Metadata_broad_sample == "empty", "Metadata_broad_sample_type"
             ] = "empty"
-            annotated.loc[
-                annotated.Metadata_mmoles_per_liter == "control",
-                "Metadata_broad_sample",
-            ] = 0
 
+            if "Metadata_mmoles_per_liter" in annotated.columns:
+                annotated.loc[
+                    annotated.Metadata_broad_sample_type == "control",
+                    "Metadata_mmoles_per_liter",
+                ] = 0
+
+            if "Metadata_solvent" in annotated.columns:
+                annotated = annotated.assign(
+                    Metadata_pert_vehicle=annotated.Metadata_solvent
+                )
             if "Metadata_mg_per_ml" in annotated.columns:
                 annotated.loc[
                     annotated.Metadata_broad_sample_type == "control",
@@ -120,16 +142,22 @@ def annotate(
                 ] = 0
 
         if perturbation_mode == "genetic":
-            annotated = annotated.assign(
-                Metadata_broad_sample_type=[
-                    "control" if x == "EMPTY" else "trt"
-                    for x in annotated.Metadata_pert_name
-                ]
-            )
+            if "Metadata_pert_name" in annotated.columns:
+                annotated = annotated.assign(
+                    Metadata_broad_sample_type=[
+                        "control" if x == "EMPTY" else "trt"
+                        for x in annotated.Metadata_pert_name
+                    ]
+                )
 
-        annotated = annotated.assign(
-            Metadata_pert_type=annotated.Metadata_broad_sample_type
-        )
+        if "Metadata_broad_sample_type" in annotated.columns:
+            annotated = annotated.assign(
+                Metadata_pert_type=annotated.Metadata_broad_sample_type
+            )
+        else:
+            annotated = annotated.assign(
+                Metadata_pert_type="", Metadata_broad_sample_type=""
+            )
 
     if external_metadata != "none":
         assert os.path.exists(
@@ -142,7 +170,22 @@ def annotate(
             for x in external_metadata_df.columns
         ]
 
-        annotated = annotated.merge(external_metadata_df, how="left")
+        annotated = (
+            annotated.merge(
+                external_metadata_df,
+                left_on=external_join_left,
+                right_on=external_join_right,
+                how="left",
+            )
+            .reset_index(drop=True)
+            .drop_duplicates()
+        )
+
+    # Reorder annotated metadata columns
+    meta_cols = infer_cp_features(annotated, metadata=True)
+    other_cols = annotated.drop(meta_cols, axis="columns").columns.tolist()
+
+    annotated = annotated.loc[:, meta_cols + other_cols]
 
     if output_file != "none":
         output(
