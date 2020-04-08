@@ -12,7 +12,7 @@ def variance_threshold(
     population_df, features="infer", samples="none", freq_cut=0.05, unique_cut=0.01
 ):
     """
-    Exclude features that have correlations below a certain threshold
+    Exclude features that have low variance (low information content)
 
     Arguments:
     population_df - pandas DataFrame that includes metadata and observation features
