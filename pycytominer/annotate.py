@@ -161,11 +161,12 @@ def annotate(
 
     # Add specific Connectivity Map (CMAP) formatting
     if not isinstance(external_metadata, pd.DataFrame):
-        assert os.path.exists(
-            external_metadata
-        ), "external metadata at {} does not exist".format(external_metadata)
+        if external_metadata != "none":
+            assert os.path.exists(
+                external_metadata
+            ), "external metadata at {} does not exist".format(external_metadata)
 
-        external_metadata = pd.read_csv(external_metadata)
+            external_metadata = pd.read_csv(external_metadata)
 
     if isinstance(external_metadata, pd.DataFrame):
         external_metadata.columns = [
