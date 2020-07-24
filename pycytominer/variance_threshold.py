@@ -74,7 +74,10 @@ def calculate_frequency(feature_column, freq_cut):
     Feature name if it passes threshold, "NA" otherwise
     """
     val_count = feature_column.value_counts()
-    max_count = val_count.iloc[0]
+    try:
+        max_count = val_count.iloc[0]
+    except IndexError:
+        return np.nan
     try:
         second_max_count = val_count.iloc[1]
     except IndexError:

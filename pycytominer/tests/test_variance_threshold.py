@@ -61,6 +61,13 @@ def test_calculate_frequency():
         excluded_features_freq.fillna("found me!"), expected_result.fillna("found me!")
     )
 
+    # Test missing value (see issue #69)
+    missing_data = data_df.assign(missing=np.nan).apply(
+        lambda x: calculate_frequency(x, freq_cut), axis="rows"
+        )
+
+    assert missing_data.isna().sum() == 3
+
 
 def test_variance_threshold():
     unique_cut = 0.01
@@ -95,7 +102,7 @@ def test_variance_threshold():
     assert len(excluded_features_freq) == 0
 
 
-def test_cvariance_threshold_featureinfer():
+def test_variance_threshold_featureinfer():
     unique_cut = 0.01
     with pytest.raises(AssertionError) as nocp:
         excluded_features = variance_threshold(
