@@ -1,4 +1,21 @@
+import csv
 import pandas as pd
+
+
+def infer_delim(file):
+    """
+    Sniff the delimiter in the given file
+
+    Arguments:
+    file - a string indicating file name
+
+    Output:
+    the delimiter used in the dataframe (typically either tab or commas)
+    """
+    with open(file) as csvfile:
+        dialect = csv.Sniffer().sniff(csvfile.readline())
+
+    return(dialect.delimiter)
 
 
 def load_profiles(profiles):
@@ -13,7 +30,8 @@ def load_profiles(profiles):
     """
     if not isinstance(profiles, pd.DataFrame):
         try:
-            profiles = pd.read_csv(profiles)
+            delim = infer_delim(profiles)
+            profiles = pd.read_csv(profiles, sep=delim)
         except FileNotFoundError:
             raise FileNotFoundError(f"{profiles} profile file not found")
     return profiles
@@ -32,7 +50,8 @@ def load_platemap(platemap, add_metadata_id=True):
     """
     if not isinstance(platemap, pd.DataFrame):
         try:
-            platemap = pd.read_csv(platemap, sep="\t")
+            delim = infer_delim(platemap)
+            platemap = pd.read_csv(platemap, sep=delim)
         except FileNotFoundError:
             raise FileNotFoundError(f"{platemap} platemap file not found")
 
