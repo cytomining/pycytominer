@@ -6,7 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils import infer_cp_features
+from pycytominer.cyto_utils import infer_cp_features, load_platemap, load_profiles
 
 
 def annotate(
@@ -57,23 +57,8 @@ def annotate(
     """
 
     # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
-
-    if not isinstance(platemap, pd.DataFrame):
-        try:
-            platemap = pd.read_csv(platemap, sep="\t")
-        except FileNotFoundError:
-            raise FileNotFoundError("{} platemap file not found".format(platemap))
-
-    if add_metadata_id_to_platemap:
-        platemap.columns = [
-            "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
-            for x in platemap.columns
-        ]
+    profiles = load_profiles(profiles)
+    platemap = load_platemap(platemap, add_metadata_id_to_platemap)
 
     annotated = platemap.merge(
         profiles, left_on=join_on[0], right_on=join_on[1], how="inner"

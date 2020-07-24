@@ -5,8 +5,7 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-from pycytominer.cyto_utils import output, infer_cp_features
-from pycytominer.cyto_utils.transform import Whiten, RobustMAD
+from pycytominer.cyto_utils import output, infer_cp_features, load_profiles, Whiten, RobustMAD
 
 
 def normalize(
@@ -50,11 +49,7 @@ def normalize(
     """
 
     # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
+    profiles = load_profiles(profiles)
 
     # Define which scaler to use
     method = method.lower()
