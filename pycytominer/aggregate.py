@@ -102,7 +102,7 @@ class AggregateProfiles:
         try:
             self.subsample_n = int(subsample_n)
         except ValueError:
-            print("subsample n must be an integer or coercable")
+            raise ValueError("subsample n must be an integer or coercable")
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):
@@ -119,7 +119,7 @@ class AggregateProfiles:
 
     def count_cells(self, compartment="cells", count_subset=False):
         """
-        Determine how many cells are measured per well
+        Determine how many cells are measured per well.
 
         Arguments:
         compartment - string indicating the compartment to subset

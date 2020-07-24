@@ -8,8 +8,9 @@ import pandas as pd
 from pycytominer.correlation_threshold import correlation_threshold
 from pycytominer.variance_threshold import variance_threshold
 from pycytominer.get_na_columns import get_na_columns
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.features import (
+from pycytominer.cyto_utils import (
+    load_profiles,
+    output,
     get_blacklist_features,
     infer_cp_features,
     drop_outlier_features,
@@ -82,12 +83,9 @@ def feature_select(
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")
+
     # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
+    profiles = load_profiles(profiles)
 
     if features == "infer":
         features = infer_cp_features(profiles)

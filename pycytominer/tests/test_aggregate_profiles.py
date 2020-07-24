@@ -110,12 +110,15 @@ def test_AggregateProfiles_reset_variables():
 
     with pytest.raises(AssertionError) as errorinfo:
         ap_switch.set_subsample_frac(0.8)
-        assert "Do not set both subsample_frac and subsample_n" in str(errorinfo.value)
+    assert "Do not set both subsample_frac and subsample_n" in str(
+        errorinfo.value.args[0]
+    )
 
-    with pytest.raises(TypeError) as errorinfo:
+    with pytest.raises(ValueError) as errorinfo:
         ap_switch.set_subsample_frac(1)
         ap_switch.set_subsample_n("wont work")
-        assert "subsample n must be an integer or coercable" in str(errorinfo.value)
+
+    assert "subsample n must be an integer or coercable" in str(errorinfo.value.args[0])
 
 
 def test_AggregateProfiles_count():
