@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pycytominer.get_na_columns import get_na_columns
+from pycytominer.operations import get_na_columns
 
 data_df = pd.DataFrame(
     {
@@ -67,7 +67,7 @@ def test_get_na_columns_featureinfer():
     with pytest.raises(AssertionError) as nocp:
         na_result = get_na_columns(
             population_df=data_df,
-            samples="none",
+            samples="all",
             features="infer",
             cutoff=0.1
         )

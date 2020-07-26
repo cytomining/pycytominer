@@ -2,7 +2,7 @@ import random
 import pytest
 import numpy as np
 import pandas as pd
-from pycytominer.variance_threshold import variance_threshold, calculate_frequency
+from pycytominer.operations import variance_threshold, calculate_frequency
 
 random.seed(123)
 
