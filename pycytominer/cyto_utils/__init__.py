@@ -20,3 +20,4 @@ from .transform import (
     Whiten,
     RobustMAD,
 )
+from .write_gct import write_gct
