@@ -9,4 +9,3 @@ from .get_na_columns import get_na_columns
 from .normalize import normalize
 from .sparse_random_projection import sparse_random_projection
 from .variance_threshold import variance_threshold
-from .write_gct import write_gct

@@ -3,7 +3,7 @@ import csv
 import tempfile
 import pytest
 import pandas as pd
-from pycytominer import write_gct
+from pycytominer.cyto_utils import write_gct
 
 # Build data to use in tests
 data_replicate_df = pd.concat(
@@ -131,7 +131,7 @@ def test_write_gct_with_feature_metadata():
             "id": ["color", "shape"],
             "Cells_x": ["blue", "triangle"],
             "Cytoplasm_y": ["red", "square"],
-            "Nuclei_z": ["green", "oval"]
+            "Nuclei_z": ["green", "oval"],
         }
     ).transpose()
 
@@ -164,9 +164,39 @@ def test_write_gct_with_feature_metadata():
     ]
     assert gct_row_list[3] == ["g", "nan", "nan", "a", "a", "a", "b", "b", "b"]
     assert gct_row_list[4] == ["h", "nan", "nan", "c", "c", "c", "d", "d", "d"]
-    assert gct_row_list[5] == ["Cells_x", "blue", "triangle", "1", "1", "-1", "1", "3", "5"]
-    assert gct_row_list[6] == ["Cytoplasm_y", "red", "square", "5", "5", "-5", "8", "3", "1"]
-    assert gct_row_list[7] == ["Nuclei_z", "green", "oval", "2", "2", "-2", "5", "-2", "1"]
+    assert gct_row_list[5] == [
+        "Cells_x",
+        "blue",
+        "triangle",
+        "1",
+        "1",
+        "-1",
+        "1",
+        "3",
+        "5",
+    ]
+    assert gct_row_list[6] == [
+        "Cytoplasm_y",
+        "red",
+        "square",
+        "5",
+        "5",
+        "-5",
+        "8",
+        "3",
+        "1",
+    ]
+    assert gct_row_list[7] == [
+        "Nuclei_z",
+        "green",
+        "oval",
+        "2",
+        "2",
+        "-2",
+        "5",
+        "-2",
+        "1",
+    ]
 
 
 def test_write_gct_assert_error():
@@ -176,7 +206,7 @@ def test_write_gct_assert_error():
             {
                 "Cells_x": ["blue", "triangle"],
                 "Cytoplasm_y": ["red", "square"],
-                "Nuclei_z": ["green", "oval"]
+                "Nuclei_z": ["green", "oval"],
             }
         ).transpose()
 
