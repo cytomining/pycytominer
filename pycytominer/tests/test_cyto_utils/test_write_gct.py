@@ -11,6 +11,7 @@ data_replicate_df = pd.concat(
         pd.DataFrame(
             {
                 "Metadata_g": "a",
+                "Metadata_t": "t",
                 "Cells_x": [1, 1, -1],
                 "Cytoplasm_y": [5, 5, -5],
                 "Nuclei_z": [2, 2, -2],
@@ -19,6 +20,7 @@ data_replicate_df = pd.concat(
         pd.DataFrame(
             {
                 "Metadata_g": "b",
+                "Metadata_t": "u",
                 "Cells_x": [1, 3, 5],
                 "Cytoplasm_y": [8, 3, 1],
                 "Nuclei_z": [5, -2, 1],
@@ -59,7 +61,7 @@ def test_write_gct():
             gct_row_list.append(row)
 
     assert gct_row_list[0] == ["#1.3"]
-    assert gct_row_list[1] == ["3", "6", "1", "2"]
+    assert gct_row_list[1] == ["3", "6", "1", "3"]
     assert gct_row_list[2] == [
         "id",
         "cp_feature_name",
@@ -71,9 +73,10 @@ def test_write_gct():
         "SAMPLE_5",
     ]
     assert gct_row_list[3] == ["g", "nan", "a", "a", "a", "b", "b", "b"]
-    assert gct_row_list[4] == ["h", "nan", "c", "c", "c", "d", "d", "d"]
-    assert gct_row_list[5] == ["Cells_x", "Cells_x", "1", "1", "-1", "1", "3", "5"]
-    assert gct_row_list[6] == [
+    assert gct_row_list[4] == ["t", "nan", "t", "t", "t", "u", "u", "u"]
+    assert gct_row_list[5] == ["h", "nan", "c", "c", "c", "d", "d", "d"]
+    assert gct_row_list[6] == ["Cells_x", "Cells_x", "1", "1", "-1", "1", "3", "5"]
+    assert gct_row_list[7] == [
         "Cytoplasm_y",
         "Cytoplasm_y",
         "5",
@@ -83,7 +86,7 @@ def test_write_gct():
         "3",
         "1",
     ]
-    assert gct_row_list[7] == ["Nuclei_z", "Nuclei_z", "2", "2", "-2", "5", "-2", "1"]
+    assert gct_row_list[8] == ["Nuclei_z", "Nuclei_z", "2", "2", "-2", "5", "-2", "1"]
 
 
 def test_write_gct_infer_features():
@@ -150,7 +153,7 @@ def test_write_gct_with_feature_metadata():
             gct_row_list.append(row)
 
     assert gct_row_list[0] == ["#1.3"]
-    assert gct_row_list[1] == ["3", "6", "2", "2"]
+    assert gct_row_list[1] == ["3", "6", "2", "3"]
     assert gct_row_list[2] == [
         "id",
         "color",
@@ -163,8 +166,9 @@ def test_write_gct_with_feature_metadata():
         "SAMPLE_5",
     ]
     assert gct_row_list[3] == ["g", "nan", "nan", "a", "a", "a", "b", "b", "b"]
-    assert gct_row_list[4] == ["h", "nan", "nan", "c", "c", "c", "d", "d", "d"]
-    assert gct_row_list[5] == [
+    assert gct_row_list[4] == ["t", "nan", "nan", "t", "t", "t", "u", "u", "u"]
+    assert gct_row_list[5] == ["h", "nan", "nan", "c", "c", "c", "d", "d", "d"]
+    assert gct_row_list[6] == [
         "Cells_x",
         "blue",
         "triangle",
@@ -175,7 +179,7 @@ def test_write_gct_with_feature_metadata():
         "3",
         "5",
     ]
-    assert gct_row_list[6] == [
+    assert gct_row_list[7] == [
         "Cytoplasm_y",
         "red",
         "square",
@@ -186,7 +190,7 @@ def test_write_gct_with_feature_metadata():
         "3",
         "1",
     ]
-    assert gct_row_list[7] == [
+    assert gct_row_list[8] == [
         "Nuclei_z",
         "green",
         "oval",
