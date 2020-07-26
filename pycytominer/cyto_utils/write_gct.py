@@ -60,7 +60,7 @@ def write_gct(
         .rename({"index": "id"}, axis="columns")
         .transpose()
     )
-    metadata_part.index = metadata_part.index.str.lstrip("Metadata_")
+    metadata_part.index = [x.replace("Metadata_", "") for x in metadata_part.index]
 
     nrow_feature, ncol_features = feature_df.shape
     _, ncol_metadata = metadata_df.shape
