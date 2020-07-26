@@ -1,4 +1,4 @@
-samples="all"import pandas as pd
+import pandas as pd
 import pytest
 from pycytominer.operations import correlation_threshold
 
