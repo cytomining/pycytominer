@@ -1,9 +1,10 @@
 import os
 import random
+import pytest
 import numpy as np
 import pandas as pd
 from scipy.stats import median_absolute_deviation
-from pycytominer.cyto_utils.transform import Whiten, RobustMAD
+from pycytominer.operations.transform import Whiten, RobustMAD
 
 random.seed(123)
 
@@ -18,34 +19,53 @@ data_df = pd.DataFrame(
 
 
 def test_whiten():
-    """
-    Testing the base covariance pycytominer function
-    """
-    scaler = Whiten()
-    scaler = scaler.fit(data_df)
-    transform_df = scaler.transform(data_df)
+    whiten_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
+    for method in whiten_methods:
+        for center in [True, False]:
+            scaler = Whiten(method=method, center=center)
+            scaler = scaler.fit(data_df)
+            transform_df = scaler.transform(data_df)
 
-    # The transfomed data is expected to have uncorrelated samples
-    result = pd.DataFrame(np.cov(np.transpose(transform_df))).round().sum().sum()
-    expected_result = data_df.shape[1]
+            # The transfomed data is expected to have uncorrelated samples
+            result = (
+                pd.DataFrame(np.cov(np.transpose(transform_df)))
+                .abs()
+                .round()
+                .sum()
+                .clip(1)  # necessary for when center == False (numerically unstable)
+                .sum()
+            )
+            expected_result = data_df.shape[1]
 
-    assert int(result) == expected_result
+            assert int(result) == expected_result
 
 
-def test_whiten_no_center():
-    """
-    Testing the base covariance pycytominer function
-    """
+def test_low_variance_whiten():
+    err_str = "Divide by zero error, make sure low variance columns are removed"
+    data_no_variance = data_df.assign(e=1)
+    whiten_methods = ["PCA-cor", "ZCA-cor"]
+    for method in whiten_methods:
+        for center in [True, False]:
+            scaler = Whiten(method=method, center=center)
+            with pytest.raises(ValueError) as errorinfo:
+                scaler = scaler.fit(data_no_variance)
+
+            assert err_str in str(errorinfo.value.args[0])
+
+
+def test_whiten_precenter():
     data_precentered = data_df - data_df.mean()
-    scaler = Whiten(center=False)
-    scaler = scaler.fit(data_precentered)
-    transform_df = scaler.transform(data_df)
+    whiten_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
+    for method in whiten_methods:
+        scaler = Whiten(method=method, center=False)
+        scaler = scaler.fit(data_precentered)
+        transform_df = scaler.transform(data_df)
 
-    # The transfomed data is expected to have uncorrelated samples
-    result = pd.DataFrame(np.cov(np.transpose(transform_df))).round().sum().sum()
-    expected_result = data_df.shape[1]
+        # The transfomed data is expected to have uncorrelated samples
+        result = pd.DataFrame(np.cov(np.transpose(transform_df))).round().sum().sum()
+        expected_result = data_df.shape[1]
 
-    assert int(result) == expected_result
+        assert int(result) == expected_result
 
 
 def test_robust_mad():
