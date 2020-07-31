@@ -9,9 +9,8 @@ from pycytominer.cyto_utils import (
     output,
     infer_cp_features,
     load_profiles,
-    Whiten,
-    RobustMAD,
 )
+from pycytominer.operations import Whiten, RobustMAD
 
 
 def normalize(
