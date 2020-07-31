@@ -296,7 +296,7 @@ def test_normalize_robustize_mad_allsamples_novar():
             "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
             "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
             "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
-            "yy": [0.0] * normalize_result.shape[0]
+            "yy": [0.0] * normalize_result.shape[0],
         }
     ).reset_index(drop=True)
 
@@ -439,44 +439,58 @@ def test_normalize_standardize_allsamples_compress():
 
 
 def test_normalize_whiten():
-    result = normalize(
-        data_whiten_df,
-        features=["a", "b", "c", "d"],
-        meta_features=["id"],
-        method="whiten",
-    )
-    result_cov = (
-        pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
-        .round()
-        .sum()
-        .sum()
-    )
-    expected_result = data_whiten_df.shape[1] - 1
-    assert result_cov == expected_result
+    for whiten_method in ["ZCA", "PCA", "ZCA-cor", "PCA-cor"]:
+        for whiten_center in [True, False]:
+            result = normalize(
+                data_whiten_df,
+                features=["a", "b", "c", "d"],
+                meta_features=["id"],
+                method="whiten",
+                whiten_method=whiten_method,
+                whiten_center=whiten_center,
+            )
+            result_cov = (
+                pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
+                .round()
+                .sum()
+                .clip(1)
+                .sum()
+            )
+            expected_result = data_whiten_df.shape[1] - 1
+            assert result_cov == expected_result
 
-    result = normalize(
-        data_whiten_df,
-        samples="id == 'control'",
-        features=["a", "b", "c", "d"],
-        meta_features=["id"],
-        method="whiten",
-    )
-    result_cov = (
-        np.cov(np.transpose(result.query("id == 'control'").drop("id", axis="columns")))
-        .round()
-        .sum()
-        .sum()
-    )
-    # Add some tolerance to result b/c of low sample size
-    expected_result = data_whiten_df.shape[1] + 3
-    assert result_cov < expected_result
+            result = normalize(
+                data_whiten_df,
+                samples="id == 'control'",
+                features=["a", "b", "c", "d"],
+                meta_features=["id"],
+                method="whiten",
+                whiten_method=whiten_method,
+                whiten_center=whiten_center,
+            )
+            result_cov = (
+                np.cov(
+                    np.transpose(
+                        result.query("id == 'control'").drop("id", axis="columns")
+                    )
+                )
+                .round()
+                .sum()
+                .clip(1)
+                .sum()
+            )
+            # Add some tolerance to result b/c of low sample size
+            expected_result = data_whiten_df.shape[1]
+            assert result_cov < expected_result
 
-    non_whiten_result_cov = (
-        np.cov(
-            np.transpose(result.query("id == 'treatment'").drop("id", axis="columns"))
-        )
-        .round()
-        .sum()
-        .sum()
-    )
-    assert non_whiten_result_cov >= expected_result - 3
+            non_whiten_result_cov = (
+                np.cov(
+                    np.transpose(
+                        result.query("id == 'treatment'").drop("id", axis="columns")
+                    )
+                )
+                .round()
+                .sum()
+                .sum()
+            )
+            assert non_whiten_result_cov >= expected_result - 5
