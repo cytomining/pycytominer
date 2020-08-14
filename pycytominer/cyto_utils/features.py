@@ -104,9 +104,7 @@ def count_na_features(population_df, features):
     Dataframe of NA counts per variable
     """
 
-    return pd.DataFrame(
-        population_df.loc[:, features].isna().sum(), columns=["num_na"]
-    )
+    return pd.DataFrame(population_df.loc[:, features].isna().sum(), columns=["num_na"])
 
 
 def drop_outlier_features(

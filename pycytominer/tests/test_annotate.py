@@ -52,7 +52,7 @@ def test_annotate_write():
         platemap=platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file=output_file
+        output_file=output_file,
     )
 
     result = annotate(
@@ -60,7 +60,7 @@ def test_annotate_write():
         platemap=platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none"
+        output_file="none",
     )
     expected_result = pd.read_csv(output_file)
 
@@ -83,7 +83,7 @@ def test_annotate_compress():
         platemap=platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none"
+        output_file="none",
     )
     expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)
