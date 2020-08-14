@@ -4,8 +4,7 @@ Compare replicate correlation to random pairwise correlations.
 
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.features import infer_cp_features
+from pycytominer.cyto_utils import load_profiles, output, infer_cp_features
 
 
 def audit(
@@ -55,11 +54,7 @@ def audit(
     Pandas DataFrame of audits or written to file
     """
     # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
+    profiles = load_profiles(profiles)
 
     if samples != "all":
         profiles = profiles.query(samples)

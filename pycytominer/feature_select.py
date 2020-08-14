@@ -5,11 +5,14 @@ Select features to use in downstream analysis based on specified selection metho
 import os
 import pandas as pd
 
-from pycytominer.correlation_threshold import correlation_threshold
-from pycytominer.variance_threshold import variance_threshold
-from pycytominer.get_na_columns import get_na_columns
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.features import (
+from pycytominer.operations import (
+    correlation_threshold,
+    variance_threshold,
+    get_na_columns,
+)
+from pycytominer.cyto_utils import (
+    load_profiles,
+    output,
     get_blacklist_features,
     infer_cp_features,
     drop_outlier_features,
@@ -19,7 +22,7 @@ from pycytominer.cyto_utils.features import (
 def feature_select(
     profiles,
     features="infer",
-    samples="none",
+    samples="all",
     operation="variance_threshold",
     output_file="none",
     na_cutoff=0.05,
@@ -41,7 +44,7 @@ def feature_select(
                if "infer", then assume cell painting features are those that start with
                "Cells", "Nuclei", or "Cytoplasm"
     samples - if provided, a list of samples to provide operation on
-              [default: "none"] - if "none", use all samples to calculate
+              [default: "all"] - if "all", use all samples to calculate
     operation - str or list of given operations to perform on input profiles
     output_file - [default: "none"] if provided, will write annotated profiles to file
                   if not specified, will return the annotated profiles. We recommend
@@ -82,12 +85,9 @@ def feature_select(
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")
+
     # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
+    profiles = load_profiles(profiles)
 
     if features == "infer":
         features = infer_cp_features(profiles)

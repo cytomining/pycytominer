@@ -5,15 +5,15 @@ specified threshold
 
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.features import infer_cp_features
-from pycytominer.cyto_utils.util import (
+from pycytominer.cyto_utils import (
+    infer_cp_features,
     get_pairwise_correlation,
     check_correlation_method,
 )
 
 
 def correlation_threshold(
-    population_df, features="infer", samples="none", threshold=0.9, method="pearson"
+    population_df, features="infer", samples="all", threshold=0.9, method="pearson"
 ):
     """
     Exclude features that have correlations above a certain threshold
@@ -38,7 +38,7 @@ def correlation_threshold(
     assert 0 <= threshold <= 1, "threshold variable must be between (0 and 1)"
 
     # Subset dataframe and calculate correlation matrix across subset features
-    if samples != "none":
+    if samples != "all":
         population_df = population_df.loc[samples, :]
 
     if features == "infer":

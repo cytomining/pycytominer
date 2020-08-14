@@ -5,8 +5,12 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-from pycytominer.cyto_utils import output, infer_cp_features
-from pycytominer.cyto_utils.transform import Whiten, RobustMAD
+from pycytominer.cyto_utils import (
+    output,
+    infer_cp_features,
+    load_profiles,
+)
+from pycytominer.operations import Whiten, RobustMAD
 
 
 def normalize(
@@ -19,6 +23,7 @@ def normalize(
     compression=None,
     float_format=None,
     whiten_center=True,
+    whiten_method="ZCA"
 ):
     """
     Normalize features
@@ -44,17 +49,15 @@ def normalize(
                        For example, use "%.3g" for 3 decimal precision.
     whiten_center - if data should be centered before whitening transform [default: True]
                     (only used if method = "whiten")
+    whiten_method - the type of whitening normalization used [default: 'ZCA']
+                    (only used if method = "whiten")
 
     Return:
     A normalized DataFrame
     """
 
     # Load Data
-    if not isinstance(profiles, pd.DataFrame):
-        try:
-            profiles = pd.read_csv(profiles)
-        except FileNotFoundError:
-            raise FileNotFoundError("{} profile file not found".format(profiles))
+    profiles = load_profiles(profiles)
 
     # Define which scaler to use
     method = method.lower()
@@ -69,7 +72,7 @@ def normalize(
     elif method == "mad_robustize":
         scaler = RobustMAD()
     elif method == "whiten":
-        scaler = Whiten(center=whiten_center)
+        scaler = Whiten(center=whiten_center, method=whiten_method)
 
     if features == "infer":
         features = infer_cp_features(profiles)

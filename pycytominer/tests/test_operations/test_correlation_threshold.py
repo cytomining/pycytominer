@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from pycytominer.correlation_threshold import correlation_threshold
+from pycytominer.operations import correlation_threshold
 
 # Build data to use in tests
 data_df = pd.DataFrame(
@@ -27,7 +27,7 @@ def test_correlation_threshold():
     correlation_threshold_result = correlation_threshold(
         population_df=data_df,
         features=data_df.columns.tolist(),
-        samples="none",
+        samples="all",
         threshold=0.9,
         method="pearson",
     )
@@ -39,7 +39,7 @@ def test_correlation_threshold():
     correlation_threshold_result = correlation_threshold(
         population_df=data_df,
         features=data_df.columns.tolist(),
-        samples="none",
+        samples="all",
         threshold=0.2,
         method="pearson",
     )
@@ -53,7 +53,7 @@ def test_correlation_threshold_uncorrelated():
     correlation_threshold_result = correlation_threshold(
         population_df=data_uncorrelated_df,
         features=data_uncorrelated_df.columns.tolist(),
-        samples="none",
+        samples="all",
         threshold=0.9,
         method="pearson",
     )
@@ -80,7 +80,7 @@ def test_correlation_threshold_featureinfer():
         correlation_threshold_result = correlation_threshold(
             population_df=data_df,
             features="infer",
-            samples="none",
+            samples="all",
             threshold=0.9,
             method="pearson",
         )
@@ -93,7 +93,7 @@ def test_correlation_threshold_featureinfer():
     correlation_threshold_result = correlation_threshold(
         population_df=data_cp_df,
         features="infer",
-        samples="none",
+        samples="all",
         threshold=0.9,
         method="pearson",
     )

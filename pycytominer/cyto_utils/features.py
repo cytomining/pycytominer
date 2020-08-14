@@ -93,7 +93,7 @@ def infer_cp_features(population_df, metadata=False):
 
 
 def drop_outlier_features(
-    population_df, features="infer", samples="none", outlier_cutoff=15
+    population_df, features="infer", samples="all", outlier_cutoff=15
 ):
     """
     Exclude a feature if its min or max absolute value is greater than the threshold
@@ -104,14 +104,14 @@ def drop_outlier_features(
                if "infer", then assume cell painting features are those that start with
                "Cells_", "Nuclei_", or "Cytoplasm_"
     samples - list samples to perform operation on
-              [default: "none"] - if "none", use all samples to calculate
+              [default: "all"] - if "all", use all samples to calculate
     outlier_cutoff - threshold to remove feature if absolute value is greater
 
     Return:
     list of features to exclude from the population_df
     """
     # Subset dataframe
-    if samples != "none":
+    if samples != "all":
         population_df = population_df.loc[samples, :]
 
     if features == "infer":

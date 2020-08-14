@@ -5,11 +5,11 @@ Modified from caret::nearZeroVar()
 
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.features import infer_cp_features
+from pycytominer.cyto_utils import infer_cp_features
 
 
 def variance_threshold(
-    population_df, features="infer", samples="none", freq_cut=0.05, unique_cut=0.01
+    population_df, features="infer", samples="all", freq_cut=0.05, unique_cut=0.01
 ):
     """
     Exclude features that have low variance (low information content)
@@ -20,7 +20,7 @@ def variance_threshold(
                if "infer", then assume cell painting features are those that start with
                "Cells_", "Nuclei_", or "Cytoplasm_"
     samples - list samples to perform operation on
-              [default: "none"] - if "none", use all samples to calculate
+              [default: "all"] - if "all", use all samples to calculate
     freq_cut - float of ratio (second most common feature value / most common) [default: 0.1]
     unique_cut - float of ratio (num unique features / num samples) [default: 0.1]
 
@@ -32,7 +32,7 @@ def variance_threshold(
     assert 0 <= unique_cut <= 1, "unique_cut variable must be between (0 and 1)"
 
     # Subset dataframe
-    if samples != "none":
+    if samples != "all":
         population_df = population_df.loc[samples, :]
 
     if features == "infer":
@@ -74,7 +74,10 @@ def calculate_frequency(feature_column, freq_cut):
     Feature name if it passes threshold, "NA" otherwise
     """
     val_count = feature_column.value_counts()
-    max_count = val_count.iloc[0]
+    try:
+        max_count = val_count.iloc[0]
+    except IndexError:
+        return np.nan
     try:
         second_max_count = val_count.iloc[1]
     except IndexError:
