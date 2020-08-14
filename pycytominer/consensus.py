@@ -108,19 +108,16 @@ def modz(
 
     if features == "infer":
         features = infer_cp_features(population_df)
-        features = replicate_columns + features
-    else:
-        add_replicate_columns = []
-        for replicate_column in replicate_columns:
-            if replicate_column not in features:
-                add_replicate_columns.append(replicate_column)
-        features = add_replicate_columns + features
 
-    population_df = population_df.loc[:, features]
+    subset_features = list(set(replicate_columns + features))
+    population_df = population_df.loc[:, subset_features]
 
     modz_df = population_df.groupby(replicate_columns).apply(
         lambda x: modz_base(
-            x, method=method, min_weight=min_weight, precision=precision
+            x.loc[:, features],
+            method=method,
+            min_weight=min_weight,
+            precision=precision,
         )
     )
 
