@@ -11,7 +11,7 @@ from .load import (
     load_platemap,
 )
 from .features import (
-    get_blacklist_features,
+    get_blocklist_features,
     label_compartment,
     count_na_features,
     infer_cp_features,

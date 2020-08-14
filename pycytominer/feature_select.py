@@ -13,7 +13,7 @@ from pycytominer.operations import (
 from pycytominer.cyto_utils import (
     load_profiles,
     output,
-    get_blacklist_features,
+    get_blocklist_features,
     infer_cp_features,
     drop_outlier_features,
 )
@@ -32,7 +32,7 @@ def feature_select(
     unique_cut=0.1,
     compression=None,
     float_format=None,
-    blacklist_file=None,
+    blocklist_file=None,
     outlier_cutoff=15,
 ):
     """
@@ -57,9 +57,9 @@ def feature_select(
     compression - the mechanism to compress [default: None]
     float_format - decimal precision to use in writing output file [default: None]
                    For example, use "%.3g" for 3 decimal precision.
-    blacklist_file - file location of dataframe with features to exclude [default: None]
-                     Note that if "blacklist" in operation then will remove standard
-                     blacklist
+    blocklist_file - file location of dataframe with features to exclude [default: None]
+                     Note that if "blocklist" in operation then will remove standard
+                     blocklist
     outlier_cutoff - the threshold at which the maximum or minimum value of a feature
                      across a full experiment is excluded [default: 15]. Note that this
                      procedure is typically applied (and therefore the default is
@@ -69,7 +69,7 @@ def feature_select(
         "variance_threshold",
         "correlation_threshold",
         "drop_na_columns",
-        "blacklist",
+        "blocklist",
         "drop_outliers",
     ]
 
@@ -117,13 +117,13 @@ def feature_select(
                 threshold=corr_threshold,
                 method=corr_method,
             )
-        elif op == "blacklist":
-            if blacklist_file:
-                exclude = get_blacklist_features(
-                    population_df=profiles, blacklist_file=blacklist_file
+        elif op == "blocklist":
+            if blocklist_file:
+                exclude = get_blocklist_features(
+                    population_df=profiles, blocklist_file=blocklist_file
                 )
             else:
-                exclude = get_blacklist_features(population_df=profiles)
+                exclude = get_blocklist_features(population_df=profiles)
         elif op == "drop_outliers":
             exclude = drop_outlier_features(
                 population_df=profiles,
