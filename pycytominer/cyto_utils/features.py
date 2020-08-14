@@ -5,35 +5,35 @@ Utility function to manipulate cell profiler features
 import os
 import pandas as pd
 
-blacklist_file = os.path.join(
-    os.path.dirname(__file__), "..", "data", "blacklist_features.txt"
+blocklist_file = os.path.join(
+    os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
 )
 
 
-def get_blacklist_features(blacklist_file=blacklist_file, population_df=None):
+def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
     """
-    Get a list of blacklist features
+    Get a list of blocklist features
 
     Arguments:
-    blacklist_file - file location of dataframe with features to exclude
-    population_df - profile dataframe used to subset blacklist features [default: None]
+    blocklist_file - file location of dataframe with features to exclude
+    population_df - profile dataframe used to subset blocklist features [default: None]
 
     Return:
     list of features to exclude from downstream analysis
     """
 
-    blacklist = pd.read_csv(blacklist_file)
+    blocklist = pd.read_csv(blocklist_file)
 
     assert any(
-        [x == "blacklist" for x in blacklist.columns]
-    ), "one column must be named 'blacklist'"
+        [x == "blocklist" for x in blocklist.columns]
+    ), "one column must be named 'blocklist'"
 
-    blacklist_features = blacklist.blacklist.to_list()
+    blocklist_features = blocklist.blocklist.to_list()
     if isinstance(population_df, pd.DataFrame):
         population_features = population_df.columns.tolist()
-        blacklist_features = [x for x in blacklist_features if x in population_features]
+        blocklist_features = [x for x in blocklist_features if x in population_features]
 
-    return blacklist_features
+    return blocklist_features
 
 
 def label_compartment(cp_features, compartment, metadata_cols):
