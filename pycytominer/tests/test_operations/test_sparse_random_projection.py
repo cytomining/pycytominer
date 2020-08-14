@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pycytominer.sparse_random_projection import sparse_random_projection
+from pycytominer.operations import sparse_random_projection
 
 data_df = pd.DataFrame(
     {
