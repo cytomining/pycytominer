@@ -24,7 +24,7 @@ def correlation_threshold(
                if "infer", then assume cell painting features are those that start with
                "Cells_", "Nuclei_", or "Cytoplasm_"
     samples - list samples to perform operation on
-              [default: "none"] - if "none", use all samples to calculate
+              [default: "all"] - if "all", use all samples to calculate
     threshold - float between (0, 1) to exclude features [default: 0.9]
     method - string indicating which correlation metric to use to test cutoff
              [default: "pearson"]

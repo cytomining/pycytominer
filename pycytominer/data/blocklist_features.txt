@@ -1,4 +1,4 @@
-blacklist
+blocklist
 Nuclei_Correlation_Manders_AGP_DNA
 Nuclei_Correlation_Manders_AGP_ER
 Nuclei_Correlation_Manders_AGP_Mito

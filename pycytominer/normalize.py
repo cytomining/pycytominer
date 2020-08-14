@@ -23,7 +23,7 @@ def normalize(
     compression=None,
     float_format=None,
     whiten_center=True,
-    whiten_method="ZCA"
+    whiten_method="ZCA",
 ):
     """
     Normalize features
