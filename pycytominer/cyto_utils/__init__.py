@@ -9,6 +9,8 @@ from .util import (
 from .load import (
     load_profiles,
     load_platemap,
+    load_npz,
+    infer_delim
 )
 from .features import (
     get_blacklist_features,

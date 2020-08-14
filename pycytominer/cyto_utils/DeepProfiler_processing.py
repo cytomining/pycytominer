@@ -4,17 +4,7 @@ import numpy as np
 import pandas as pd
 
 from pycytominer import aggregate
-from pycytominer.cyto_utils import infer_cp_features
-
-
-def load_npz(npz_file):
-    npz = np.load(npz_file)
-    files = npz.files
-    assert len(files) == 1
-
-    df = pd.DataFrame(npz[files[0]])
-
-    return df
+from pycytominer.cyto_utils import infer_cp_features, load_npz
 
 
 class AggregateDeepProfiler:

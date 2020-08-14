@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 import pandas as pd
 
 
@@ -61,3 +62,32 @@ def load_platemap(platemap, add_metadata_id=True):
             for x in platemap.columns
         ]
     return platemap
+
+
+def load_npz(npz_file, feature_prefix="DP"):
+    """
+    Load an npz file storing features and, sometimes, metadata
+
+    Arguments:
+    npz_file - file path to the compressed output (typically DeepProfiler output)
+    feature_prefix - a string to prefix all features [default: "DP"]
+    """
+    npz = np.load(npz_file)
+    files = npz.files
+
+    df = pd.DataFrame(npz["features"])
+    df.columns = [
+        f"{feature_prefix}{x}" if not str(x).startswith(feature_prefix) else x
+        for x in df
+    ]
+
+    if "metadata" in files:
+        metadata = npz["metadata"].item()
+        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]))
+        metadata_df.columns = [
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
+        ]
+
+        df = metadata_df.merge(df, how="outer", left_index=True, right_index=True)
+
+    return df
