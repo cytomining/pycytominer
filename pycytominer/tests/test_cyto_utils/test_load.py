@@ -2,8 +2,10 @@ import os
 import random
 import pytest
 import tempfile
+import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.load import infer_delim, load_profiles, load_platemap
+from pycytominer.cyto_utils import load_profiles, load_platemap
+from pycytominer.cyto_utils.load import infer_delim
 
 random.seed(123)
 
@@ -13,8 +15,10 @@ tmpdir = tempfile.gettempdir()
 # Lauch a sqlite connection
 output_data_file = os.path.join(tmpdir, "test_data.csv")
 output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
+output_data_gzip_file = "{}.gz".format(output_data_file)
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
+output_platemap_file_gzip = "{}.gz".format(output_platemap_file)
 
 # Build data to use in tests
 data_df = pd.concat(
@@ -38,8 +42,10 @@ platemap_df = pd.DataFrame(
 # Write to temp files
 data_df.to_csv(output_data_file, sep="\t", index=False)
 data_df.to_csv(output_data_comma_file, sep=",", index=False)
+data_df.to_csv(output_data_gzip_file, sep=",", index=False, compression="gzip")
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
+platemap_df.to_csv(output_platemap_file_gzip, sep=",", index=False, compression="gzip")
 
 
 def test_infer_delim():
@@ -49,11 +55,17 @@ def test_infer_delim():
     delim = infer_delim(output_platemap_comma_file)
     assert delim == ","
 
+    delim = infer_delim(output_platemap_file_gzip)
+    assert delim == "\t"
+
 
 def test_load_profiles():
 
     profiles = load_profiles(output_data_file)
     pd.testing.assert_frame_equal(data_df, profiles)
+
+    profiles_gzip = load_profiles(output_data_gzip_file)
+    pd.testing.assert_frame_equal(data_df, profiles_gzip)
 
     platemap = load_platemap(output_data_comma_file, add_metadata_id=False)
     pd.testing.assert_frame_equal(data_df, profiles)
@@ -68,6 +80,9 @@ def test_load_platemap():
     pd.testing.assert_frame_equal(platemap, platemap_df)
 
     platemap = load_platemap(output_platemap_comma_file, add_metadata_id=False)
+    pd.testing.assert_frame_equal(platemap, platemap_df)
+
+    platemap = load_platemap(output_platemap_file_gzip, add_metadata_id=False)
     pd.testing.assert_frame_equal(platemap, platemap_df)
 
     platemap_with_annotation = load_platemap(output_platemap_file, add_metadata_id=True)

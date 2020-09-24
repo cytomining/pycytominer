@@ -15,7 +15,7 @@ def infer_delim(file):
     with open(file) as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.readline())
 
-    return(dialect.delimiter)
+    return dialect.delimiter
 
 
 def load_profiles(profiles):
