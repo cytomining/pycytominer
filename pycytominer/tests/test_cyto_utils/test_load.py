@@ -42,10 +42,10 @@ platemap_df = pd.DataFrame(
 # Write to temp files
 data_df.to_csv(output_data_file, sep="\t", index=False)
 data_df.to_csv(output_data_comma_file, sep=",", index=False)
-data_df.to_csv(output_data_gzip_file, sep=",", index=False, compression="gzip")
+data_df.to_csv(output_data_gzip_file, sep="\t", index=False, compression="gzip")
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
-platemap_df.to_csv(output_platemap_file_gzip, sep=",", index=False, compression="gzip")
+platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
 
 
 def test_infer_delim():
