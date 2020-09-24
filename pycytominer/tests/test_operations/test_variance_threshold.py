@@ -64,7 +64,7 @@ def test_calculate_frequency():
     # Test missing value (see issue #69)
     missing_data = data_df.assign(missing=np.nan).apply(
         lambda x: calculate_frequency(x, freq_cut), axis="rows"
-        )
+    )
 
     assert missing_data.isna().sum() == 3
 
@@ -74,7 +74,7 @@ def test_variance_threshold():
     excluded_features = variance_threshold(
         population_df=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
-        unique_cut=unique_cut
+        unique_cut=unique_cut,
     )
     expected_result = ["a"]
 
@@ -84,7 +84,7 @@ def test_variance_threshold():
     excluded_features = variance_threshold(
         population_df=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
-        unique_cut=unique_cut
+        unique_cut=unique_cut,
     )
     expected_result = ["a", "b"]
 
@@ -106,9 +106,7 @@ def test_variance_threshold_featureinfer():
     unique_cut = 0.01
     with pytest.raises(AssertionError) as nocp:
         excluded_features = variance_threshold(
-            population_df=data_unique_test_df,
-            features="infer",
-            unique_cut=unique_cut
+            population_df=data_unique_test_df, features="infer", unique_cut=unique_cut
         )
 
     assert "No CP features found." in str(nocp.value)
@@ -117,9 +115,7 @@ def test_variance_threshold_featureinfer():
     data_cp_df.columns = ["Cells_{}".format(x) for x in data_unique_test_df.columns]
 
     excluded_features = variance_threshold(
-        population_df=data_cp_df,
-        features="infer",
-        unique_cut=unique_cut
+        population_df=data_cp_df, features="infer", unique_cut=unique_cut
     )
 
     expected_result = ["Cells_a"]

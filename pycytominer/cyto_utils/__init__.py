@@ -13,8 +13,9 @@ from .load import (
     infer_delim
 )
 from .features import (
-    get_blacklist_features,
+    get_blocklist_features,
     label_compartment,
+    count_na_features,
     infer_cp_features,
     drop_outlier_features,
 )

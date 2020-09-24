@@ -72,6 +72,20 @@ def test_modz():
     )
 
 
+def test_modz_extraneous_column():
+    # The expected result is to completely remove influence of anticorrelated sample
+    data_replicate_new_col_df = data_replicate_df.assign(Metadata_h="c")
+    consensus_df = modz(
+        data_replicate_new_col_df, replicate_columns, min_weight=0, precision=precision
+    )
+    expected_result = pd.DataFrame(
+        {"Cells_x": [1.0, 4.0], "Cytoplasm_y": [5.0, 2.0], "Nuclei_z": [2.0, -0.5]},
+        index=["a", "b"],
+    )
+    expected_result.index.name = replicate_columns
+    pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+
 def test_modz_multiple_columns():
     replicate_columns = ["Metadata_g", "Metadata_h"]
     data_replicate_multi_df = data_replicate_df.assign(
@@ -97,7 +111,7 @@ def test_modz_multiple_columns():
         data_replicate_multi_df, replicate_columns, min_weight=1, precision=precision
     )
     expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
-    expected_result.index.name = replicate_columns
+
     pd.testing.assert_frame_equal(
         expected_result, consensus_df, check_less_precise=True
     )

@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pycytominer.count_na_features import count_na_features
+from pycytominer.cyto_utils import count_na_features
 
 data_df = pd.DataFrame(
     {

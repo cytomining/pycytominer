@@ -23,7 +23,7 @@ def normalize(
     compression=None,
     float_format=None,
     whiten_center=True,
-    whiten_method="ZCA"
+    whiten_method="ZCA-cor",
 ):
     """
     Normalize features
@@ -49,7 +49,7 @@ def normalize(
                        For example, use "%.3g" for 3 decimal precision.
     whiten_center - if data should be centered before whitening transform [default: True]
                     (only used if method = "whiten")
-    whiten_method - the type of whitening normalization used [default: 'ZCA']
+    whiten_method - the type of whitening normalization used [default: 'ZCA-cor']
                     (only used if method = "whiten")
 
     Return:
