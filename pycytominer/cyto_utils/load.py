@@ -1,4 +1,5 @@
 import csv
+import gzip
 import pandas as pd
 
 
@@ -12,10 +13,16 @@ def infer_delim(file):
     Output:
     the delimiter used in the dataframe (typically either tab or commas)
     """
-    with open(file) as csvfile:
-        dialect = csv.Sniffer().sniff(csvfile.readline())
+    try:
+        with open(file, "r") as csvfile:
+            line = csvfile.readline()
+    except UnicodeDecodeError:
+        with gzip.open(file, "r") as gzipfile:
+            line = gzipfile.readline().decode()
 
-    return(dialect.delimiter)
+    dialect = csv.Sniffer().sniff(line)
+
+    return dialect.delimiter
 
 
 def load_profiles(profiles):
