@@ -2,7 +2,8 @@ import os
 import random
 import numpy as np
 import pandas as pd
-from pycytominer.consensus import modz_base, modz
+from pycytominer.cyto_utils import modz
+from pycytominer.cyto_utils.modz import modz_base
 
 # No replicate information
 data_df = pd.DataFrame({"x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]})
