@@ -86,6 +86,30 @@ def check_aggregate_operation(operation):
     return operation
 
 
+def check_consensus_operation(operation):
+    """
+    Confirm that the input operation for consensus is currently supported
+
+    Arguments:
+    operation - string indicating the consensus operation to provide
+
+    Return:
+    Correctly formatted operation method
+    """
+    operation = operation.lower()
+    avail_ops = ["modz"]  # All aggregation operations are also supported
+    try:
+        operation = check_aggregate_operation(operation)
+    except AssertionError:
+        assert (
+            operation in avail_ops
+        ), "operation {} not supported, select one of {} or see aggregate.py".format(
+            operation, avail_ops
+        )
+
+    return operation
+
+
 def get_pairwise_correlation(population_df, method="pearson"):
     """
     Given a population dataframe, calculate all pairwise correlations
