@@ -32,13 +32,6 @@ data_df = pd.DataFrame(
     }
 ).reset_index(drop=True)
 
-consensus(
-    data_df,
-    replicate_columns="Metadata_treatment",
-    operation="mean",
-    output_file=output_test_file,
-)
-
 
 def test_consensus_aggregate():
     mean_df = consensus(
@@ -46,6 +39,14 @@ def test_consensus_aggregate():
     )
     assert mean_df.shape == (2, 5)
     assert mean_df.loc[0, "Cells_x"] == 4.00
+
+    consensus(
+        data_df,
+        replicate_columns="Metadata_treatment",
+        operation="mean",
+        output_file=output_test_file,
+    )
+
     pd.testing.assert_frame_equal(mean_df, pd.read_csv(output_test_file))
 
     median_df = consensus(
@@ -80,4 +81,12 @@ def test_consensu_modz():
         operation="modz",
         modz_min_weight=1,
     )
+
+    consensus(
+        data_df,
+        replicate_columns="Metadata_treatment",
+        operation="mean",
+        output_file=output_test_file,
+    )
+
     pd.testing.assert_frame_equal(modz_df, pd.read_csv(output_test_file))
