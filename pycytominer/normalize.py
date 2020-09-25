@@ -48,10 +48,9 @@ def normalize(
     float_format - decimal precision to use in writing output file [default: None]
                    For example, use "%.3g" for 3 decimal precision.
     spherize_center - if data should be centered before sphering (aka whitening)
-                      transform [default: True]
-                      (only used if method = "spherize")
-    spherize_method - the type of sphering normalization used [default: 'ZCA-cor']
-                    (only used if method = "spherize")
+                      transform (only used if method = "spherize") [default: True]
+    spherize_method - the type of sphering (aka whitening) normalization used (only
+                      used if method = "spherize") [default: 'ZCA-cor']
 
     Return:
     A normalized DataFrame
