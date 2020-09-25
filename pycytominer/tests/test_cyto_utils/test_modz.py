@@ -105,7 +105,9 @@ def test_modz_multiple_columns():
             "Nuclei_z": [2.0, -0.5],
         }
     )
-    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df.reset_index())
+    pd.testing.assert_frame_equal(
+        expected_result.reset_index(), consensus_df.reset_index()
+    )
 
     # With the min_weight = 1, then modz is mean
     consensus_df = modz(
@@ -133,7 +135,9 @@ def test_modz_multiple_columns_one_metadata_column():
             "Nuclei_z": [2.0, -0.5],
         }
     )
-    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df.reset_index())
+    pd.testing.assert_frame_equal(
+        expected_result.reset_index(), consensus_df.reset_index()
+    )
 
     # With the min_weight = 1, then modz is mean
     consensus_df = modz(
