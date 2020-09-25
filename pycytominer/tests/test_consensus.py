@@ -9,6 +9,7 @@ random.seed(123)
 
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
+output_test_file = os.path.join(tmpdir, "test.csv")
 
 # Set example data
 data_df = pd.DataFrame(
