@@ -5,7 +5,7 @@ import tempfile
 import pandas as pd
 from sqlalchemy import create_engine
 from pycytominer import aggregate
-from pycytominer.aggregate import AggregateProfiles
+from pycytominer.cyto_utils.cells import SingleCells
 
 random.seed(123)
 
@@ -64,16 +64,16 @@ cells_df.to_sql("cells", con=test_engine, index=False, if_exists="replace")
 cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replace")
 nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
 
-# Setup AggregateProfiles Class
-ap = AggregateProfiles(sql_file=file)
-ap_subsample = AggregateProfiles(
+# Setup SingleCells Class
+ap = SingleCells(sql_file=file)
+ap_subsample = SingleCells(
     sql_file=file, subsample_n=2, subsampling_random_state=123
 )
 
 
-def test_AggregateProfiles_init():
+def test_SingleCells_init():
     """
-    Testing initialization of AggregateProfiles
+    Testing initialization of SingleCells
     """
     assert ap.sql_file == file
     assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
@@ -92,11 +92,11 @@ def test_AggregateProfiles_init():
     assert ap_subsample.subsampling_random_state == 123
 
 
-def test_AggregateProfiles_reset_variables():
+def test_SingleCells_reset_variables():
     """
-    Testing initialization of AggregateProfiles
+    Testing initialization of SingleCells
     """
-    ap_switch = AggregateProfiles(sql_file=file)
+    ap_switch = SingleCells(sql_file=file)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
     assert ap_switch.subsampling_random_state == "none"
@@ -121,7 +121,7 @@ def test_AggregateProfiles_reset_variables():
     assert "subsample n must be an integer or coercable" in str(errorinfo.value.args[0])
 
 
-def test_AggregateProfiles_count():
+def test_SingleCells_count():
     count_df = ap.count_cells()
     expected_count = pd.DataFrame(
         {
@@ -307,8 +307,8 @@ def test_aggregate_count_cells_multiple_strata():
     cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replace")
     nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
 
-    # Setup AggregateProfiles Class
-    ap_strata = AggregateProfiles(
+    # Setup SingleCells Class
+    ap_strata = SingleCells(
         sql_file=file,
         subsample_n="4",
         strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
