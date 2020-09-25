@@ -9,7 +9,7 @@ random.seed(123)
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
 
-# Lauch a sqlite connection
+# Setup a testing file
 output_file = os.path.join(tmpdir, "test.csv")
 
 # Build data to use in tests

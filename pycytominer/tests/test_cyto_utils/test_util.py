@@ -9,6 +9,7 @@ from pycytominer.cyto_utils.util import (
     get_pairwise_correlation,
     check_correlation_method,
     check_aggregate_operation,
+    check_consensus_operation,
 )
 
 tmpdir = tempfile.gettempdir()
@@ -93,6 +94,19 @@ def test_check_aggregate_operation_method():
 
     with pytest.raises(AssertionError) as nomethod:
         method = check_aggregate_operation(operation="DOES NOT EXIST")
+
+    assert "not supported, select one of" in str(nomethod.value)
+
+
+def test_check_consensus_operation_method():
+    for test_operation in ["MeaN", "meDIAN", "modZ"]:
+        operation = check_consensus_operation(operation=test_operation)
+        expected_op = test_operation.lower()
+
+        assert operation == expected_op
+
+    with pytest.raises(AssertionError) as nomethod:
+        method = check_consensus_operation(operation="DOES NOT EXIST")
 
     assert "not supported, select one of" in str(nomethod.value)
 
