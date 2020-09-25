@@ -123,6 +123,7 @@ def test_load_npz():
     npz_custom_prefix_df = load_npz(output_npz_file, fallback_feature_prefix="test")
     npz_with_model_df = load_npz(output_npz_with_model_file)
     npz_no_meta_df = load_npz(output_npz_without_metadata_file)
+    real_data_df = load_npz(example_npz_file)
 
     core_cols = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"]
 
@@ -145,3 +146,12 @@ def test_load_npz():
     pd.testing.assert_frame_equal(
         npz_df.drop(core_cols, axis="columns"), npz_no_meta_df
     )
+
+    # Check real data
+    assert real_df.shape == (206, 54)
+    assert all([x in real_df.columns for x in core_cols + ["Metadata_Model"]])
+    assert len(real_df.Metadata_Model.unique()) == 1
+    assert real_df.Metadata_Model.unique()[0] == "cnn"
+    assert real_df.drop(
+        core_cols + ["Metadata_Model"], axis="columns"
+    ).columns.tolist() == [f"cnn_{x}" for x in range(0, 50)]
