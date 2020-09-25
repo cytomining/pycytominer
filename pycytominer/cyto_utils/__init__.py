@@ -6,12 +6,7 @@ from .util import (
     check_aggregate_operation,
     get_pairwise_correlation,
 )
-from .load import (
-    load_profiles,
-    load_platemap,
-    load_npz,
-    infer_delim
-)
+from .load import load_profiles, load_platemap, load_npz, infer_delim
 from .features import (
     get_blocklist_features,
     label_compartment,
