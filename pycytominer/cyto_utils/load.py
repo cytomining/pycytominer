@@ -71,23 +71,24 @@ def load_platemap(platemap, add_metadata_id=True):
     return platemap
 
 
-def load_npz(npz_file, feature_prefix="DP"):
+def load_npz(npz_file, fallback_feature_prefix="DP"):
     """
-    Load an npz file storing features and, sometimes, metadata
+    Load an npz file storing features and, sometimes, metadata.
 
     Arguments:
     npz_file - file path to the compressed output (typically DeepProfiler output)
-    feature_prefix - a string to prefix all features [default: "DP"]
+    fallback_feature_prefix - a string to prefix all features [default: "DP"].
+        The function will first search the .npz file for a metadata column called
+        "Metadata_Model". If the field exists, the function uses this entry as the
+        feature prefix. If it doesn't exist, use the fallback_feature_prefix.
     """
     npz = np.load(npz_file)
     files = npz.files
 
+    # Load features
     df = pd.DataFrame(npz["features"])
-    df.columns = [
-        f"{feature_prefix}{x}" if not str(x).startswith(feature_prefix) else x
-        for x in df
-    ]
 
+    # Load metadata
     if "metadata" in files:
         metadata = npz["metadata"].item()
         metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]))
@@ -95,6 +96,22 @@ def load_npz(npz_file, feature_prefix="DP"):
             f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
         ]
 
+        # Determine the appropriate metadata prefix
+        if "Metadata_Model" in metadata_df.columns:
+            feature_prefix = metadata_df.Metadata_Model.unique()[0]
+        else:
+            feature_prefix = fallback_feature_prefix
+    else:
+        feature_prefix = fallback_feature_prefix
+
+    # Append feature prefix
+    df.columns = [
+        f"{feature_prefix}_{x}" if not str(x).startswith(feature_prefix) else x
+        for x in df
+    ]
+
+    # Append metadata with features
+    if "metadata" in files:
         df = metadata_df.merge(df, how="outer", left_index=True, right_index=True)
 
     return df
