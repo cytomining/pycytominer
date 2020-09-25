@@ -60,7 +60,7 @@ def test_modz():
         index=["a", "b"],
     )
     expected_result.index.name = replicate_columns
-    pd.testing.assert_frame_equal(expected_result, consensus_df)
+    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df)
 
     # With the min_weight = 1, then modz is mean
     consensus_df = modz(
@@ -69,7 +69,7 @@ def test_modz():
     expected_result = data_replicate_df.groupby(replicate_columns).mean().round(4)
     expected_result.index.name = replicate_columns
     pd.testing.assert_frame_equal(
-        expected_result, consensus_df, check_less_precise=True
+        expected_result.reset_index(), consensus_df, check_less_precise=True
     )
 
 
@@ -84,7 +84,7 @@ def test_modz_extraneous_column():
         index=["a", "b"],
     )
     expected_result.index.name = replicate_columns
-    pd.testing.assert_frame_equal(expected_result, consensus_df)
+    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df)
 
 
 def test_modz_multiple_columns():
@@ -105,7 +105,7 @@ def test_modz_multiple_columns():
             "Nuclei_z": [2.0, -0.5],
         }
     )
-    pd.testing.assert_frame_equal(expected_result, consensus_df.reset_index())
+    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df.reset_index())
 
     # With the min_weight = 1, then modz is mean
     consensus_df = modz(
@@ -114,7 +114,7 @@ def test_modz_multiple_columns():
     expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
 
     pd.testing.assert_frame_equal(
-        expected_result, consensus_df, check_less_precise=True
+        expected_result.reset_index(), consensus_df, check_less_precise=True
     )
 
 
@@ -133,7 +133,7 @@ def test_modz_multiple_columns_one_metadata_column():
             "Nuclei_z": [2.0, -0.5],
         }
     )
-    pd.testing.assert_frame_equal(expected_result, consensus_df.reset_index())
+    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df.reset_index())
 
     # With the min_weight = 1, then modz is mean
     consensus_df = modz(
@@ -142,7 +142,7 @@ def test_modz_multiple_columns_one_metadata_column():
     expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
     expected_result.index.name = replicate_columns
     pd.testing.assert_frame_equal(
-        expected_result, consensus_df, check_less_precise=True
+        expected_result.reset_index(), consensus_df, check_less_precise=True
     )
 
 
@@ -171,4 +171,4 @@ def test_modz_multiple_columns_feature_specify():
         {"x": [1.0, 4.0], "y": [5.0, 2.0], "z": [2.0, -0.5]}, index=["a", "b"]
     )
     expected_result.index.name = "g"
-    pd.testing.assert_frame_equal(expected_result, consensus_df)
+    pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df)

@@ -114,6 +114,6 @@ def modz(
             min_weight=min_weight,
             precision=precision,
         )
-    )
+    ).reset_index()
 
     return modz_df
