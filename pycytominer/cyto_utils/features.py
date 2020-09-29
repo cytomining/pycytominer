@@ -66,19 +66,16 @@ def label_compartment(cp_features, compartment, metadata_cols):
     return cp_features
 
 
-def infer_cp_features(population_df, metadata=False):
+def infer_cp_features(population_df, compartments, metadata=False):
     """
     Given a dataframe, output features that we expect to be cell painting features
     """
-    features = [
-        x
-        for x in population_df.columns.tolist()
-        if (
-            x.startswith("Cells_")
-            | x.startswith("Nuclei_")
-            | x.startswith("Cytoplasm_")
-        )
-    ]
+    features = []
+    for col in population_df.columns.tolist():
+        for ind, val in enumerate(compartments):
+            if col.startswith( compartments[ind].title() ):
+                features.append(col)
+                
 
     if metadata:
         features = population_df.columns[
