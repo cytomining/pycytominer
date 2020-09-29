@@ -54,3 +54,14 @@ def test_metadata_feature_infer():
     expected = ["Metadata_Something_Something"]
 
     assert features == expected
+
+
+def test_feature_infer_compartments():
+    features = infer_cp_features(population_df=data_df, compartments=["Cells"])
+    expected = ["Cells_Something_Something", "CElls_somethingwrong"]
+
+    features2 = infer_cp_features(population_df=data_df, compartments=["dont"])
+    expected2 = ["dont pick me"]
+
+    assert features == expected
+    assert features2 == expected2
