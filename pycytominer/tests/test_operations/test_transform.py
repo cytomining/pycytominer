@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from scipy.stats import median_absolute_deviation
-from pycytominer.operations.transform import Whiten, RobustMAD
+from pycytominer.operations.transform import Spherize, RobustMAD
 
 random.seed(123)
 
@@ -18,11 +18,11 @@ data_df = pd.DataFrame(
 ).reset_index(drop=True)
 
 
-def test_whiten():
-    whiten_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
-    for method in whiten_methods:
+def test_spherize():
+    spherize_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
+    for method in spherize_methods:
         for center in [True, False]:
-            scaler = Whiten(method=method, center=center)
+            scaler = Spherize(method=method, center=center)
             scaler = scaler.fit(data_df)
             transform_df = scaler.transform(data_df)
 
@@ -40,24 +40,24 @@ def test_whiten():
             assert int(result) == expected_result
 
 
-def test_low_variance_whiten():
+def test_low_variance_spherize():
     err_str = "Divide by zero error, make sure low variance columns are removed"
     data_no_variance = data_df.assign(e=1)
-    whiten_methods = ["PCA-cor", "ZCA-cor"]
-    for method in whiten_methods:
+    spherize_methods = ["PCA-cor", "ZCA-cor"]
+    for method in spherize_methods:
         for center in [True, False]:
-            scaler = Whiten(method=method, center=center)
+            scaler = Spherize(method=method, center=center)
             with pytest.raises(ValueError) as errorinfo:
                 scaler = scaler.fit(data_no_variance)
 
             assert err_str in str(errorinfo.value.args[0])
 
 
-def test_whiten_precenter():
+def test_spherize_precenter():
     data_precentered = data_df - data_df.mean()
-    whiten_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
-    for method in whiten_methods:
-        scaler = Whiten(method=method, center=False)
+    spherize_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
+    for method in spherize_methods:
+        scaler = Spherize(method=method, center=False)
         scaler = scaler.fit(data_precentered)
         transform_df = scaler.transform(data_df)
 

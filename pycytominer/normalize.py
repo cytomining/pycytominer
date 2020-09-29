@@ -10,7 +10,7 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
     load_profiles,
 )
-from pycytominer.operations import Whiten, RobustMAD
+from pycytominer.operations import Spherize, RobustMAD
 
 
 def normalize(
@@ -22,8 +22,8 @@ def normalize(
     output_file="none",
     compression=None,
     float_format=None,
-    whiten_center=True,
-    whiten_method="ZCA-cor",
+    spherize_center=True,
+    spherize_method="ZCA-cor",
 ):
     """
     Normalize features
@@ -46,11 +46,11 @@ def normalize(
                   that this output file be suffixed with "_normalized.csv".
     compression - the mechanism to compress [default: None]
     float_format - decimal precision to use in writing output file [default: None]
-                       For example, use "%.3g" for 3 decimal precision.
-    whiten_center - if data should be centered before whitening transform [default: True]
-                    (only used if method = "whiten")
-    whiten_method - the type of whitening normalization used [default: 'ZCA-cor']
-                    (only used if method = "whiten")
+                   For example, use "%.3g" for 3 decimal precision.
+    spherize_center - if data should be centered before sphering (aka whitening)
+                      transform (only used if method = "spherize") [default: True]
+    spherize_method - the type of sphering (aka whitening) normalization used (only
+                      used if method = "spherize") [default: 'ZCA-cor']
 
     Return:
     A normalized DataFrame
@@ -62,7 +62,7 @@ def normalize(
     # Define which scaler to use
     method = method.lower()
 
-    avail_methods = ["standardize", "robustize", "mad_robustize", "whiten"]
+    avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
     assert method in avail_methods, "operation must be one {}".format(avail_methods)
 
     if method == "standardize":
@@ -71,8 +71,8 @@ def normalize(
         scaler = RobustScaler()
     elif method == "mad_robustize":
         scaler = RobustMAD()
-    elif method == "whiten":
-        scaler = Whiten(center=whiten_center, method=whiten_method)
+    elif method == "spherize":
+        scaler = Spherize(center=spherize_center, method=spherize_method)
 
     if features == "infer":
         features = infer_cp_features(profiles)
