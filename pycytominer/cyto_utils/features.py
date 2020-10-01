@@ -74,9 +74,8 @@ def infer_cp_features(
     """
     features = []
     for col in population_df.columns.tolist():
-        for ind, val in enumerate(compartments):
-            if col.startswith(compartments[ind].title()):
-                features.append(col)
+        if any([col.startswith(x.title()) for x in compartments]):
+            features.append(col)
 
     if metadata:
         features = population_df.columns[
