@@ -66,9 +66,7 @@ nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
 
 # Setup SingleCells Class
 ap = SingleCells(sql_file=file)
-ap_subsample = SingleCells(
-    sql_file=file, subsample_n=2, subsampling_random_state=123
-)
+ap_subsample = SingleCells(sql_file=file, subsample_n=2, subsampling_random_state=123)
 
 
 def test_SingleCells_init():
