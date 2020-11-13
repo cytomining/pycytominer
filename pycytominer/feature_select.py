@@ -40,28 +40,30 @@ def feature_select(
 
     Arguments:
     profiles - either pandas DataFrame or a file that stores profile data
-    features - list of cell painting features [default: "infer"]
+    features - [default: "infer"] list of cell painting features
                if "infer", then assume cell painting features are those that start with
                "Cells", "Nuclei", or "Cytoplasm"
-    samples - if provided, a list of samples to provide operation on
-              [default: "all"] - if "all", use all samples to calculate
-    operation - str or list of given operations to perform on input profiles
+    samples - [default: "all"] if provided, a list of samples to provide operation on
+              if "all", use all samples to calculate
+    operation - [default: "variance_threshold"] str or list of given operations to perform on input profiles.
+                See all_ops for available operations.
     output_file - [default: "none"] if provided, will write annotated profiles to file
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with
                   "_normalized_variable_selected.csv".
-    na_cutoff - proportion of missing values in a column to tolerate before removing
-    corr_threshold - float between (0, 1) to exclude features above [default: 0.9]
-    freq_cut - float of ratio (2nd most common feature val / most common) [default: 0.1]
-    unique_cut - float of ratio (num unique features / num samples) [default: 0.1]
-    compression - the mechanism to compress [default: None]
-    float_format - decimal precision to use in writing output file [default: None]
+    na_cutoff - [default: 0.05] proportion of missing values in a column to tolerate before removing
+    corr_threshold - [default: 0.9] float between (0, 1) to exclude features above if any
+                     two features are correlated above this threshold. 
+    freq_cut - [default: 0.1] float of ratio (2nd most common feature val / most common) #TODO More explanation please
+    unique_cut - [default: 0.1] float of ratio (num unique features / num samples) #TODO More explanation please
+    compression - [default: None] the mechanism to compress. See cyto_utils/output.py for options.
+    float_format - [default: None] decimal precision to use in writing output file
                    For example, use "%.3g" for 3 decimal precision.
-    blocklist_file - file location of dataframe with features to exclude [default: None]
+    blocklist_file - [default: None] file location of dataframe with features to exclude
                      Note that if "blocklist" in operation then will remove standard
                      blocklist
-    outlier_cutoff - the threshold at which the maximum or minimum value of a feature
-                     across a full experiment is excluded [default: 15]. Note that this
+    outlier_cutoff - [default: 15] the threshold at which the maximum or minimum value of a feature
+                     across a full experiment is excluded. Note that this
                      procedure is typically applied (and therefore the default is
                      suitable) for after normalization.
     """

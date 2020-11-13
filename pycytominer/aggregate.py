@@ -1,5 +1,6 @@
 """
-Aggregate single cell data based on given grouping variables
+Aggregate single cell data based on given grouping variables.
+Aggregation assumes input data is arrayed such that each well has a single perturbation.
 """
 
 import numpy as np
@@ -12,10 +13,10 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
 )
 
-
 class AggregateProfiles:
     """
-    Class to aggregate single cell morphological profiles
+    Class to aggregate single cell morphological profiles into per-well measurements.
+    You can currently choose to do this by either median or mean.
     """
 
     def __init__(
@@ -42,6 +43,7 @@ class AggregateProfiles:
         output_file - [default: "none"] string if specified, write to location
         compartments - list of compartments to process
         merge_cols - column indicating which columns to merge images and compartments
+        load_image_data - [default: True] whether or not to load the image table.
         subsample_frac - [default: 1] float (0 < subsample <= 1) indicating percentage of
                          single cells to select
         subsample_n - [default: "all"] int indicating how many samples to include
@@ -119,11 +121,12 @@ class AggregateProfiles:
 
     def count_cells(self, compartment="cells", count_subset=False):
         """
-        Determine how many cells are measured per well.
+        Determine how many objects are present in each well (or subset of each well).
 
         Arguments:
-        compartment - string indicating the compartment to subset
-        count_subset - [default: False] count the number of cells in subset partition
+        compartment - [default: "cells"] string indicating the compartment name to subset
+        count_subset - [default: False] count the number of objects in the current subset partition.
+                       If set to True you must have set up a subset with get_subsample beforehand.
         """
         check_compartments(compartment)
 
@@ -247,8 +250,8 @@ class AggregateProfiles:
         output_file - [default: "none"] if provided, will write annotated profiles to file
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with "_augmented.csv".
-        compression - the mechanism to compress [default: None]
-        float_format - decimal precision to use in writing output file [default: None]
+        compression - [default: None] the mechanism to compress. See cyto_utils/output.py for options.
+        float_format - [default: None] decimal precision to use in writing output file
                            For example, use "%.3g" for 3 decimal precision.
 
         Return:
