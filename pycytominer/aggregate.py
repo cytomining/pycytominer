@@ -13,6 +13,7 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
 )
 
+
 class AggregateProfiles:
     """
     Class to aggregate single cell morphological profiles into per-well measurements.
