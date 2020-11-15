@@ -53,9 +53,9 @@ def feature_select(
                   "_normalized_variable_selected.csv".
     na_cutoff - [default: 0.05] proportion of missing values in a column to tolerate before removing
     corr_threshold - [default: 0.9] float between (0, 1) to exclude features above if any
-                     two features are correlated above this threshold. 
-    freq_cut - [default: 0.1] float of ratio (2nd most common feature val / most common) #TODO More explanation please
-    unique_cut - [default: 0.1] float of ratio (num unique features / num samples) #TODO More explanation please
+                     two features are correlated above this threshold.
+    freq_cut - [default: 0.1] float of ratio (2nd most common feature val / most common)
+    unique_cut - [default: 0.1] float of ratio (num unique features / num samples)
     compression - [default: None] the mechanism to compress. See cyto_utils/output.py for options.
     float_format - [default: None] decimal precision to use in writing output file
                    For example, use "%.3g" for 3 decimal precision.
