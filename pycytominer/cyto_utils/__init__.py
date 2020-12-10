@@ -4,6 +4,7 @@ from .util import (
     load_known_metadata_dictionary,
     check_correlation_method,
     check_aggregate_operation,
+    check_consensus_operation,
     get_pairwise_correlation,
 )
 from .load import (
@@ -18,3 +19,4 @@ from .features import (
     drop_outlier_features,
 )
 from .write_gct import write_gct
+from .modz import modz

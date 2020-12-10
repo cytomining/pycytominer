@@ -1,0 +1,7 @@
+sphinx
+sphinx-autobuild
+sphinx-autoapi
+groundwork-sphinx-theme
+
+mock
+autodoc

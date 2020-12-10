@@ -39,7 +39,7 @@ def annotate(
     output_file - [default: "none"] if provided, will write annotated profiles to file
                   if not specified, will return the annotated profiles. We recommend
                   that this output file be suffixed with "_augmented.csv".
-    add_metadata_id_to_platemap - boolean if the platemap variables should be recoded
+    add_metadata_id_to_platemap - [default: True] boolean if the platemap variables possibly need "Metadata" pre-pended
     format_broad_cmap - [default: False] boolean if we need to add columns to make
                         compatible with Broad CMAP naming conventions.
     perturbation_mode - [default: "none"] - either "chemical", "genetic" or "none" and only
@@ -48,7 +48,7 @@ def annotate(
                         metadata information
     external_join_left - [default: "none"] the merge column in the profile metadata
     external_join_right - [default: "none"] the merge column in the external metadata
-    compression - the mechanism to compress [default: None]
+    compression - the mechanism to compress [default: None] See cyto_utils/output.py for options.
     float_format - decimal precision to use in writing output file [default: None]
                        For example, use "%.3g" for 3 decimal precision.
 

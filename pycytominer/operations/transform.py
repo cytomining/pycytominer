@@ -10,10 +10,11 @@ from scipy.stats import median_absolute_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class Whiten(BaseEstimator, TransformerMixin):
+class Spherize(BaseEstimator, TransformerMixin):
     """
-    Class to whiten data in the base sklearn transform API
-    Note, this implementation is modified/inspired from the following sources:
+    Class to apply a sphering transform (aka whitening) data in the base sklearn
+    transform API. Note, this implementation is modified/inspired from the following
+    sources:
     1) A custom function written by Juan C. Caicedo
     2) A custom ZCA function at https://github.com/mwv/zca
     3) Notes from Niranj Chandrasekaran (https://github.com/cytomining/pycytominer/issues/90)
@@ -26,7 +27,7 @@ class Whiten(BaseEstimator, TransformerMixin):
         Arguments:
         epsilon - fudge factor parameter
         center - option to center input X matrix
-        method - a string indicating which class of whitening to perform
+        method - a string indicating which class of sphering to perform
         """
         avail_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
 
@@ -40,10 +41,10 @@ class Whiten(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         """
-        Identify the whitening transform given self.X
+        Identify the sphering transform given self.X
 
         Argument:
-        X - dataframe to fit whitening transform
+        X - dataframe to fit sphering transform
         """
         # Get the mean of the features (columns) and center if specified
         self.mu = X.mean()
@@ -63,7 +64,7 @@ class Whiten(BaseEstimator, TransformerMixin):
             # Process the eigenvalues into a diagonal matrix and fix rounding errors
             D = np.diag(1.0 / np.sqrt(s.clip(self.epsilon)))
 
-            # Calculate the whitening matrix
+            # Calculate the sphering matrix
             self.W = np.dot(D, U.transpose())
 
             # If ZCA, perform additional rotation
@@ -91,7 +92,7 @@ class Whiten(BaseEstimator, TransformerMixin):
             # process the covariance diagonal matrix and fix rounding errors
             v = np.diag(1.0 / np.sqrt(np.diag(C).clip(self.epsilon)))
 
-            # Calculate the whitening matrix
+            # Calculate the sphering matrix
             self.W = np.dot(np.dot(D, G.transpose()), v)
 
             # If ZCA-cor, perform additional rotation
@@ -102,7 +103,7 @@ class Whiten(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
         """
-        Perform the whitening transform
+        Perform the sphering transform
         """
         return np.dot(X - self.mu, self.W.transpose())
 

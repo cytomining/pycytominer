@@ -1,5 +1,5 @@
 """
-Aggregate single cell data based on given grouping variables
+Aggregate profiles based on given grouping variables.
 """
 
 import numpy as np
