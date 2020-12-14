@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from pycytominer import aggregate
+from pycytominer import normalize
 from pycytominer.cyto_utils import (
     output,
     check_compartments,
@@ -10,17 +11,40 @@ from pycytominer.cyto_utils import (
 )
 
 
-class SingleCells:
-    """
-    Class to interact with single cell morphological profiles
+class SingleCells(object):
+    """This is a class to interact with single cell morphological profiles. Interaction
+    includes aggregation, normalization, and output.
+
+    :param file_or_conn: A file string or database connection storing the location of single cell profiles
+    :type file_or_conn: str
+    :param strata: The columns to groupby and aggregate single cells, defaults to ["Metadata_Plate", "Metadata_Well"]
+    :type strata: list
+    :param features: The features that should be aggregated, defaults to "infer"
+    :type features: str, list
+    :param aggregation_operation: operation to perform single cell aggregation, defaults to "median"
+    :type aggregation_operation: str
+    :param output_file: If specified, the location to write the file, defaults to "none"
+    :type output_file: str
+    :param compartments: list of compartments to process, defaults to ["cells", "cytoplasm", "nuclei"]
+    :type compartments: list
+    :param merge_cols: columns indicating how to merge image and compartment data, defaults to ["TableNumber", "ImageNumber"]
+    :type merge_cols: list
+    :param load_image_data: if image data should be loaded into memory, defaults to True
+    :type load_image_data: bool
+    :param subsample_frac: indicating percentage of single cells to select (0 < subsample_frac <= 1), defaults to 1
+    :type subsample_frac: float
+    :param subsample_n: indicate how many samples to subsample - do not specify both subsample_frac and subsample_n, defaults to "all"
+    :type subsample_n:, str, int
+    :param subsampling_random_state: the random state to init subsample, defaults to "none"
+    :type subsampling_random_state: str, int
     """
 
     def __init__(
         self,
-        sql_file,
+        file_or_conn,
         strata=["Metadata_Plate", "Metadata_Well"],
         features="infer",
-        operation="median",
+        aggregation_operation="median",
         output_file="none",
         compartments=["cells", "cytoplasm", "nuclei"],
         merge_cols=["TableNumber", "ImageNumber"],
@@ -29,36 +53,22 @@ class SingleCells:
         subsample_n="all",
         subsampling_random_state="none",
     ):
-        """
-        Arguments:
-        sql_file - string or sqlalchemy connection
-        strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
-        features - [default: "all"] or list indicating features that should be aggregated
-        operation - [default: "median"] a string indicating how the data is aggregated
-                    currently only supports one of ['mean', 'median']
-        output_file - [default: "none"] string if specified, write to location
-        compartments - list of compartments to process
-        merge_cols - column indicating which columns to merge images and compartments
-        subsample_frac - [default: 1] float (0 < subsample <= 1) indicating percentage of
-                         single cells to select
-        subsample_n - [default: "all"] int indicating how many samples to include
-        subsampling_random_state - [default: "none"] the random state to init subsample
-        """
+        """Constructor method"""
         # Check compartments specified
         check_compartments(compartments)
 
         # Check if correct operation is specified
-        operation = check_aggregate_operation(operation)
+        aggregation_operation = check_aggregate_operation(aggregation_operation)
 
         # Check that the subsample_frac is between 0 and 1
         assert (
             0 < subsample_frac and 1 >= subsample_frac
         ), "subsample_frac must be between 0 and 1"
 
-        self.sql_file = sql_file
+        self.file_or_conn = file_or_conn
         self.strata = strata
         self.features = features
-        self.operation = operation.lower()
+        self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
         self.compartments = compartments
         self.merge_cols = merge_cols
@@ -73,7 +83,7 @@ class SingleCells:
             self.set_subsample_n(self.subsample_n)
 
         # Connect to sqlite engine
-        self.engine = create_engine(self.sql_file)
+        self.engine = create_engine(self.file_or_conn)
         self.conn = self.engine.connect()
 
         # Throw an error if both subsample_frac and subsample_n is set
@@ -83,19 +93,35 @@ class SingleCells:
             self.load_image()
 
     def _check_subsampling(self):
+        """Internal method checking if subsampling options were specified correctly"""
         # Check that the user didn't specify both subset frac and subsample all
         assert (
             self.subsample_frac == 1 or self.subsample_n == "all"
         ), "Do not set both subsample_frac and subsample_n"
 
     def set_output_file(self, output_file):
+        """Setting operation to conveniently rename output file
+
+        :param output_file: the new output file name
+        :type output_file: str
+        """
         self.output_file = output_file
 
     def set_subsample_frac(self, subsample_frac):
+        """Setting operation to conveniently update the subsample fraction
+
+        :param subsample_frac: indicating percentage of single cells to select (0 < subsample_frac <= 1), defaults to 1
+        :type subsample_frac: float
+        """
         self.subsample_frac = subsample_frac
         self._check_subsampling()
 
     def set_subsample_n(self, subsample_n):
+        """Setting operation to conveniently update the subsample n
+
+        :param subsample_n: indicate how many samples to subsample - do not specify both subsample_frac and subsample_n, defaults to "all"
+        :type subsample_n:, str, int
+        """
         try:
             self.subsample_n = int(subsample_n)
         except ValueError:
@@ -103,24 +129,28 @@ class SingleCells:
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):
+        """Setting operation to conveniently update the subsample random state
+
+        :param random_state: the random state to init subsample, defaults to "none"
+        :type random_state:, str, int
+        """
         self.subsampling_random_state = random_state
 
     def load_image(self):
-        """
-        Load image table from sqlite file
-        """
+        """Load image table from sqlite file"""
         # Extract image metadata
         image_cols = "TableNumber, ImageNumber, {}".format(", ".join(self.strata))
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
     def count_cells(self, compartment="cells", count_subset=False):
-        """
-        Determine how many cells are measured per well.
+        """Determine how many cells are measured per well.
 
-        Arguments:
-        compartment - string indicating the compartment to subset
-        count_subset - [default: False] count the number of cells in subset partition
+        :param compartment: string indicating the compartment to subset, defaults to "cells"
+        :type compartment: str
+        :param count_subset: whether or not count the number of cells as specified by the strata groups
+        :return: A pandas dataframe of cell counts in the experiment
+        :rtype: pd.DataFrame
         """
         check_compartments(compartment)
 
@@ -148,9 +178,13 @@ class SingleCells:
 
         return count_df
 
-    def subsample_profiles(self, x):
-        """
-        Sample a Pandas DataFrame given the subsampling fraction
+    def subsample_profiles(self, df):
+        """Sample a Pandas DataFrame given subsampling information
+
+        :param df: A single cell profile dataframe
+        :type df: pd.DataFrame
+        :return: A subsampled pandas dataframe of single cell profiles
+        :rtype: pd.DataFrame
         """
         if self.subsampling_random_state == "none":
             random_state = np.random.randint(0, 10000, size=1)[0]
@@ -158,22 +192,21 @@ class SingleCells:
 
         if self.subsample_frac == 1:
             return pd.DataFrame.sample(
-                x,
+                df,
                 n=self.subsample_n,
                 replace=True,
                 random_state=self.subsampling_random_state,
             )
         else:
             return pd.DataFrame.sample(
-                x, frac=self.subsample_frac, random_state=self.subsampling_random_state
+                df, frac=self.subsample_frac, random_state=self.subsampling_random_state
             )
 
     def get_subsample(self, compartment="cells"):
-        """
-        Extract subsample from sqlite file
+        """Apply the subsampling procedure
 
-        Arguments:
-        compartment - [default: "cells"] string indicating the compartment to subset
+        :param compartment: string indicating the compartment to process, defaults to "cells"
+        :type compartment: str
         """
         check_compartments(compartment)
 
@@ -194,14 +227,14 @@ class SingleCells:
         self.is_subset_computed = True
 
     def aggregate_compartment(self, compartment, compute_subsample=False):
-        """
-        Aggregate morphological profiles
+        """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
-        Arguments:
-        compartment - str indicating specific compartment to extract
-
-        Return:
-        Either the merged object file or write object to disk
+        :param compartment: string indicating the specific compartment, defaults to "cells"
+        :type compartment: str
+        :param compute_subsample: determine if subsample should be computed, defaults to False
+        :type compute_subsample: bool
+        :return: Aggregated single-cell profiles
+        :rtype: pd.DataFrame
         """
         check_compartments(compartment)
 
@@ -220,7 +253,7 @@ class SingleCells:
             population_df=population_df,
             strata=self.strata,
             features=self.features,
-            operation=self.operation,
+            operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
         )
 
@@ -228,28 +261,34 @@ class SingleCells:
 
     def aggregate_profiles(
         self,
-        compute_subsample="False",
+        compute_subsample=False,
         output_file="none",
         compression=None,
         float_format=None,
     ):
-        """
-        Aggregate and merge compartments. This is the primary entry to this class.
+        """Aggregate and merge compartments. This is the primary entry to this class.
 
-        Arguments:
-        compute_subsample - [default: False] boolean if subsample should be computed.
-                            NOTE: Must be specified to perform subsampling. Will not
-                            apply subsetting if set to False even if subsample is
-                            initialized
-        output_file - [default: "none"] if provided, will write annotated profiles to file
-                  if not specified, will return the annotated profiles. We recommend
-                  that this output file be suffixed with "_augmented.csv".
-        compression - the mechanism to compress [default: None]
-        float_format - decimal precision to use in writing output file [default: None]
-                           For example, use "%.3g" for 3 decimal precision.
+        :param compute_subsample: Determine if subsample should be computed, defaults to False
+        :type compute_subsample: bool
+        :param output_file: the name of a file to output, defaults to "none":
+        :type output_file: str, optional
+        :param compression: the mechanism to compress, defaults to None
+        :type compression: str, optional
+        :param float_format: decimal precision to use in writing output file, defaults to None
+        :type float_format: str, optional
 
         Return:
         if output_file is set, then write to file. If not then return
+
+        .. note::
+            compute_subsample must be specified to perform subsampling. The function
+            aggregate_profiles(compute_subsample=True) will apply subsetting if even if
+            subsample is initialized
+
+        .. note::
+            We recommend that, if provided, the output file be suffixed with "_augmented"
+
+        :Example:
         """
 
         if output_file != "none":
