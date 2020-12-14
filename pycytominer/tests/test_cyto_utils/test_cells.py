@@ -65,15 +65,17 @@ cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replac
 nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
 
 # Setup SingleCells Class
-ap = SingleCells(sql_file=file)
-ap_subsample = SingleCells(sql_file=file, subsample_n=2, subsampling_random_state=123)
+ap = SingleCells(file_or_conn=file)
+ap_subsample = SingleCells(
+    file_or_conn=file, subsample_n=2, subsampling_random_state=123
+)
 
 
 def test_SingleCells_init():
     """
     Testing initialization of SingleCells
     """
-    assert ap.sql_file == file
+    assert ap.file_or_conn == file
     assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
     assert ap.merge_cols == ["TableNumber", "ImageNumber"]
     assert ap.features == "infer"
@@ -84,7 +86,7 @@ def test_SingleCells_init():
     assert ap_subsample.subsample_n == 2
     assert ap.subset_data_df == "none"
     assert ap.output_file == "none"
-    assert ap.operation == "median"
+    assert ap.aggregation_operation == "median"
     assert not ap.is_aggregated
     assert ap.subsampling_random_state == "none"
     assert ap_subsample.subsampling_random_state == 123
@@ -94,7 +96,7 @@ def test_SingleCells_reset_variables():
     """
     Testing initialization of SingleCells
     """
-    ap_switch = SingleCells(sql_file=file)
+    ap_switch = SingleCells(file_or_conn=file)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
     assert ap_switch.subsampling_random_state == "none"
@@ -188,7 +190,7 @@ def test_aggregate_subsampling_count_cells():
     )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
-    profiles = ap_subsample.aggregate_profiles()
+    profiles = ap_subsample.aggregate_profiles(compute_subsample=True)
 
     count_df = ap_subsample.count_cells(count_subset=True)
     expected_count = pd.DataFrame(
@@ -307,7 +309,7 @@ def test_aggregate_count_cells_multiple_strata():
 
     # Setup SingleCells Class
     ap_strata = SingleCells(
-        sql_file=file,
+        file_or_conn=file,
         subsample_n="4",
         strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
     )
@@ -323,7 +325,7 @@ def test_aggregate_count_cells_multiple_strata():
     )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
-    profiles = ap_strata.aggregate_profiles()
+    profiles = ap_strata.aggregate_profiles(compute_subsample=True)
 
     count_df = ap_strata.count_cells(count_subset=True)
     expected_count = pd.DataFrame(
