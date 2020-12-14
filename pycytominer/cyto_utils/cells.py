@@ -8,7 +8,13 @@ from pycytominer.cyto_utils import (
     check_compartments,
     check_aggregate_operation,
     infer_cp_features,
+    get_default_linking_cols,
+    get_default_compartments,
+    assert_linking_cols_complete,
 )
+
+default_compartments = get_default_compartments()
+default_linking_cols = get_default_linking_cols()
 
 
 class SingleCells(object):
@@ -27,6 +33,8 @@ class SingleCells(object):
     :type output_file: str
     :param compartments: list of compartments to process, defaults to ["cells", "cytoplasm", "nuclei"]
     :type compartments: list
+    :param compartment_linking_cols: dictionary identifying how to merge columns across tables, default noted below:
+    :type compartment_linking_cols: dict
     :param merge_cols: columns indicating how to merge image and compartment data, defaults to ["TableNumber", "ImageNumber"]
     :type merge_cols: list
     :param load_image_data: if image data should be loaded into memory, defaults to True
@@ -37,6 +45,17 @@ class SingleCells(object):
     :type subsample_n:, str, int
     :param subsampling_random_state: the random state to init subsample, defaults to "none"
     :type subsampling_random_state: str, int
+
+    .. note::
+        the argument compartment_linking_cols is designed to work with CellProfiler output,
+        as curated by cytominer-database. The defaut is: {
+            "cytoplasm": {
+                "cells": "Cytoplasm_Parent_Cells",
+                "nuclei": "Cytoplasm_Parent_Nuclei",
+            },
+            "cells": {"cytoplasm": "ObjectNumber"},
+            "nuclei": {"cytoplasm": "ObjectNumber"},
+        }
     """
 
     def __init__(
@@ -46,7 +65,8 @@ class SingleCells(object):
         features="infer",
         aggregation_operation="median",
         output_file="none",
-        compartments=["cells", "cytoplasm", "nuclei"],
+        compartments=default_compartments,
+        compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
         load_image_data=True,
         subsample_frac=1,
@@ -68,9 +88,9 @@ class SingleCells(object):
         self.file_or_conn = file_or_conn
         self.strata = strata
         self.features = features
+        self.load_image_data = load_image_data
         self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
-        self.compartments = compartments
         self.merge_cols = merge_cols
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
@@ -78,6 +98,13 @@ class SingleCells(object):
         self.subsampling_random_state = subsampling_random_state
         self.is_aggregated = False
         self.is_subset_computed = False
+        self.compartments = compartments
+        self.compartment_linking_cols = compartment_linking_cols
+
+        # Confirm that the compartments and linking cols are formatted properly
+        assert_linking_cols_complete(
+            compartments=self.compartments, linking_cols=self.compartment_linking_cols
+        )
 
         if self.subsample_n != "all":
             self.set_subsample_n(self.subsample_n)
@@ -89,7 +116,7 @@ class SingleCells(object):
         # Throw an error if both subsample_frac and subsample_n is set
         self._check_subsampling()
 
-        if load_image_data:
+        if self.load_image_data:
             self.load_image()
 
     def _check_subsampling(self):
@@ -226,6 +253,11 @@ class SingleCells(object):
 
         self.is_subset_computed = True
 
+    def load_compartment(self, compartment):
+        compartment_query = "select * from {}".format(compartment)
+        df = pd.read_sql(sql=compartment_query, con=self.conn)
+        return df
+
     def aggregate_compartment(self, compartment, compute_subsample=False):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -238,13 +270,11 @@ class SingleCells(object):
         """
         check_compartments(compartment)
 
-        compartment_query = "select * from {}".format(compartment)
-
         if (self.subsample_frac < 1 or self.subsample_n != "all") and compute_subsample:
             self.get_subsample(compartment=compartment)
 
         population_df = self.image_df.merge(
-            pd.read_sql(sql=compartment_query, con=self.conn),
+            self.load_compartment(compartment=compartment),
             how="inner",
             on=self.merge_cols,
         )
@@ -258,6 +288,87 @@ class SingleCells(object):
         )
 
         return object_df
+
+    def merge_single_cells(
+        self,
+        sc_output_file="none",
+        compression=None,
+        float_format=None,
+        single_cell_normalize=False,
+        normalize_args=None,
+    ):
+        """Given the linking columns, merge single cell data. Normalization is also supported
+
+        :param sc_output_file: the name of a file to output, defaults to "none":
+        :type sc_output_file: str, optional
+        :param compression: the mechanism to compress, defaults to None
+        :type compression: str, optional
+        :param float_format: decimal precision to use in writing output file, defaults to None
+        :type float_format: str, optional
+        :param single_cell_normalize: determine if the single cell data should also be normalized
+        :type single_cell_normalize: bool
+        :param normalize_args: additional arguments passed as a dictionary as input to pycytominer.normalize()
+        :return: Either a dataframe (if output_file="none") or will write to file
+        :rtype: pd.DataFrame, optional
+        """
+
+        # Load the single cell dataframe by merging on the specific linking columns
+        sc_df = ""
+        linking_check_cols = []
+        for left_compartment in default_linking_cols:
+            for right_compartment in default_linking_cols[left_compartment]:
+                # Make sure only one merge per combination occurs
+                linking_check = "-".join(sorted([left_compartment, right_compartment]))
+                if linking_check in linking_check_cols:
+                    continue
+
+                # Specify how to indicate merge suffixes
+                merge_suffix = [
+                    "_{comp_l}".format(comp_l=left_compartment),
+                    "_{comp_r}".format(comp_r=right_compartment),
+                ]
+
+                left_link_col = default_linking_cols[left_compartment][
+                    right_compartment
+                ]
+                right_link_col = default_linking_cols[right_compartment][
+                    left_compartment
+                ]
+
+                if isinstance(sc_df, str):
+                    sc_df = self.load_compartment(compartment=left_compartment).merge(
+                        self.load_compartment(compartment=right_compartment),
+                        left_on=self.merge_cols + [left_link_col],
+                        right_on=self.merge_cols + [right_link_col],
+                        suffixes=merge_suffix,
+                    )
+                else:
+                    sc_df = sc_df.merge(
+                        self.load_compartment(compartment=right_compartment),
+                        left_on=self.merge_cols + [left_link_col],
+                        right_on=self.merge_cols + [right_link_col],
+                        suffixes=merge_suffix,
+                    )
+
+                linking_check_cols.append(linking_check)
+
+        # Add image data to single cell dataframe
+        if not self.load_image_data:
+            self.load_image()
+
+        sc_df = self.image_df.merge(sc_df, on=self.merge_cols, how="right")
+        if single_cell_normalize:
+            sc_df = normalize(profiles=sc_df, **normalize_args)
+
+        if sc_output_file != "none":
+            output(
+                df=sc_df,
+                output_filename=sc_output_file,
+                compression=compression,
+                float_format=float_format,
+            )
+        else:
+            return sc_df
 
     def aggregate_profiles(
         self,
@@ -276,9 +387,8 @@ class SingleCells(object):
         :type compression: str, optional
         :param float_format: decimal precision to use in writing output file, defaults to None
         :type float_format: str, optional
-
-        Return:
-        if output_file is set, then write to file. If not then return
+        :return: Either a dataframe (if output_file="none") or will write to file
+        :rtype: pd.DataFrame, optional
 
         .. note::
             compute_subsample must be specified to perform subsampling. The function
