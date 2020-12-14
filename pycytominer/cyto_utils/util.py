@@ -12,6 +12,10 @@ default_metadata_file = os.path.join(
 )
 
 
+def get_default_compartments():
+    return ["cells", "cytoplasm", "nuclei"]
+
+
 def check_compartments(compartments):
     valid_compartments = ["cells", "cytoplasm", "nuclei"]
     error_str = "compartment not supported, use one of {}".format(valid_compartments)

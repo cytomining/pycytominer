@@ -5,6 +5,7 @@ import tempfile
 import pandas as pd
 from pycytominer.cyto_utils.util import (
     check_compartments,
+    get_default_compartments,
     load_known_metadata_dictionary,
     get_pairwise_correlation,
     check_correlation_method,
@@ -50,6 +51,11 @@ def test_check_compartments_not_valid():
         not_valid = ["Cells", "Cytoplasm", "SOMETHING"]
         output = check_compartments(not_valid)
     assert "compartment not supported" in str(ae.value)
+
+
+def test_get_default_compartments():
+    default_comparments = get_default_compartments()
+    assert ["cells", "cytoplasm", "nuclei"] == default_comparments
 
 
 def test_load_known_metadata_dictionary():

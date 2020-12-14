@@ -1,11 +1,16 @@
 from .output import output
 from .util import (
     check_compartments,
+    get_default_compartments,
     load_known_metadata_dictionary,
     check_correlation_method,
     check_aggregate_operation,
     check_consensus_operation,
     get_pairwise_correlation,
+)
+from .single_cell_ingest_utils import (
+    get_default_linking_cols,
+    assert_linking_cols_complete,
 )
 from .load import (
     load_profiles,
