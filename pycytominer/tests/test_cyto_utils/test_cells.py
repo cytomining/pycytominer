@@ -133,6 +133,11 @@ def test_SingleCells_count():
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
+def test_load_compartment():
+    loaded_compartment_df = ap.load_compartment(compartment="cells")
+    pd.testing.assert_frame_equal(loaded_compartment_df, cells_df)
+
+
 def test_aggregate_comparment():
     df = image_df.merge(cells_df, how="inner", on=["TableNumber", "ImageNumber"])
     result = aggregate(df)
