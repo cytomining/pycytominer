@@ -1,8 +1,9 @@
 """
-Miscellaneous utility function
+Miscellaneous utility functions
 """
 
 import os
+import warnings
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.features import infer_cp_features
@@ -17,14 +18,23 @@ def get_default_compartments():
 
 
 def check_compartments(compartments):
-    valid_compartments = ["cells", "cytoplasm", "nuclei"]
-    error_str = "compartment not supported, use one of {}".format(valid_compartments)
+    default_compartments = get_default_compartments()
+
     if isinstance(compartments, list):
         compartments = [x.lower() for x in compartments]
-        assert all([x in valid_compartments for x in compartments]), error_str
     elif isinstance(compartments, str):
-        compartments = compartments.lower()
-        assert compartments in valid_compartments, error_str
+        compartments = [compartments.lower()]
+
+    non_canonical_compartments = []
+    for compartment in compartments:
+        if compartment not in default_compartments:
+            non_canonical_compartments.append(compartment)
+
+    if len(non_canonical_compartments) > 0:
+        warn_str = "Non-canonical compartment detected: {x}".format(
+            x=", ".join(non_canonical_compartments)
+        )
+        warnings.warn(warn_str)
 
 
 def load_known_metadata_dictionary(metadata_file=default_metadata_file):

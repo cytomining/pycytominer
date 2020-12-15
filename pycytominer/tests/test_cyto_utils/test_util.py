@@ -2,6 +2,7 @@ import os
 import random
 import pytest
 import tempfile
+import warnings
 import pandas as pd
 from pycytominer.cyto_utils.util import (
     check_compartments,
@@ -37,20 +38,31 @@ def test_check_compartments():
 
 
 def test_check_compartments_not_valid():
-    with pytest.raises(AssertionError) as ae:
+    warn_expected_string = "Non-canonical compartment detected: something"
+    warnings.simplefilter("always")
+    with warnings.catch_warnings(record=True) as w:
         not_valid = ["SOMETHING"]
         output = check_compartments(not_valid)
-    assert "compartment not supported" in str(ae.value)
+    assert issubclass(w[-1].category, UserWarning)
+    assert warn_expected_string in str(w[-1].message)
 
-    with pytest.raises(AssertionError) as ae:
-        not_valid = "SOMETHING"
+    with warnings.catch_warnings(record=True) as w:
+        not_valid = "SOMETHING"  # Also works with strings
         output = check_compartments(not_valid)
-    assert "compartment not supported" in str(ae.value)
+    assert issubclass(w[-1].category, UserWarning)
+    assert warn_expected_string in str(w[-1].message)
 
-    with pytest.raises(AssertionError) as ae:
-        not_valid = ["Cells", "Cytoplasm", "SOMETHING"]
+    with warnings.catch_warnings(record=True) as w:
+        not_valid = ["CelLs", "CytopLasM", "SOMETHING"]
         output = check_compartments(not_valid)
-    assert "compartment not supported" in str(ae.value)
+    assert issubclass(w[-1].category, UserWarning)
+    assert warn_expected_string in str(w[-1].message)
+
+    with warnings.catch_warnings(record=True) as w:
+        not_valid = ["CelLs", "CytopLasM", "SOMETHING", "NOTHING"]
+        output = check_compartments(not_valid)
+    assert issubclass(w[-1].category, UserWarning)
+    assert "{x}, nothing".format(x=warn_expected_string) in str(w[-1].message)
 
 
 def test_get_default_compartments():
