@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from pycytominer import aggregate
-from pycytominer import normalize
+from pycytominer import aggregate, normalize
 from pycytominer.cyto_utils import (
     output,
     check_compartments,
