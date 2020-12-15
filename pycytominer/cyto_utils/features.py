@@ -72,6 +72,9 @@ def infer_cp_features(
     """
     Given a dataframe, output features that we expect to be cell painting features
     """
+    compartments = convert_compartment_format_to_list(compartments)
+    compartments = [x.title() for x in compartments]
+
     features = []
     for col in population_df.columns.tolist():
         if any([col.startswith(x.title()) for x in compartments]):
@@ -140,3 +143,12 @@ def drop_outlier_features(
     ].index.tolist()
 
     return outlier_features
+
+
+def convert_compartment_format_to_list(compartments):
+    if isinstance(compartments, list):
+        compartments = [x.lower() for x in compartments]
+    elif isinstance(compartments, str):
+        compartments = [compartments.lower()]
+
+    return compartments

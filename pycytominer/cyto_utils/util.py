@@ -6,7 +6,10 @@ import os
 import warnings
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.features import infer_cp_features
+from pycytominer.cyto_utils.features import (
+    infer_cp_features,
+    convert_compartment_format_to_list,
+)
 
 default_metadata_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "metadata_feature_dictionary.txt"
@@ -20,10 +23,7 @@ def get_default_compartments():
 def check_compartments(compartments):
     default_compartments = get_default_compartments()
 
-    if isinstance(compartments, list):
-        compartments = [x.lower() for x in compartments]
-    elif isinstance(compartments, str):
-        compartments = [compartments.lower()]
+    compartments = convert_compartment_format_to_list(compartments)
 
     non_canonical_compartments = []
     for compartment in compartments:

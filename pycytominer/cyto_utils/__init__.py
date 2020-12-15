@@ -23,6 +23,7 @@ from .features import (
     count_na_features,
     infer_cp_features,
     drop_outlier_features,
+    convert_compartment_format_to_list,
 )
 from .write_gct import write_gct
 from .modz import modz
