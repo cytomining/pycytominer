@@ -25,8 +25,6 @@ class SingleCells(object):
     :type file_or_conn: str
     :param strata: The columns to groupby and aggregate single cells, defaults to ["Metadata_Plate", "Metadata_Well"]
     :type strata: list
-    :param features: The features that should be aggregated, defaults to "infer"
-    :type features: str, list
     :param aggregation_operation: operation to perform single cell aggregation, defaults to "median"
     :type aggregation_operation: str
     :param output_file: If specified, the location to write the file, defaults to "none"
@@ -62,7 +60,6 @@ class SingleCells(object):
         self,
         file_or_conn,
         strata=["Metadata_Plate", "Metadata_Well"],
-        features="infer",
         aggregation_operation="median",
         output_file="none",
         compartments=default_compartments,
@@ -87,7 +84,6 @@ class SingleCells(object):
 
         self.file_or_conn = file_or_conn
         self.strata = strata
-        self.features = features
         self.load_image_data = load_image_data
         self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
@@ -267,13 +263,17 @@ class SingleCells(object):
         df = pd.read_sql(sql=compartment_query, con=self.conn)
         return df
 
-    def aggregate_compartment(self, compartment, compute_subsample=False):
+    def aggregate_compartment(
+        self, compartment, compute_subsample=False, aggregate_args=None
+    ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
         :param compartment: string indicating the specific compartment, defaults to "cells"
         :type compartment: str
         :param compute_subsample: determine if subsample should be computed, defaults to False
         :type compute_subsample: bool
+        :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
+        :type aggregate_args: None, dict
         :return: Aggregated single-cell profiles
         :rtype: pd.DataFrame
         """
@@ -282,18 +282,36 @@ class SingleCells(object):
         if (self.subsample_frac < 1 or self.subsample_n != "all") and compute_subsample:
             self.get_subsample(compartment=compartment)
 
+        # Load image data if not already loaded
+        if not self.load_image_data:
+            self.load_image()
+            self.load_image_data = True
+
         population_df = self.image_df.merge(
             self.load_compartment(compartment=compartment),
             how="inner",
             on=self.merge_cols,
         ).rename(self.linking_col_rename, axis="columns")
 
+        # Infering features is tricky with non-canonical data
+        if aggregate_args is None:
+            aggregate_args = {}
+            features = infer_cp_features(population_df, compartments=compartment)
+        elif "features" not in aggregate_args:
+            features = infer_cp_features(population_df, compartments=compartment)
+        elif aggregate_args["features"] == "infer":
+            features = infer_cp_features(population_df, compartments=compartment)
+        else:
+            features = aggregate_args["features"]
+
+        aggregate_args["features"] = features
+
         object_df = aggregate(
             population_df=population_df,
             strata=self.strata,
-            features=self.features,
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
+            **aggregate_args
         )
 
         return object_df
@@ -317,6 +335,7 @@ class SingleCells(object):
         :param single_cell_normalize: determine if the single cell data should also be normalized
         :type single_cell_normalize: bool
         :param normalize_args: additional arguments passed as a dictionary as input to pycytominer.normalize()
+        :type normalize_args: None, dict
         :return: Either a dataframe (if output_file="none") or will write to file
         :rtype: pd.DataFrame, optional
         """
@@ -383,6 +402,7 @@ class SingleCells(object):
         # Add image data to single cell dataframe
         if not self.load_image_data:
             self.load_image()
+            self.load_image_data = True
 
         sc_df = (
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")
@@ -421,6 +441,7 @@ class SingleCells(object):
         output_file="none",
         compression=None,
         float_format=None,
+        aggregate_args=None,
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -432,6 +453,8 @@ class SingleCells(object):
         :type compression: str, optional
         :param float_format: decimal precision to use in writing output file, defaults to None
         :type float_format: str, optional
+        :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
+        :type aggregate_args: None, dict
         :return: Either a dataframe (if output_file="none") or will write to file
         :rtype: pd.DataFrame, optional
 
@@ -449,21 +472,19 @@ class SingleCells(object):
         if output_file != "none":
             self.set_output_file(output_file)
 
-        aggregated = (
-            self.aggregate_compartment(
-                compartment="cells", compute_subsample=compute_subsample
-            )
-            .merge(
-                self.aggregate_compartment(compartment="cytoplasm"),
-                on=self.strata,
-                how="inner",
-            )
-            .merge(
-                self.aggregate_compartment(compartment="nuclei"),
-                on=self.strata,
-                how="inner",
-            )
-        )
+        compartment_idx = 0
+        for compartment in self.compartments:
+            if compartment_idx == 0:
+                aggregated = self.aggregate_compartment(
+                    compartment=compartment, compute_subsample=compute_subsample
+                )
+            else:
+                aggregated = aggregated.merge(
+                    self.aggregate_compartment(compartment=compartment),
+                    on=self.strata,
+                    how="inner",
+                )
+            compartment_idx += 1
 
         self.is_aggregated = True
 

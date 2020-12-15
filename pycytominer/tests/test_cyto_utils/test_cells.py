@@ -117,7 +117,6 @@ def test_SingleCells_init():
     assert ap.file_or_conn == file
     assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
     assert ap.merge_cols == ["TableNumber", "ImageNumber"]
-    assert ap.features == "infer"
     pd.testing.assert_frame_equal(image_df, ap.image_df)
     assert ap.subsample_frac == 1
     assert ap_subsample.subsample_frac == 1
@@ -340,6 +339,13 @@ def test_aggregate_profiles():
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
+
+    # Confirm aggregation after merging single cells
+    sc_aggregated_df = aggregate(
+            ap.merge_single_cells()
+        ).sort_index(axis="columns")
+
+    pd.testing.assert_frame_equal(result.sort_index(axis="columns"), sc_aggregated_df)
 
 
 def test_aggregate_subsampling_count_cells():
