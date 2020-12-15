@@ -10,6 +10,7 @@ from pycytominer.cyto_utils import (
     get_default_linking_cols,
     get_default_compartments,
     assert_linking_cols_complete,
+    provide_linking_cols_feature_name_update,
 )
 
 default_compartments = get_default_compartments()
@@ -105,6 +106,11 @@ class SingleCells(object):
             compartments=self.compartments, linking_cols=self.compartment_linking_cols
         )
 
+        # Build a dictionary to update linking column feature names
+        self.linking_col_rename = provide_linking_cols_feature_name_update(
+            self.compartment_linking_cols
+        )
+
         if self.subsample_n != "all":
             self.set_subsample_n(self.subsample_n)
 
@@ -184,10 +190,10 @@ class SingleCells(object):
             assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
             assert self.is_subset_computed, "Make sure to get_subsample() first!"
             count_df = (
-                self.subset_data_df.groupby(self.strata)["ObjectNumber"]
+                self.subset_data_df.groupby(self.strata)["Metadata_ObjectNumber"]
                 .count()
                 .reset_index()
-                .rename({"ObjectNumber": "cell_count"}, axis="columns")
+                .rename({"Metadata_ObjectNumber": "cell_count"}, axis="columns")
             )
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
@@ -217,16 +223,20 @@ class SingleCells(object):
             self.set_subsample_random_state(random_state)
 
         if self.subsample_frac == 1:
-            return pd.DataFrame.sample(
+
+            output_df = pd.DataFrame.sample(
                 df,
                 n=self.subsample_n,
                 replace=True,
                 random_state=self.subsampling_random_state,
             )
         else:
-            return pd.DataFrame.sample(
+            output_df = pd.DataFrame.sample(
                 df, frac=self.subsample_frac, random_state=self.subsampling_random_state
             )
+
+        output_df = output_df.rename(self.linking_col_rename, axis="columns")
+        return output_df
 
     def get_subsample(self, compartment="cells"):
         """Apply the subsampling procedure
@@ -276,7 +286,7 @@ class SingleCells(object):
             self.load_compartment(compartment=compartment),
             how="inner",
             on=self.merge_cols,
-        )
+        ).rename(self.linking_col_rename, axis="columns")
 
         object_df = aggregate(
             population_df=population_df,
@@ -314,8 +324,9 @@ class SingleCells(object):
         # Load the single cell dataframe by merging on the specific linking columns
         sc_df = ""
         linking_check_cols = []
-        for left_compartment in default_linking_cols:
-            for right_compartment in default_linking_cols[left_compartment]:
+        merge_suffix_rename = []
+        for left_compartment in self.compartment_linking_cols:
+            for right_compartment in self.compartment_linking_cols[left_compartment]:
                 # Make sure only one merge per combination occurs
                 linking_check = "-".join(sorted([left_compartment, right_compartment]))
                 if linking_check in linking_check_cols:
@@ -326,11 +337,11 @@ class SingleCells(object):
                     "_{comp_l}".format(comp_l=left_compartment),
                     "_{comp_r}".format(comp_r=right_compartment),
                 ]
-
-                left_link_col = default_linking_cols[left_compartment][
+                merge_suffix_rename += merge_suffix
+                left_link_col = self.compartment_linking_cols[left_compartment][
                     right_compartment
                 ]
-                right_link_col = default_linking_cols[right_compartment][
+                right_link_col = self.compartment_linking_cols[right_compartment][
                     left_compartment
                 ]
 
@@ -351,12 +362,47 @@ class SingleCells(object):
 
                 linking_check_cols.append(linking_check)
 
+        # Add metadata prefix to merged suffixes
+        full_merge_suffix_rename = []
+        full_merge_suffix_original = []
+        for col_name in self.merge_cols + list(self.linking_col_rename.keys()):
+            full_merge_suffix_original.append(col_name)
+            full_merge_suffix_rename.append("Metadata_{x}".format(x=col_name))
+
+        for col_name in self.merge_cols + list(self.linking_col_rename.keys()):
+            for suffix in set(merge_suffix_rename):
+                full_merge_suffix_original.append("{x}{y}".format(x=col_name, y=suffix))
+                full_merge_suffix_rename.append(
+                    "Metadata_{x}{y}".format(x=col_name, y=suffix)
+                )
+
+        self.full_merge_suffix_rename = dict(
+            zip(full_merge_suffix_original, full_merge_suffix_rename)
+        )
+
         # Add image data to single cell dataframe
         if not self.load_image_data:
             self.load_image()
 
-        sc_df = self.image_df.merge(sc_df, on=self.merge_cols, how="right")
+        sc_df = (
+            self.image_df.merge(sc_df, on=self.merge_cols, how="right")
+            .rename(self.linking_col_rename, axis="columns")
+            .rename(self.full_merge_suffix_rename, axis="columns")
+        )
         if single_cell_normalize:
+            # Infering features is tricky with non-canonical data
+            if normalize_args is None:
+                normalize_args = {}
+                features = infer_cp_features(sc_df, compartments=self.compartments)
+            elif "features" not in normalize_args:
+                features = infer_cp_features(sc_df, compartments=self.compartments)
+            elif normalize_args["features"] == "infer":
+                features = infer_cp_features(sc_df, compartments=self.compartments)
+            else:
+                features = normalize_args["features"]
+
+            normalize_args["features"] = features
+
             sc_df = normalize(profiles=sc_df, **normalize_args)
 
         if sc_output_file != "none":

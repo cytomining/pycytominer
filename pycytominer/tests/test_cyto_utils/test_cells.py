@@ -4,8 +4,14 @@ import pytest
 import tempfile
 import pandas as pd
 from sqlalchemy import create_engine
-from pycytominer import aggregate
+
+from pycytominer import aggregate, normalize
 from pycytominer.cyto_utils.cells import SingleCells
+from pycytominer.cyto_utils import (
+    get_default_linking_cols,
+    get_default_compartments,
+    infer_cp_features,
+)
 
 random.seed(123)
 
@@ -47,7 +53,10 @@ test_conn = test_engine.connect()
 
 # Setup data
 cells_df = build_random_data(compartment="cells")
-cytoplasm_df = build_random_data(compartment="cytoplasm")
+cytoplasm_df = build_random_data(compartment="cytoplasm").assign(
+    Cytoplasm_Parent_Cells=(list(range(1, 51)) * 2)[::-1],
+    Cytoplasm_Parent_Nuclei=(list(range(1, 51)) * 2)[::-1],
+)
 nuclei_df = build_random_data(compartment="nuclei")
 image_df = pd.DataFrame(
     {
@@ -64,10 +73,40 @@ cells_df.to_sql("cells", con=test_engine, index=False, if_exists="replace")
 cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replace")
 nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
 
+# Create a new table with a fourth compartment
+new_file = "sqlite:///{}/test_new.sqlite".format(tmpdir)
+new_compartment_df = build_random_data(compartment="new")
+
+test_new_engine = create_engine(new_file)
+test_new_conn = test_new_engine.connect()
+
+image_df.to_sql("image", con=test_new_engine, index=False, if_exists="replace")
+cells_df.to_sql("cells", con=test_new_engine, index=False, if_exists="replace")
+new_cytoplasm_df = cytoplasm_df.assign(
+    Cytoplasm_Parent_New=(list(range(1, 51)) * 2)[::-1]
+)
+new_cytoplasm_df.to_sql(
+    "cytoplasm", con=test_new_engine, index=False, if_exists="replace"
+)
+nuclei_df.to_sql("nuclei", con=test_new_engine, index=False, if_exists="replace")
+new_compartment_df.to_sql("new", con=test_new_engine, index=False, if_exists="replace")
+
+new_compartments = ["cells", "cytoplasm", "nuclei", "new"]
+
+new_linking_cols = get_default_linking_cols()
+new_linking_cols["cytoplasm"]["new"] = "Cytoplasm_Parent_New"
+new_linking_cols["new"] = {"cytoplasm": "ObjectNumber"}
+
 # Setup SingleCells Class
 ap = SingleCells(file_or_conn=file)
 ap_subsample = SingleCells(
     file_or_conn=file, subsample_n=2, subsampling_random_state=123
+)
+ap_new = SingleCells(
+    file_or_conn=new_file,
+    load_image_data=False,
+    compartments=new_compartments,
+    compartment_linking_cols=new_linking_cols,
 )
 
 
@@ -90,6 +129,8 @@ def test_SingleCells_init():
     assert not ap.is_aggregated
     assert ap.subsampling_random_state == "none"
     assert ap_subsample.subsampling_random_state == 123
+    assert ap.compartment_linking_cols == get_default_linking_cols()
+    assert ap.compartments == get_default_compartments()
 
 
 def test_SingleCells_reset_variables():
@@ -136,6 +177,123 @@ def test_SingleCells_count():
 def test_load_compartment():
     loaded_compartment_df = ap.load_compartment(compartment="cells")
     pd.testing.assert_frame_equal(loaded_compartment_df, cells_df)
+
+    # Test non-canonical compartment loading
+    pd.testing.assert_frame_equal(new_compartment_df, ap_new.load_compartment("new"))
+
+
+def test_merge_single_cells():
+    sc_merged_df = ap.merge_single_cells()
+
+    # Assert that the image data was merged
+    assert all(x in sc_merged_df.columns for x in ["Metadata_Plate", "Metadata_Well"])
+
+    # Assert that metadata columns were renamed appropriately
+    for x in ap.full_merge_suffix_rename:
+        assert ap.full_merge_suffix_rename[x] == "Metadata_{x}".format(x=x)
+
+    # Perform a manual merge
+    manual_merge = cytoplasm_df.merge(
+        cells_df,
+        left_on=["TableNumber", "ImageNumber", "Cytoplasm_Parent_Cells"],
+        right_on=["TableNumber", "ImageNumber", "ObjectNumber"],
+        suffixes=["_cytoplasm", "_cells"],
+    ).merge(
+        nuclei_df,
+        left_on=["TableNumber", "ImageNumber", "Cytoplasm_Parent_Nuclei"],
+        right_on=["TableNumber", "ImageNumber", "ObjectNumber"],
+        suffixes=["_cytoplasm", "_nuclei"],
+    )
+
+    manual_merge = image_df.merge(manual_merge, on=ap.merge_cols, how="right").rename(
+        ap.full_merge_suffix_rename, axis="columns"
+    )
+
+    # Confirm that the merge correctly reversed the object number (opposite from Parent)
+    assert (
+        sc_merged_df.Metadata_ObjectNumber_cytoplasm.tolist()[::-1]
+        == sc_merged_df.Metadata_ObjectNumber.tolist()
+    )
+    assert (
+        manual_merge.Metadata_ObjectNumber_cytoplasm.tolist()[::-1]
+        == sc_merged_df.Metadata_ObjectNumber.tolist()
+    )
+    assert (
+        manual_merge.Metadata_ObjectNumber_cytoplasm.tolist()[::-1]
+        == sc_merged_df.Metadata_ObjectNumber.tolist()
+    )
+    assert (
+        manual_merge.Metadata_ObjectNumber_cells.tolist()
+        == sc_merged_df.Metadata_ObjectNumber.tolist()
+    )
+
+    # Confirm the merge and adding merge options
+    for method in ["standardize", "robustize"]:
+        for samples in ["all", "Metadata_ImageNumber == 'x'"]:
+            for features in ["infer", ["Cytoplasm_a", "Cells_a"]]:
+
+                norm_method_df = ap.merge_single_cells(
+                    single_cell_normalize=True,
+                    normalize_args={
+                        "method": method,
+                        "samples": samples,
+                        "features": features,
+                    },
+                )
+
+                manual_merge_normalize = normalize(
+                    manual_merge, method=method, samples=samples, features=features
+                )
+
+                pd.testing.assert_frame_equal(norm_method_df, manual_merge_normalize)
+
+    # Test non-canonical compartment merging
+    new_sc_merge_df = ap_new.merge_single_cells()
+
+    assert sum(new_sc_merge_df.columns.str.startswith("New")) == 4
+    assert (
+        new_compartment_df.ObjectNumber.tolist()[::-1]
+        == new_sc_merge_df.Metadata_ObjectNumber_new.tolist()
+    )
+
+    norm_new_method_df = ap_new.merge_single_cells(
+        single_cell_normalize=True,
+        normalize_args={
+            "method": "standardize",
+            "samples": "all",
+            "features": "infer",
+        },
+    )
+
+    norm_new_method_no_feature_infer_df = ap_new.merge_single_cells(
+        single_cell_normalize=True,
+        normalize_args={
+            "method": "standardize",
+            "samples": "all",
+        },
+    )
+
+    default_feature_infer_df = ap_new.merge_single_cells(single_cell_normalize=True)
+
+    pd.testing.assert_frame_equal(norm_new_method_df, default_feature_infer_df)
+    pd.testing.assert_frame_equal(
+        norm_new_method_df, norm_new_method_no_feature_infer_df
+    )
+
+    new_compartment_cols = infer_cp_features(
+        new_compartment_df, compartments=ap_new.compartments
+    )
+    traditional_norm_df = normalize(
+        ap_new.image_df.merge(new_compartment_df, on=ap.merge_cols),
+        features=new_compartment_cols,
+        samples="all",
+        method="standardize",
+    )
+
+    pd.testing.assert_frame_equal(
+        norm_new_method_df.loc[:, new_compartment_cols].abs().describe(),
+        traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
+    )
 
 
 def test_aggregate_comparment():
@@ -217,26 +375,7 @@ def test_aggregate_subsampling_profile():
             "ImageNumber": sorted(["x", "y"] * 2),
             "Metadata_Plate": ["plate"] * 4,
             "Metadata_Well": sorted(["A01", "A02"] * 2),
-            "ObjectNumber": [46, 3] * 2,
-        }
-    )
-
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "Cells_a": [110.0, 680.5],
-            "Cells_b": [340.5, 201.5],
-            "Cells_c": [285.0, 481.0],
-            "Cells_d": [352.0, 549.0],
-            "Cytoplasm_a": [407.5, 705.5],
-            "Cytoplasm_b": [650.0, 439.5],
-            "Cytoplasm_c": [243.5, 78.5],
-            "Cytoplasm_d": [762.5, 625.0],
-            "Nuclei_a": [683.5, 171.0],
-            "Nuclei_b": [50.5, 625.0],
-            "Nuclei_c": [431.0, 483.0],
-            "Nuclei_d": [519.0, 286.5],
+            "Metadata_ObjectNumber": [46, 3] * 2,
         }
     )
 

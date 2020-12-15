@@ -11,6 +11,7 @@ from .util import (
 from .single_cell_ingest_utils import (
     get_default_linking_cols,
     assert_linking_cols_complete,
+    provide_linking_cols_feature_name_update,
 )
 from .load import (
     load_profiles,
