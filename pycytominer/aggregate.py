@@ -18,6 +18,8 @@ def aggregate(
     operation="median",
     output_file="none",
     subset_data_df="none",
+    compression=None,
+    float_format=None,
 ):
     """
     Combine population dataframe variables by strata groups using given operation
