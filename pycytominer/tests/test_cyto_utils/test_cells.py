@@ -341,9 +341,7 @@ def test_aggregate_profiles():
     pd.testing.assert_frame_equal(result, expected_result)
 
     # Confirm aggregation after merging single cells
-    sc_aggregated_df = aggregate(
-            ap.merge_single_cells()
-        ).sort_index(axis="columns")
+    sc_aggregated_df = aggregate(ap.merge_single_cells()).sort_index(axis="columns")
 
     pd.testing.assert_frame_equal(result.sort_index(axis="columns"), sc_aggregated_df)
 

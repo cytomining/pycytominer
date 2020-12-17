@@ -1,7 +1,15 @@
+import os
+import tempfile
 import numpy as np
 import pandas as pd
 from pycytominer import aggregate
 from pycytominer.cyto_utils import infer_cp_features
+
+# Get temporary directory
+tmpdir = tempfile.gettempdir()
+
+# Setup a testing file
+test_output_file = os.path.join(tmpdir, "test.csv")
 
 # Build data to use in tests
 data_df = pd.concat(
@@ -43,6 +51,18 @@ def test_aggregate_median_allvar():
     expected_result = expected_result.astype(dtype_convert_dict)
 
     assert aggregate_result.equals(expected_result)
+
+    # Test output
+    aggregate(
+        population_df=data_df,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        output_file=test_output_file,
+    )
+
+    test_df = pd.read_csv(test_output_file)
+    pd.testing.assert_frame_equal(test_df, expected_result)
 
 
 def test_aggregate_mean_allvar():

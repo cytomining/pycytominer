@@ -10,6 +10,7 @@ random.seed(123)
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
 output_test_file = os.path.join(tmpdir, "test.csv")
+input_test_file = os.path.join(tmpdir, "example_input.csv")
 
 # Set example data
 data_df = pd.DataFrame(
@@ -31,6 +32,8 @@ data_df = pd.DataFrame(
         "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
     }
 ).reset_index(drop=True)
+
+data_df.to_csv(input_test_file, index=False)
 
 
 def test_consensus_aggregate():
@@ -55,8 +58,14 @@ def test_consensus_aggregate():
     assert median_df.shape == (2, 5)
     assert median_df.loc[0, "Cells_x"] == 3.5
 
+    mean_from_file = consensus(
+        input_test_file, replicate_columns="Metadata_treatment", operation="mean"
+    )
 
-def test_consensu_modz():
+    pd.testing.assert_frame_equal(mean_df, mean_from_file)
+
+
+def test_consensus_modz():
     modz_df = consensus(
         data_df, replicate_columns="Metadata_treatment", operation="modz"
     )
@@ -67,7 +76,7 @@ def test_consensu_modz():
         data_df,
         replicate_columns="Metadata_treatment",
         operation="modz",
-        modz_precision=5,
+        modz_args={"precision": 5},
     )
     assert modz_df.shape == (2, 5)
     assert np.round(modz_df.loc[0, "Cells_x"], 5) == 3.7602
@@ -79,7 +88,7 @@ def test_consensu_modz():
         data_df,
         replicate_columns="Metadata_treatment",
         operation="modz",
-        modz_min_weight=1,
+        modz_args={"min_weight": 1},
     )
 
     consensus(
