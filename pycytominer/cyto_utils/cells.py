@@ -319,7 +319,7 @@ class SingleCells(object):
     def merge_single_cells(
         self,
         sc_output_file="none",
-        compression=None,
+        compression_options=None,
         float_format=None,
         single_cell_normalize=False,
         normalize_args=None,
@@ -429,7 +429,7 @@ class SingleCells(object):
             output(
                 df=sc_df,
                 output_filename=sc_output_file,
-                compression=compression,
+                compression_options=compression_options,
                 float_format=float_format,
             )
         else:
@@ -439,7 +439,7 @@ class SingleCells(object):
         self,
         compute_subsample=False,
         output_file="none",
-        compression=None,
+        compression_options=None,
         float_format=None,
         aggregate_args=None,
     ):
@@ -492,7 +492,7 @@ class SingleCells(object):
             output(
                 df=aggregated,
                 output_filename=self.output_file,
-                compression=compression,
+                compression_options=compression_options,
                 float_format=float_format,
             )
         else:

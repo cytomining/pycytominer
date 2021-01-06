@@ -21,7 +21,7 @@ def annotate(
     external_metadata="none",
     external_join_left="none",
     external_join_right="none",
-    compression=None,
+    compression_options=None,
     float_format=None,
 ):
     """
@@ -48,7 +48,7 @@ def annotate(
                         metadata information
     external_join_left - [default: "none"] the merge column in the profile metadata
     external_join_right - [default: "none"] the merge column in the external metadata
-    compression - the mechanism to compress [default: None] See cyto_utils/output.py for options.
+    compression_options - the mechanism to compress [default: None] See cyto_utils/output.py for options.
     float_format - decimal precision to use in writing output file [default: None]
                        For example, use "%.3g" for 3 decimal precision.
 
@@ -180,7 +180,7 @@ def annotate(
         output(
             df=annotated,
             output_filename=output_file,
-            compression=compression,
+            compression_options=compression_options,
             float_format=float_format,
         )
     else:

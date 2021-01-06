@@ -75,7 +75,7 @@ def test_annotate_compress():
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file=compress_file,
-        compression="gzip",
+        compression_options={"method": "gzip"},
     )
 
     result = annotate(

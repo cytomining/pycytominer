@@ -261,7 +261,7 @@ def test_feature_select_compress():
         features=data_na_df.columns.tolist(),
         operation="drop_na_columns",
         output_file=compress_file,
-        compression="gzip",
+        compression_options={"method": "gzip"},
     )
     expected_result = pd.DataFrame({"yy": [1, 2, 8, 10, 2, 100]})
     result = pd.read_csv(compress_file)
