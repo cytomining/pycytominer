@@ -6,20 +6,28 @@ import os
 import warnings
 import pandas as pd
 
-compress_options = {"gzip": ".gz", None: ""}
+compress_options = ["gzip", None]
 
 
-def output(df, output_filename, compression="gzip", float_format=None):
+def output(
+    df,
+    output_filename,
+    sep=",",
+    float_format=None,
+    compression_options={"method": "gzip", "mtime": 1},
+):
     """Given an output file and compression options, write file to disk
 
     :param df: a pandas dataframe that will be written to file
     :type df: pandas.DataFrame
     :param output_filename: a string or path object that stores location of file
     :type output_filename: str
-    :param output_filename: the mechanism to compress [default: "gzip"]
-    :type output_filename: str
-    :param output_filename: decimal precision to use in writing output file [default: None]
-    :type output_filename: str
+    :param sep: file delimiter
+    :type sep: str
+    :param float_format: decimal precision to use in writing output file [default: None]
+    :type float_format: str
+    :param compression_options: compression arguments as input to pandas.to_csv() [default: check different function call]
+    :type compression_options: str, dict
 
     :Example:
 
@@ -51,60 +59,46 @@ def output(df, output_filename, compression="gzip", float_format=None):
     output(
         df=data_df,
         output_filename=output_file,
-        compression="gzip",
-        float_format=None
+        sep=",",
+        compression_options={"method": "gzip", "mtime": 1},
+        float_format=None,
     )
     """
-
-    # Extract suffixes from the provided output file name
-    filename, output_file_extension = os.path.splitext(output_filename)
-    basefilename, non_compression_suffix = os.path.splitext(filename)
-
-    # if no additional suffix was provided, make it a csv
-    if len(non_compression_suffix) == 0 and output_file_extension not in [
-        ".csv",
-        ".tsv",
-    ]:
-        output_filename = "{}.csv".format(output_filename)
-
-    # Set the delimiter
-    delim = ","
-    if non_compression_suffix == ".tsv":
-        delim = "\t"
-
-    # Determine the compression suffix
-    compression_suffix = infer_compression_suffix(compression=compression)
-    if output_file_extension in compress_options.values():
-        if output_file_extension != compression_suffix:
-            warnings.warn(
-                "The output file has a compression file extension ('{}') that is different than what is specified in 'compression' ('{}'). Defaulting to output filename suffix.".format(
-                    output_file_extension, compression_suffix
-                )
-            )
-        compression = "infer"
-    else:
-        output_filename = "{}{}".format(output_filename, compression_suffix)
+    # Make sure the compression method is supported
+    compression_options = set_compression_method(compression=compression_options)
 
     df.to_csv(
         path_or_buf=output_filename,
-        sep=delim,
+        sep=sep,
         index=False,
         float_format=float_format,
-        compression=compression,
+        compression=compression_options,
     )
 
 
-def infer_compression_suffix(compression="gzip"):
-    """
-    Determine the compression suffix
+def set_compression_method(compression):
+    """Set the compression options
 
-    Arguments:
-    compression - the mechanism to compress [default: "gzip"]
+    :param compression: indicating compression options
+    :type compression: str, dict
+    """
+
+    if compression is None:
+        compression = {"method": None}
+
+    if isinstance(compression, str):
+        compression = {"method": compression}
+
+    check_compression_method(compression["method"])
+    return compression
+
+
+def check_compression_method(compression):
+    """Ensure compression options are set properly
+
+    :param compression: the compression used to output data
+    :type compression: str
     """
     assert (
         compression in compress_options
-    ), "{} is not supported, select one of {}".format(
-        compression, list(compress_options.keys())
-    )
-
-    return compress_options[compression]
+    ), "{} is not supported, select one of {}".format(compression, compress_options)
