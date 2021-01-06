@@ -1,10 +1,16 @@
 import os
+import io
+import time
 import random
 import pytest
 import tempfile
 import warnings
 import pandas as pd
-from pycytominer.cyto_utils.output import output, infer_compression_suffix
+from pycytominer.cyto_utils.output import (
+    output,
+    check_compression_method,
+    set_compression_method,
+)
 
 random.seed(123)
 
@@ -32,16 +38,18 @@ data_df = pd.DataFrame(
     }
 ).reset_index(drop=True)
 
+# Set default compression options
+compression_options = {"method": "gzip"}
+
 
 def test_compress():
 
     output_filename = os.path.join(tmpdir, "test_compress.csv")
-    compression = "gzip"
 
     output(
         df=data_df,
         output_filename=output_filename,
-        compression=compression,
+        compression_options=compression_options,
         float_format=None,
     )
     result = pd.read_csv("{}.gz".format(output_filename))
@@ -50,30 +58,15 @@ def test_compress():
         result, data_df, check_names=False, check_less_precise=1
     )
 
-    # Test input filename overwriting compression
-    output_filename = os.path.join(tmpdir, "test_compress.csv.bz2")
-    output(
-        df=data_df,
-        output_filename=output_filename,
-        compression=compression,
-        float_format=None,
-    )
-
-    result = pd.read_csv(output_filename)
-    pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_less_precise=1
-    )
-
 
 def test_compress_no_csv():
     # Test the ability of a naked string input, appending csv.gz
     output_filename = os.path.join(tmpdir, "test_compress")
-    compression = "gzip"
 
     output(
         df=data_df,
         output_filename=output_filename,
-        compression=compression,
+        compression_options=compression_options,
         float_format=None,
     )
     result = pd.read_csv("{}.csv.gz".format(output_filename))
@@ -83,11 +76,12 @@ def test_compress_no_csv():
     )
 
     # Test input filename of writing a tab separated file
-    output_filename = os.path.join(tmpdir, "test_compress.tsv.bz2")
+    output_filename = os.path.join(tmpdir, "test_compress.tsv.gz")
     output(
         df=data_df,
+        sep="\t",
         output_filename=output_filename,
-        compression=compression,
+        compression_options=compression_options,
         float_format=None,
     )
 
@@ -103,7 +97,7 @@ def test_output_none():
     output(
         df=data_df,
         output_filename=output_filename,
-        compression=compression,
+        compression_options=compression,
         float_format=None,
     )
 
@@ -113,57 +107,88 @@ def test_output_none():
     )
 
 
-def test_compress_warning():
-    with pytest.warns(UserWarning) as w:
-        warnings.simplefilter("always")
-
-        output_filename = os.path.join(tmpdir, "test_compress_warning.csv.zip")
-        compression = "gzip"
-        output(
-            df=data_df,
-            output_filename=output_filename,
-            compression=compression,
-            float_format=None,
-        )
-
-        assert len(w) == 1
-        assert issubclass(w[-1].category, UserWarning)
-
-        result = pd.read_csv(output_filename)
-        pd.testing.assert_frame_equal(
-            result, data_df, check_names=False, check_less_precise=1
-        )
-
-
 def test_compress_exception():
     output_filename = os.path.join(tmpdir, "test_compress_warning.csv.zip")
     with pytest.raises(Exception) as e:
-        output(df=data_df, output_filename=output_filename, compression="not an option")
+        output(
+            df=data_df,
+            output_filename=output_filename,
+            compression_options="not an option",
+        )
 
     assert "not supported" in str(e.value)
 
 
-def test_compress_suffix():
+def test_check_set_compression():
 
-    suffix = infer_compression_suffix(compression="gzip")
-    expected_result = ".gz"
-    assert suffix == expected_result
-
-    suffix = infer_compression_suffix(compression="bz2")
-    expected_result = ".bz2"
-    assert suffix == expected_result
-
-    suffix = infer_compression_suffix(compression="zip")
-    expected_result = ".zip"
-    assert suffix == expected_result
-
-    suffix = infer_compression_suffix(compression="xz")
-    expected_result = ".xz"
-    assert suffix == expected_result
-
-    suffix = infer_compression_suffix(compression=None)
-    assert suffix == ""
+    check_compression_method(compression="gzip")
 
     with pytest.raises(AssertionError) as e:
-        infer_compression_suffix(compression="THIS WILL NOT WORK")
+        check_compression_method(compression="THIS WILL NOT WORK")
     assert "not supported" in str(e.value)
+
+    compression = set_compression_method(compression="gzip")
+    assert compression == {"method": "gzip"}
+
+    compression = set_compression_method(compression=None)
+    assert compression == {"method": None}
+
+    compression = set_compression_method(compression={"method": "gzip", "mtime": 1})
+    assert compression == {"method": "gzip", "mtime": 1}
+
+    compression = set_compression_method(compression={"method": None, "mtime": 1})
+    assert compression == {"method": None, "mtime": 1}
+
+    with pytest.raises(AssertionError) as e:
+        compression = set_compression_method(compression="THIS WILL NOT WORK")
+    assert "not supported" in str(e.value)
+
+    with pytest.raises(AssertionError) as e:
+        compression = set_compression_method(
+            compression={"method": "THIS WILL NOT WORK"}
+        )
+    assert "not supported" in str(e.value)
+
+
+def test_compress_no_timestamp():
+    # The default behavior is to ignore timestamps
+    buffer = io.BytesIO()
+
+    output(
+        df=data_df,
+        output_filename=buffer,
+        float_format=None,
+    )
+
+    buffer_output = buffer.getvalue()
+
+    # Simulate different timestamp
+    time.sleep(2)
+
+    buffer = io.BytesIO()
+    output(
+        df=data_df,
+        output_filename=buffer,
+        float_format=None,
+    )
+    assert buffer_output == buffer.getvalue()
+
+    # Simulate different time stamps
+    buffer = io.BytesIO()
+    output(
+        df=data_df,
+        output_filename=buffer,
+        float_format=None,
+        compression_options=compression_options,
+    )
+    buffer_output = buffer.getvalue()
+
+    time.sleep(2)
+    buffer = io.BytesIO()
+    output(
+        df=data_df,
+        output_filename=buffer,
+        float_format=None,
+        compression_options=compression_options,
+    )
+    assert buffer_output != buffer.getvalue()
