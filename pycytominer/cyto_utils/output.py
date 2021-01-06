@@ -6,22 +6,54 @@ import os
 import warnings
 import pandas as pd
 
-compress_options = {"gzip": ".gz", "bz2": ".bz2", "zip": ".zip", "xz": ".xz", None: ""}
+compress_options = {"gzip": ".gz", None: ""}
 
 
 def output(df, output_filename, compression="gzip", float_format=None):
-    """
-    Given an output file and compression options, write file to disk
+    """Given an output file and compression options, write file to disk
 
-    Arguments:
-    df - a pandas dataframe that will be written to file
-    output_filename - a string or path object that stores location of file
-    compression - the mechanism to compress [default: "gzip"]
-    float_format - decimal precision to use in writing output file [default: None]
-                   For example, use "%.3g" for 3 decimal precision.
+    :param df: a pandas dataframe that will be written to file
+    :type df: pandas.DataFrame
+    :param output_filename: a string or path object that stores location of file
+    :type output_filename: str
+    :param output_filename: the mechanism to compress [default: "gzip"]
+    :type output_filename: str
+    :param output_filename: decimal precision to use in writing output file [default: None]
+    :type output_filename: str
 
-    Return:
-    Nothing, write df to file
+    :Example:
+
+    import pandas as pd
+    from pycytominer.cyto_utils import output
+
+    data_df = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "Metadata_Plate": "X",
+                    "Metadata_Well": "a",
+                    "Cells_x": [0.1, 0.3, 0.8],
+                    "Nuclei_y": [0.5, 0.3, 0.1],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "Metadata_Plate": "X",
+                    "Metadata_Well": "b",
+                    "Cells_x": [0.4, 0.2, -0.5],
+                    "Nuclei_y": [-0.8, 1.2, -0.5],
+                }
+            ),
+        ]
+    ).reset_index(drop=True)
+
+    output_file = "test.csv.gz"
+    output(
+        df=data_df,
+        output_filename=output_file,
+        compression="gzip",
+        float_format=None
+    )
     """
 
     # Extract suffixes from the provided output file name
