@@ -44,7 +44,7 @@ compression_options = {"method": "gzip"}
 
 def test_compress():
 
-    output_filename = os.path.join(tmpdir, "test_compress.csv")
+    output_filename = os.path.join(tmpdir, "test_compress.csv.gz")
 
     output(
         df=data_df,
@@ -52,29 +52,14 @@ def test_compress():
         compression_options=compression_options,
         float_format=None,
     )
-    result = pd.read_csv("{}.gz".format(output_filename))
+    result = pd.read_csv(output_filename)
 
     pd.testing.assert_frame_equal(
         result, data_df, check_names=False, check_less_precise=1
     )
 
 
-def test_compress_no_csv():
-    # Test the ability of a naked string input, appending csv.gz
-    output_filename = os.path.join(tmpdir, "test_compress")
-
-    output(
-        df=data_df,
-        output_filename=output_filename,
-        compression_options=compression_options,
-        float_format=None,
-    )
-    result = pd.read_csv("{}.csv.gz".format(output_filename))
-
-    pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_less_precise=1
-    )
-
+def test_compress_tsv():
     # Test input filename of writing a tab separated file
     output_filename = os.path.join(tmpdir, "test_compress.tsv.gz")
     output(
