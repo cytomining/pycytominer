@@ -206,7 +206,7 @@ class SingleCells(object):
 
         return count_df
 
-    def subsample_profiles(self, df):
+    def subsample_profiles(self, df, rename_col=True):
         """Sample a Pandas DataFrame given subsampling information
 
         :param df: A single cell profile dataframe
@@ -231,10 +231,12 @@ class SingleCells(object):
                 df, frac=self.subsample_frac, random_state=self.subsampling_random_state
             )
 
-        output_df = output_df.rename(self.linking_col_rename, axis="columns")
+        if rename_col:
+            output_df = output_df.rename(self.linking_col_rename, axis="columns")
+
         return output_df
 
-    def get_subsample(self, compartment="cells"):
+    def get_subsample(self, df=None, compartment="cells", rename_col=True):
         """Apply the subsampling procedure
 
         :param compartment: string indicating the compartment to process, defaults to "cells"
@@ -246,13 +248,14 @@ class SingleCells(object):
         query = "select {} from {}".format(query_cols, compartment)
 
         # Load query and merge with image_df
-        query_df = self.image_df.merge(
-            pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
-        )
+        if df is None:
+            df = pd.read_sql(sql=query, con=self.conn)
+
+        query_df = self.image_df.merge(df, how="inner", on=self.merge_cols)
 
         self.subset_data_df = (
             query_df.groupby(self.strata)
-            .apply(lambda x: self.subsample_profiles(x))
+            .apply(lambda x: self.subsample_profiles(x, rename_col=rename_col))
             .reset_index(drop=True)
         )
 
@@ -318,6 +321,7 @@ class SingleCells(object):
 
     def merge_single_cells(
         self,
+        compute_subsample=False,
         sc_output_file="none",
         compression_options=None,
         float_format=None,
@@ -365,7 +369,21 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    sc_df = self.load_compartment(compartment=left_compartment).merge(
+                    initial_df = self.load_compartment(compartment=left_compartment)
+
+                    if compute_subsample:
+                        # Sample cells proportionally by self.strata
+                        self.get_subsample(df=initial_df, rename_col=False)
+
+                        subset_logic_df = self.subset_data_df.drop(
+                            self.image_df.columns, axis="columns"
+                        )
+
+                        initial_df = subset_logic_df.merge(
+                            initial_df, how="left", on=subset_logic_df.columns.tolist()
+                        ).reindex(initial_df.columns, axis="columns")
+
+                    sc_df = initial_df.merge(
                         self.load_compartment(compartment=right_compartment),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
@@ -447,7 +465,7 @@ class SingleCells(object):
 
         :param compute_subsample: Determine if subsample should be computed, defaults to False
         :type compute_subsample: bool
-        :param output_file: the name of a file to output, defaults to "none":
+        :param output_file: the name of a file to output, defaults to "none"
         :type output_file: str, optional
         :param compression: the mechanism to compress, defaults to None
         :type compression: str, optional
