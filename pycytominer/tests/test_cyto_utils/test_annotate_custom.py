@@ -4,6 +4,7 @@ import random
 import pytest
 import pandas as pd
 from pycytominer import annotate
+from pycytominer.cyto_utils import cp_clean
 
 random.seed(123)
 
@@ -60,7 +61,7 @@ def test_annotate_cmap_assert():
             platemap=platemap_df,
             join_on=["Metadata_well_position", "Metadata_Well"],
             format_broad_cmap=True,
-            perturbation_mode="none",
+            cmap_args={"perturbation_mode": "none"},
         )
 
         assert "Are you sure this is a CMAP file?" in str(nocmap.value)
@@ -72,7 +73,7 @@ def test_annotate_cmap_pertnone():
         platemap=broad_platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
         format_broad_cmap=True,
-        perturbation_mode="none",
+        cmap_args={"perturbation_mode": "none"},
     )
 
     added_cols = [
@@ -95,7 +96,7 @@ def test_annotate_cmap_pertgenetic():
         platemap=broad_platemap_df.assign(Metadata_pert_name=example_genetic_perts),
         join_on=["Metadata_well_position", "Metadata_Well"],
         format_broad_cmap=True,
-        perturbation_mode="genetic",
+        cmap_args={"perturbation_mode": "genetic"},
     )
 
     expected_Metadata_pert_type = ["trt", "trt", "trt", "trt", "control", "control"]
@@ -112,7 +113,7 @@ def test_annotate_cmap_pertchemical():
         platemap=broad_platemap_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
         format_broad_cmap=True,
-        perturbation_mode="genetic",
+        cmap_args={"perturbation_mode": "genetic"},
     )
 
     added_cols = [
@@ -141,7 +142,7 @@ def test_annotate_cmap_pertchemical():
         platemap=chemical_platemap,
         join_on=["Metadata_well_position", "Metadata_Well"],
         format_broad_cmap=True,
-        perturbation_mode="chemical",
+        cmap_args={"perturbation_mode": "chemical"},
     )
     expected_Metadata_pert_type = ["control", "trt", "trt", "trt", "trt", "trt"]
     assert anno_result.Metadata_pert_type.tolist() == expected_Metadata_pert_type
@@ -184,7 +185,7 @@ def test_annotate_cmap_externalmetadata():
         platemap=chemical_platemap,
         join_on=["Metadata_well_position", "Metadata_Well"],
         format_broad_cmap=True,
-        perturbation_mode="chemical",
+        cmap_args={"perturbation_mode": "chemical"},
         external_metadata=output_file,
         external_join_left="Metadata_Well",
         external_join_right="Metadata_test_well_join",
@@ -192,3 +193,33 @@ def test_annotate_cmap_externalmetadata():
 
     assert anno_result.loc[0, "Metadata_test_info_col"] == "DMSO is cool"
     assert anno_result.Metadata_cell_id.unique()[0] == "A549"
+
+
+def test_annotate_cp_clean():
+    data_rename_df = data_df.rename(
+        {"Metadata_Well": "Image_Metadata_Well"}, axis="columns"
+    )
+    data_rename_df = data_rename_df.assign(Image_Metadata_Plate="test")
+
+    anno_result = annotate(
+        profiles=data_rename_df,
+        platemap=broad_platemap_df,
+        clean_cellprofiler=False,
+        join_on=["Metadata_well_position", "Image_Metadata_Well"],
+    )
+
+    assert all(
+        [
+            x in anno_result.columns
+            for x in ["Image_Metadata_Well", "Image_Metadata_Plate"]
+        ]
+    )
+
+    anno_result = annotate(
+        profiles=data_rename_df,
+        platemap=broad_platemap_df,
+        clean_cellprofiler=True,
+        join_on=["Metadata_well_position", "Image_Metadata_Well"],
+    )
+
+    assert all([x in anno_result.columns for x in ["Metadata_Well", "Metadata_Plate"]])
