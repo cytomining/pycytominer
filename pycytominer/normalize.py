@@ -20,7 +20,7 @@ def normalize(
     samples="all",
     method="standardize",
     output_file="none",
-    compression=None,
+    compression_options=None,
     float_format=None,
     spherize_center=True,
     spherize_method="ZCA-cor",
@@ -104,7 +104,7 @@ def normalize(
         output(
             df=normalized,
             output_filename=output_file,
-            compression=compression,
+            compression_options=compression_options,
             float_format=float_format,
         )
     else:

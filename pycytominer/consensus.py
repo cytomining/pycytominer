@@ -20,7 +20,7 @@ def consensus(
     operation="median",
     features="infer",
     output_file="none",
-    compression=None,
+    compression_options=None,
     float_format=None,
     modz_args={"method": "spearman"},
 ):
@@ -38,8 +38,8 @@ def consensus(
     :type output_file: str
     :param modz_args: Additional custom arguments passed as kwargs if operation="modz". See pycytominer.cyto_utils.modz for more details.
     :type modz_args: dict
-    :param compression: the method to compress output data, defaults to None. See pycytominer.cyto_utils.output.py for options
-    :type compression: str
+    :param compression_options: the method to compress output data, defaults to None. See pycytominer.cyto_utils.output.py for options
+    :type compression_options: str
     :param float_format: decimal precision to use in writing output file, defaults to None. For example, use "%.3g" for 3 decimal precision.
 
     :Example:
@@ -102,7 +102,7 @@ def consensus(
         output(
             df=consensus_df,
             output_filename=output_file,
-            compression=compression,
+            compression_options=compression_options,
             float_format=float_format,
         )
     else:

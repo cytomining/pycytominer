@@ -30,7 +30,7 @@ def feature_select(
     corr_method="pearson",
     freq_cut=0.05,
     unique_cut=0.1,
-    compression=None,
+    compression_options=None,
     float_format=None,
     blocklist_file=None,
     outlier_cutoff=15,
@@ -144,7 +144,7 @@ def feature_select(
         output(
             df=selected_df,
             output_filename=output_file,
-            compression=compression,
+            compression_options=compression_options,
             float_format=float_format,
         )
     else:

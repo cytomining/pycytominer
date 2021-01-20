@@ -18,7 +18,7 @@ def aggregate(
     operation="median",
     output_file="none",
     subset_data_df="none",
-    compression=None,
+    compression_options=None,
     float_format=None,
 ):
     """
@@ -79,7 +79,7 @@ def aggregate(
         output(
             df=population_df,
             output_filename=output_file,
-            compression=compression,
+            compression_options=compression_options,
             float_format=float_format,
         )
     else:

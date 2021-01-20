@@ -295,6 +295,52 @@ def test_merge_single_cells():
     )
 
 
+def test_merge_single_cells_subsample():
+
+    for subsample_frac in [0.1, 0.5, 0.9]:
+        ap_subsample = SingleCells(file_or_conn=file, subsample_frac=subsample_frac)
+
+        sc_merged_df = ap_subsample.merge_single_cells(
+            sc_output_file="none",
+            compute_subsample=True,
+            compression_options=None,
+            float_format=None,
+            single_cell_normalize=True,
+            normalize_args=None,
+        )
+
+        # Assert that the image data was merged
+        assert all(
+            x in sc_merged_df.columns for x in ["Metadata_Plate", "Metadata_Well"]
+        )
+
+        # Assert that metadata columns were renamed appropriately
+        for x in ap_subsample.full_merge_suffix_rename:
+            assert ap_subsample.full_merge_suffix_rename[x] == "Metadata_{x}".format(
+                x=x
+            )
+
+        # Assert that the subsample fraction worked
+        assert sc_merged_df.shape[0] == cells_df.shape[0] * subsample_frac
+
+    for subsample_n in [2, 5, 10]:
+        ap_subsample = SingleCells(file_or_conn=file, subsample_n=subsample_n)
+
+        sc_merged_df = ap_subsample.merge_single_cells(
+            sc_output_file="none",
+            compute_subsample=True,
+            compression_options=None,
+            float_format=None,
+            single_cell_normalize=True,
+            normalize_args=None,
+        )
+
+        # Assert that the number of each strata should be even
+        assert subsample_n == int(
+            sc_merged_df.loc[:, ap_subsample.strata].value_counts().values.mean()
+        )
+
+
 def test_aggregate_comparment():
     df = image_df.merge(cells_df, how="inner", on=["TableNumber", "ImageNumber"])
     result = aggregate(df)
@@ -389,7 +435,9 @@ def test_aggregate_subsampling_profile():
 def test_aggregate_subsampling_profile_compress():
     compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
 
-    _ = ap_subsample.aggregate_profiles(output_file=compress_file, compression="gzip")
+    _ = ap_subsample.aggregate_profiles(
+        output_file=compress_file, compression_options={"method": "gzip"}
+    )
     result = pd.read_csv(compress_file)
 
     expected_result = pd.DataFrame(
