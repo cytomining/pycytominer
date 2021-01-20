@@ -5,8 +5,14 @@ Annotates profiles with metadata information
 import os
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils import infer_cp_features, load_platemap, load_profiles
+from pycytominer.cyto_utils import (
+    output,
+    infer_cp_features,
+    load_platemap,
+    load_profiles,
+    annotate_cmap,
+    cp_clean,
+)
 
 
 def annotate(
@@ -16,11 +22,13 @@ def annotate(
     output_file="none",
     add_metadata_id_to_platemap=True,
     format_broad_cmap=False,
+    clean_cellprofiler=True,
     external_metadata="none",
     external_join_left="none",
     external_join_right="none",
     compression_options=None,
     float_format=None,
+    cmap_args={},
 ):
     """
     Exclude features that have correlations above a certain threshold
@@ -39,8 +47,6 @@ def annotate(
     add_metadata_id_to_platemap - [default: True] boolean if the platemap variables possibly need "Metadata" pre-pended
     format_broad_cmap - [default: False] boolean if we need to add columns to make
                         compatible with Broad CMAP naming conventions.
-    perturbation_mode - [default: "none"] - either "chemical", "genetic" or "none" and only
-                        active if format_broad_cmap == True
     external_metadata - [default: "none"] a string indicating a file with additional
                         metadata information
     external_join_left - [default: "none"] the merge column in the profile metadata
@@ -48,6 +54,8 @@ def annotate(
     compression_options - the mechanism to compress [default: None] See cyto_utils/output.py for options.
     float_format - decimal precision to use in writing output file [default: None]
                        For example, use "%.3g" for 3 decimal precision.
+    cmap_args - [default: {}] - potential keyword arguments for annotate_cmap().
+                See cyto_utils/annotate_cmap.py for more details.
 
     Return:
     Pandas DataFrame of annotated profiles or written to file
@@ -61,10 +69,13 @@ def annotate(
         profiles, left_on=join_on[0], right_on=join_on[1], how="inner"
     ).drop(join_on[0], axis="columns")
 
-    if format_broad_cmap:
-        annotated = annotate_cmap(annotated, **cmap_args)
-
     # Add specific Connectivity Map (CMAP) formatting
+    if format_broad_cmap:
+        annotated = annotate_cmap(annotated, annotate_join_on=join_on[1], **cmap_args)
+
+    if clean_cellprofiler:
+        annotated = cp_clean(annotated)
+
     if not isinstance(external_metadata, pd.DataFrame):
         if external_metadata != "none":
             assert os.path.exists(
