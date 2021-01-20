@@ -3,14 +3,16 @@ import numpy as np
 import pandas as pd
 
 
-def annotate_cmap(annotated, cell_id="unknown", perturbation_mode="none"):
+def annotate_cmap(
+    annotated, annotate_join_on, cell_id="unknown", perturbation_mode="none"
+):
     """
-        cell_id - [default: "unknown"] provide a string to annotate cell id column
+    cell_id - [default: "unknown"] provide a string to annotate cell id column
     """
     pert_opts = ["none", "chemical", "genetic"]
-    assert (
-        perturbation_mode in pert_opts
-    ), "perturbation mode must be one of {}".format(pert_opts)
+    assert perturbation_mode in pert_opts, "perturbation mode must be one of {}".format(
+        pert_opts
+    )
 
     assert (
         "Metadata_broad_sample" in annotated.columns
@@ -21,7 +23,7 @@ def annotate_cmap(annotated, cell_id="unknown", perturbation_mode="none"):
             r"(BRD[-N][A-Z0-9]+)"
         ),
         Metadata_pert_mfc_id=annotated.Metadata_broad_sample,
-        Metadata_pert_well=annotated.loc[:, join_on[1]],
+        Metadata_pert_well=annotated.loc[:, annotate_join_on],
         Metadata_pert_id_vendor="",
     )
 
@@ -86,3 +88,19 @@ def annotate_cmap(annotated, cell_id="unknown", perturbation_mode="none"):
         )
 
     return annotated
+
+
+def cp_clean(profiles):
+    """
+    Specifically clean certain column names derived from different CellProfiler versions
+    """
+
+    profiles = profiles.rename(
+        {
+            "Image_Metadata_Plate": "Metadata_Plate",
+            "Image_Metadata_Well": "Metadata_Well",
+        },
+        axis="columns",
+    )
+
+    return profiles
