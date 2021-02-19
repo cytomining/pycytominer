@@ -1,7 +1,7 @@
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
-docs/_build
+build
 *.egg-info
 .coverage*
 .idea/*
