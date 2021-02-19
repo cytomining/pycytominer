@@ -12,19 +12,23 @@
 #
 import os
 import sys
+from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
 
+import pycytominer
 
 # -- Project information -----------------------------------------------------
 
-project = "pycytominer"
-copyright = "2021, Gregory P. Way"
-author = "Gregory P. Way"
+project = pycytominer.__about__.__project__
+author = pycytominer.__about__.__author__
+copyright = "Copyright 2019 - {date} {author}".format(
+    date=date.today().year, author=author
+)
 
 # The full version, including alpha/beta/rc tags
-release = "0.1"
-
+version = pycytominer.__about__.__version__
+release = version
 
 # -- General configuration ---------------------------------------------------
 
@@ -46,7 +50,6 @@ exclude_patterns = ["**test**"]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
 html_theme = "alabaster"
 
 # Add any paths that contain custom static files (such as style sheets) here,
