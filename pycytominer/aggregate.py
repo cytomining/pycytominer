@@ -48,6 +48,7 @@ def aggregate(
         ).reindex(population_df.columns, axis="columns")
 
     # Subset dataframe to only specified variables if provided
+    print(list(population_df.columns))
     strata_df = population_df.loc[:, strata]
     if features == "infer":
         features = infer_cp_features(population_df)
@@ -69,8 +70,6 @@ def aggregate(
         population_df = population_df.median().reset_index()
     else:
         population_df = population_df.mean().reset_index()
-
-    print(list(population_df.columns))
 
     # Aggregated image number and object number do not make sense
     for col in ["ImageNumber", "ObjectNumber"]:
