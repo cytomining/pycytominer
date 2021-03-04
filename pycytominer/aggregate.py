@@ -70,6 +70,8 @@ def aggregate(
     else:
         population_df = population_df.mean().reset_index()
 
+    print(list(population_df.columns))
+
     # Aggregated image number and object number do not make sense
     for col in ["ImageNumber", "ObjectNumber"]:
         if col in population_df.columns:
