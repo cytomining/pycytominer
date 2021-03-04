@@ -171,7 +171,7 @@ class SingleCells(object):
     def load_image(self):
         """Load image table from sqlite file"""
         # Extract image metadata
-        image_cols = "TableNumber, ImageNumber, {}".format(", ".join(self.strata))
+        image_cols = "TableNumber, ImageNumber, Metadata_Site, {}".format(", ".join(self.strata))
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
         self.image_df.Metadata_Site = self.image_df.Metadata_Site.astype(str)
