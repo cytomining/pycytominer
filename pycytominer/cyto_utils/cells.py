@@ -43,8 +43,8 @@ class SingleCells(object):
     :type subsample_n:, str, int
     :param subsampling_random_state: the random state to init subsample, defaults to "none"
     :type subsampling_random_state: str, int
-    :param fields_of_view: list of fields of view to include in the analysis, defaults to ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    :type fields_of_view: list
+    :param fields_of_view: list of field ID to include in the analysis, defaults to "all"
+    :type fields_of_view: list, str
 
     .. note::
         the argument compartment_linking_cols is designed to work with CellProfiler output,
@@ -71,7 +71,7 @@ class SingleCells(object):
         subsample_frac=1,
         subsample_n="all",
         subsampling_random_state="none",
-        fields_of_view=["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        fields_of_view="all"
     ):
         """Constructor method"""
         # Check compartments specified
@@ -174,8 +174,8 @@ class SingleCells(object):
         image_cols = "TableNumber, ImageNumber, Metadata_Site, {}".format(", ".join(self.strata))
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
-        self.image_df.Metadata_Site = self.image_df.Metadata_Site.astype(str)
-        self.image_df = self.image_df.query('Metadata_Site==@self.fields_of_view')
+        if self.fields_of_view != "all":
+            self.image_df = self.image_df.query('Metadata_Site==@self.fields_of_view')
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
