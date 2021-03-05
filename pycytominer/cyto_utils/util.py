@@ -3,6 +3,7 @@ Miscellaneous utility functions
 """
 
 import os
+import sys
 import warnings
 import numpy as np
 import pandas as pd
@@ -122,6 +123,43 @@ def check_consensus_operation(operation):
         )
 
     return operation
+
+
+def check_fields_of_view_format(fields_of_view):
+    """
+    Confirm that the input fields of view is valid
+
+    Arguments:
+    fields_of_view - "all" or a list of integer fields of view
+
+    Return:
+    Correctly formatted fields_of_view variable
+    """
+
+    if fields_of_view != "all":
+        if isinstance(fields_of_view, list):
+            if all(isinstance(x, int) for x in fields_of_view):
+                return fields_of_view
+            else:
+                raise TypeError(f'Variable of type int expected, however type {type(fields_of_view[0])} was passed')
+        else:
+            raise TypeError(f'Variable of type list expected, however type {type(fields_of_view)} was passed')
+    else:
+        return fields_of_view
+
+
+def check_fields_of_view(data_fields_of_view, input_fields_of_view):
+    """
+
+    Arguments:
+    data_fields_of_view - list of fields of view in the image table
+    input_fields_of_view -  list of input fields of view
+    """
+
+    try:
+        assert(len(list(np.intersect1d(data_fields_of_view, input_fields_of_view))) == len(input_fields_of_view))
+    except AssertionError:
+        raise ValueError('Some of the input fields of view are not present in the image table')
 
 
 def get_pairwise_correlation(population_df, method="pearson"):

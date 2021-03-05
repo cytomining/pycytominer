@@ -14,6 +14,7 @@ from pycytominer.cyto_utils import (
 def aggregate(
     population_df,
     strata=["Metadata_Plate", "Metadata_Well"],
+    compute_object_count=False,
     features="infer",
     operation="median",
     output_file="none",
@@ -27,6 +28,7 @@ def aggregate(
     Arguments:
     population_df - pandas DataFrame to group and aggregate
     strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
+    compute_object_count - [default: False] determine whether to compute object counts
     features - [default: "all"] or list indicating features that should be aggregated
     operation - [default: "median"] a string indicating how the data is aggregated
                 currently only supports one of ['mean', 'median']
@@ -48,8 +50,8 @@ def aggregate(
         ).reindex(population_df.columns, axis="columns")
 
     # Subset dataframe to only specified variables if provided
-    print(list(population_df.columns))
     strata_df = population_df.loc[:, strata]
+    count_df = population_df.loc[:, strata + ['Metadata_ObjectNumber']]
     if features == "infer":
         features = infer_cp_features(population_df)
         population_df = population_df.loc[:, features]
@@ -70,6 +72,17 @@ def aggregate(
         population_df = population_df.median().reset_index()
     else:
         population_df = population_df.mean().reset_index()
+
+    # Compute objects counts
+    if compute_object_count:
+        count_df = (
+            count_df.groupby(strata)['Metadata_ObjectNumber']
+            .count()
+            .reset_index()
+            .rename(columns={'Metadata_ObjectNumber': f'Metadata_Object_Count'})
+        )
+        population_df = count_df.merge(population_df, on=strata, how='right')
+
 
     # Aggregated image number and object number do not make sense
     for col in ["ImageNumber", "ObjectNumber"]:

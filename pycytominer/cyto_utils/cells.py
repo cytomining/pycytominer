@@ -11,6 +11,8 @@ from pycytominer.cyto_utils import (
     get_default_compartments,
     assert_linking_cols_complete,
     provide_linking_cols_feature_name_update,
+    check_fields_of_view_format,
+    check_fields_of_view,
 )
 
 default_compartments = get_default_compartments()
@@ -121,6 +123,10 @@ class SingleCells(object):
         # Throw an error if both subsample_frac and subsample_n is set
         self._check_subsampling()
 
+        # Confirm that the input fields of view if valid
+
+        self.fields_of_view = check_fields_of_view_format(self.fields_of_view)
+
         if self.load_image_data:
             self.load_image()
 
@@ -175,6 +181,7 @@ class SingleCells(object):
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
         if self.fields_of_view != "all":
+            check_fields_of_view(list(np.unique(self.image_df['Metadata_Site'])), list(self.fields_of_view))
             self.image_df = self.image_df.query('Metadata_Site==@self.fields_of_view')
 
     def count_cells(self, compartment="cells", count_subset=False):
@@ -273,7 +280,7 @@ class SingleCells(object):
         return df
 
     def aggregate_compartment(
-        self, compartment, compute_subsample=False, aggregate_args=None
+        self, compartment, compute_subsample=False, compute_count=False, aggregate_args=None,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -281,6 +288,8 @@ class SingleCells(object):
         :type compartment: str
         :param compute_subsample: determine if subsample should be computed, defaults to False
         :type compute_subsample: bool
+        :param compute_count: determine if the number of the objects and fields should be computed, defaults to False
+        :type compute_count: bool
         :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
         :type aggregate_args: None, dict
         :return: Aggregated single-cell profiles
@@ -318,10 +327,22 @@ class SingleCells(object):
         object_df = aggregate(
             population_df=population_df,
             strata=self.strata,
+            compute_object_count=compute_count,
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
             **aggregate_args
         )
+
+        if compute_count:
+            fields_count_df = self.image_df.loc[:, self.strata+['Metadata_Site']]
+            fields_count_df = (
+                fields_count_df.groupby(self.strata)['Metadata_Site']
+                .count()
+                .reset_index()
+                .rename(columns={'Metadata_Site': f'Metadata_Fields_Count'})
+            )
+
+            object_df = fields_count_df.merge(object_df, on=self.strata, how='right')
 
         return object_df
 
@@ -338,8 +359,8 @@ class SingleCells(object):
 
         :param sc_output_file: the name of a file to output, defaults to "none":
         :type sc_output_file: str, optional
-        :param compression: the mechanism to compress, defaults to None
-        :type compression: str, optional
+        :param compression_options: the mechanism to compress, defaults to None
+        :type compression_options: str, optional
         :param float_format: decimal precision to use in writing output file, defaults to None
         :type float_format: str, optional
         :param single_cell_normalize: determine if the single cell data should also be normalized
@@ -500,7 +521,7 @@ class SingleCells(object):
         for compartment in self.compartments:
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
-                    compartment=compartment, compute_subsample=compute_subsample
+                    compartment=compartment, compute_subsample=compute_subsample, compute_count=True
                 )
             else:
                 aggregated = aggregated.merge(
