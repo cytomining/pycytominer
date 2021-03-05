@@ -51,7 +51,7 @@ def aggregate(
 
     # Subset dataframe to only specified variables if provided
     strata_df = population_df.loc[:, strata]
-    count_df = population_df.loc[:, strata + ['Metadata_ObjectNumber']]
+    count_object_df = population_df.loc[:, strata + ['Metadata_ObjectNumber']]
     if features == "infer":
         features = infer_cp_features(population_df)
         population_df = population_df.loc[:, features]
@@ -75,13 +75,13 @@ def aggregate(
 
     # Compute objects counts
     if compute_object_count:
-        count_df = (
-            count_df.groupby(strata)['Metadata_ObjectNumber']
+        count_object_df = (
+            count_object_df.groupby(strata)['Metadata_ObjectNumber']
             .count()
             .reset_index()
             .rename(columns={'Metadata_ObjectNumber': f'Metadata_Object_Count'})
         )
-        population_df = count_df.merge(population_df, on=strata, how='right')
+        population_df = count_object_df.merge(population_df, on=strata, how='right')
 
 
     # Aggregated image number and object number do not make sense

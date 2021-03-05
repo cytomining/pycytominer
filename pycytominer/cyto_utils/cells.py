@@ -45,7 +45,7 @@ class SingleCells(object):
     :type subsample_n:, str, int
     :param subsampling_random_state: the random state to init subsample, defaults to "none"
     :type subsampling_random_state: str, int
-    :param fields_of_view: list of field ID to include in the analysis, defaults to "all"
+    :param fields_of_view: list of fields of view to include in the analysis, defaults to "all"
     :type fields_of_view: list, str
 
     .. note::
@@ -123,8 +123,7 @@ class SingleCells(object):
         # Throw an error if both subsample_frac and subsample_n is set
         self._check_subsampling()
 
-        # Confirm that the input fields of view if valid
-
+        # Confirm that the input fields of view is valid
         self.fields_of_view = check_fields_of_view_format(self.fields_of_view)
 
         if self.load_image_data:
@@ -280,7 +279,7 @@ class SingleCells(object):
         return df
 
     def aggregate_compartment(
-        self, compartment, compute_subsample=False, compute_count=False, aggregate_args=None,
+        self, compartment, compute_subsample=False, compute_counts=False, aggregate_args=None,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -288,8 +287,8 @@ class SingleCells(object):
         :type compartment: str
         :param compute_subsample: determine if subsample should be computed, defaults to False
         :type compute_subsample: bool
-        :param compute_count: determine if the number of the objects and fields should be computed, defaults to False
-        :type compute_count: bool
+        :param compute_counts: determine if the number of the objects and fields should be computed, defaults to False
+        :type compute_counts: bool
         :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
         :type aggregate_args: None, dict
         :return: Aggregated single-cell profiles
@@ -327,13 +326,13 @@ class SingleCells(object):
         object_df = aggregate(
             population_df=population_df,
             strata=self.strata,
-            compute_object_count=compute_count,
+            compute_object_count=compute_counts,
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
             **aggregate_args
         )
 
-        if compute_count:
+        if compute_counts:
             fields_count_df = self.image_df.loc[:, self.strata+['Metadata_Site']]
             fields_count_df = (
                 fields_count_df.groupby(self.strata)['Metadata_Site']
@@ -521,7 +520,7 @@ class SingleCells(object):
         for compartment in self.compartments:
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
-                    compartment=compartment, compute_subsample=compute_subsample, compute_count=True
+                    compartment=compartment, compute_subsample=compute_subsample, compute_counts=True
                 )
             else:
                 aggregated = aggregated.merge(
