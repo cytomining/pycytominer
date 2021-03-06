@@ -47,6 +47,10 @@ class SingleCells(object):
     :type subsampling_random_state: str, int
     :param fields_of_view: list of fields of view to include in the analysis, defaults to "all"
     :type fields_of_view: list, str
+    :param fields_of_view_feature: Fields of view feature name, defaults to "Metadata_FieldID"
+    :type fields_of_view_feature: str
+    :param object_feature: Object Number feature, defaults to "ObjectNumber"
+    :type object_feature: str
 
     .. note::
         the argument compartment_linking_cols is designed to work with CellProfiler output,
@@ -73,7 +77,9 @@ class SingleCells(object):
         subsample_frac=1,
         subsample_n="all",
         subsampling_random_state="none",
-        fields_of_view="all"
+        fields_of_view="all",
+        fields_of_view_feature="Metadata_FieldID",
+        object_feature="ObjectNumber"
     ):
         """Constructor method"""
         # Check compartments specified
@@ -102,6 +108,8 @@ class SingleCells(object):
         self.compartments = compartments
         self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view = fields_of_view
+        self.fields_of_view_feature = fields_of_view_feature
+        self.object_feature = object_feature
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
@@ -180,8 +188,8 @@ class SingleCells(object):
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
         if self.fields_of_view != "all":
-            check_fields_of_view(list(np.unique(self.image_df['Metadata_Site'])), list(self.fields_of_view))
-            self.image_df = self.image_df.query('Metadata_Site==@self.fields_of_view')
+            check_fields_of_view(list(np.unique(self.image_df[self.fields_of_view_feature])), list(self.fields_of_view))
+            self.image_df = self.image_df.query(f'{self.fields_of_view_feature}==@self.fields_of_view')
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
@@ -329,16 +337,17 @@ class SingleCells(object):
             compute_object_count=compute_counts,
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
+            object_feature=self.object_feature,
             **aggregate_args
         )
 
         if compute_counts:
-            fields_count_df = self.image_df.loc[:, self.strata+['Metadata_Site']]
+            fields_count_df = self.image_df.loc[:, self.strata+[self.fields_of_view_feature]]
             fields_count_df = (
-                fields_count_df.groupby(self.strata)['Metadata_Site']
+                fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
                 .count()
                 .reset_index()
-                .rename(columns={'Metadata_Site': f'Metadata_Fields_Count'})
+                .rename(columns={f'{self.fields_of_view_feature}': f'Metadata_Fields_Count'})
             )
 
             object_df = fields_count_df.merge(object_df, on=self.strata, how='right')

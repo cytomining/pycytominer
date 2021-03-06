@@ -15,6 +15,7 @@ def aggregate(
     population_df,
     strata=["Metadata_Plate", "Metadata_Well"],
     compute_object_count=False,
+    object_feature="ObjectNumber",
     features="infer",
     operation="median",
     output_file="none",
@@ -29,6 +30,7 @@ def aggregate(
     population_df - pandas DataFrame to group and aggregate
     strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
     compute_object_count - [default: False] determine whether to compute object counts
+    object_feature - [default: "ObjectNumber"] Object number feature
     features - [default: "all"] or list indicating features that should be aggregated
     operation - [default: "median"] a string indicating how the data is aggregated
                 currently only supports one of ['mean', 'median']
@@ -51,7 +53,7 @@ def aggregate(
 
     # Subset dataframe to only specified variables if provided
     strata_df = population_df.loc[:, strata]
-    count_object_df = population_df.loc[:, strata + ['Metadata_ObjectNumber']]
+    count_object_df = population_df.loc[:, strata + [object_feature]]
     if features == "infer":
         features = infer_cp_features(population_df)
         population_df = population_df.loc[:, features]
@@ -76,13 +78,12 @@ def aggregate(
     # Compute objects counts
     if compute_object_count:
         count_object_df = (
-            count_object_df.groupby(strata)['Metadata_ObjectNumber']
+            count_object_df.groupby(strata)[object_feature]
             .count()
             .reset_index()
-            .rename(columns={'Metadata_ObjectNumber': f'Metadata_Object_Count'})
+            .rename(columns={f'{object_feature}': f'Metadata_Object_Count'})
         )
         population_df = count_object_df.merge(population_df, on=strata, how='right')
-
 
     # Aggregated image number and object number do not make sense
     for col in ["ImageNumber", "ObjectNumber"]:
