@@ -81,9 +81,9 @@ def aggregate(
             count_object_df.groupby(strata)[object_feature]
             .count()
             .reset_index()
-            .rename(columns={f'{object_feature}': f'Metadata_Object_Count'})
+            .rename(columns={f"{object_feature}": f"Metadata_Object_Count"})
         )
-        population_df = count_object_df.merge(population_df, on=strata, how='right')
+        population_df = count_object_df.merge(population_df, on=strata, how="right")
 
     # Aggregated image number and object number do not make sense
     for col in ["ImageNumber", "ObjectNumber"]:

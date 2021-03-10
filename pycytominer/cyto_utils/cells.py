@@ -79,7 +79,7 @@ class SingleCells(object):
         subsampling_random_state="none",
         fields_of_view="all",
         fields_of_view_feature="Metadata_FieldID",
-        object_feature="ObjectNumber"
+        object_feature="ObjectNumber",
     ):
         """Constructor method"""
         # Check compartments specified
@@ -184,12 +184,19 @@ class SingleCells(object):
     def load_image(self):
         """Load image table from sqlite file"""
         # Extract image metadata
-        image_cols = "TableNumber, ImageNumber, Metadata_Site, {}".format(", ".join(self.strata))
+        image_cols = "TableNumber, ImageNumber, Metadata_Site, {}".format(
+            ", ".join(self.strata)
+        )
         image_query = "select {} from image".format(image_cols)
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
         if self.fields_of_view != "all":
-            check_fields_of_view(list(np.unique(self.image_df[self.fields_of_view_feature])), list(self.fields_of_view))
-            self.image_df = self.image_df.query(f'{self.fields_of_view_feature}==@self.fields_of_view')
+            check_fields_of_view(
+                list(np.unique(self.image_df[self.fields_of_view_feature])),
+                list(self.fields_of_view),
+            )
+            self.image_df = self.image_df.query(
+                f"{self.fields_of_view_feature}==@self.fields_of_view"
+            )
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
@@ -287,7 +294,11 @@ class SingleCells(object):
         return df
 
     def aggregate_compartment(
-        self, compartment, compute_subsample=False, compute_counts=False, aggregate_args=None,
+        self,
+        compartment,
+        compute_subsample=False,
+        compute_counts=False,
+        aggregate_args=None,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -338,19 +349,23 @@ class SingleCells(object):
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
             object_feature=self.object_feature,
-            **aggregate_args
+            **aggregate_args,
         )
 
         if compute_counts:
-            fields_count_df = self.image_df.loc[:, self.strata+[self.fields_of_view_feature]]
+            fields_count_df = self.image_df.loc[
+                :, self.strata + [self.fields_of_view_feature]
+            ]
             fields_count_df = (
                 fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
                 .count()
                 .reset_index()
-                .rename(columns={f'{self.fields_of_view_feature}': f'Metadata_Fields_Count'})
+                .rename(
+                    columns={f"{self.fields_of_view_feature}": f"Metadata_Fields_Count"}
+                )
             )
 
-            object_df = fields_count_df.merge(object_df, on=self.strata, how='right')
+            object_df = fields_count_df.merge(object_df, on=self.strata, how="right")
 
         return object_df
 
@@ -529,7 +544,9 @@ class SingleCells(object):
         for compartment in self.compartments:
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
-                    compartment=compartment, compute_subsample=compute_subsample, compute_counts=True
+                    compartment=compartment,
+                    compute_subsample=compute_subsample,
+                    compute_counts=True,
                 )
             else:
                 aggregated = aggregated.merge(
