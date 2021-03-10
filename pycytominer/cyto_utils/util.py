@@ -154,6 +154,7 @@ def check_fields_of_view_format(fields_of_view):
 
 def check_fields_of_view(data_fields_of_view, input_fields_of_view):
     """
+    Confirm that the input list of fields of view is a subset of the list of fields of view in the image table
 
     Arguments:
     data_fields_of_view - list of fields of view in the image table
