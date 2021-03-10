@@ -53,7 +53,6 @@ def aggregate(
 
     # Subset dataframe to only specified variables if provided
     strata_df = population_df.loc[:, strata]
-    count_object_df = population_df.loc[:, strata + [object_feature]]
     if features == "infer":
         features = infer_cp_features(population_df)
         population_df = population_df.loc[:, features]
@@ -77,6 +76,7 @@ def aggregate(
 
     # Compute objects counts
     if compute_object_count:
+        count_object_df = population_df.loc[:, strata + [object_feature]]
         count_object_df = (
             count_object_df.groupby(strata)[object_feature]
             .count()
