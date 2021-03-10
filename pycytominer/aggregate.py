@@ -14,11 +14,11 @@ from pycytominer.cyto_utils import (
 def aggregate(
     population_df,
     strata=["Metadata_Plate", "Metadata_Well"],
-    compute_object_count=False,
-    object_feature="ObjectNumber",
     features="infer",
     operation="median",
     output_file="none",
+    compute_object_count=False,
+    object_feature="ObjectNumber",
     subset_data_df="none",
     compression_options=None,
     float_format=None,
@@ -29,14 +29,14 @@ def aggregate(
     Arguments:
     population_df - pandas DataFrame to group and aggregate
     strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
-    compute_object_count - [default: False] determine whether to compute object counts
-    object_feature - [default: "ObjectNumber"] Object number feature
     features - [default: "all"] or list indicating features that should be aggregated
     operation - [default: "median"] a string indicating how the data is aggregated
                 currently only supports one of ['mean', 'median']
     output_file - [default: "none"] if provided, will write aggregated profiles to file
                   if not specified, will return the aggregated profiles. We recommend
                   naming the file based on the plate name.
+    compute_object_count - [default: False] determine whether to compute object counts
+    object_feature - [default: "ObjectNumber"] Object number feature
     subset_data_df - [default: "none"] a pandas dataframe indicating how to subset the input
 
     Return:
