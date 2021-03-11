@@ -108,6 +108,8 @@ class SingleCells(object):
         self.fields_of_view_feature = 'Metadata_Site'
         self.object_feature = object_feature
 
+        self.image_cols = ["TableNumber", "ImageNumber", "Metadata_Site"]
+
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
             compartments=self.compartments, linking_cols=self.compartment_linking_cols
@@ -181,10 +183,7 @@ class SingleCells(object):
     def load_image(self):
         """Load image table from sqlite file"""
         # Extract image metadata
-        image_cols = "TableNumber, ImageNumber, Metadata_Site, {}".format(
-            ", ".join(self.strata)
-        )
-        image_query = "select {} from image".format(image_cols)
+        image_query = "select {} from image".format(', '.join(self.image_cols + self.strata))
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
         if self.fields_of_view != "all":
             check_fields_of_view(
