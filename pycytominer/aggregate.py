@@ -79,7 +79,7 @@ def aggregate(
 
     # Compute objects counts
     if compute_object_count:
-        count_object_df = population_df_copy.loc[:, strata + [object_feature]]
+        count_object_df = population_df_copy.loc[:, np.union1d(strata, [object_feature])]
         count_object_df = (
             count_object_df.groupby(strata)[object_feature]
             .count()
