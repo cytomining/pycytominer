@@ -51,6 +51,9 @@ def aggregate(
             population_df, how="left", on=subset_data_df.columns.tolist()
         ).reindex(population_df.columns, axis="columns")
 
+    # Create a copy of the population dataframe before Metadata features are removed
+    population_df_copy = population_df.copy()
+
     # Subset dataframe to only specified variables if provided
     strata_df = population_df.loc[:, strata]
     if features == "infer":
@@ -76,7 +79,7 @@ def aggregate(
 
     # Compute objects counts
     if compute_object_count:
-        count_object_df = population_df.loc[:, strata + [object_feature]]
+        count_object_df = population_df_copy.loc[:, strata + [object_feature]]
         count_object_df = (
             count_object_df.groupby(strata)[object_feature]
             .count()
