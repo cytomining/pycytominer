@@ -131,12 +131,12 @@ def check_fields_of_view_format(fields_of_view):
     Parameters
     ----------
     fields_of_view : str or list
-        "all" or a list of integer fields of view
+        "all" or a list of integer fields of view.
 
     Returns
     -------
     str or list
-        Correctly formatted fields_of_view variable
+        Correctly formatted fields_of_view variable.
 
     """
 
