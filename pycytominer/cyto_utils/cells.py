@@ -184,7 +184,7 @@ class SingleCells(object):
         """Load image table from sqlite file"""
         # Extract image metadata
         image_query = "select {} from image".format(
-            ", ".join(self.image_cols + self.strata)
+            ", ".join(np.union1d(self.image_cols, self.strata))
         )
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
         if self.fields_of_view != "all":
