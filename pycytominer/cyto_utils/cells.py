@@ -47,8 +47,6 @@ class SingleCells(object):
     :type subsampling_random_state: str, int
     :param fields_of_view: list of fields of view to include in the analysis, defaults to "all"
     :type fields_of_view: list, str
-    :param fields_of_view_feature: Fields of view feature name, defaults to "Metadata_FieldID"
-    :type fields_of_view_feature: str
     :param object_feature: Object Number feature, defaults to "ObjectNumber"
     :type object_feature: str
 
@@ -78,7 +76,6 @@ class SingleCells(object):
         subsample_n="all",
         subsampling_random_state="none",
         fields_of_view="all",
-        fields_of_view_feature="Metadata_FieldID",
         object_feature="ObjectNumber",
     ):
         """Constructor method"""
@@ -108,7 +105,7 @@ class SingleCells(object):
         self.compartments = compartments
         self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view = fields_of_view
-        self.fields_of_view_feature = fields_of_view_feature
+        self.fields_of_view_feature = 'Metadata_Site'
         self.object_feature = object_feature
 
         # Confirm that the compartments and linking cols are formatted properly
