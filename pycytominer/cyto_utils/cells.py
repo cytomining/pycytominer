@@ -37,6 +37,8 @@ class SingleCells(object):
     :type compartment_linking_cols: dict
     :param merge_cols: columns indicating how to merge image and compartment data, defaults to ["TableNumber", "ImageNumber"]
     :type merge_cols: list
+    :param image_cols: columns to select from the image table, defaults to ["TableNumber", "ImageNumber", "Metadata_Site"]
+    :type image_cols: list
     :param load_image_data: if image data should be loaded into memory, defaults to True
     :type load_image_data: bool
     :param subsample_frac: indicating percentage of single cells to select (0 < subsample_frac <= 1), defaults to 1
@@ -71,6 +73,7 @@ class SingleCells(object):
         compartments=default_compartments,
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
+        image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
         load_image_data=True,
         subsample_frac=1,
         subsample_n="all",
@@ -96,6 +99,7 @@ class SingleCells(object):
         self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
         self.merge_cols = merge_cols
+        self.image_cols = image_cols
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
         self.subset_data_df = "none"
@@ -107,8 +111,6 @@ class SingleCells(object):
         self.fields_of_view = fields_of_view
         self.fields_of_view_feature = "Metadata_Site"
         self.object_feature = object_feature
-
-        self.image_cols = ["TableNumber", "ImageNumber", "Metadata_Site"]
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
