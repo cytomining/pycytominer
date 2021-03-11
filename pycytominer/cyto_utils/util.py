@@ -146,7 +146,7 @@ def check_fields_of_view_format(fields_of_view):
                 return fields_of_view
             else:
                 raise TypeError(
-                    f"Variable of type int expected, however type {type(fields_of_view[0])} was passed"
+                    f"Variables of type int expected, however some of the input fields of view are not integers"
                 )
         else:
             raise TypeError(
