@@ -354,7 +354,7 @@ class SingleCells(object):
 
         if compute_counts:
             fields_count_df = self.image_df.loc[
-                :, self.strata + [self.fields_of_view_feature]
+                :, list(np.union1d(self.strata, self.fields_of_view_feature))
             ]
             fields_count_df = (
                 fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
