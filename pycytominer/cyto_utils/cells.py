@@ -517,8 +517,8 @@ class SingleCells(object):
         :type compute_subsample: bool
         :param output_file: the name of a file to output, defaults to "none"
         :type output_file: str, optional
-        :param compression: the mechanism to compress, defaults to None
-        :type compression: str, optional
+        :param compression_options: the mechanism to compress, defaults to None
+        :type compression_options: str, optional
         :param float_format: decimal precision to use in writing output file, defaults to None
         :type float_format: str, optional
         :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
