@@ -341,7 +341,7 @@ class SingleCells(object):
             features = aggregate_args["features"]
 
         aggregate_args["features"] = features
-        aggregate_args['object_feature'] = self.object_feature
+        aggregate_args["object_feature"] = self.object_feature
 
         object_df = aggregate(
             population_df=population_df,

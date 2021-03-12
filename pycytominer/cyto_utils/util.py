@@ -145,9 +145,12 @@ def check_fields_of_view_format(fields_of_view):
             if all(isinstance(x, int) for x in fields_of_view):
                 return fields_of_view
             else:
-                raise TypeError(
-                    f"Variables of type int expected, however some of the input fields of view are not integers"
-                )
+                try:
+                    return list(map(int, fields_of_view))
+                except ValueError:
+                    raise TypeError(
+                        f"Variables of type int expected, however some of the input fields of view are not integers."
+                    )
         else:
             raise TypeError(
                 f"Variable of type list expected, however type {type(fields_of_view)} was passed"
