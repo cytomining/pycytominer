@@ -306,7 +306,7 @@ class SingleCells(object):
         :type compartment: str
         :param compute_subsample: determine if subsample should be computed, defaults to False
         :type compute_subsample: bool
-        :param compute_counts: determine if the number of the objects and fields should be computed, defaults to False
+        :param compute_counts: determine if the number of the objects in each compartment and the number of fields of view per well should be computed, defaults to False
         :type compute_counts: bool
         :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
         :type aggregate_args: None, dict
