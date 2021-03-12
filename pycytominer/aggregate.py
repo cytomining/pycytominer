@@ -51,11 +51,19 @@ def aggregate(
             population_df, how="left", on=subset_data_df.columns.tolist()
         ).reindex(population_df.columns, axis="columns")
 
-    # Create a copy of the population dataframe before Metadata features are removed
-    population_df_copy = population_df.copy()
-
     # Subset dataframe to only specified variables if provided
     strata_df = population_df.loc[:, strata]
+
+    # Only extract single object column in preparation for count
+    if compute_object_count:
+        count_object_df = population_df.loc[:, np.union1d(strata, [object_feature])]
+        count_object_df = (
+            count_object_df.groupby(strata)[object_feature]
+            .count()
+            .reset_index()
+            .rename(columns={f"{object_feature}": f"Metadata_Object_Count"})
+        )
+
     if features == "infer":
         features = infer_cp_features(population_df)
         population_df = population_df.loc[:, features]
@@ -79,15 +87,6 @@ def aggregate(
 
     # Compute objects counts
     if compute_object_count:
-        count_object_df = population_df_copy.loc[
-            :, np.union1d(strata, [object_feature])
-        ]
-        count_object_df = (
-            count_object_df.groupby(strata)[object_feature]
-            .count()
-            .reset_index()
-            .rename(columns={f"{object_feature}": f"Metadata_Object_Count"})
-        )
         population_df = count_object_df.merge(population_df, on=strata, how="right")
 
     # Aggregated image number and object number do not make sense
