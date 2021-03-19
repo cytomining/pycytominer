@@ -1,3 +1,12 @@
-  language: python
-  script:
-    - pytest
+language: python
+python:
+  - "3.7"
+  - "3.8"
+  - "3.9"
+install:
+- pip install -r requirements.txt
+script:
+  - pip install pytest-cov codecov
+  - py.test -v --cov-report=xml --cov=pycytominer pycytominer/tests/
+after_success:
+  - codecov
