@@ -75,7 +75,7 @@ def normalize(
     Returns
     -------
     pd.DataFrame or None
-        The normalized profile DataFrame. If ouput_file="none", then return the
+        The normalized profile DataFrame. If output_file="none", then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
 
