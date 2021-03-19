@@ -494,3 +494,34 @@ def test_normalize_spherize():
                 .sum()
             )
             assert non_spherize_result_cov >= expected_result - 5
+
+
+def test_spherize_epsilon():
+    """
+    Test that epsilon is successfully passed to the spherize transform method
+    """
+    sphere_norm_df = normalize(
+        data_spherize_df, features=["a", "b", "c", "d"], meta_features=["id"]
+    )
+
+    spherize_method = "ZCA"
+    spherize_center = True
+
+    for custom_eps in [1e-6, 1]:
+        result = normalize(
+            sphere_norm_df,
+            features=["a", "b", "c", "d"],
+            meta_features=["id"],
+            method="spherize",
+            spherize_method=spherize_method,
+            spherize_center=spherize_center,
+            spherize_epsilon=custom_eps,
+        )
+
+        cov_mat = pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
+        off_diag_sum = np.round(np.sum(cov_mat).sum() - np.trace(cov_mat), 3)
+
+        if custom_eps >= 1:
+            assert off_diag_sum > 0
+        else:
+            assert off_diag_sum == 0
