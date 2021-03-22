@@ -158,3 +158,20 @@ def test_aggregate_median_with_missing_values():
     expected_result = expected_result.astype(dtype_convert_dict)
 
     assert aggregate_result.equals(expected_result)
+
+    # Test that aggregate doesn't drop samples if strata is na
+    data_missing_group_df = pd.concat(
+        [
+            data_df,
+            pd.DataFrame({"g": np.nan, "Cells_x": [1, 3, 8], "Nuclei_y": [5, 3, 1]}),
+        ]
+    )
+
+    result = aggregate(
+        population_df=data_missing_group_df,
+        strata=["g"],
+        features="infer",
+        operation="median",
+    )
+    # There should be three total groups
+    assert result.shape[0] == 3
