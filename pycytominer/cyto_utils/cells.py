@@ -109,7 +109,6 @@ class SingleCells(object):
         self.is_subset_computed = False
         self.compartments = compartments
         self.compartment_linking_cols = compartment_linking_cols
-        self.fields_of_view = fields_of_view
         self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
 
@@ -134,7 +133,7 @@ class SingleCells(object):
         self._check_subsampling()
 
         # Confirm that the input fields of view is valid
-        self.fields_of_view = check_fields_of_view_format(self.fields_of_view)
+        self.fields_of_view = check_fields_of_view_format(fields_of_view)
 
         if self.load_image_data:
             self.load_image()
