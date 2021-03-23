@@ -79,6 +79,7 @@ class SingleCells(object):
         subsample_n="all",
         subsampling_random_state="none",
         fields_of_view="all",
+        fields_of_view_feature = "Metadata_Site",
         object_feature="ObjectNumber",
     ):
         """Constructor method"""
@@ -109,7 +110,7 @@ class SingleCells(object):
         self.compartments = compartments
         self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view = fields_of_view
-        self.fields_of_view_feature = "Metadata_Site"
+        self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
 
         # Confirm that the compartments and linking cols are formatted properly
