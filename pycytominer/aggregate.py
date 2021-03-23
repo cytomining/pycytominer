@@ -23,25 +23,39 @@ def aggregate(
     compression_options=None,
     float_format=None,
 ):
-    """
-    Combine population dataframe variables by strata groups using given operation
+    """Combine population dataframe variables by strata groups using given operation.
 
-    Arguments:
-    population_df - pandas DataFrame to group and aggregate
-    strata - [default: ["Metadata_Plate", "Metadata_Well"]] list indicating the columns to groupby and aggregate
-    features - [default: "all"] or list indicating features that should be aggregated
-    operation - [default: "median"] a string indicating how the data is aggregated
-                currently only supports one of ['mean', 'median']
-    output_file - [default: "none"] if provided, will write aggregated profiles to file
-                  if not specified, will return the aggregated profiles. We recommend
-                  naming the file based on the plate name.
-    compute_object_count - [default: False] determine whether to compute object counts
-    object_feature - [default: "ObjectNumber"] Object number feature
-    subset_data_df - [default: "none"] a pandas dataframe indicating how to subset the input
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame to group and aggregate.
+    strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
+        Columns to groupby and aggregate.
+    features : list of str, default "all"
+        List of features that should be aggregated.
+    operation : str, default "median"
+        How the data is aggregated. Currently only supports one of ['mean', 'median'].
+    output_file : str or file handle, optional
+        If provided, will write aggregated profiles to file. If not specified, will return the aggregated profiles.
+        We recommend naming the file based on the plate name.
+    compute_object_count : bool, default False
+        Whether or not to compute object counts.
+    object_feature : str, default "ObjectNumber"
+        Object number feature.
+    subset_data_df : pandas.core.frame.DataFrame
+        How to subset the input.
+    compression_options : str, optional
+        The mechanism to compress.
+    float_format : str, optional
+        Decimal precision to use in writing output file.
 
-    Return:
-    Pandas DataFrame of aggregated features
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame of aggregated features.
+
     """
+
     # Check that the operation is supported
     operation = check_aggregate_operation(operation)
 
