@@ -463,7 +463,7 @@ class SingleCells(object):
                 .count()
                 .reset_index()
                 .rename(
-                    columns={f"{self.fields_of_view_feature}": f"Metadata_Fields_Count"}
+                    columns={f"{self.fields_of_view_feature}": f"Metadata_Site_Count"}
                 )
             )
 
