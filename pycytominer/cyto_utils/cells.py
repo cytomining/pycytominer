@@ -79,7 +79,7 @@ class SingleCells(object):
         subsample_n="all",
         subsampling_random_state="none",
         fields_of_view="all",
-        fields_of_view_feature = "Metadata_Site",
+        fields_of_view_feature="Metadata_Site",
         object_feature="ObjectNumber",
     ):
         """Constructor method"""
@@ -454,7 +454,7 @@ class SingleCells(object):
             **aggregate_args,
         )
 
-        if compute_counts:
+        if compute_counts and self.fields_of_view_feature not in self.strata:
             fields_count_df = self.image_df.loc[
                 :, list(np.union1d(self.strata, self.fields_of_view_feature))
             ]
