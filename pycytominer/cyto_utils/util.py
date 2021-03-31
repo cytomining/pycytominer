@@ -196,7 +196,7 @@ def check_fields_of_view_format(fields_of_view):
                     )
         else:
             raise TypeError(
-                f"Variable of type list expected, however type {type(fields_of_view)} was passed"
+                f"Variable of type list expected, however type {type(fields_of_view)} was passed."
             )
     else:
         return fields_of_view
@@ -225,7 +225,7 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
         ) == len(input_fields_of_view)
     except AssertionError:
         raise ValueError(
-            "Some of the input fields of view are not present in the image table"
+            "Some of the input fields of view are not present in the image table."
         )
 
 
