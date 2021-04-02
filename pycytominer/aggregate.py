@@ -75,7 +75,7 @@ def aggregate(
             count_object_df.groupby(strata)[object_feature]
             .count()
             .reset_index()
-            .rename(columns={f"{object_feature}": f"Metadata_Object_Count"})
+            .rename(columns={f"{object_feature}": "Metadata_Object_Count"})
         )
 
     if features == "infer":
