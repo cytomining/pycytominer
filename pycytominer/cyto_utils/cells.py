@@ -399,7 +399,7 @@ class SingleCells(object):
 
         Parameters
         ----------
-        compartment : str, default "cells"
+        compartment : str
             Compartment to aggregate.
         compute_subsample : bool, default False
             Whether or not to subsample.
