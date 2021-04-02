@@ -14,8 +14,22 @@ test_output_file = os.path.join(tmpdir, "test.csv")
 # Build data to use in tests
 data_df = pd.concat(
     [
-        pd.DataFrame({"g": "a", "Cells_x": [1, 3, 8], "Nuclei_y": [5, 3, 1]}),
-        pd.DataFrame({"g": "b", "Cells_x": [1, 3, 5], "Nuclei_y": [8, 3, 1]}),
+        pd.DataFrame(
+            {
+                "g": "a",
+                "ObjectNumber": [1, 2, 3],
+                "Cells_x": [1, 3, 8],
+                "Nuclei_y": [5, 3, 1],
+            }
+        ),
+        pd.DataFrame(
+            {
+                "g": "b",
+                "ObjectNumber": [1, 2, 4],
+                "Cells_x": [1, 3, 5],
+                "Nuclei_y": [8, 3, 1],
+            }
+        ),
     ]
 ).reset_index(drop=True)
 
@@ -158,3 +172,54 @@ def test_aggregate_median_with_missing_values():
     expected_result = expected_result.astype(dtype_convert_dict)
 
     assert aggregate_result.equals(expected_result)
+
+
+def test_aggregate_compute_object_count():
+    """
+    Testing aggregate pycytominer function
+    """
+
+    aggregate_result = aggregate(
+        population_df=data_df,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        compute_object_count=True,
+    )
+
+    expected_result = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "g": "a",
+                    "Metadata_Object_Count": [3],
+                    "Cells_x": [3],
+                    "Nuclei_y": [3],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "g": "b",
+                    "Metadata_Object_Count": [3],
+                    "Cells_x": [3],
+                    "Nuclei_y": [3],
+                }
+            ),
+        ]
+    ).reset_index(drop=True)
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    assert aggregate_result.equals(expected_result)
+
+    # Test output
+    aggregate(
+        population_df=data_df,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        compute_object_count=True,
+        output_file=test_output_file,
+    )
+
+    test_df = pd.read_csv(test_output_file)
+    pd.testing.assert_frame_equal(test_df, expected_result)
