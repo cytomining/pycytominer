@@ -31,7 +31,7 @@ def get_default_compartments():
 
 
 def check_compartments(compartments):
-    """Checks if the input compartments are non canonical compartments.
+    """Checks if the input compartments are noncanonical compartments.
 
     Parameters
     ----------
