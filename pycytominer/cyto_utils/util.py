@@ -62,13 +62,13 @@ def check_compartments(compartments):
 
 
 def load_known_metadata_dictionary(metadata_file=default_metadata_file):
-    """From a tab separated text file (two columns: ["compartment", "feature"]) load
+    """From a tab separated text file (two columns: ["compartment", "feature"]), load
     previously known metadata columns per compartment.
 
     Parameters
     ----------
-    metadata_file : str
-        File location of the metadata text file.
+    metadata_file : str, optional
+        File location of the metadata text file. Uses a default dictionary if you do not specify.
 
     Returns
     -------
