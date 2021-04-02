@@ -23,38 +23,42 @@ class SingleCells(object):
     """This is a class to interact with single cell morphological profiles. Interaction
     includes aggregation, normalization, and output.
 
-    :param file_or_conn: A file string or database connection storing the location of single cell profiles
-    :type file_or_conn: str
-    :param strata: The columns to groupby and aggregate single cells, defaults to ["Metadata_Plate", "Metadata_Well"]
-    :type strata: list
-    :param aggregation_operation: operation to perform single cell aggregation, defaults to "median"
-    :type aggregation_operation: str
-    :param output_file: If specified, the location to write the file, defaults to "none"
-    :type output_file: str
-    :param compartments: list of compartments to process, defaults to ["cells", "cytoplasm", "nuclei"]
-    :type compartments: list
-    :param compartment_linking_cols: dictionary identifying how to merge columns across tables, default noted below:
-    :type compartment_linking_cols: dict
-    :param merge_cols: columns indicating how to merge image and compartment data, defaults to ["TableNumber", "ImageNumber"]
-    :type merge_cols: list
-    :param image_cols: columns to select from the image table, defaults to ["TableNumber", "ImageNumber", "Metadata_Site"]
-    :type image_cols: list
-    :param load_image_data: if image data should be loaded into memory, defaults to True
-    :type load_image_data: bool
-    :param subsample_frac: indicating percentage of single cells to select (0 < subsample_frac <= 1), defaults to 1
-    :type subsample_frac: float
-    :param subsample_n: indicate how many samples to subsample - do not specify both subsample_frac and subsample_n, defaults to "all"
-    :type subsample_n:, str, int
-    :param subsampling_random_state: the random state to init subsample, defaults to "none"
-    :type subsampling_random_state: str, int
-    :param fields_of_view: list of fields of view to include in the analysis, defaults to "all"
-    :type fields_of_view: list, str
-    :param object_feature: Object Number feature, defaults to "ObjectNumber"
-    :type object_feature: str
+    Attributes
+    ----------
+    file_or_conn : str or pandas.core.frame.DataFrame
+        A file string or database connection storing the location of single cell profiles.
+    strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
+        The columns to groupby and aggregate single cells.
+    aggregation_operation : str, default "median"
+        Operation to perform single cell aggregation.
+    output_file : str, default "none"
+        If specified, the location to write the file.
+    compartments : list of str, default ["cells", "cytoplasm", "nuclei"]
+        List of compartments to process.
+    compartment_linking_cols : dict, default noted below
+        Dictionary identifying how to merge columns across tables.
+    merge_cols : list of str, default ["TableNumber", "ImageNumber"]
+        Columns indicating how to merge image and compartment data.
+    image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
+        Columns to select from the image table.
+    load_image_data : bool, default True
+        Whether or not the image data should be loaded into memory.
+    subsample_frac : float, default 1
+        The percentage of single cells to select (0 < subsample_frac <= 1).
+    subsample_n : str or int, default "all"
+        How many samples to subsample - do not specify both subsample_frac and subsample_n.
+    subsampling_random_state : str or int, default "none"
+        The random state to init subsample.
+    fields_of_view : list of int, str, default "all"
+        List of fields of view to aggregate.
+    object_feature : str, default "ObjectNumber"
+        Object number feature.
 
+    Notes
+    -----
     .. note::
         the argument compartment_linking_cols is designed to work with CellProfiler output,
-        as curated by cytominer-database. The defaut is: {
+        as curated by cytominer-database. The default is: {
             "cytoplasm": {
                 "cells": "Cytoplasm_Parent_Cells",
                 "nuclei": "Cytoplasm_Parent_Nuclei",
