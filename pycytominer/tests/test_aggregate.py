@@ -1,5 +1,6 @@
 import os
 import tempfile
+import pytest
 import numpy as np
 import pandas as pd
 from pycytominer import aggregate
@@ -223,3 +224,26 @@ def test_aggregate_compute_object_count():
 
     test_df = pd.read_csv(test_output_file)
     pd.testing.assert_frame_equal(test_df, expected_result)
+
+
+def test_aggregate_incorrect_object_feature():
+    """
+    Testing aggregate pycytominer function
+    """
+
+    incorrect_object_feature = "DOES NOT EXIST"
+
+    with pytest.raises(KeyError) as err:
+        aggregate_result = aggregate(
+            population_df=data_df,
+            strata=["g"],
+            features="infer",
+            operation="median",
+            compute_object_count=True,
+            object_feature=incorrect_object_feature,
+        )
+
+        assert (
+            f"The following labels were missing: Index(['{incorrect_object_feature}'], dtype='object')"
+            in str(err)
+        )
