@@ -64,7 +64,7 @@ image_df = pd.DataFrame(
         "ImageNumber": ["x", "y"],
         "Metadata_Plate": ["plate", "plate"],
         "Metadata_Well": ["A01", "A02"],
-        "Metadata_Site": [1, 1]
+        "Metadata_Site": [1, 1],
     }
 )
 
@@ -99,16 +99,19 @@ new_linking_cols["cytoplasm"]["new"] = "Cytoplasm_Parent_New"
 new_linking_cols["new"] = {"cytoplasm": "ObjectNumber"}
 
 # Setup SingleCells Class
-ap = SingleCells(file_or_conn=file, object_feature='Metadata_ObjectNumber')
+ap = SingleCells(file_or_conn=file, object_feature="Metadata_ObjectNumber")
 ap_subsample = SingleCells(
-    file_or_conn=file, subsample_n=2, subsampling_random_state=123, object_feature='Metadata_ObjectNumber'
+    file_or_conn=file,
+    subsample_n=2,
+    subsampling_random_state=123,
+    object_feature="Metadata_ObjectNumber",
 )
 ap_new = SingleCells(
     file_or_conn=new_file,
     load_image_data=False,
     compartments=new_compartments,
     compartment_linking_cols=new_linking_cols,
-    object_feature='Metadata_ObjectNumber',
+    object_feature="Metadata_ObjectNumber",
 )
 
 
@@ -120,7 +123,9 @@ def test_SingleCells_init():
     assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
     assert ap.merge_cols == ["TableNumber", "ImageNumber"]
     assert ap.image_cols == ["TableNumber", "ImageNumber", "Metadata_Site"]
-    pd.testing.assert_frame_equal(image_df.sort_index(axis=1), ap.image_df.sort_index(axis=1))
+    pd.testing.assert_frame_equal(
+        image_df.sort_index(axis=1), ap.image_df.sort_index(axis=1)
+    )
     assert ap.subsample_frac == 1
     assert ap_subsample.subsample_frac == 1
     assert ap.subsample_n == "all"
@@ -250,7 +255,10 @@ def test_merge_single_cells():
                     manual_merge, method=method, samples=samples, features=features
                 )
 
-                pd.testing.assert_frame_equal(norm_method_df.sort_index(axis=1), manual_merge_normalize.sort_index(axis=1))
+                pd.testing.assert_frame_equal(
+                    norm_method_df.sort_index(axis=1),
+                    manual_merge_normalize.sort_index(axis=1),
+                )
 
     # Test non-canonical compartment merging
     new_sc_merge_df = ap_new.merge_single_cells()
@@ -392,7 +400,9 @@ def test_aggregate_profiles():
         }
     )
 
-    pd.testing.assert_frame_equal(result.sort_index(axis=1), expected_result.sort_index(axis=1))
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1), expected_result.sort_index(axis=1)
+    )
 
     # Confirm aggregation after merging single cells
     # sc_aggregated_df = aggregate(ap.merge_single_cells()).sort_index(axis="columns")
@@ -516,7 +526,7 @@ def test_aggregate_count_cells_multiple_strata():
         file_or_conn=file,
         subsample_n="4",
         strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
-        object_feature="Metadata_ObjectNumber"
+        object_feature="Metadata_ObjectNumber",
     )
 
     count_df = ap_strata.count_cells()

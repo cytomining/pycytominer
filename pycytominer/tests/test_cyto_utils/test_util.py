@@ -163,25 +163,37 @@ def test_check_fields_of_view():
     invalid_input_fields_of_view = [2, 6, 7]
     with pytest.raises(ValueError) as err:
         check_fields_of_view(data_fields_of_view, invalid_input_fields_of_view)
-        assert str(err) == "Some of the input fields of view are not present in the image table."
+        assert (
+            str(err)
+            == "Some of the input fields of view are not present in the image table."
+        )
 
 
 def test_check_fields_of_view_format():
     valid_input_fields_of_view = "all"
-    assert check_fields_of_view_format(valid_input_fields_of_view) == valid_input_fields_of_view
+    assert (
+        check_fields_of_view_format(valid_input_fields_of_view)
+        == valid_input_fields_of_view
+    )
 
-    valid_input_fields_of_view = ['1', 3, 4]
+    valid_input_fields_of_view = ["1", 3, 4]
     assert check_fields_of_view_format(valid_input_fields_of_view) == [1, 3, 4]
 
-    valid_input_fields_of_view = ['3', '1', '5']  # valid but not recommended
+    valid_input_fields_of_view = ["3", "1", "5"]  # valid but not recommended
     assert check_fields_of_view_format(valid_input_fields_of_view) == [3, 1, 5]
 
     invalid_input_fields_of_view = 1
     with pytest.raises(TypeError) as err:
         check_fields_of_view_format(invalid_input_fields_of_view)
-        assert str(err) == f"Variable of type list expected, however type {type(invalid_input_fields_of_view)} was passed."
+        assert (
+            str(err)
+            == f"Variable of type list expected, however type {type(invalid_input_fields_of_view)} was passed."
+        )
 
-    invalid_input_fields_of_view = ['test', 2, 3]
+    invalid_input_fields_of_view = ["test", 2, 3]
     with pytest.raises(TypeError) as err:
         check_fields_of_view_format(invalid_input_fields_of_view)
-        assert str(err) == "Variables of type int expected, however some of the input fields of view are not integers."
+        assert (
+            str(err)
+            == "Variables of type int expected, however some of the input fields of view are not integers."
+        )
