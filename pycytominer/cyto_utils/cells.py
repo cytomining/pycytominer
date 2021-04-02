@@ -490,7 +490,7 @@ class SingleCells(object):
         sc_output_file : str, optional
             The name of a file to output.
         compression_options : str, optional
-            The mechanism to compress.
+            Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
         float_format : str, optional
             Decimal precision to use in writing output file.
         single_cell_normalize : bool, default False
@@ -632,7 +632,7 @@ class SingleCells(object):
         output_file : str, optional
             The name of a file to output. We recommended that, if provided, the output file be suffixed with "_augmented".
         compression_options : str, optional
-            The mechanism to compress.
+            Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
         float_format : str, optional
             Decimal precision to use in writing output file.
         aggregate_args : dict, optional
