@@ -173,7 +173,7 @@ def check_fields_of_view_format(fields_of_view):
 
     Parameters
     ----------
-    fields_of_view : list of int, default "all"
+    fields_of_view : list of int
         List of integer fields of view.
 
     Returns
