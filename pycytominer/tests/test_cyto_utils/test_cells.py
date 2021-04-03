@@ -405,9 +405,15 @@ def test_aggregate_profiles():
     )
 
     # Confirm aggregation after merging single cells
-    # sc_aggregated_df = aggregate(ap.merge_single_cells()).sort_index(axis="columns")
+    sc_df = ap.merge_single_cells()
+    sc_aggregated_df = aggregate(
+        sc_df, compute_object_count=True, object_feature="Metadata_ObjectNumber"
+    ).sort_index(axis="columns")
 
-    # pd.testing.assert_frame_equal(result.sort_index(axis="columns"), sc_aggregated_df)
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis="columns").drop("Metadata_Site_Count", axis="columns"),
+        sc_aggregated_df,
+    )
 
 
 def test_aggregate_subsampling_count_cells():
