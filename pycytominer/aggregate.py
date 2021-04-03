@@ -41,7 +41,7 @@ def aggregate(
     compute_object_count : bool, default False
         Whether or not to compute object counts.
     object_feature : str, default "ObjectNumber"
-        Object number feature.
+        Object number feature. Only used if compute_object_count=True.
     subset_data_df : pandas.core.frame.DataFrame
         How to subset the input.
     compression_options : str, optional
