@@ -440,20 +440,21 @@ def test_aggregate_subsampling_count_cells():
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
-# def test_aggregate_subsampling_profile():
-#     result = ap_subsample.aggregate_profiles()
-#
-#     expected_subset = pd.DataFrame(
-#         {
-#             "TableNumber": sorted(["x_hash", "y_hash"] * 2),
-#             "ImageNumber": sorted(["x", "y"] * 2),
-#             "Metadata_Plate": ["plate"] * 4,
-#             "Metadata_Well": sorted(["A01", "A02"] * 2),
-#             "Metadata_ObjectNumber": [46, 3] * 2,
-#         }
-#     )
-#
-#     pd.testing.assert_frame_equal(ap_subsample.subset_data_df, expected_subset)
+def test_aggregate_subsampling_profile():
+    result = ap_subsample.aggregate_profiles(compute_subsample=True)
+
+    expected_subset = pd.DataFrame(
+        {
+            "ImageNumber": sorted(["x", "y"] * 2),
+            "Metadata_Plate": ["plate"] * 4,
+            "Metadata_Site": [1] * 4,
+            "Metadata_Well": sorted(["A01", "A02"] * 2),
+            "TableNumber": sorted(["x_hash", "y_hash"] * 2),
+            "Metadata_ObjectNumber": [46, 3] * 2,
+        }
+    )
+
+    pd.testing.assert_frame_equal(ap_subsample.subset_data_df, expected_subset)
 
 
 # def test_aggregate_subsampling_profile_compress():
