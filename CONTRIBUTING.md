@@ -4,7 +4,9 @@ First of all, thank you for contributing to pycytominer! :tada: :100:
 
 This document contains guidelines on how to most effectively contribute to the pycytominer codebase.
 
-## Table Of Contents
+If you are stuck, please feel free to ask any questions or ask for help.
+
+## Table Of contents
 
 [Code of conduct](#code-of-conduct)
 
