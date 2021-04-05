@@ -11,6 +11,8 @@ from pycytominer.cyto_utils import (
     get_default_compartments,
     assert_linking_cols_complete,
     provide_linking_cols_feature_name_update,
+    check_fields_of_view_format,
+    check_fields_of_view,
 )
 
 default_compartments = get_default_compartments()
@@ -21,32 +23,42 @@ class SingleCells(object):
     """This is a class to interact with single cell morphological profiles. Interaction
     includes aggregation, normalization, and output.
 
-    :param file_or_conn: A file string or database connection storing the location of single cell profiles
-    :type file_or_conn: str
-    :param strata: The columns to groupby and aggregate single cells, defaults to ["Metadata_Plate", "Metadata_Well"]
-    :type strata: list
-    :param aggregation_operation: operation to perform single cell aggregation, defaults to "median"
-    :type aggregation_operation: str
-    :param output_file: If specified, the location to write the file, defaults to "none"
-    :type output_file: str
-    :param compartments: list of compartments to process, defaults to ["cells", "cytoplasm", "nuclei"]
-    :type compartments: list
-    :param compartment_linking_cols: dictionary identifying how to merge columns across tables, default noted below:
-    :type compartment_linking_cols: dict
-    :param merge_cols: columns indicating how to merge image and compartment data, defaults to ["TableNumber", "ImageNumber"]
-    :type merge_cols: list
-    :param load_image_data: if image data should be loaded into memory, defaults to True
-    :type load_image_data: bool
-    :param subsample_frac: indicating percentage of single cells to select (0 < subsample_frac <= 1), defaults to 1
-    :type subsample_frac: float
-    :param subsample_n: indicate how many samples to subsample - do not specify both subsample_frac and subsample_n, defaults to "all"
-    :type subsample_n:, str, int
-    :param subsampling_random_state: the random state to init subsample, defaults to "none"
-    :type subsampling_random_state: str, int
+    Attributes
+    ----------
+    file_or_conn : str or pandas.core.frame.DataFrame
+        A file string or database connection storing the location of single cell profiles.
+    strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
+        The columns to groupby and aggregate single cells.
+    aggregation_operation : str, default "median"
+        Operation to perform single cell aggregation.
+    output_file : str, default "none"
+        If specified, the location to write the file.
+    compartments : list of str, default ["cells", "cytoplasm", "nuclei"]
+        List of compartments to process.
+    compartment_linking_cols : dict, default noted below
+        Dictionary identifying how to merge columns across tables.
+    merge_cols : list of str, default ["TableNumber", "ImageNumber"]
+        Columns indicating how to merge image and compartment data.
+    image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
+        Columns to select from the image table.
+    load_image_data : bool, default True
+        Whether or not the image data should be loaded into memory.
+    subsample_frac : float, default 1
+        The percentage of single cells to select (0 < subsample_frac <= 1).
+    subsample_n : str or int, default "all"
+        How many samples to subsample - do not specify both subsample_frac and subsample_n.
+    subsampling_random_state : str or int, default "none"
+        The random state to init subsample.
+    fields_of_view : list of int, str, default "all"
+        List of fields of view to aggregate.
+    object_feature : str, default "ObjectNumber"
+        Object number feature.
 
+    Notes
+    -----
     .. note::
         the argument compartment_linking_cols is designed to work with CellProfiler output,
-        as curated by cytominer-database. The defaut is: {
+        as curated by cytominer-database. The default is: {
             "cytoplasm": {
                 "cells": "Cytoplasm_Parent_Cells",
                 "nuclei": "Cytoplasm_Parent_Nuclei",
@@ -65,10 +77,14 @@ class SingleCells(object):
         compartments=default_compartments,
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
+        image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
         load_image_data=True,
         subsample_frac=1,
         subsample_n="all",
         subsampling_random_state="none",
+        fields_of_view="all",
+        fields_of_view_feature="Metadata_Site",
+        object_feature="ObjectNumber",
     ):
         """Constructor method"""
         # Check compartments specified
@@ -88,6 +104,7 @@ class SingleCells(object):
         self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
         self.merge_cols = merge_cols
+        self.image_cols = image_cols
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
         self.subset_data_df = "none"
@@ -96,6 +113,8 @@ class SingleCells(object):
         self.is_subset_computed = False
         self.compartments = compartments
         self.compartment_linking_cols = compartment_linking_cols
+        self.fields_of_view_feature = fields_of_view_feature
+        self.object_feature = object_feature
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
@@ -117,39 +136,77 @@ class SingleCells(object):
         # Throw an error if both subsample_frac and subsample_n is set
         self._check_subsampling()
 
+        # Confirm that the input fields of view is valid
+        self.fields_of_view = check_fields_of_view_format(fields_of_view)
+
         if self.load_image_data:
             self.load_image()
 
     def _check_subsampling(self):
-        """Internal method checking if subsampling options were specified correctly"""
+        """Internal method checking if subsampling options were specified correctly.
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
+        """
+
         # Check that the user didn't specify both subset frac and subsample all
         assert (
             self.subsample_frac == 1 or self.subsample_n == "all"
         ), "Do not set both subsample_frac and subsample_n"
 
     def set_output_file(self, output_file):
-        """Setting operation to conveniently rename output file
+        """Setting operation to conveniently rename output file.
 
-        :param output_file: the new output file name
-        :type output_file: str
+        Parameters
+        ----------
+        output_file : str
+            New output file name.
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
         """
+
         self.output_file = output_file
 
     def set_subsample_frac(self, subsample_frac):
-        """Setting operation to conveniently update the subsample fraction
+        """Setting operation to conveniently update the subsample fraction.
 
-        :param subsample_frac: indicating percentage of single cells to select (0 < subsample_frac <= 1), defaults to 1
-        :type subsample_frac: float
+        Parameters
+        ----------
+        subsample_frac : float, default 1
+            Percentage of single cells to select (0 < subsample_frac <= 1).
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
         """
+
         self.subsample_frac = subsample_frac
         self._check_subsampling()
 
     def set_subsample_n(self, subsample_n):
-        """Setting operation to conveniently update the subsample n
+        """Setting operation to conveniently update the subsample n.
 
-        :param subsample_n: indicate how many samples to subsample - do not specify both subsample_frac and subsample_n, defaults to "all"
-        :type subsample_n:, str, int
+        Parameters
+        ----------
+        subsample_n : int, default "all"
+            Indicate how many sample to subsample - do not specify both subsample_frac and subsample_n.
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
         """
+
         try:
             self.subsample_n = int(subsample_n)
         except ValueError:
@@ -157,29 +214,63 @@ class SingleCells(object):
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):
-        """Setting operation to conveniently update the subsample random state
+        """Setting operation to conveniently update the subsample random state.
 
-        :param random_state: the random state to init subsample, defaults to "none"
-        :type random_state:, str, int
+        Parameters
+        ----------
+        random_state: int, optional
+            The random state to init subsample.
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
         """
+
         self.subsampling_random_state = random_state
 
     def load_image(self):
-        """Load image table from sqlite file"""
+        """Load image table from sqlite file
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
+        """
+
         # Extract image metadata
-        image_cols = "TableNumber, ImageNumber, {}".format(", ".join(self.strata))
-        image_query = "select {} from image".format(image_cols)
+        image_query = "select {} from image".format(
+            ", ".join(np.union1d(self.image_cols, self.strata))
+        )
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
+        if self.fields_of_view != "all":
+            check_fields_of_view(
+                list(np.unique(self.image_df[self.fields_of_view_feature])),
+                list(self.fields_of_view),
+            )
+            self.image_df = self.image_df.query(
+                f"{self.fields_of_view_feature}==@self.fields_of_view"
+            )
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
 
-        :param compartment: string indicating the compartment to subset, defaults to "cells"
-        :type compartment: str
-        :param count_subset: whether or not count the number of cells as specified by the strata groups
-        :return: A pandas dataframe of cell counts in the experiment
-        :rtype: pd.DataFrame
+        Parameters
+        ----------
+        compartment : str, default "cells"
+            Compartment to subset.
+        count_subset : bool, default False
+            Whether or not count the number of cells as specified by the strata groups.
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            DataFrame of cell counts in the experiment.
+
         """
+
         check_compartments(compartment)
 
         if count_subset:
@@ -207,13 +298,22 @@ class SingleCells(object):
         return count_df
 
     def subsample_profiles(self, df, rename_col=True):
-        """Sample a Pandas DataFrame given subsampling information
+        """Sample a Pandas DataFrame given subsampling information.
 
-        :param df: A single cell profile dataframe
-        :type df: pd.DataFrame
-        :return: A subsampled pandas dataframe of single cell profiles
-        :rtype: pd.DataFrame
+        Parameters
+        ----------
+        df : pandas.core.frame.DataFrame
+            DataFrame of a single cell profile.
+        rename_col : bool, default True
+            Whether or not to rename the columns.
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            A subsampled pandas dataframe of single cell profiles.
+
         """
+
         if self.subsampling_random_state == "none":
             random_state = np.random.randint(0, 10000, size=1)[0]
             self.set_subsample_random_state(random_state)
@@ -237,11 +337,24 @@ class SingleCells(object):
         return output_df
 
     def get_subsample(self, df=None, compartment="cells", rename_col=True):
-        """Apply the subsampling procedure
+        """Apply the subsampling procedure.
 
-        :param compartment: string indicating the compartment to process, defaults to "cells"
-        :type compartment: str
+        Parameters
+        ----------
+        df : pandas.core.frame.DataFrame
+            DataFrame of a single cell profile.
+        compartment : str, default "cells"
+            The compartment to process.
+        rename_col : bool, default True
+            Whether or not to rename the columns.
+
+        Returns
+        -------
+        None
+            Nothing is returned.
+
         """
+
         check_compartments(compartment)
 
         query_cols = "TableNumber, ImageNumber, ObjectNumber"
@@ -262,24 +375,50 @@ class SingleCells(object):
         self.is_subset_computed = True
 
     def load_compartment(self, compartment):
+        """Creates the compartment dataframe.
+
+        Parameters
+        ----------
+        compartment : str
+            The compartment to process.
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Compartment dataframe.
+
+        """
         compartment_query = "select * from {}".format(compartment)
         df = pd.read_sql(sql=compartment_query, con=self.conn)
         return df
 
     def aggregate_compartment(
-        self, compartment, compute_subsample=False, aggregate_args=None
+        self,
+        compartment,
+        compute_subsample=False,
+        compute_counts=False,
+        aggregate_args=None,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
-        :param compartment: string indicating the specific compartment, defaults to "cells"
-        :type compartment: str
-        :param compute_subsample: determine if subsample should be computed, defaults to False
-        :type compute_subsample: bool
-        :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
-        :type aggregate_args: None, dict
-        :return: Aggregated single-cell profiles
-        :rtype: pd.DataFrame
+        Parameters
+        ----------
+        compartment : str
+            Compartment to aggregate.
+        compute_subsample : bool, default False
+            Whether or not to subsample.
+        compute_counts : bool, default False
+            Whether or not to compute the number of objects in each compartment and the number of fields of view per well.
+        aggregate_args : dict, optional
+            Additional arguments passed as input to pycytominer.aggregate().
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            DataFrame of aggregated profiles.
+
         """
+
         check_compartments(compartment)
 
         if (self.subsample_frac < 1 or self.subsample_n != "all") and compute_subsample:
@@ -308,14 +447,32 @@ class SingleCells(object):
             features = aggregate_args["features"]
 
         aggregate_args["features"] = features
+        if "object_feature" not in aggregate_args:
+            aggregate_args["object_feature"] = self.object_feature
 
         object_df = aggregate(
             population_df=population_df,
             strata=self.strata,
+            compute_object_count=compute_counts,
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
-            **aggregate_args
+            **aggregate_args,
         )
+
+        if compute_counts and self.fields_of_view_feature not in self.strata:
+            fields_count_df = self.image_df.loc[
+                :, list(np.union1d(self.strata, self.fields_of_view_feature))
+            ]
+            fields_count_df = (
+                fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
+                .count()
+                .reset_index()
+                .rename(
+                    columns={f"{self.fields_of_view_feature}": f"Metadata_Site_Count"}
+                )
+            )
+
+            object_df = fields_count_df.merge(object_df, on=self.strata, how="right")
 
         return object_df
 
@@ -328,20 +485,28 @@ class SingleCells(object):
         single_cell_normalize=False,
         normalize_args=None,
     ):
-        """Given the linking columns, merge single cell data. Normalization is also supported
+        """Given the linking columns, merge single cell data. Normalization is also supported.
 
-        :param sc_output_file: the name of a file to output, defaults to "none":
-        :type sc_output_file: str, optional
-        :param compression: the mechanism to compress, defaults to None
-        :type compression: str, optional
-        :param float_format: decimal precision to use in writing output file, defaults to None
-        :type float_format: str, optional
-        :param single_cell_normalize: determine if the single cell data should also be normalized
-        :type single_cell_normalize: bool
-        :param normalize_args: additional arguments passed as a dictionary as input to pycytominer.normalize()
-        :type normalize_args: None, dict
-        :return: Either a dataframe (if output_file="none") or will write to file
-        :rtype: pd.DataFrame, optional
+        Parameters
+        ----------
+        compute_subsample : bool, default False
+            Whether or not to compute subsample.
+        sc_output_file : str, optional
+            The name of a file to output.
+        compression_options : str, optional
+            Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
+        float_format : str, optional
+            Decimal precision to use in writing output file.
+        single_cell_normalize : bool, default False
+            Whether or not to normalize the single cell data.
+        normalize_args : dict, optional
+            Additional arguments passed as input to pycytominer.normalize().
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Either a dataframe (if output_file="none") or will write to file.
+
         """
 
         # Load the single cell dataframe by merging on the specific linking columns
@@ -463,28 +628,25 @@ class SingleCells(object):
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
-        :param compute_subsample: Determine if subsample should be computed, defaults to False
-        :type compute_subsample: bool
-        :param output_file: the name of a file to output, defaults to "none"
-        :type output_file: str, optional
-        :param compression: the mechanism to compress, defaults to None
-        :type compression: str, optional
-        :param float_format: decimal precision to use in writing output file, defaults to None
-        :type float_format: str, optional
-        :param aggregate_args: additional arguments passed as a dictionary as input to pycytominer.aggregate()
-        :type aggregate_args: None, dict
-        :return: Either a dataframe (if output_file="none") or will write to file
-        :rtype: pd.DataFrame, optional
+        Parameters
+        ----------
+        compute_subsample : bool, default False
+            Whether or not to compute subsample. compute_subsample must be specified to perform subsampling.
+            The function aggregate_profiles(compute_subsample=True) will apply subsetting even if subsample is initialized.
+        output_file : str, optional
+            The name of a file to output. We recommended that, if provided, the output file be suffixed with "_augmented".
+        compression_options : str, optional
+            Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
+        float_format : str, optional
+            Decimal precision to use in writing output file.
+        aggregate_args : dict, optional
+            Additional arguments passed as input to pycytominer.normalize().
 
-        .. note::
-            compute_subsample must be specified to perform subsampling. The function
-            aggregate_profiles(compute_subsample=True) will apply subsetting if even if
-            subsample is initialized
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Either a dataframe (if output_file="none") or will write to file.
 
-        .. note::
-            We recommend that, if provided, the output file be suffixed with "_augmented"
-
-        :Example:
         """
 
         if output_file != "none":
@@ -494,7 +656,9 @@ class SingleCells(object):
         for compartment in self.compartments:
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
-                    compartment=compartment, compute_subsample=compute_subsample
+                    compartment=compartment,
+                    compute_subsample=compute_subsample,
+                    compute_counts=True,
                 )
             else:
                 aggregated = aggregated.merge(

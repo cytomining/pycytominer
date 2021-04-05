@@ -7,6 +7,8 @@ from .util import (
     check_aggregate_operation,
     check_consensus_operation,
     get_pairwise_correlation,
+    check_fields_of_view_format,
+    check_fields_of_view,
 )
 from .single_cell_ingest_utils import (
     get_default_linking_cols,
