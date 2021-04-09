@@ -88,6 +88,8 @@ Plus, it’s possible that your contribution belongs in a different code base, a
 
 After you’ve decided to contribute code and have written it up, now it is time to file a pull request.
 We specifically follow a [forked pull request model](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork).
+Please create a fork of the pycytominer repository, clone the fork, and then create a new, feature-specific branch.
+Once you make the necessary changes on this branch, you should file a pull request to incorporate your changes into the main pycytominer repository.
 
 The content and description of your pull request are directly related to the speed at which we are able to review, approve, and merge your contribution into pycytominer.
 To ensure an efficient review process please perform the following steps:
@@ -95,6 +97,11 @@ To ensure an efficient review process please perform the following steps:
 1. Follow all instructions in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md)
 2. Triple check that your pull request is only adding _one_ specific feature. Small, bite-sized pull requests move so much faster than large pull requests.
 3. After submitting your pull request, ensure that your contribution passes all status checks (e.g. passes all tests)
+
+All pull requests must be reviewed and approved by a project maintainer in order to be merged.
+We will do our best to review the code addition in a timely fashion.
+Ensuring that you follow all steps above will increase our speed and ability to review.
+We will check for accuracy, style, code coverage, and scope.
 
 ## Style guides
 
