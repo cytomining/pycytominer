@@ -56,6 +56,6 @@ Each processing function has unique arguments, more specific documentation comin
 
 Pycytominer was written with a goal of processing any high-throughput profiling data.
 However, the initial use case was developed for processing image-based profiling experiments specifically.
-And, more specifically than that, image-based profiling readouts from [CellProfiler](https://github.com/CellProfiler) measurements from Cell Painting data.
+And, more specifically than that, image-based profiling readouts from [CellProfiler](https://github.com/CellProfiler) measurements from [Cell Painting](https://www.nature.com/articles/nprot.2016.105) data.
 
 Therefore, we have included some custom tools in `pycytominer/cyto_utils`.
