@@ -98,7 +98,7 @@ To ensure an efficient review process please perform the following steps:
 2. Triple check that your pull request is only adding _one_ specific feature. Small, bite-sized pull requests move so much faster than large pull requests.
 3. After submitting your pull request, ensure that your contribution passes all status checks (e.g. passes all tests)
 
-All pull requests must be reviewed and approved by a project maintainer in order to be merged.
+All pull requests must be reviewed and approved by at least one project maintainer in order to be merged.
 We will do our best to review the code addition in a timely fashion.
 Ensuring that you follow all steps above will increase our speed and ability to review.
 We will check for accuracy, style, code coverage, and scope.
