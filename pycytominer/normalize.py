@@ -10,7 +10,7 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
     load_profiles,
 )
-from pycytominer.operations import Whiten, RobustMAD
+from pycytominer.operations import Spherize, RobustMAD
 
 
 def normalize(
@@ -20,40 +20,97 @@ def normalize(
     samples="all",
     method="standardize",
     output_file="none",
-    compression=None,
+    compression_options=None,
     float_format=None,
-    whiten_center=True,
-    whiten_method="ZCA-cor",
+    spherize_center=True,
+    spherize_method="ZCA-cor",
+    spherize_epsilon=1e-6,
 ):
-    """
-    Normalize features
+    """Normalize profiling features
 
-    Arguments:
-    profiles - either pandas DataFrame or a file that stores profile data
-    features - list of cell painting features [default: "infer"]
-               if "infer", then assume cell painting features are those that do not
-               start with "Cells", "Nuclei", or "Cytoplasm"
-    meta_features - if specified, then output these with specified features
-                    [default: "infer"]
-    samples - string indicating which metadata column and values to use to subset
-              the control samples are often used here [default: 'all']
-              the format of this variable will be used in a pd.query() function. An
-              example is "Metadata_treatment == 'control'" (include all quotes)
-    method - string indicating how the dataframe will be normalized
-             [default: 'standardize']
-    output_file - [default: "none"] if provided, will write annotated profiles to file
-                  if not specified, will return the annotated profiles. We recommend
-                  that this output file be suffixed with "_normalized.csv".
-    compression - the mechanism to compress [default: None]
-    float_format - decimal precision to use in writing output file [default: None]
-                       For example, use "%.3g" for 3 decimal precision.
-    whiten_center - if data should be centered before whitening transform [default: True]
-                    (only used if method = "whiten")
-    whiten_method - the type of whitening normalization used [default: 'ZCA-cor']
-                    (only used if method = "whiten")
+    Parameters
+    ----------
+    profiles : {pandas.Dataframe, path}
+        Either a pandas DataFrame or a file that stores profile data
+    features : list
+        A list of strings corresponding to feature measurement column names in the
+        `profiles` DataFrame. All features listed must be found in `profiles`.
+        Defaults to "infer". If "infer", then assume cell painting features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
+    meta_features : list
+        A list of strings corresponding to metadata column names in the `profiles`
+        DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
+        If "infer", then assume metadata features are those prefixed with "Metadata"
+    samples : str
+        The metadata column values to use as a normalization reference. We often use
+        control samples. The function uses a pd.query() function, so you should
+        structure samples in this fasion. An example is
+        "Metadata_treatment == 'control'" (include all quotes). Defaults to "all".
+    method : str
+        How to normalize the dataframe. Defaults to "standardize". Check avail_methods
+        for available normalization methods.
+    output_file : str
+        If provided, will write annotated profiles to file. If not specified, will
+        return the normalized profiles as output. We recommend that this output file be
+        suffixed with "_normalized.csv". Defaults to "none".
+    compression_options : {dict, None}
+        Contain compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
+        Defaults to None.
+    float_format : {str, None}
+        Decimal precision to use in writing output file as input to
+        pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
+        decimal precision. Defaults to None.
+    spherize_center : bool
+        If the function should center data before sphering (aka whitening). The
+        function only uses this variable if method = "spherize". Defaults to True.
+    spherize_method : str
+        The sphering (aka whitening) normalization selection. The function only uses
+        this variable if method = "spherize". Defaults to "ZCA-corr". See
+        :py:func:`pycytominer.operations.transform` for available spherize methods.
+    spherize_epsilon : float
+        The sphering (aka whitening) fudge factor parameter. The function only uses
+        this variable if method = "spherize". Defaults 1e-6.
 
-    Return:
-    A normalized DataFrame
+    Returns
+    -------
+    pd.DataFrame or None
+        The normalized profile DataFrame. If output_file="none", then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
+
+    Examples
+    --------
+    import pandas as pd
+    from pycytominer import normalize
+
+    data_df = pd.DataFrame(
+        {
+            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+            "Metadata_treatment": [
+                "drug",
+                "drug",
+                "control",
+                "control",
+                "drug",
+                "drug",
+                "control",
+                "control",
+            ],
+            "x": [1, 2, 8, 2, 5, 5, 5, 1],
+            "y": [3, 1, 7, 4, 5, 9, 6, 1],
+            "z": [1, 8, 2, 5, 6, 22, 2, 2],
+            "zz": [14, 46, 1, 6, 30, 100, 2, 2],
+        }
+    ).reset_index(drop=True)
+
+    normalized_df = normalize(
+        profiles=data_df,
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        samples="Metadata_treatment == 'control'",
+        method="standardize"
+    )
     """
 
     # Load Data
@@ -62,7 +119,7 @@ def normalize(
     # Define which scaler to use
     method = method.lower()
 
-    avail_methods = ["standardize", "robustize", "mad_robustize", "whiten"]
+    avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
     assert method in avail_methods, "operation must be one {}".format(avail_methods)
 
     if method == "standardize":
@@ -71,8 +128,10 @@ def normalize(
         scaler = RobustScaler()
     elif method == "mad_robustize":
         scaler = RobustMAD()
-    elif method == "whiten":
-        scaler = Whiten(center=whiten_center, method=whiten_method)
+    elif method == "spherize":
+        scaler = Spherize(
+            center=spherize_center, method=spherize_method, epsilon=spherize_epsilon
+        )
 
     if features == "infer":
         features = infer_cp_features(profiles)
@@ -104,7 +163,7 @@ def normalize(
         output(
             df=normalized,
             output_filename=output_file,
-            compression=compression,
+            compression_options=compression_options,
             float_format=float_format,
         )
     else:

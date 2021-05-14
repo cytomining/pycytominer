@@ -1,0 +1,11 @@
+# Default owners for everything in the repo.
+*       @gwaygenomics
+*       @niranjchandrasekaran
+
+# Owners of only python files
+*.py    @gwaygenomics
+*.py    @niranjchandrasekaran
+
+# Owners of documentation
+docs/*  @gwaygenomics
+docs/*  @niranjchandrasekaran

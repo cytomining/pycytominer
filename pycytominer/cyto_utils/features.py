@@ -66,19 +66,19 @@ def label_compartment(cp_features, compartment, metadata_cols):
     return cp_features
 
 
-def infer_cp_features(population_df, metadata=False):
+def infer_cp_features(
+    population_df, compartments=["Cells", "Nuclei", "Cytoplasm"], metadata=False
+):
     """
     Given a dataframe, output features that we expect to be cell painting features
     """
-    features = [
-        x
-        for x in population_df.columns.tolist()
-        if (
-            x.startswith("Cells_")
-            | x.startswith("Nuclei_")
-            | x.startswith("Cytoplasm_")
-        )
-    ]
+    compartments = convert_compartment_format_to_list(compartments)
+    compartments = [x.title() for x in compartments]
+
+    features = []
+    for col in population_df.columns.tolist():
+        if any([col.startswith(x.title()) for x in compartments]):
+            features.append(col)
 
     if metadata:
         features = population_df.columns[
@@ -143,3 +143,12 @@ def drop_outlier_features(
     ].index.tolist()
 
     return outlier_features
+
+
+def convert_compartment_format_to_list(compartments):
+    if isinstance(compartments, list):
+        compartments = [x.lower() for x in compartments]
+    elif isinstance(compartments, str):
+        compartments = [compartments.lower()]
+
+    return compartments

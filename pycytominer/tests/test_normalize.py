@@ -63,7 +63,7 @@ c_feature = random.sample(range(1, 100), 10)
 d_feature = random.sample(range(1, 100), 10)
 id_feature = ["control"] * 5 + ["treatment"] * 5
 
-data_whiten_df = pd.DataFrame(
+data_spherize_df = pd.DataFrame(
     {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature, "id": id_feature}
 ).reset_index(drop=True)
 
@@ -411,7 +411,7 @@ def test_normalize_standardize_allsamples_compress():
         samples="all",
         method="standardize",
         output_file=compress_file,
-        compression="gzip",
+        compression_options={"method": "gzip"},
     )
     normalize_result = pd.read_csv(compress_file).round(1)
 
@@ -438,16 +438,16 @@ def test_normalize_standardize_allsamples_compress():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
-def test_normalize_whiten():
-    for whiten_method in ["ZCA", "PCA", "ZCA-cor", "PCA-cor"]:
-        for whiten_center in [True, False]:
+def test_normalize_spherize():
+    for spherize_method in ["ZCA", "PCA", "ZCA-cor", "PCA-cor"]:
+        for spherize_center in [True, False]:
             result = normalize(
-                data_whiten_df,
+                data_spherize_df,
                 features=["a", "b", "c", "d"],
                 meta_features=["id"],
-                method="whiten",
-                whiten_method=whiten_method,
-                whiten_center=whiten_center,
+                method="spherize",
+                spherize_method=spherize_method,
+                spherize_center=spherize_center,
             )
             result_cov = (
                 pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
@@ -456,17 +456,17 @@ def test_normalize_whiten():
                 .clip(1)
                 .sum()
             )
-            expected_result = data_whiten_df.shape[1] - 1
+            expected_result = data_spherize_df.shape[1] - 1
             assert result_cov == expected_result
 
             result = normalize(
-                data_whiten_df,
+                data_spherize_df,
                 samples="id == 'control'",
                 features=["a", "b", "c", "d"],
                 meta_features=["id"],
-                method="whiten",
-                whiten_method=whiten_method,
-                whiten_center=whiten_center,
+                method="spherize",
+                spherize_method=spherize_method,
+                spherize_center=spherize_center,
             )
             result_cov = (
                 np.cov(
@@ -480,10 +480,10 @@ def test_normalize_whiten():
                 .sum()
             )
             # Add some tolerance to result b/c of low sample size
-            expected_result = data_whiten_df.shape[1]
+            expected_result = data_spherize_df.shape[1]
             assert result_cov < expected_result
 
-            non_whiten_result_cov = (
+            non_spherize_result_cov = (
                 np.cov(
                     np.transpose(
                         result.query("id == 'treatment'").drop("id", axis="columns")
@@ -493,4 +493,35 @@ def test_normalize_whiten():
                 .sum()
                 .sum()
             )
-            assert non_whiten_result_cov >= expected_result - 5
+            assert non_spherize_result_cov >= expected_result - 5
+
+
+def test_spherize_epsilon():
+    """
+    Test that epsilon is successfully passed to the spherize transform method
+    """
+    sphere_norm_df = normalize(
+        data_spherize_df, features=["a", "b", "c", "d"], meta_features=["id"]
+    )
+
+    spherize_method = "ZCA"
+    spherize_center = True
+
+    for custom_eps in [1e-6, 1]:
+        result = normalize(
+            sphere_norm_df,
+            features=["a", "b", "c", "d"],
+            meta_features=["id"],
+            method="spherize",
+            spherize_method=spherize_method,
+            spherize_center=spherize_center,
+            spherize_epsilon=custom_eps,
+        )
+
+        cov_mat = pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
+        off_diag_sum = np.round(np.sum(cov_mat).sum() - np.trace(cov_mat), 3)
+
+        if custom_eps >= 1:
+            assert off_diag_sum > 0
+        else:
+            assert off_diag_sum == 0
