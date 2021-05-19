@@ -7,26 +7,35 @@ import numpy as np
 import pandas as pd
 
 from pycytominer import aggregate
-from pycytominer.cyto_utils import infer_cp_features, load_npz
+from pycytominer.cyto_utils import load_npz, infer_cp_features
 
 
 class AggregateDeepProfiler:
-    """This class holds all functions needed to load and annotate the DeepProfiler run.
-
-    If the class has public attributes, they may be documented here
-    in an ``Attributes`` section and follow the same formatting as a
-    function's ``Args`` section. Alternatively, attributes may be documented
-    inline with the attribute's declaration (see __init__ method below).
-
-    Properties created with the ``@property`` decorator should be documented
-    in the property's getter method.
-
+    """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
+    ----------
     Attributes
     ----------
-    attr1 : str
-        Description of `attr1`.
-    attr2 : :obj:`int`, optional
-        Description of `attr2`.
+    index_file : str
+        file location of the index.csv from DP
+    profile_dir : str
+        file location of the output profiles from DP
+        should be something like `/project1/outputs/results/features/`
+    aggregate_operation : ['median', 'mean']
+        method of aggregation
+    aggregate_on : ['site', 'well', 'plate']
+        up to which level will it aggregate
+    file_delimiter : default = '_'
+        delimiter for the filenames of the profiles (e.g. B02_4.npz)
+    file_extension : default = '.npz'
+        extension of the profiles
+    index_df
+
+    filenames
+
+    aggregated_profiles
+
+    file_aggregate
+
 
     """
     def __init__(
@@ -38,6 +47,10 @@ class AggregateDeepProfiler:
         file_delimiter="_",
         file_extension=".npz",
     ):
+        """
+        __init__ function for this class.
+        See above for parameters.
+        """
         self.index_file = index_file
         self.profile_dir = profile_dir
         self.aggregate_operation = aggregate_operation
@@ -64,6 +77,9 @@ class AggregateDeepProfiler:
         well = row["Metadata_Well"]
         site = row["Metadata_Site"]
 
+        """THIS IS INCORRECT
+        """
+
         filename = f"{plate}_{well}_{site}{self.file_extension}"
         return filename
 
@@ -79,10 +95,12 @@ class AggregateDeepProfiler:
         return {"site": site, "well": well, "plate": plate}
 
     def setup_aggregate(self):
+        """Sets up the file_aggregate attribute. This is a helper function to aggregate_deep()
+        """
         if not hasattr(self, "filenames"):
             self.build_filenames()
 
-        self.file_aggregate = {}
+        self.file_aggregate = {} # this is considered bad practice, I believe - may wont to change
         for filename in self.filenames:
             file_info = self.extract_filename_metadata(filename, self.file_delimiter)
             file_key = file_info[self.aggregate_on]
@@ -104,6 +122,12 @@ class AggregateDeepProfiler:
             self.file_aggregate[file_key]["metadata"] = file_info
 
     def aggregate_deep(self):
+        """
+
+        Returns
+        -------
+
+        """
         if not hasattr(self, "file_aggregate"):
             self.setup_aggregate()
 
@@ -147,6 +171,20 @@ class AggregateDeepProfiler:
     def annotate_deep(
         self, annotate_cols, merge_cols=["Metadata_Plate", "Metadata_Well"]
     ):
+        """Main function of this class. Merges the metadata df and the profiles to one dataframe.
+
+        Arguments
+        ----------
+        annotate_cols : [list of str]
+            list of all column names that should be added to the output. By default these are all feature columns from the profiles
+        merge_cols : [list of str], default = ["Metadata_Plate", "Metadata_Well"]
+            List of columns which the metadata and profiles should merge on. These depends on the aggregate level
+
+        Returns
+        -------
+        meta_df : pandas.dataframe
+            dataframe with all metadata and the feature space. This is the input to any further pycytominer or pycytominer-eval processing
+        """
         if not hasattr(self, "aggregated_profiles"):
             self.aggregate_deep()
 
