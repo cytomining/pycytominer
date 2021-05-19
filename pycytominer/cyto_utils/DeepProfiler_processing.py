@@ -1,3 +1,6 @@
+"""
+Utility function to load and process the output files of a DeepProfiler run.
+"""
 import os
 import pathlib
 import numpy as np
@@ -8,6 +11,24 @@ from pycytominer.cyto_utils import infer_cp_features, load_npz
 
 
 class AggregateDeepProfiler:
+    """This class holds all functions needed to load and annotate the DeepProfiler run.
+
+    If the class has public attributes, they may be documented here
+    in an ``Attributes`` section and follow the same formatting as a
+    function's ``Args`` section. Alternatively, attributes may be documented
+    inline with the attribute's declaration (see __init__ method below).
+
+    Properties created with the ``@property`` decorator should be documented
+    in the property's getter method.
+
+    Attributes
+    ----------
+    attr1 : str
+        Description of `attr1`.
+    attr2 : :obj:`int`, optional
+        Description of `attr2`.
+
+    """
     def __init__(
         self,
         index_file,
