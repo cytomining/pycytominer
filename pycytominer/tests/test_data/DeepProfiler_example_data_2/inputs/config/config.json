@@ -1,0 +1,80 @@
+{
+    "dataset": {
+        "metadata": {
+            "label_field": "Treatment",
+            "control_value": "NA@NA"
+        },
+        "images": {
+            "channels": [
+                "DNA",
+                "RNA",
+                "ER",
+                "AGP",
+                "Mito"
+              ],
+            "file_format": "png",
+            "bits": 8,
+            "width": 1080,
+            "height": 1080
+        },
+	"locations":{
+	    "mode": "single_cells",
+            "box_size": 128,
+	    "area_coverage": 0.75,
+            "mask_objects": false
+	}
+    },
+    "prepare": {
+        "illumination_correction": {
+            "down_scale_factor": 4,
+            "median_filter_size": 24
+        },
+        "compression": {
+            "implement": false,
+            "scaling_factor": 1.0
+        }
+    },
+    "train": {
+        "partition": {
+            "targets": [
+                "Compound"
+            ],
+            "split_field": "Split",
+            "training_values": ["Training"],
+            "validation_values": ["Validation"]
+        },
+        "model": {
+            "name": "efficientnet",
+            "crop_generator": "repeat_channel_crop_generator",
+            "metrics": ["accuracy", "top_k"],
+            "epochs": 100,
+	    "initialization":"ImageNet",
+            "params": {
+                "learning_rate": 0.005,
+                "batch_size": 64,
+                "conv_blocks": 0,
+                "feature_dim": 256,
+                "pooling": "avg"
+            },
+            "lr_schedule": "cosine"
+        },
+        "sampling": {
+	    "factor": 1,
+            "workers": 4,
+	    "cache_size": 15000
+        },
+        "validation": {
+	    "frequency": 2,
+            "top_k": 5,
+            "batch_size": 32,
+            "frame": "val",
+            "sample_first_crops": true
+        }
+    },
+    "profile": {
+      "use_pretrained_input_size": 224,
+      "feature_layer": "avg_pool",
+      "checkpoint": "None",
+      "batch_size": 8
+    }
+}
