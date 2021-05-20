@@ -51,7 +51,7 @@ class SingleCells(object):
         The random state to init subsample.
     fields_of_view : list of int, str, default "all"
         List of fields of view to aggregate.
-    object_feature : str, default "ObjectNumber"
+    object_feature : str, default "Metadata_ObjectNumber"
         Object number feature.
 
     Notes
@@ -84,7 +84,7 @@ class SingleCells(object):
         subsampling_random_state="none",
         fields_of_view="all",
         fields_of_view_feature="Metadata_Site",
-        object_feature="ObjectNumber",
+        object_feature="Metadata_ObjectNumber",
     ):
         """Constructor method"""
         # Check compartments specified
