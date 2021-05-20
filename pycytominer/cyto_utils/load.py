@@ -82,7 +82,10 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
         "Metadata_Model". If the field exists, the function uses this entry as the
         feature prefix. If it doesn't exist, use the fallback_feature_prefix.
     """
-    npz = np.load(npz_file)
+    try:
+        npz = np.load(npz_file, allow_pickle=True)
+    except FileNotFoundError:
+        return pd.DataFrame([])
     files = npz.files
 
     # Load features

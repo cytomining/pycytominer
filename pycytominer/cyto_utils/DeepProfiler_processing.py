@@ -5,6 +5,7 @@ import os
 import pathlib
 import numpy as np
 import pandas as pd
+import warnings
 
 from pycytominer import aggregate
 from pycytominer.cyto_utils import load_npz, infer_cp_features
@@ -77,20 +78,21 @@ class AggregateDeepProfiler:
         well = row["Metadata_Well"]
         site = row["Metadata_Site"]
 
-        """THIS IS INCORRECT
-        """
-
-        filename = f"{plate}_{well}_{site}{self.file_extension}"
+        filename = f"{plate}/{well}_{site}{self.file_extension}"
         return filename
 
     def extract_filename_metadata(self, npz_file, delimiter="_"):
-        """
-        Format: plate_well_site.npz
+        """Extract metadata (site, well and plate) from the filename.
+        The input format of the file: path/plate/well_site.npz
+
+        Returns
+        -------
+        dict with metadata
         """
         base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
         site = base_file[-1]
         well = base_file[-2]
-        plate = delimiter.join(base_file[:-2])
+        plate = str(npz_file).split('/')[-2]
 
         return {"site": site, "well": well, "plate": plate}
 
@@ -107,11 +109,11 @@ class AggregateDeepProfiler:
 
             if self.aggregate_on == "site":
                 file_key = (
-                    f"{file_info['plate']}_{file_info['well']}_{file_info['site']}"
+                    f"{file_info['plate']}/{file_info['well']}_{file_info['site']}"
                 )
 
             if self.aggregate_on == "well":
-                file_key = f"{file_info['plate']}_{file_info['well']}"
+                file_key = f"{file_info['plate']}/{file_info['well']}"
 
             if file_key in self.file_aggregate:
                 self.file_aggregate[file_key]["files"].append(filename)
@@ -135,9 +137,15 @@ class AggregateDeepProfiler:
         self.aggregate_merge_col = f"Metadata_{self.aggregate_on.capitalize()}_Position"
 
         for metadata_level in self.file_aggregate:
-            df = pd.concat(
-                [load_npz(x) for x in self.file_aggregate[metadata_level]["files"]]
-            )
+            # uses custom load function to create df with metadata and profiles
+            arr = [load_npz(x) for x in self.file_aggregate[metadata_level]["files"]]
+            arr = [x for x in arr if not x.empty]
+            # if no files were found there is a miss-match between the index and the output files.
+            if not len(arr):
+                warnings.warn(f'No files for the key {metadata_level} could be found.\nThis program will continue, but be aware that this might induce errors!')
+                continue
+
+            df = pd.concat(arr)
             meta_df = pd.DataFrame(
                 self.file_aggregate[metadata_level]["metadata"], index=[0]
             )
@@ -146,12 +154,14 @@ class AggregateDeepProfiler:
             if self.aggregate_on == "well":
                 meta_df = meta_df.drop("Metadata_Site", axis="columns")
 
-            features = df.columns.tolist()
+            metadata_cols = [x for x in df if x.startswith("Metadata_")]
+
+            profiles = [x for x in df.columns.tolist() if x not in metadata_cols]
             df = df.assign(Metadata_Aggregate_On=self.aggregate_on)
-            df = aggregate(
+            df = aggregate.aggregate(
                 population_df=df,
                 strata="Metadata_Aggregate_On",
-                features=features,
+                features=profiles,
                 operation=self.aggregate_operation,
             )
             df.loc[:, self.aggregate_merge_col] = metadata_level
@@ -163,13 +173,13 @@ class AggregateDeepProfiler:
             str(x) for x in self.aggregated_profiles.columns
         ]
         meta_features = infer_cp_features(self.aggregated_profiles, metadata=True)
-        reindex_features = [str(x) for x in features]
+        reindex_profiles = [str(x) for x in profiles]
         self.aggregated_profiles = self.aggregated_profiles.reindex(
-            meta_features + reindex_features, axis="columns"
+            meta_features + reindex_profiles, axis="columns"
         )
 
     def annotate_deep(
-        self, annotate_cols, merge_cols=["Metadata_Plate", "Metadata_Well"]
+        self, merge_cols=["Metadata_Plate", "Metadata_Well"]
     ):
         """Main function of this class. Merges the metadata df and the profiles to one dataframe.
 
@@ -188,11 +198,19 @@ class AggregateDeepProfiler:
         if not hasattr(self, "aggregated_profiles"):
             self.aggregate_deep()
 
-        meta_df = self.index_df.loc[:, annotate_cols].drop_duplicates()
+        meta_df = self.index_df
+        # select
+        if self.aggregate_on == "well":
+            meta_df = meta_df.drop("Metadata_Site", axis="columns")
+            meta_df = meta_df.drop_duplicates(subset=['Metadata_Well', 'Metadata_Plate'])
+
+        if self.aggregate_on == "Plate":
+            meta_df = meta_df.drop(["Metadata_Site", 'Metadata_Well'], axis="columns")
+            meta_df = meta_df.drop_duplicates(subset=['Metadata_Plate'])
 
         meta_df.columns = [
             "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
             for x in meta_df.columns
         ]
-
-        return meta_df.merge(self.aggregated_profiles, on=merge_cols, how="inner")
+        df_out = meta_df.merge(self.aggregated_profiles, on=merge_cols, how="inner")
+        return df_out
