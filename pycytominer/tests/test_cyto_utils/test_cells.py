@@ -99,19 +99,17 @@ new_linking_cols["cytoplasm"]["new"] = "Cytoplasm_Parent_New"
 new_linking_cols["new"] = {"cytoplasm": "ObjectNumber"}
 
 # Setup SingleCells Class
-ap = SingleCells(file_or_conn=file, object_feature="Metadata_ObjectNumber")
+ap = SingleCells(file_or_conn=file)
 ap_subsample = SingleCells(
     file_or_conn=file,
     subsample_n=2,
     subsampling_random_state=123,
-    object_feature="Metadata_ObjectNumber",
 )
 ap_new = SingleCells(
     file_or_conn=new_file,
     load_image_data=False,
     compartments=new_compartments,
     compartment_linking_cols=new_linking_cols,
-    object_feature="Metadata_ObjectNumber",
 )
 
 
@@ -407,7 +405,7 @@ def test_aggregate_profiles():
     # Confirm aggregation after merging single cells
     sc_df = ap.merge_single_cells()
     sc_aggregated_df = aggregate(
-        sc_df, compute_object_count=True, object_feature="Metadata_ObjectNumber"
+        sc_df, compute_object_count=True
     ).sort_index(axis="columns")
 
     pd.testing.assert_frame_equal(
@@ -537,7 +535,6 @@ def test_aggregate_count_cells_multiple_strata():
         file_or_conn=file,
         subsample_n="4",
         strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
-        object_feature="Metadata_ObjectNumber",
     )
 
     count_df = ap_strata.count_cells()

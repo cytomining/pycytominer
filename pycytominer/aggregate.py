@@ -18,7 +18,7 @@ def aggregate(
     operation="median",
     output_file="none",
     compute_object_count=False,
-    object_feature="ObjectNumber",
+    object_feature="Metadata_ObjectNumber",
     subset_data_df="none",
     compression_options=None,
     float_format=None,
@@ -40,7 +40,7 @@ def aggregate(
         We recommend naming the file based on the plate name.
     compute_object_count : bool, default False
         Whether or not to compute object counts.
-    object_feature : str, default "ObjectNumber"
+    object_feature : str, default "Metadata_ObjectNumber"
         Object number feature. Only used if compute_object_count=True.
     subset_data_df : pandas.core.frame.DataFrame
         How to subset the input.

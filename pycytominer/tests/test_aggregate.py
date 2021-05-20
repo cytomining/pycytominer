@@ -18,7 +18,7 @@ data_df = pd.concat(
         pd.DataFrame(
             {
                 "g": "a",
-                "ObjectNumber": [1, 2, 3],
+                "Metadata_ObjectNumber": [1, 2, 3],
                 "Cells_x": [1, 3, 8],
                 "Nuclei_y": [5, 3, 1],
             }
@@ -26,7 +26,7 @@ data_df = pd.concat(
         pd.DataFrame(
             {
                 "g": "b",
-                "ObjectNumber": [1, 2, 4],
+                "Metadata_ObjectNumber": [1, 2, 4],
                 "Cells_x": [1, 3, 5],
                 "Nuclei_y": [8, 3, 1],
             }
@@ -264,3 +264,47 @@ def test_aggregate_incorrect_object_feature():
     )
     # There should be three total groups
     assert result.shape[0] == 3
+
+
+def test_custom_objectnumber_feature():
+    """
+    Testing aggregate pycytominer function
+    """
+
+    data_df_copy = (
+        data_df.copy()
+        .rename(columns={'Metadata_ObjectNumber': 'Custom_ObjectNumber_Feature'})
+    )
+
+    aggregate_result = aggregate(
+        population_df=data_df_copy,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        compute_object_count=True,
+        object_feature='Custom_ObjectNumber_Feature'
+    )
+
+    expected_result = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "g": "a",
+                    "Metadata_Object_Count": [3],
+                    "Cells_x": [3],
+                    "Nuclei_y": [3],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "g": "b",
+                    "Metadata_Object_Count": [3],
+                    "Cells_x": [3],
+                    "Nuclei_y": [3],
+                }
+            ),
+        ]
+    ).reset_index(drop=True)
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    assert aggregate_result.equals(expected_result)
