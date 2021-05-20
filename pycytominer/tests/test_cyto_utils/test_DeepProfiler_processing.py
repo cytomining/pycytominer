@@ -18,7 +18,7 @@ example_project_dir = os.path.join(
     os.path.dirname(__file__),
     "..",
     "test_data",
-    "DeepProfiler_data"
+    "DeepProfiler_example_data_2"
 )
 
 profile_dir = os.path.join(
