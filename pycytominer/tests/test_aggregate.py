@@ -264,3 +264,47 @@ def test_aggregate_incorrect_object_feature():
     )
     # There should be three total groups
     assert result.shape[0] == 3
+
+
+def test_alternate_objectnumber_feature():
+    """
+    Testing aggregate pycytominer function
+    """
+
+    data_df_copy = (
+        data_df.copy()
+        .rename(columns={'Metadata_ObjectNumber': 'Alternate_ObjectNumber_Feature'})
+    )
+
+    aggregate_result = aggregate(
+        population_df=data_df_copy,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        compute_object_count=True,
+        object_feature='Alternate_ObjectNumber_Feature'
+    )
+
+    expected_result = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "g": "a",
+                    "Metadata_Object_Count": [3],
+                    "Cells_x": [3],
+                    "Nuclei_y": [3],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "g": "b",
+                    "Metadata_Object_Count": [3],
+                    "Cells_x": [3],
+                    "Nuclei_y": [3],
+                }
+            ),
+        ]
+    ).reset_index(drop=True)
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    assert aggregate_result.equals(expected_result)
