@@ -18,7 +18,7 @@ data_df = pd.concat(
         pd.DataFrame(
             {
                 "g": "a",
-                "ObjectNumber": [1, 2, 3],
+                "Metadata_ObjectNumber": [1, 2, 3],
                 "Cells_x": [1, 3, 8],
                 "Nuclei_y": [5, 3, 1],
             }
@@ -26,7 +26,7 @@ data_df = pd.concat(
         pd.DataFrame(
             {
                 "g": "b",
-                "ObjectNumber": [1, 2, 4],
+                "Metadata_ObjectNumber": [1, 2, 4],
                 "Cells_x": [1, 3, 5],
                 "Nuclei_y": [8, 3, 1],
             }
