@@ -8,10 +8,12 @@ def infer_delim(file):
     """
     Sniff the delimiter in the given file
 
-    Arguments:
+    Arguments
+    ---------
     file - a string indicating file name
 
-    Output:
+    Return
+    ------
     the delimiter used in the dataframe (typically either tab or commas)
     """
     try:
@@ -30,10 +32,13 @@ def load_profiles(profiles):
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
 
-    Arguments:
-    profiles - location or actual pandas dataframe of profiles
+    Arguments
+    ---------
+    profiles : unkown
+        location or actual pandas dataframe of profiles
 
-    Return:
+    Return
+    ------
     pandas DataFrame of profiles
     """
     if not isinstance(profiles, pd.DataFrame):
@@ -49,12 +54,18 @@ def load_platemap(platemap, add_metadata_id=True):
     """
     Unless a dataframe is provided, load the given platemap dataframe from path or string
 
-    Arguments:
-    platemap - location or actual pandas dataframe of platemap file
-    add_metadata_id - boolean if "Metadata_" should be appended to all platemap columns
+    Arguments
+    ---------
+    platemap : pandas dataframe
+        location or actual pandas dataframe of platemap file
 
-    Return:
-    pandas DataFrame of profiles
+    add_metadata_id : bool
+        boolean if "Metadata_" should be appended to all platemap columns
+
+    Return
+    ------
+    platemap : pandas DataFrame
+        pandas DataFrame of profiles
     """
     if not isinstance(platemap, pd.DataFrame):
         try:
@@ -75,17 +86,24 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
     """
     Load an npz file storing features and, sometimes, metadata.
 
-    Arguments:
-    npz_file - file path to the compressed output (typically DeepProfiler output)
-    fallback_feature_prefix - a string to prefix all features [default: "DP"].
-        The function will first search the .npz file for a metadata column called
-        "Metadata_Model". If the field exists, the function uses this entry as the
-        feature prefix. If it doesn't exist, use the fallback_feature_prefix.
+    The function will first search the .npz file for a metadata column called
+    "Metadata_Model". If the field exists, the function uses this entry as the
+    feature prefix. If it doesn't exist, use the fallback_feature_prefix.
+
+    If the npz file does not exist, this function returns an empty dataframe
+
+    Arguments
+    ---------
+    npz_file : str
+        file path to the compressed output (typically DeepProfiler output)
+    fallback_feature_prefix :str
+        a string to prefix all features [default: "DP"].
     """
     try:
         npz = np.load(npz_file, allow_pickle=True)
     except FileNotFoundError:
         return pd.DataFrame([])
+
     files = npz.files
 
     # Load features
