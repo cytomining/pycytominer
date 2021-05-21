@@ -148,10 +148,10 @@ def test_load_npz():
     )
 
     # Check real data
-    assert real_df.shape == (206, 54)
-    assert all([x in real_df.columns for x in core_cols + ["Metadata_Model"]])
-    assert len(real_df.Metadata_Model.unique()) == 1
-    assert real_df.Metadata_Model.unique()[0] == "cnn"
-    assert real_df.drop(
+    assert real_data_df.shape == (206, 54)
+    assert all([x in real_data_df.columns for x in core_cols + ["Metadata_Model"]])
+    assert len(real_data_df.Metadata_Model.unique()) == 1
+    assert real_data_df.Metadata_Model.unique()[0] == "cnn"
+    assert real_data_df.drop(
         core_cols + ["Metadata_Model"], axis="columns"
     ).columns.tolist() == [f"cnn_{x}" for x in range(0, 50)]
