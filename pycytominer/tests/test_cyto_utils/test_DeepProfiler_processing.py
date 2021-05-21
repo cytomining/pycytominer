@@ -9,12 +9,10 @@ import pandas as pd
 import sys
 import numpy.testing as npt
 
-sys.path.insert(0, "../../../")
-print(os.getcwd())
 from pycytominer.cyto_utils.DeepProfiler_processing import AggregateDeepProfiler
 
-random.seed(42)
 
+random.seed(42)
 # setting the file locations
 example_project_dir = os.path.join(
     os.path.dirname(__file__), "..", "test_data", "DeepProfiler_example_data"
