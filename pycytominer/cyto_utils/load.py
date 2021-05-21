@@ -34,8 +34,8 @@ def load_profiles(profiles):
 
     Arguments
     ---------
-    profiles : unkown
-        location or actual pandas dataframe of profiles
+    profiles : {str, pandas.DataFrame}
+        file location or actual pandas dataframe of profiles
 
     Return
     ------
@@ -90,7 +90,7 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
     "Metadata_Model". If the field exists, the function uses this entry as the
     feature prefix. If it doesn't exist, use the fallback_feature_prefix.
 
-    If the npz file does not exist, this function returns an empty dataframe
+    If the npz file does not exist, this function returns an empty dataframe.
 
     Arguments
     ---------
