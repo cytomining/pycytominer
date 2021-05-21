@@ -24,17 +24,26 @@ index_file = os.path.join(example_project_dir, "inputs", "metadata", "test_index
 
 # calculating the dataframe for each depth
 site_class = AggregateDeepProfiler(
-    index_file=index_file, profile_dir=profile_dir, aggregate_operation='median', aggregate_on="site",
+    index_file=index_file,
+    profile_dir=profile_dir,
+    aggregate_operation="median",
+    aggregate_on="site",
 )
 df_site = site_class.annotate_deep()
 
 well_class = AggregateDeepProfiler(
-    index_file=index_file, profile_dir=profile_dir, aggregate_operation='median', aggregate_on="well"
+    index_file=index_file,
+    profile_dir=profile_dir,
+    aggregate_operation="median",
+    aggregate_on="well",
 )
 df_well = well_class.annotate_deep()
 #
 plate_class = AggregateDeepProfiler(
-    index_file=index_file, profile_dir=profile_dir, aggregate_operation='median', aggregate_on="plate",
+    index_file=index_file,
+    profile_dir=profile_dir,
+    aggregate_operation="median",
+    aggregate_on="plate",
 )
 df_plate = plate_class.annotate_deep()
 
@@ -46,21 +55,21 @@ def test_output_size():
 
 
 def test_columns():
-    meta_cols = [x for x in df_site.columns if x.startswith('Metadata_')]
-    assert meta_cols.index('Metadata_Site_Position')
+    meta_cols = [x for x in df_site.columns if x.startswith("Metadata_")]
+    assert meta_cols.index("Metadata_Site_Position")
     assert len(meta_cols) == 17
 
-    meta_cols = [x for x in df_well.columns if x.startswith('Metadata_')]
-    assert meta_cols.index('Metadata_Well_Position')
+    meta_cols = [x for x in df_well.columns if x.startswith("Metadata_")]
+    assert meta_cols.index("Metadata_Well_Position")
     assert len(meta_cols) == 16
 
-    meta_cols = [x for x in df_plate.columns if x.startswith('Metadata_')]
-    assert meta_cols.index('Metadata_Plate_Position')
+    meta_cols = [x for x in df_plate.columns if x.startswith("Metadata_")]
+    assert meta_cols.index("Metadata_Plate_Position")
     assert len(meta_cols) == 17
 
     for df in [df_site, df_well, df_plate]:
-        profile_cols = [x for x in df.columns if x.startswith('efficientnet_')]
-        assert profile_cols.index('efficientnet_6399')
+        profile_cols = [x for x in df.columns if x.startswith("efficientnet_")]
+        assert profile_cols.index("efficientnet_6399")
         assert len(profile_cols) == 6400
 
 
