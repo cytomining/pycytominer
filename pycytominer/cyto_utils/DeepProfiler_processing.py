@@ -190,6 +190,8 @@ class AggregateDeepProfiler:
                 self.file_aggregate[metadata_level]["metadata"], index=[0]
             )
             meta_df.columns = [f"Metadata_{x.capitalize()}" for x in meta_df.columns]
+            # site values are int
+            meta_df.Metadata_Site = meta_df.Metadata_Site.astype(int)
 
             if self.aggregate_on == "well":
                 meta_df = meta_df.drop("Metadata_Site", axis="columns")
