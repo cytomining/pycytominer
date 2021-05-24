@@ -261,21 +261,14 @@ class AggregateDeepProfiler:
         if self.aggregate_on == "plate":
             meta_df = meta_df.drop(["Metadata_Site", "Metadata_Well"], axis="columns")
             merge_cols = ["Metadata_Plate"]
-            meta_df = meta_df.drop_duplicates(subset=merge_cols)
-
-            df_out = meta_df.merge(self.aggregated_profiles, on=merge_cols, how="inner")
-            return df_out
 
         elif self.aggregate_on == "well":
             meta_df = meta_df.drop("Metadata_Site", axis="columns")
             merge_cols = ["Metadata_Well", "Metadata_Plate"]
-            meta_df = meta_df.drop_duplicates(subset=merge_cols)
 
-            df_out = meta_df.merge(self.aggregated_profiles, on=merge_cols, how="inner")
-            return df_out
+        elif self.aggregate_on == "site":
+            merge_cols = ["Metadata_Well", "Metadata_Plate", "Metadata_Site"]
 
-        # if on site level
-        merge_cols = ["Metadata_Well", "Metadata_Plate", "Metadata_Site"]
         meta_df = meta_df.drop_duplicates(subset=merge_cols)
         df_out = meta_df.merge(self.aggregated_profiles, on=merge_cols, how="inner")
         return df_out
