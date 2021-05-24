@@ -82,7 +82,7 @@ class AggregateDeepProfiler:
         self.file_extension = file_extension
         if not self.file_extension.startswith("."):
             self.file_extension = f".{self.file_extension}"
-        self.index_df = pd.read_csv(index_file)
+        self.index_df = pd.read_csv(index_file, dtype=str)
 
     def build_filenames(self):
         """
@@ -202,11 +202,12 @@ class AggregateDeepProfiler:
                 for x in meta_df.columns
             ]
 
-            # site values are int
-            meta_df.Metadata_Site = meta_df.Metadata_Site.astype(int)
-
             if self.aggregate_on == "well":
-                meta_df = meta_df.drop("Metadata_Site", axis="columns")
+                meta_df = (
+                    meta_df.drop("Metadata_Site", axis="columns")
+                    .drop_duplicates()
+                    .reset_index(drop=True)
+                )
 
             metadata_cols = [x for x in df if x.startswith("Metadata_")]
             profiles = [x for x in df.columns.tolist() if x not in metadata_cols]

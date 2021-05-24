@@ -112,7 +112,7 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
     # Load metadata
     if "metadata" in files:
         metadata = npz["metadata"].item()
-        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]))
+        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]), dtype=str)
         metadata_df.columns = [
             f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
         ]
