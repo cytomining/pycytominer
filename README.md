@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=master)](https://travis-ci.org/cytomining/pycytominer)
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/master/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=master)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=plastic)](https://pycytominer.readthedocs.io/)
+[![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
 
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
