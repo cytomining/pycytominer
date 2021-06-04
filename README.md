@@ -3,8 +3,31 @@
 [![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=master)](https://travis-ci.org/cytomining/pycytominer)
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/master/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=master)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
 
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
+The tool is most often used for processing data through the following pipeline:
+
+![pipeline](/media/pipeline.png)
+
+Image data flow from the microscope to segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
+From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
+For CellProfiler, we use [cytominer-database](https://github.com/cytomining/cytominer-database) or [cytominer-transport](https://github.com/cytomining/cytominer-transport).
+For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
+
+From the single cell output, we perform five steps using a simple API (described below), before passing along our data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
+
+## API
+
+The API is consistent for the five major processing functions:
+
+1. Aggregate
+2. Annotate
+3. Normalize
+4. Feature select
+5. Consensus
+
+Each processing function has unique arguments, see our [documentation](https://pycytominer.readthedocs.io/) for more details.
 
 ## Installation
 
@@ -18,7 +41,7 @@ Since the project is actively being developed, with new features added regularly
 
 ```bash
 # Example:
-pip install git+git://github.com/cytomining/pycytominer@1806088bfd7f9be961a320635a0ddc66a12b5fb0
+pip install git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470
 ```
 
 ## Usage
@@ -41,16 +64,6 @@ normalized_df = pycytominer.normalize(
     samples="Metadata_broad_sample == 'DMSO'"
 )
 ```
-
-The API is consistent for the five major processing functions:
-
-1. Aggregate
-2. Annotate
-3. Normalize
-4. Feature Select
-5. Consensus
-
-Each processing function has unique arguments, more specific documentation coming soon.
 
 ### Customized usage
 
