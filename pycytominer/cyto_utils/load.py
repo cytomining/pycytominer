@@ -10,7 +10,8 @@ def infer_delim(file):
 
     Arguments
     ---------
-    file - a string indicating file name
+    file : str
+        File name
 
     Return
     ------
