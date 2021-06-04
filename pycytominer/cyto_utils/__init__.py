@@ -15,10 +15,7 @@ from .single_cell_ingest_utils import (
     assert_linking_cols_complete,
     provide_linking_cols_feature_name_update,
 )
-from .load import (
-    load_profiles,
-    load_platemap,
-)
+from .load import load_profiles, load_platemap, load_npz, infer_delim
 from .features import (
     get_blocklist_features,
     label_compartment,
@@ -30,3 +27,4 @@ from .features import (
 from .write_gct import write_gct
 from .modz import modz
 from .annotate_custom import annotate_cmap, cp_clean
+from .DeepProfiler_processing import AggregateDeepProfiler
