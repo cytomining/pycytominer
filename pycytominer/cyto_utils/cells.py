@@ -41,6 +41,8 @@ class SingleCells(object):
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
         Columns to select from the image table.
+    feature: str or list of str, default "infer"
+        List of features that should be aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
     subsample_frac : float, default 1
@@ -78,6 +80,7 @@ class SingleCells(object):
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
         image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
+        features="infer",
         load_image_data=True,
         subsample_frac=1,
         subsample_n="all",
@@ -105,6 +108,7 @@ class SingleCells(object):
         self.output_file = output_file
         self.merge_cols = merge_cols
         self.image_cols = image_cols
+        self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
         self.subset_data_df = "none"
@@ -397,7 +401,6 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
-        aggregate_args=None,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -409,8 +412,6 @@ class SingleCells(object):
             Whether or not to subsample.
         compute_counts : bool, default False
             Whether or not to compute the number of objects in each compartment and the number of fields of view per well.
-        aggregate_args : dict, optional
-            Additional arguments passed as input to pycytominer.aggregate().
 
         Returns
         -------
@@ -436,19 +437,12 @@ class SingleCells(object):
         ).rename(self.linking_col_rename, axis="columns")
 
         # Infering features is tricky with non-canonical data
-        if aggregate_args is None:
-            aggregate_args = {}
-            features = infer_cp_features(population_df, compartments=compartment)
-        elif "features" not in aggregate_args:
-            features = infer_cp_features(population_df, compartments=compartment)
-        elif aggregate_args["features"] == "infer":
-            features = infer_cp_features(population_df, compartments=compartment)
+        if self.features == "infer":
+            aggregate_features = infer_cp_features(
+                population_df, compartments=compartment
+            )
         else:
-            features = aggregate_args["features"]
-
-        aggregate_args["features"] = features
-        if "object_feature" not in aggregate_args:
-            aggregate_args["object_feature"] = self.object_feature
+            aggregate_features = self.features
 
         object_df = aggregate(
             population_df=population_df,
@@ -456,7 +450,8 @@ class SingleCells(object):
             compute_object_count=compute_counts,
             operation=self.aggregation_operation,
             subset_data_df=self.subset_data_df,
-            **aggregate_args,
+            features=aggregate_features,
+            object_feature=self.object_feature,
         )
 
         if compute_counts and self.fields_of_view_feature not in self.strata:
@@ -624,7 +619,6 @@ class SingleCells(object):
         output_file="none",
         compression_options=None,
         float_format=None,
-        aggregate_args=None,
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -639,8 +633,6 @@ class SingleCells(object):
             Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
         float_format : str, optional
             Decimal precision to use in writing output file.
-        aggregate_args : dict, optional
-            Additional arguments passed as input to pycytominer.normalize().
 
         Returns
         -------
