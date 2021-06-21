@@ -123,11 +123,11 @@ if __name__ =='__main__':
     parser.add_argument('--base','--base-directory', dest='base_directory',default='../..',help='Base directory where the CSV files will be located')
     parser.add_argument('--column', default='None',help='An existing column to be explicitly copied to a Metadata_Plate column if Metadata_Plate was not set')
     parser.add_argument('--munge', action='store_true', default=False,help='Whether munge should be passed to cytominer-database, if True will break a single object CSV down by objects')
-    parser.add_argument('--pipeline', dest='pipeline',default='analysis',help='A string used in path creation')
-    parser.add_argument('--remote', dest='remote',default=None,help='A remote AWS directory, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run')
-    parser.add_argument('--tmp', default='/tmp',help='The temporary directory to be used by cytominer-databases for output')
+    parser.add_argument('--pipeline', default='analysis',help='A string used in path creation')
+    parser.add_argument('--remote', default=None,help='A remote AWS directory, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run')
+    parser.add_argument('--temp', default='/tmp',help='The temporary directory to be used by cytominer-databases for output')
     parser.add_argument('--overwrite', action='store_true', default=False,help='Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists')
     
     args = parser.parse_args()
     
-    collate(args.batch, args.config, args.plate, base_directory=args.base_directory, column=args.column, munge=args.munge, pipeline=args.pipeline, remote=args.remote, tmp=args.tmp, overwrite=args.overwrite)
+    collate(args.batch, args.config, args.plate, base_directory=args.base_directory, column=args.column, munge=args.munge, pipeline=args.pipeline, remote=args.remote, temp=args.temp, overwrite=args.overwrite)
