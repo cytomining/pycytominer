@@ -9,7 +9,7 @@ def run_check_errors(cmd):
         cmd = cmd.split()
     output = subprocess.run(cmd,capture_output=True,text=True)
     if output.stderr != '':
-        print_cmd = ' '.join(map(str,ingest_cmd))
+        print_cmd = ' '.join(map(str,cmd))
         sys.exit(f"The error {output.stderr} was generated when running {print_cmd}. Exiting.") 
     return
 
