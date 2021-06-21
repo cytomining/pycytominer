@@ -2,24 +2,115 @@ import os
 import subprocess
 import sys
 
-# parameters needed - batch ID, config file, plate ID
-# options needed - download or not, use a column as a plate name, numge or not, pipeline name, remote base directory, temp directory, overwrite or not
 
-## Steps
+def run_check_errors(cmd):
+    """Run a system command, and exit if an error occurred, otherwise continue"""
+    if type(cmd)==str:
+        cmd = cmd.split()
+    output = subprocess.run(cmd,capture_output=True,text=True)
+    if output.stderr != '':
+        print_cmd = ' '.join(map(str,ingest_cmd))
+        sys.exit(f"The error {output.stderr} was generated when running {print_cmd}. Exiting.") 
+    return
 
-# check if the file exists (note this used to happen after download but not sure, why, that seems like a bad idea)
+def collate(
+    batch,
+    config, 
+    plate, 
+    base_directory='../..', 
+    column=None, 
+    munge=False,
+    pipeline='analysis',
+    remote=None,
+    temp='/tmp',
+    overwrite=False
+    ):
+    """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
-# optionally download files
+    Parameters
+    ----------
+    batch : str
+        Batch name to process
+    config : str
+        config file to pass to cytominer-database
+    plate : str
+        Plate name to process
+    base_directory : str, default "../.."
+        Base directory where the CSV files will be located
+    column : str, optional, default None
+        Whether an existing column needs to be explicitly copied to a Metadata_Plate column
+    munge : bool, default False
+        Whether munge should be passed to cytominer-database, if True will break a single object CSV down by objects
+    pipeline : str, default 'analysis'
+        A string used in path creation
+    remote : str, optional, default None
+        A remote AWS directory, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run
+    tmp: str, default '/tmp'
+        The temporary directory to be used by cytominer-databases for output
+    overwrite: bool, optional, default False
+        Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists
+    """
 
-# run cytominer_database
+    #Set up directories (these need to be abspaths to keep from confusing makedirs later)
+    input_dir = os.path.abspath(os.path.join(base_directory, 'analysis', batch, plate, pipeline))
+    backend_dir = os.path.abspath(os.path.join(base_directory, 'backend', batch, plate))
+    cache_backend_dir = os.path.abspath(os.path.join(temp, 'backend', batch, plate))
 
-# add a plate column if you need to
+    backend_file = os.path.join(backend_dir, plate+'.sqlite')
+    cache_backend_file = os.path.join(cache_backend_dir, plate+'.sqlite')
 
-# index
+    if os.path.exists(cache_backend_file): 
+        if not overwrite:
+            print(f"An SQLite file for {plate} already exists at {cache_backend_file} and overwrite is set to False. Terminating.")
+            sys.exit(0)
+        else:
+            os.remove(cache_backend_file)
 
-# at this point, collate.R did an aggregation, but since the recipe does that already I don't think that NEEDS to live here (but it could if we want)
+    for eachdir in [input_dir, backend_dir, cache_backend_dir]:
+        if not os.path.exists(eachdir):
+            os.makedirs(eachdir, exist_ok=True)
 
-# copy back to S3
+    if remote:
+        
+        remote_input_dir = os.path.join(remote, 'analysis', batch, plate, pipeline)
+        remote_backend_file = os.path.join(remote, 'backend', batch, plate, plate+'.sqlite')
 
-# delete CSV files if downloaded
+        sync_cmd = 'aws s3 sync --exclude "*" --include "*/Cells.csv" --include "*/Nuclei.csv" --include "*/Cytoplasm.csv" --include "*/Image.csv" ' + remote_input_dir + ' ' + input_dir
+
+        print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
+        run_check_errors(sync_cmd)
+
+    ingest_cmd = ['cytominer-database', 'ingest', input_dir, 'sqlite:///'+cache_backend_file, '-c', config]
+    if not munge:
+        #munge is by default True in cytominer-database
+        ingest_cmd.append('--no-munge')
+
+    print(f"Ingesting {input_dir}")
+    run_check_errors(ingest_cmd)
+    
+    if column:
+        print(f"Adding a Metadata_Plate column based on column {column}")
+        alter_cmd = ['sqlite3', cache_backend_file, "'ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;'"]
+        run_check_errors(alter_cmd)
+        update_cmd = ['sqlite3', cache_backend_file,"'UPDATE image SET Metadata_Plate ="+ column + ";'" ]
+        run_check_errors(update_cmd)
+
+    print(f"Indexing database {cache_backend_file}")
+    index_cmd = ['sqlite3', cache_backend_file, "< indices.sql"]
+    run_check_errors(update_cmd)
+
+    if remote:
+
+        print(f"Uploading {cache_backend_file} to {remote_backend_file}")
+        cp_cmd = ['aws', 's3', 'cp', cache_backend_file, remote_backend_file]
+        run_check_errors(cp_cmd)
+
+        print(f"Removing temporary files from {input_dir} and {cache_backend_dir}")
+        import shutil
+        shutil.rmtree(input_dir)
+        shutil.rmtree(cache_backend_dir)
+
+    else:
+        print(f"Renaming {cache_backend_file} to {backend_file}")
+        os.rename(cache_backend_file,backend_file)
 
