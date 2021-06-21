@@ -389,7 +389,10 @@ class SingleCells(object):
 
         """
         compartment_query = "select * from {}".format(compartment)
-        df = pd.read_sql(sql=compartment_query, con=self.conn)
+        dflist=[]
+        for chunk in pd.read_sql(sql=compartment_query, con=self.conn,chunksize=10000):
+            dflist.append(chunk)
+        df = pd.concat(dflist)
         return df
 
     def aggregate_compartment(
