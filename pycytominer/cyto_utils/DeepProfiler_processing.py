@@ -37,6 +37,7 @@ class AggregateDeepProfiler:
     file_aggregate : dict
         dict that holds the file names and metadata.
         Is used to load in the npz files in the correct order and grouping.
+    save_files: ['site', 'well', 'plate', 'none'], default = 'none'
 
     Methods
     -------
