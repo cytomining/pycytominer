@@ -90,21 +90,21 @@ def collate(
     
     if column:
         print(f"Adding a Metadata_Plate column based on column {column}")
-        alter_cmd = ['sqlite3', cache_backend_file, "'ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;'"]
+        alter_cmd = ['sqlite3', cache_backend_file, 'ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;']
         run_check_errors(alter_cmd)
-        update_cmd = ['sqlite3', cache_backend_file,"'UPDATE image SET Metadata_Plate ="+ column + ";'" ]
+        update_cmd = ['sqlite3', cache_backend_file,'UPDATE image SET Metadata_Plate ='+ column + ';' ]
         run_check_errors(update_cmd)
 
     print(f"Indexing database {cache_backend_file}")
-    index_cmd_1 = ['sqlite3', cache_backend_file, "'CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);'"]
+    index_cmd_1 = ['sqlite3', cache_backend_file, 'CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);']
     run_check_errors(index_cmd_1)
-    index_cmd_2 = ['sqlite3', cache_backend_file, "'CREATE INDEX IF NOT EXISTS table_image_object_cells_idx ON Cells(TableNumber, ImageNumber, ObjectNumber);'"]
+    index_cmd_2 = ['sqlite3', cache_backend_file, 'CREATE INDEX IF NOT EXISTS table_image_object_cells_idx ON Cells(TableNumber, ImageNumber, ObjectNumber);']
     run_check_errors(index_cmd_2)
-    index_cmd_3 = ['sqlite3', cache_backend_file, "'CREATE INDEX IF NOT EXISTS table_image_object_cytoplasm_idx ON Cytoplasm(TableNumber, ImageNumber, ObjectNumber);'"]
+    index_cmd_3 = ['sqlite3', cache_backend_file, 'CREATE INDEX IF NOT EXISTS table_image_object_cytoplasm_idx ON Cytoplasm(TableNumber, ImageNumber, ObjectNumber);']
     run_check_errors(index_cmd_3)
-    index_cmd_4 = ['sqlite3', cache_backend_file, "'CREATE INDEX IF NOT EXISTS table_image_object_nuclei_idx ON Nuclei(TableNumber, ImageNumber, ObjectNumber);'"]
+    index_cmd_4 = ['sqlite3', cache_backend_file, 'CREATE INDEX IF NOT EXISTS table_image_object_nuclei_idx ON Nuclei(TableNumber, ImageNumber, ObjectNumber);']
     run_check_errors(index_cmd_4)
-    index_cmd_5 = ['sqlite3', cache_backend_file, "'CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);'"]
+    index_cmd_5 = ['sqlite3', cache_backend_file, 'CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);']
     run_check_errors(index_cmd_5)
 
     if remote:
