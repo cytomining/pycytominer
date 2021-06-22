@@ -23,7 +23,8 @@ def collate(
     pipeline='analysis',
     remote=None,
     temp='/tmp',
-    overwrite=False
+    overwrite=False,
+    index_file='pycytominer/cyto_utils/indices.sql'
     ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -49,6 +50,8 @@ def collate(
         The temporary directory to be used by cytominer-databases for output
     overwrite: bool, optional, default False
         Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists
+    index_file : str, default "pycytominer/cyto_utils/indices.sql"
+        The location of the file used to index the database
     """
 
     #Set up directories (these need to be abspaths to keep from confusing makedirs later)
@@ -96,7 +99,7 @@ def collate(
         run_check_errors(update_cmd)
 
     print(f"Indexing database {cache_backend_file}")
-    index_cmd = ['sqlite3', cache_backend_file, "< indices.sql"]
+    index_cmd = ['sqlite3', cache_backend_file, "< ", index_file]
     run_check_errors(update_cmd)
 
     if remote:
@@ -127,7 +130,8 @@ if __name__ =='__main__':
     parser.add_argument('--remote', default=None,help='A remote AWS directory, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run')
     parser.add_argument('--temp', default='/tmp',help='The temporary directory to be used by cytominer-databases for output')
     parser.add_argument('--overwrite', action='store_true', default=False,help='Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists')
+    parser.add_argument('--index_file', default='pycytominer/cyto_utils/indices.sql', help='The location of the file used to index the database')
     
     args = parser.parse_args()
     
-    collate(args.batch, args.config, args.plate, base_directory=args.base_directory, column=args.column, munge=args.munge, pipeline=args.pipeline, remote=args.remote, temp=args.temp, overwrite=args.overwrite)
+    collate(args.batch, args.config, args.plate, base_directory=args.base_directory, column=args.column, munge=args.munge, pipeline=args.pipeline, remote=args.remote, temp=args.temp, overwrite=args.overwrite, index_file=args.index_file)
