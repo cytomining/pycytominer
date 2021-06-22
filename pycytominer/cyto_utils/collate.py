@@ -100,7 +100,7 @@ def collate(
 
     print(f"Indexing database {cache_backend_file}")
     index_cmd = ['sqlite3', cache_backend_file, "< ", index_file]
-    run_check_errors(update_cmd)
+    run_check_errors(index_cmd)
 
     if remote:
 
