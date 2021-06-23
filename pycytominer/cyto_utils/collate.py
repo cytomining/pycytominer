@@ -72,13 +72,13 @@ def collate(
         if not os.path.exists(eachdir):
             os.makedirs(eachdir, exist_ok=True)
 
-    """if remote:
+    if remote:
         
         remote_input_dir = os.path.join(remote, 'analysis', batch, plate, pipeline)
         remote_backend_file = os.path.join(remote, 'backend', batch, plate, plate+'.sqlite')
         remote_aggregated_file = os.path.join(remote, 'backend', batch, plate, plate+'.csv')
 
-        sync_cmd = 'aws s3 sync --exclude "*" --include "*/Cells.csv" --include "*/Nuclei.csv" --include "*/Cytoplasm.csv" --include "*/Image.csv" ' + remote_input_dir + ' ' + input_dir
+        """sync_cmd = 'aws s3 sync --exclude "*" --include "*/Cells.csv" --include "*/Nuclei.csv" --include "*/Cytoplasm.csv" --include "*/Image.csv" ' + remote_input_dir + ' ' + input_dir
 
         print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
         run_check_errors(sync_cmd)
@@ -123,8 +123,8 @@ def collate(
     print(f"Renaming {cache_backend_file} to {backend_file}")
     os.rename(cache_backend_file,backend_file)"""
 
-    print(f"Aggregating sqlite://{backend_file}")
-    database = SingleCells('sqlite://'+backend_file)
+    print(f"Aggregating sqlite:///{backend_file}")
+    database = SingleCells('sqlite:///'+backend_file)
     database.aggregate_profiles(output_file=aggregated_file,aggregate_args={'operation':'mean'})
     
     if remote:
