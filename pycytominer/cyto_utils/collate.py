@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from cells import SingleCells
+from pycytominer.cyto_utils.cells import SingleCells
 
 def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
@@ -123,7 +123,7 @@ def collate(
     print(f"Renaming {cache_backend_file} to {backend_file}")
     os.rename(cache_backend_file,backend_file)"""
 
-    print("Aggregating")
+    print(f"Aggregating sqlite://{backend_file}")
     database = SingleCells('sqlite://'+backend_file)
     database.aggregate_profiles(output_file=aggregated_file,aggregate_args={'operation':'mean'})
     
