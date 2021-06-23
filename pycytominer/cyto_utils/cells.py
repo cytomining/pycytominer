@@ -436,7 +436,6 @@ class SingleCells(object):
             on=self.merge_cols,
         ).rename(self.linking_col_rename, axis="columns")
 
-        # Infering features is tricky with non-canonical data
         if self.features == "infer":
             aggregate_features = infer_cp_features(
                 population_df, compartments=compartment
