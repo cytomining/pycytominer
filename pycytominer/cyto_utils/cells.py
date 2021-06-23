@@ -457,6 +457,7 @@ class SingleCells(object):
             if self.features == "infer":
                 aggregate_features = infer_cp_features(
                     population_df, compartments=compartment
+
                 )
             else:
                 aggregate_features = self.features
