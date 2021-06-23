@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 
+from cells import SingleCells
 
 def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
@@ -56,6 +57,7 @@ def collate(
     backend_dir = os.path.abspath(os.path.join(base_directory, 'backend', batch, plate))
     cache_backend_dir = os.path.abspath(os.path.join(temp, 'backend', batch, plate))
 
+    aggregated_file = os.path.join(backend_dir, plate+'.csv')
     backend_file = os.path.join(backend_dir, plate+'.sqlite')
     cache_backend_file = os.path.join(cache_backend_dir, plate+'.sqlite')
 
@@ -70,10 +72,11 @@ def collate(
         if not os.path.exists(eachdir):
             os.makedirs(eachdir, exist_ok=True)
 
-    if remote:
+    """if remote:
         
         remote_input_dir = os.path.join(remote, 'analysis', batch, plate, pipeline)
         remote_backend_file = os.path.join(remote, 'backend', batch, plate, plate+'.sqlite')
+        remote_aggregated_file = os.path.join(remote, 'backend', batch, plate, plate+'.csv')
 
         sync_cmd = 'aws s3 sync --exclude "*" --include "*/Cells.csv" --include "*/Nuclei.csv" --include "*/Cytoplasm.csv" --include "*/Image.csv" ' + remote_input_dir + ' ' + input_dir
 
@@ -113,14 +116,26 @@ def collate(
         cp_cmd = ['aws', 's3', 'cp', cache_backend_file, remote_backend_file]
         run_check_errors(cp_cmd)
 
-        print(f"Removing temporary files from {input_dir} and {cache_backend_dir}")
+        print(f"Removing analysis files from {input_dir} and {cache_backend_dir}")
         import shutil
         shutil.rmtree(input_dir)
-        shutil.rmtree(cache_backend_dir)
 
-    else:
-        print(f"Renaming {cache_backend_file} to {backend_file}")
-        os.rename(cache_backend_file,backend_file)
+    print(f"Renaming {cache_backend_file} to {backend_file}")
+    os.rename(cache_backend_file,backend_file)"""
+
+    print("Aggregating")
+    database = SingleCells('sqlite://'+backend_file)
+    database.aggregate_profiles(output_file=aggregated_file,aggregate_args={'operation':'mean'})
+    
+    if remote:
+        print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
+        csv_cp_cmd = ['aws', 's3', 'cp', aggregated_file, remote_aggregated_file]
+        run_check_errors(csv_cp_cmd)
+
+        print(f"Removing backend files from {backend_dir}")
+        import shutil
+        shutil.rmtree(backend_dir)        
+
 
 if __name__ =='__main__':
     import argparse
