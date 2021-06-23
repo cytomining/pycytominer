@@ -124,8 +124,8 @@ def collate(
     os.rename(cache_backend_file,backend_file)
 
     print(f"Aggregating sqlite:///{backend_file}")
-    database = SingleCells('sqlite:///'+backend_file)
-    database.aggregate_profiles(output_file=aggregated_file,aggregate_args={'operation':'mean'})
+    database = SingleCells('sqlite:///'+backend_file, aggregation_operation="mean")
+    database.aggregate_profiles(output_file=aggregated_file)
     
     if remote:
         print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
