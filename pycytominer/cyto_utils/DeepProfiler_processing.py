@@ -16,7 +16,6 @@ class AggregateDeepProfiler:
 
     Attributes
     ----------
-
     profile_dir : str
         file location of the output profiles from DeepProfiler
         (e.g. `/project1/outputs/results/features/`)
@@ -37,14 +36,14 @@ class AggregateDeepProfiler:
     file_aggregate : dict
         dict that holds the file names and metadata.
         Is used to load in the npz files in the correct order and grouping.
-    save_files: ['site', 'well', 'plate', 'none'], default = 'none'
+    output_file : str
+        If provided, will write annotated profiles to folder. Defaults to "none".
 
     Methods
     -------
-    annotate_deep()
+    aggregate_deep()
         Given an initialized AggregateDeepProfiler() class, run this function to output
         level 3 profiles (aggregated profiles with annotated metadata).
-
     """
 
     def __init__(
@@ -55,6 +54,7 @@ class AggregateDeepProfiler:
         aggregate_on="well",
         filename_delimiter="_",
         file_extension=".npz",
+        output_file="none",
     ):
         """
         __init__ function for this class.
@@ -76,14 +76,15 @@ class AggregateDeepProfiler:
             "plate",
         ], "Input of aggregate_on is incorrect, it must be either site or well or plate"
 
-        self.aggregate_operation = aggregate_operation
+        self.index_df = pd.read_csv(index_file, dtype=str)
         self.profile_dir = profile_dir
+        self.aggregate_operation = aggregate_operation
         self.aggregate_on = aggregate_on
         self.filename_delimiter = filename_delimiter
         self.file_extension = file_extension
         if not self.file_extension.startswith("."):
             self.file_extension = f".{self.file_extension}"
-        self.index_df = pd.read_csv(index_file, dtype=str)
+        self.output_file = output_file
 
     def build_filenames(self):
         """
@@ -169,10 +170,17 @@ class AggregateDeepProfiler:
 
     def aggregate_deep(self):
         """
-        Aggregates the profiles into a pandas dataframe.
+        Main function of this class. Aggregates the profiles into a pandas dataframe.
 
         For each key in file_aggregate, the profiles are loaded, concatenated and then aggregated.
         If files are missing, we throw a warning but continue the code.
+        After aggregation, the metadata is concatenated back onto the dataframe.
+
+        Returns
+        -------
+        df_out : pandas.dataframe
+            dataframe with all metadata and the feature space.
+            This is the input to any further pycytominer or pycytominer-eval processing
         """
         if not hasattr(self, "file_aggregate"):
             self.setup_aggregate()
@@ -180,6 +188,7 @@ class AggregateDeepProfiler:
         self.aggregated_profiles = []
         self.aggregate_merge_col = f"Metadata_{self.aggregate_on.capitalize()}_Position"
 
+        # Iterates over all sites, wells or plates
         for metadata_level in self.file_aggregate:
             # uses custom load function to create df with metadata and profiles
             arr = [load_npz(x) for x in self.file_aggregate[metadata_level]["files"]]
@@ -191,27 +200,19 @@ class AggregateDeepProfiler:
                     f"No files for the key {metadata_level} could be found.\nThis program will continue, but be aware that this might induce errors!"
                 )
                 continue
-
             df = pd.concat(arr)
 
-            # Prepare inputs for the aggregate function
-            meta_df = pd.DataFrame(
-                self.file_aggregate[metadata_level]["metadata"], index=[0]
-            ).reset_index(drop=True)
-            meta_df.columns = [
-                f"Metadata_{x.capitalize()}" if not x.startswith("Metadata_") else x
-                for x in meta_df.columns
-            ]
-
-            if self.aggregate_on == "well":
-                meta_df = (
-                    meta_df.drop("Metadata_Site", axis="columns")
-                    .drop_duplicates()
-                    .reset_index(drop=True)
-                )
-
-            metadata_cols = [x for x in df if x.startswith("Metadata_")]
+            # extract metadata prior to aggregation
+            meta_df = pd.DataFrame()
+            metadata_cols = [x for x in df.columns if x.startswith("Metadata_")]
             profiles = [x for x in df.columns.tolist() if x not in metadata_cols]
+
+            # If all rows have the same Metadata information, that value is valid for the aggregated df
+            for col in metadata_cols:
+                if len(df[col].unique()) == 1:
+                    meta_df[col] = [df[col].unique()[0]]
+
+            # perform the aggregation
             df = df.assign(Metadata_Aggregate_On=self.aggregate_on)
             df = aggregate.aggregate(
                 population_df=df,
@@ -220,14 +221,27 @@ class AggregateDeepProfiler:
                 operation=self.aggregate_operation,
             ).reset_index(drop=True)
 
+            # add the aggregation level as a column
             df.loc[:, self.aggregate_merge_col] = metadata_level
-            df = meta_df.merge(df, left_index=True, right_index=True)
+            # concatenate the metadata back onto the aggregated profile
+            df = pd.concat([df, meta_df], axis=1)
+
+            # save metalevel file
+            if self.output_file != "none":
+                if not os.path.exists(self.output_file):
+                    os.mkdir(self.output_file)
+                file_path = os.path.join(
+                    self.output_file, metadata_level.replace("/", "_")
+                )
+                df.to_csv(f"{file_path}.csv", index=False)
             self.aggregated_profiles.append(df)
 
         # Concatenate all of the above created profiles
         self.aggregated_profiles = pd.concat(
             [x for x in self.aggregated_profiles]
         ).reset_index(drop=True)
+
+        # clean and reindex columns
         self.aggregated_profiles.columns = [
             str(x) for x in self.aggregated_profiles.columns
         ]
@@ -237,39 +251,8 @@ class AggregateDeepProfiler:
             meta_features + reindex_profiles, axis="columns"
         )
 
-    def annotate_deep(
-        self,
-    ):
-        """
-        Main function of this class. Merges the index df and the profiles back into one dataframe.
+        # If Columns have NaN values from concatenation, drop these
+        self.aggregated_profiles.dropna(axis="columns", inplace=True)
 
-        Returns
-        -------
-        df_out : pandas.dataframe
-            dataframe with all metadata and the feature space.
-            This is the input to any further pycytominer or pycytominer-eval processing
-        """
-        if not hasattr(self, "aggregated_profiles"):
-            self.aggregate_deep()
-
-        meta_df = self.index_df
-        meta_df.columns = [
-            "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
-            for x in meta_df.columns
-        ]
-
-        # prepare for merge with profiles
-        if self.aggregate_on == "plate":
-            meta_df = meta_df.drop(["Metadata_Site", "Metadata_Well"], axis="columns")
-            merge_cols = ["Metadata_Plate"]
-
-        elif self.aggregate_on == "well":
-            meta_df = meta_df.drop("Metadata_Site", axis="columns")
-            merge_cols = ["Metadata_Well", "Metadata_Plate"]
-
-        elif self.aggregate_on == "site":
-            merge_cols = ["Metadata_Well", "Metadata_Plate", "Metadata_Site"]
-
-        meta_df = meta_df.drop_duplicates(subset=merge_cols)
-        df_out = meta_df.merge(self.aggregated_profiles, on=merge_cols, how="inner")
+        df_out = self.aggregated_profiles
         return df_out
