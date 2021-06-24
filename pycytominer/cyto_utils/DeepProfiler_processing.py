@@ -204,7 +204,7 @@ class AggregateDeepProfiler:
 
             # extract metadata prior to aggregation
             meta_df = pd.DataFrame()
-            metadata_cols = infer_cp_features(metadata=True)
+            metadata_cols = infer_cp_features(df, metadata=True)
             profiles = [x for x in df.columns.tolist() if x not in metadata_cols]
 
             # If all rows have the same Metadata information, that value is valid for the aggregated df
