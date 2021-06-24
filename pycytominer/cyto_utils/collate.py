@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 
+import pycytominer
 from pycytominer.cyto_utils.cells import SingleCells
 
 def run_check_errors(cmd):

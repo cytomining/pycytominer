@@ -453,7 +453,7 @@ class SingleCells(object):
         if "object_feature" not in aggregate_args:
             aggregate_args["object_feature"] = self.object_feature
 
-        object_df = aggregate.aggregate(
+        object_df = aggregate(
             population_df=population_df,
             strata=self.strata,
             compute_object_count=compute_counts,
