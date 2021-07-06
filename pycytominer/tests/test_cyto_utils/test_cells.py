@@ -124,6 +124,7 @@ def test_SingleCells_init():
     pd.testing.assert_frame_equal(
         image_df.sort_index(axis=1), ap.image_df.sort_index(axis=1)
     )
+    assert ap.features == "infer"
     assert ap.subsample_frac == 1
     assert ap_subsample.subsample_frac == 1
     assert ap.subsample_n == "all"
@@ -404,9 +405,9 @@ def test_aggregate_profiles():
 
     # Confirm aggregation after merging single cells
     sc_df = ap.merge_single_cells()
-    sc_aggregated_df = aggregate(
-        sc_df, compute_object_count=True
-    ).sort_index(axis="columns")
+    sc_aggregated_df = aggregate(sc_df, compute_object_count=True).sort_index(
+        axis="columns"
+    )
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis="columns").drop("Metadata_Site_Count", axis="columns"),

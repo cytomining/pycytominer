@@ -271,9 +271,8 @@ def test_custom_objectnumber_feature():
     Testing aggregate pycytominer function
     """
 
-    data_df_copy = (
-        data_df.copy()
-        .rename(columns={'Metadata_ObjectNumber': 'Custom_ObjectNumber_Feature'})
+    data_df_copy = data_df.copy().rename(
+        columns={"Metadata_ObjectNumber": "Custom_ObjectNumber_Feature"}
     )
 
     aggregate_result = aggregate(
@@ -282,7 +281,7 @@ def test_custom_objectnumber_feature():
         features="infer",
         operation="median",
         compute_object_count=True,
-        object_feature='Custom_ObjectNumber_Feature'
+        object_feature="Custom_ObjectNumber_Feature",
     )
 
     expected_result = pd.concat(

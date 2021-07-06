@@ -31,7 +31,7 @@ def aggregate(
         DataFrame to group and aggregate.
     strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
         Columns to groupby and aggregate.
-    features : list of str, default "all"
+    features : list of str, default "infer"
         List of features that should be aggregated.
     operation : str, default "median"
         How the data is aggregated. Currently only supports one of ['mean', 'median'].
