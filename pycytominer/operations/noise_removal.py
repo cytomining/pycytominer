@@ -44,13 +44,3 @@ def noise_removal(
     return features_to_remove
 
 
-# df = pd.read_csv(
-#     'C:/Users/Ruifan/neuronal-cell-painting/1.run-workflows/profiles/NCP_STEM_1/BR_NCP_STEM_1/BR_NCP_STEM_1_normalized.csv.gz',
-#     index_col=0)
-# df = df.dropna(axis=1, how='any')
-# groups = pd.read_csv(
-#     'C:/Users/Ruifan/neuronal-cell-painting/1.run-workflows/profiles/NCP_STEM_1/BR_NCP_STEM_1/BR_NCP_STEM_1_groups.csv',
-#     index_col=0)['group'].tolist()
-#
-# print(groups)
-# print(noise_removal(df, groups))
