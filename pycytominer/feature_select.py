@@ -17,6 +17,7 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
     drop_outlier_features,
 )
+from pycytominer.operations.noise_removal import noise_removal
 
 
 def feature_select(
@@ -34,6 +35,8 @@ def feature_select(
     float_format=None,
     blocklist_file=None,
     outlier_cutoff=15,
+    perturb_list=None,
+    stdev_cutoff=None,
 ):
     """
     Performs feature selection based on the given operation
@@ -73,6 +76,7 @@ def feature_select(
         "drop_na_columns",
         "blocklist",
         "drop_outliers",
+        "noise_removal",
     ]
 
     # Make sure the user provides a supported operation
@@ -133,7 +137,12 @@ def feature_select(
                 samples=samples,
                 outlier_cutoff=outlier_cutoff,
             )
-
+        elif op == "noise_removal":
+            exclude = noise_removal(
+                population_df=profiles,
+                perturb_list=perturb_list,
+                stdev_cutoff=stdev_cutoff
+            )
         excluded_features += exclude
 
     excluded_features = list(set(excluded_features))
