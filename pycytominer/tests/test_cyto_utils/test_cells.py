@@ -490,6 +490,41 @@ def test_aggregate_subsampling_profile_compress():
     pd.testing.assert_frame_equal(result, expected_result)
 
 
+def test_aggregate_subsampling_profile_compress_multiple_queries():
+    compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
+
+    _ = ap_subsample.aggregate_profiles(
+        output_file=compress_file,
+        compute_subsample=True,
+        compression_options={"method": "gzip"},
+        n_strata=1,  # this will force multiple queries from each compartment
+    )
+    result = pd.read_csv(compress_file)
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "Metadata_Site_Count": [1] * 2,
+            "Metadata_Object_Count": [ap_subsample.subsample_n] * 2,
+            "Cells_a": [110.0, 680.5],
+            "Cells_b": [340.5, 201.5],
+            "Cells_c": [285.0, 481.0],
+            "Cells_d": [352.0, 549.0],
+            "Cytoplasm_a": [407.5, 705.5],
+            "Cytoplasm_b": [650.0, 439.5],
+            "Cytoplasm_c": [243.5, 78.5],
+            "Cytoplasm_d": [762.5, 625.0],
+            "Nuclei_a": [683.5, 171.0],
+            "Nuclei_b": [50.5, 625.0],
+            "Nuclei_c": [431.0, 483.0],
+            "Nuclei_d": [519.0, 286.5],
+        }
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
 def test_aggregate_count_cells_multiple_strata():
     # Lauch a sqlite connection
     file = "sqlite:///{}/test_strata.sqlite".format(tmpdir)
