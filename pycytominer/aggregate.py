@@ -62,7 +62,7 @@ def aggregate(
     # Subset the data to specified samples
     if isinstance(subset_data_df, pd.DataFrame):
         population_df = subset_data_df.merge(
-            population_df, how="left", on=subset_data_df.columns.tolist()
+            population_df, how="inner", on=subset_data_df.columns.tolist()
         ).reindex(population_df.columns, axis="columns")
 
     # Subset dataframe to only specified variables if provided
