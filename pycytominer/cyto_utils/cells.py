@@ -541,17 +541,10 @@ class SingleCells(object):
         )
 
         # Obtain all valid strata combinations, and their merge_cols values
-        def _identity_agg(s):
-            if s.nunique() > 1:
-                raise ValueError(
-                    f"The assumption that unique strata correspond "
-                    f"to unique merge_cols is invalid: {s.unique()}"
-                )
-            return s.iloc[0]
-
         df_unique_mergecols = (
-            self.image_df.groupby(self.strata)
-            .agg(lambda s: _identity_agg(s))[self.merge_cols]
+            self.image_df[self.strata + self.merge_cols]
+            .groupby(self.strata)
+            .agg(lambda s: np.unique(s).tolist())
             .reset_index(drop=True)
         )
 
@@ -581,31 +574,42 @@ class SingleCells(object):
             -------
 
                 df:
-                    well | plate | thing3
-                    ---------------------
-                    A01  | x     | 1
-                    A02  | x     | 1
-                    A03  | x     | 1
-                    A01  | y     | 1
+                    TableNumber | ImageNumber
+                    -------------------------
+                    [1]         | [1]
+                    [2]         | [1, 2, 3]
+                    [3]         | [1, 2]
+                    [4]         | [1]
 
-                _sqlite_strata_conditions(df, n=1):
-                    ['(well = "A01" and plate = "x" and thing3 = 1)',
-                     '(well = "A02" and plate = "x" and thing3 = 1)',
-                     '(well = "A03" and plate = "x" and thing3 = 1)',
-                     '(well = "A01" and plate = "y" and thing3 = 1)']
+                dtypes:
+                    {'TableNumber': 'integer', 'ImageNumber': 'integer', 'thing3': 'integer'}
 
-                _sqlite_strata_conditions(df, n=2):
-                    ['(well = "A01" and plate = "x" and thing3 = 1)
-                      or (well = "A02" and plate = "x" and thing3 = 1)',
-                     '(well = "A03" and plate = "x" and thing3 = 1)
-                      or (well = "A01" and plate = "y" and thing3 = 1)']
+                _sqlite_strata_conditions(df,
+                                          dtypes={'TableNumber': 'integer', 'ImageNumber': 'integer'},
+                                          n=1):
+                    ['(TableNumber in (1) and ImageNumber in (1))',
+                     '(TableNumber in (2) and ImageNumber in (1, 2, 3))',
+                     '(TableNumber in (3) and ImageNumber in (1, 2))',
+                     '(TableNumber in (4) and ImageNumber in (1))']
+
+                _sqlite_strata_conditions(df,
+                                          dtypes={'TableNumber': 'text', 'ImageNumber': 'integer'},
+                                          n=2):
+                    ["(TableNumber in ('1') and ImageNumber in (1))
+                      or (TableNumber in ('2') and ImageNumber in (1, 2, 3))",
+                     "(TableNumber in ('3') and ImageNumber in (1, 2))
+                      or (TableNumber in ('4') and ImageNumber in (1))"]
             """
             conditions = []
             for row in df.iterrows():
                 series = row[1]
-                condition_list = [
-                    f"{x} = '{y}'" if dtypes[x] == "text" else f"{x} = {y}"
+                values = [
+                    [f"'{a}'" for a in y] if dtypes[x] == "text" else y
                     for x, y in zip(series.index, series.values)
+                ]  # put quotes around text entries
+                condition_list = [
+                    f"{x} in ({', '.join([str(a) for a in y]) if len(y) > 1 else y[0]})"
+                    for x, y in zip(series.index, values)
                 ]
                 conditions.append(f"({' and '.join(condition_list)})")
             grouped_conditions = [
