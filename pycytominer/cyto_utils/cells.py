@@ -498,8 +498,7 @@ class SingleCells(object):
         n_strata=1,
     ):
         """A generator function that returns chunks of the entire compartment
-        table from disk. Attempts to scale SQLite queries to use most of the
-        available memory.
+        table from disk.
 
         We want to return dataframes with all compartment entries within unique
         combinations of self.merge_cols when aggregated by self.strata
