@@ -583,9 +583,6 @@ class SingleCells(object):
                     [3]         | [1, 2]
                     [4]         | [1]
 
-                dtypes:
-                    {'TableNumber': 'integer', 'ImageNumber': 'integer', 'thing3': 'integer'}
-
                 _sqlite_strata_conditions(df,
                                           dtypes={'TableNumber': 'integer', 'ImageNumber': 'integer'},
                                           n=1):
