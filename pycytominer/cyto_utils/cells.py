@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import psutil
 from sqlalchemy import create_engine
 from pycytominer import aggregate, normalize
 from pycytominer.cyto_utils import (
@@ -402,7 +401,7 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
-        n_strata=None,
+        n_strata=1,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -415,9 +414,9 @@ class SingleCells(object):
         compute_counts : bool, default False
             Whether or not to compute the number of objects in each compartment
             and the number of fields of view per well.
-        n_strata : Optional[int], default None
+        n_strata : int, default 1
             Number of unique strata to pull from the database into working memory
-            at once.  Default of None will attempt to use available memory efficiently.
+            at once.  A larger number does not lead to faster compute times
 
         Returns
         -------
@@ -496,7 +495,7 @@ class SingleCells(object):
     def _compartment_df_generator(
         self,
         compartment,
-        n_strata=None,
+        n_strata=1,
     ):
         """A generator function that returns chunks of the entire compartment
         table from disk. Attempts to scale SQLite queries to use most of the
@@ -509,9 +508,9 @@ class SingleCells(object):
         ----------
         compartment : str
             Compartment to aggregate.
-        n_strata : Optional[int], default None
-            Number of unique strata to query from the database in one iteration.
-            Input value None will attempt to use the available memory efficiently.
+        n_strata : int, default 1
+            Number of unique strata to pull from the database into working memory
+            at once.  A larger number does not lead to faster compute times
 
         Yields
         ------
@@ -521,6 +520,10 @@ class SingleCells(object):
             between chunks, and thus groupby aggregations are valid
 
         """
+
+        assert (
+            n_strata > 0
+        ), "Number of strata to pull into memory at once (n_strata) must be > 0"
 
         # Columns of the compartment table we will obtain
         cols = "*"
@@ -623,20 +626,6 @@ class SingleCells(object):
             df=df_unique_mergecols.head(1),
             dtypes=dtype_dict,
         )[0]
-
-        if n_strata is None:
-
-            # Grab first unique stratum and see how large the dataframe is
-            single_stratum_query = (
-                f"select {cols} from {compartment} where {first_stratum_condition}"
-            )
-            df_stratum1 = pd.read_sql(sql=single_stratum_query, con=self.conn)
-
-            # Compute a reasonable number of unique strata to grab at once
-            avail_mem = psutil.virtual_memory().available
-            single_stratum_mem = df_stratum1.memory_usage(deep=True).sum()
-            approx_n = int(np.floor(0.75 * avail_mem / single_stratum_mem).item())
-            n_strata = min(len(df_unique_mergecols), max(1, approx_n))
 
         # Group the unique strata values into a list of SQLite condition strings
         # Find unique aggregated strata for the output
@@ -802,7 +791,7 @@ class SingleCells(object):
         output_file="none",
         compression_options=None,
         float_format=None,
-        n_strata=None,
+        n_strata=1,
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -817,9 +806,9 @@ class SingleCells(object):
             Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
         float_format : str, optional
             Decimal precision to use in writing output file.
-        n_strata : Optional[int], default None
+        n_strata : int, default 1
             Number of unique strata to pull from the database into working memory
-            at once.  Default of None will attempt to use available memory efficiently.
+            at once.  A larger number does not lead to faster compute times
 
         Returns
         -------
