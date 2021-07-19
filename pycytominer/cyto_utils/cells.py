@@ -401,7 +401,7 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
-        n_strata=1,
+        n_aggregation_memory_strata=1,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -414,9 +414,9 @@ class SingleCells(object):
         compute_counts : bool, default False
             Whether or not to compute the number of objects in each compartment
             and the number of fields of view per well.
-        n_strata : int, default 1
+        n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
-            at once.  A larger number does not lead to faster compute times
+            at once.  Typically 1 is fastest.  A larger number uses more memory.
 
         Returns
         -------
@@ -438,7 +438,8 @@ class SingleCells(object):
         # Iteratively call aggregate() on chunks of the full compartment table
         object_dfs = []
         for compartment_df in self._compartment_df_generator(
-            compartment=compartment, n_strata=n_strata
+            compartment=compartment,
+            n_aggregation_memory_strata=n_aggregation_memory_strata,
         ):
 
             population_df = self.image_df.merge(
@@ -495,7 +496,7 @@ class SingleCells(object):
     def _compartment_df_generator(
         self,
         compartment,
-        n_strata=1,
+        n_aggregation_memory_strata=1,
     ):
         """A generator function that returns chunks of the entire compartment
         table from disk.
@@ -507,13 +508,13 @@ class SingleCells(object):
         ----------
         compartment : str
             Compartment to aggregate.
-        n_strata : int, default 1
+        n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
-            at once.  A larger number does not lead to faster compute times
+            at once.  Typically 1 is fastest.  A larger number uses more memory.
 
-        Yields
-        ------
-        image_df : pandas.core.frame.DataFrame
+        Returns
+        -------
+        image_df : Iterator[pandas.core.frame.DataFrame]
             A generator whose __next__() call returns a chunk of the compartment
             table, where rows comprising a unique aggregation stratum are not split
             between chunks, and thus groupby aggregations are valid
@@ -521,10 +522,10 @@ class SingleCells(object):
         """
 
         assert (
-            n_strata > 0
-        ), "Number of strata to pull into memory at once (n_strata) must be > 0"
+            n_aggregation_memory_strata > 0
+        ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
 
-        # Columns of the compartment table we will obtain
+        # Obtain data types of all columns of the compartment table
         cols = "*"
         compartment_row1 = pd.read_sql(
             sql=f"select {cols} from {compartment} limit 1",
@@ -550,85 +551,12 @@ class SingleCells(object):
             .reset_index(drop=True)
         )
 
-        def _sqlite_strata_conditions(df, dtypes, n=1):
-            """Given a dataframe with columns as strata and rows as unique value
-            combinations, return a list of strings which constitute valid SQLite
-            conditional statements.
-
-            Parameters
-            ----------
-            df : pandas.core.frame.DataFrame
-                A dataframe with columns as strata and rows as unique value combos
-
-            dtypes : Dict[str, str]
-                Dictionary to look up SQLite datatype based on column name
-
-            n : int
-                Number of rows of the input df to combine in each conditional
-                statement
-
-            Returns
-            -------
-            grouped_conditions : List[str]
-                A list of strings, each string being a valid SQLite conditional
-
-            Example
-            -------
-
-                df:
-                    TableNumber | ImageNumber
-                    -------------------------
-                    [1]         | [1]
-                    [2]         | [1, 2, 3]
-                    [3]         | [1, 2]
-                    [4]         | [1]
-
-                _sqlite_strata_conditions(df,
-                                          dtypes={'TableNumber': 'integer', 'ImageNumber': 'integer'},
-                                          n=1):
-                    ['(TableNumber in (1) and ImageNumber in (1))',
-                     '(TableNumber in (2) and ImageNumber in (1, 2, 3))',
-                     '(TableNumber in (3) and ImageNumber in (1, 2))',
-                     '(TableNumber in (4) and ImageNumber in (1))']
-
-                _sqlite_strata_conditions(df,
-                                          dtypes={'TableNumber': 'text', 'ImageNumber': 'integer'},
-                                          n=2):
-                    ["(TableNumber in ('1') and ImageNumber in (1))
-                      or (TableNumber in ('2') and ImageNumber in (1, 2, 3))",
-                     "(TableNumber in ('3') and ImageNumber in (1, 2))
-                      or (TableNumber in ('4') and ImageNumber in (1))"]
-            """
-            conditions = []
-            for row in df.iterrows():
-                series = row[1]
-                values = [
-                    [f"'{a}'" for a in y] if dtypes[x] == "text" else y
-                    for x, y in zip(series.index, series.values)
-                ]  # put quotes around text entries
-                condition_list = [
-                    f"{x} in ({', '.join([str(a) for a in y]) if len(y) > 1 else y[0]})"
-                    for x, y in zip(series.index, values)
-                ]
-                conditions.append(f"({' and '.join(condition_list)})")
-            grouped_conditions = [
-                " or ".join(conditions[i : (i + n)])
-                for i in range(0, len(conditions), n)
-            ]
-            return grouped_conditions
-
-        # Translate the first strata combination into a SQLite condition string
-        first_stratum_condition = _sqlite_strata_conditions(
-            df=df_unique_mergecols.head(1),
-            dtypes=dtype_dict,
-        )[0]
-
         # Group the unique strata values into a list of SQLite condition strings
         # Find unique aggregated strata for the output
         strata_conditions = _sqlite_strata_conditions(
             df=df_unique_mergecols,
             dtypes=dtype_dict,
-            n=n_strata,
+            n=n_aggregation_memory_strata,
         )
 
         # The generator, for each group of compartment values
@@ -787,7 +715,7 @@ class SingleCells(object):
         output_file="none",
         compression_options=None,
         float_format=None,
-        n_strata=1,
+        n_aggregation_memory_strata=1,
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -802,9 +730,9 @@ class SingleCells(object):
             Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
         float_format : str, optional
             Decimal precision to use in writing output file.
-        n_strata : int, default 1
+        n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
-            at once.  A larger number does not lead to faster compute times
+            at once.  Typically 1 is fastest.  A larger number uses more memory.
 
         Returns
         -------
@@ -823,12 +751,13 @@ class SingleCells(object):
                     compartment=compartment,
                     compute_subsample=compute_subsample,
                     compute_counts=True,
-                    n_strata=n_strata,
+                    n_aggregation_memory_strata=n_aggregation_memory_strata,
                 )
             else:
                 aggregated = aggregated.merge(
                     self.aggregate_compartment(
-                        compartment=compartment, n_strata=n_strata
+                        compartment=compartment,
+                        n_aggregation_memory_strata=n_aggregation_memory_strata,
                     ),
                     on=self.strata,
                     how="inner",
@@ -846,3 +775,67 @@ class SingleCells(object):
             )
         else:
             return aggregated
+
+
+def _sqlite_strata_conditions(df, dtypes, n=1):
+    """Given a dataframe where columns are merge_cols and rows are unique
+    value combinations that appear as aggregation strata, return a list
+    of strings which constitute valid SQLite conditional statements.
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        A dataframe where columns are merge_cols and rows represent
+        unique aggregation strata of the compartment table
+    dtypes : Dict[str, str]
+        Dictionary to look up SQLite datatype based on column name
+    n : int
+        Number of rows of the input df to combine in each output
+        conditional statement. n=1 means each row of the input will
+        correspond to one string in the output list. n=2 means one
+        string in the output list is comprised of two rows from the
+        input df.
+
+    Returns
+    -------
+    grouped_conditions : List[str]
+        A list of strings, each string being a valid SQLite conditional
+
+    Examples
+    --------
+    Suppose df looks like this:
+        TableNumber | ImageNumber
+        =========================
+        [1]         | [1]
+        [2]         | [1, 2, 3]
+        [3]         | [1, 2]
+        [4]         | [1]
+
+    >>> _sqlite_strata_conditions(df, dtypes={'TableNumber': 'integer', 'ImageNumber': 'integer'}, n=1)
+    ["(TableNumber in (1) and ImageNumber in (1))",
+     "(TableNumber in (2) and ImageNumber in (1, 2, 3))",
+     "(TableNumber in (3) and ImageNumber in (1, 2))",
+     "(TableNumber in (4) and ImageNumber in (1))"]
+
+    >>> _sqlite_strata_conditions(df, dtypes={'TableNumber': 'text', 'ImageNumber': 'integer'}, n=2)
+    ["(TableNumber in ('1') and ImageNumber in (1))
+      or (TableNumber in ('2') and ImageNumber in (1, 2, 3))",
+     "(TableNumber in ('3') and ImageNumber in (1, 2))
+      or (TableNumber in ('4') and ImageNumber in (1))"]
+    """
+    conditions = []
+    for row in df.iterrows():
+        series = row[1]
+        values = [
+            [f"'{a}'" for a in y] if dtypes[x] == "text" else y
+            for x, y in zip(series.index, series.values)
+        ]  # put quotes around text entries
+        condition_list = [
+            f"{x} in ({', '.join([str(a) for a in y]) if len(y) > 1 else y[0]})"
+            for x, y in zip(series.index, values)
+        ]
+        conditions.append(f"({' and '.join(condition_list)})")
+    grouped_conditions = [
+        " or ".join(conditions[i : (i + n)]) for i in range(0, len(conditions), n)
+    ]
+    return grouped_conditions
