@@ -72,3 +72,16 @@ However, the initial use case was developed for processing image-based profiling
 And, more specifically than that, image-based profiling readouts from [CellProfiler](https://github.com/CellProfiler) measurements from [Cell Painting](https://www.nature.com/articles/nprot.2016.105) data.
 
 Therefore, we have included some custom tools in `pycytominer/cyto_utils`.
+
+## Citation
+
+Please support computational biology by citing software.
+If you have used pycytominer in your project, please cite us as:
+
+> @software{pycytominer,
+  author = {Way, G.P., Chandrasekaran, N., Bornholdt, M., Tsang, H., Adeboye, A., Cimini, B., Weisbart, E., Jamali, N., Ryder, P., Singh, S., Carpenter, A.E.},
+  title = {Pycytominer: Data processing functions for profiling perturbations},
+  url = {https://github.com/cytomining/pycytominer},
+  version = {0.1},
+  date = {2021},
+}
