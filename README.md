@@ -80,7 +80,7 @@ If you have used pycytominer in your project, please cite us as:
 
 ```
 @software{pycytominer,
-  author = {Way, G.P., Chandrasekaran, N., Bornholdt, M., Tsang, H., Adeboye, A., Cimini, B., Weisbart, E., Jamali, N., Ryder, P., Singh, S., Carpenter, A.E.},
+  author = {Way, G.P., Chandrasekaran, N., Bornholdt, M., Tsang, H., Adeboye, A., Cimini, B., Weisbart, E., Ryder, P., Stirling, D., Jamali, N., Carpenter, A.E., Singh, S.},
   title = {Pycytominer: Data processing functions for profiling perturbations},
   url = {https://github.com/cytomining/pycytominer},
   version = {0.1},
