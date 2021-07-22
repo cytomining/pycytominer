@@ -417,6 +417,9 @@ class SingleCells(object):
         n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
             at once.  Typically 1 is fastest.  A larger number uses more memory.
+            For example, if aggregating by "well", then n_aggregation_memory_strata=1
+            means that one "well" will be pulled from the SQLite database into
+            memory at a time.
 
         Returns
         -------
@@ -536,10 +539,13 @@ class SingleCells(object):
             sql=f"select {typeof_str} from {compartment} limit 1",
             con=self.conn,
         )
+        # Strip the characters "typeof(" from the beginning and ")" from the end of
+        # compartment column names returned by SQLite
+        strip_typeof = lambda s: s[7:-1]
         dtype_dict = dict(
             zip(
-                [s[7:-1] for s in compartment_dtypes.columns],  # strip typeof( )
-                compartment_dtypes.iloc[0].values,
+                [strip_typeof(s) for s in compartment_dtypes.columns],  # column names
+                compartment_dtypes.iloc[0].values,  # corresponding data types
             )
         )
 
