@@ -140,6 +140,7 @@ def feature_select(
         elif op == "noise_removal":
             exclude = noise_removal(
                 population_df=profiles,
+                features=features,
                 perturb_list=perturb_list,
                 stdev_cutoff=stdev_cutoff
             )
