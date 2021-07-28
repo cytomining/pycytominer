@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from pycytominer import aggregate
+from pycytominer.aggregate import aggregate
 from pycytominer.cyto_utils.cells import SingleCells
 
 def run_check_errors(cmd):
