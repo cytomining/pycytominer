@@ -28,4 +28,3 @@ from .write_gct import write_gct
 from .modz import modz
 from .annotate_custom import annotate_cmap, cp_clean
 from .DeepProfiler_processing import AggregateDeepProfiler
-from .collate import collate
