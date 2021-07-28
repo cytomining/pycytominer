@@ -2,8 +2,8 @@ import os
 import subprocess
 import sys
 
-from pycytominer.aggregate import aggregate
 from pycytominer.cyto_utils.cells import SingleCells
+from pycytominer import aggregate
 
 def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
