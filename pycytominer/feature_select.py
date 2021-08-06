@@ -36,31 +36,58 @@ def feature_select(
     blocklist_file=None,
     outlier_cutoff=15,
 ):
-    """
-    Performs feature selection based on the given operation
+    """Performs feature selection based on the given operation.
 
-    Arguments:
-    profiles - either pandas DataFrame or a file that stores profile data
-    features - [default: "infer"] list of cell painting features
-               if "infer", then assume cell painting features are those that start with
-               "Cells", "Nuclei", or "Cytoplasm"
-    image_features - [default: False] Whether the profiles contain image features
-    samples - [default: "all"] if provided, a list of samples to provide operation on
-              if "all", use all samples to calculate
-    operation - [default: "variance_threshold"] str or list of given operations to perform on input profiles.
-                See all_ops for available operations.
-    output_file - [default: "none"] if provided, will write annotated profiles to file
-                  if not specified, will return the annotated profiles. We recommend
-                  that this output file be suffixed with
-                  "_normalized_variable_selected.csv".
-    na_cutoff - [default: 0.05] proportion of missing values in a column to tolerate before removing
-    corr_threshold - [default: 0.9] float between (0, 1) to exclude features above if any
-                     two features are correlated above this threshold.
-    freq_cut - [default: 0.1] float of ratio (2nd most common feature val / most common)
-    unique_cut - [default: 0.1] float of ratio (num unique features / num samples)
-    compression - [default: None] the mechanism to compress. See cyto_utils/output.py for options.
-    float_format - [default: None] decimal precision to use in writing output file
-                   For example, use "%.3g" for 3 decimal precision.
+    Parameters
+    ----------
+    profiles : pandas.core.frame.DataFrame or file
+        DataFrame or file of profiles.
+    features : list
+        A list of strings corresponding to feature measurement column names in the
+        `profiles` DataFrame. All features listed must be found in `profiles`.
+        Defaults to "infer". If "infer", then assume cell painting features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
+    image_features: bool, default False
+        Whether the profiles contain image features.
+    samples : list or str, default "all"
+        Samples to provide operation on.
+    operation: list of str or str, default "variance_threshold
+        Operations to perform on the input profiles.
+    output_file : str, optional
+        If provided, will write annotated profiles to file. If not specified, will
+        return the normalized profiles as output. We recommend that this output file be
+        suffixed with "_normalized_variable_selected.csv".
+    na_cutoff : float, default 0.05
+        Proportion of missing values in a column to tolerate before removing.
+    corr_threshold : float, default 0.1
+        Value between (0, 1) to exclude features above if any two features are correlated above this threshold.
+    corr_method : str, default "pearson"
+        Correlation type to compute. Allowed methods are "spearman", "kendall" and "pearson".
+    freq_cut : float, default 0.1
+        Ratio (2nd most common feature val / most common).
+    unique_cut: float, default 0.1
+        Ratio (num unique features / num samples).
+    compression_options : dict, optional
+        Contain compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
+    float_format : str, optional
+        Decimal precision to use in writing output file as input to
+        pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
+        decimal precision.
+    blocklist_file : str, optional
+        File location of datafrmame with with features to exclude. Note that if "blocklist" in operation then will remove standard blocklist
+    outlier_cutoff : float, default 15
+        The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied (and therefore the default is uitable) for after normalization.
+
+    Returns
+    -------
+    selected_df : pandas.core.frame.DataFrame, optional
+        The feature selected profile DataFrame. If output_file="none", then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
+
+    """
+    """
     blocklist_file - [default: None] file location of dataframe with features to exclude
                      Note that if "blocklist" in operation then will remove standard
                      blocklist
@@ -69,6 +96,7 @@ def feature_select(
                      procedure is typically applied (and therefore the default is
                      suitable) for after normalization.
     """
+
     all_ops = [
         "variance_threshold",
         "correlation_threshold",

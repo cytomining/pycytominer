@@ -45,14 +45,19 @@ def aggregate(
     subset_data_df : pandas.core.frame.DataFrame
         How to subset the input.
     compression_options : str, optional
-        The mechanism to compress.
+        Contain compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
     float_format : str, optional
-        Decimal precision to use in writing output file.
+        Decimal precision to use in writing output file as input to
+        pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
+        decimal precision.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame of aggregated features.
+    population_df : pandas.core.frame.DataFrame, optional
+        DataFrame of aggregated features. If output_file="none", then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
 
     """
 
