@@ -427,7 +427,7 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
-        image_features=False,
+        add_image_features=False,
         n_aggregation_memory_strata=1,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
@@ -441,7 +441,7 @@ class SingleCells(object):
         compute_counts : bool, default False
             Whether or not to compute the number of objects in each compartment
             and the number of fields of view per well.
-        image_features : bool, default False
+        add_image_features : bool, default False
             Whether or not to add image features.
         n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
@@ -512,7 +512,7 @@ class SingleCells(object):
                     )
                 )
 
-                if image_features:
+                if add_image_features:
                     for col in list(self.image_cols):
                         if col in self.image_features_df.columns:
                             self.image_features_df = self.image_features_df.drop(
@@ -806,7 +806,7 @@ class SingleCells(object):
                     compartment=compartment,
                     compute_subsample=compute_subsample,
                     compute_counts=True,
-                    image_features=self.add_image_features,
+                    add_image_features=self.add_image_features,
                     n_aggregation_memory_strata=n_aggregation_memory_strata,
                 )
             else:
