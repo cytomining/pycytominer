@@ -22,6 +22,7 @@ from pycytominer.cyto_utils import (
 def feature_select(
     profiles,
     features="infer",
+    image_features=False,
     samples="all",
     operation="variance_threshold",
     output_file="none",
@@ -43,6 +44,7 @@ def feature_select(
     features - [default: "infer"] list of cell painting features
                if "infer", then assume cell painting features are those that start with
                "Cells", "Nuclei", or "Cytoplasm"
+    image_features - [default: False] Whether the profiles contain image features
     samples - [default: "all"] if provided, a list of samples to provide operation on
               if "all", use all samples to calculate
     operation - [default: "variance_threshold"] str or list of given operations to perform on input profiles.
@@ -92,7 +94,7 @@ def feature_select(
     profiles = load_profiles(profiles)
 
     if features == "infer":
-        features = infer_cp_features(profiles)
+        features = infer_cp_features(profiles, image_features=image_features)
 
     excluded_features = []
     for op in operation:

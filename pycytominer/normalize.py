@@ -16,6 +16,7 @@ from pycytominer.operations import Spherize, RobustMAD
 def normalize(
     profiles,
     features="infer",
+    image_features=False,
     meta_features="infer",
     samples="all",
     method="standardize",
@@ -37,6 +38,8 @@ def normalize(
         `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume cell painting features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
+    image_features: bool
+        Whether the profiles contain image features. Defaults to False.
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
@@ -134,7 +137,7 @@ def normalize(
         )
 
     if features == "infer":
-        features = infer_cp_features(profiles)
+        features = infer_cp_features(profiles, image_features=image_features)
 
     # Separate out the features and meta
     feature_df = profiles.loc[:, features]

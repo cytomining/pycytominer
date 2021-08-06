@@ -41,7 +41,9 @@ class SingleCells(object):
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
         Columns to select from the image table.
-    feature: str or list of str, default "infer"
+    add_image_features: bool, default False
+        Whether to add image features.
+    features: str or list of str, default "infer"
         List of features that should be aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
@@ -80,6 +82,7 @@ class SingleCells(object):
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
         image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
+        add_image_features=False,
         features="infer",
         load_image_data=True,
         subsample_frac=1,
@@ -108,6 +111,7 @@ class SingleCells(object):
         self.output_file = output_file
         self.merge_cols = merge_cols
         self.image_cols = image_cols
+        self.add_image_features = add_image_features
         self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
@@ -244,11 +248,28 @@ class SingleCells(object):
 
         """
 
-        # Extract image metadata
-        image_query = "select {} from image".format(
-            ", ".join(np.union1d(self.image_cols, self.strata))
-        )
+        image_query = "select * from image"
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
+
+        if self.add_image_features:
+            image_features = list(
+                self.image_df.columns[
+                    self.image_df.columns.str.startswith("Texture")
+                    | self.image_df.columns.str.startswith("Granularity")
+                ]
+            )
+            image_features_df = self.image_df[image_features]
+            other_features_df = self.image_df[
+                list(np.union1d(self.image_cols, self.strata))
+            ]
+            image_features_df = image_features_df.add_prefix("Image_")
+            self.image_features_df = pd.concat(
+                [other_features_df, image_features_df], axis=1
+            )
+
+        all_features = list(np.union1d(self.image_cols, self.strata))
+        self.image_df = self.image_df[all_features]
+
         if self.fields_of_view != "all":
             check_fields_of_view(
                 list(np.unique(self.image_df[self.fields_of_view_feature])),
@@ -257,6 +278,11 @@ class SingleCells(object):
             self.image_df = self.image_df.query(
                 f"{self.fields_of_view_feature}==@self.fields_of_view"
             )
+
+            if self.add_image_features:
+                self.image_features_df = self.image_features_df.query(
+                    f"{self.fields_of_view_feature}==@self.fields_of_view"
+                )
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
@@ -401,6 +427,7 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
+        image_features=False,
         n_aggregation_memory_strata=1,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
@@ -414,6 +441,8 @@ class SingleCells(object):
         compute_counts : bool, default False
             Whether or not to compute the number of objects in each compartment
             and the number of fields of view per well.
+        image_features : bool, default False
+            Whether or not to add image features.
         n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
             at once.  Typically 1 is fastest.  A larger number uses more memory.
@@ -482,6 +511,26 @@ class SingleCells(object):
                         }
                     )
                 )
+
+                if image_features:
+                    for col in list(self.image_cols):
+                        if col in self.image_features_df.columns:
+                            self.image_features_df = self.image_features_df.drop(
+                                [col], axis="columns"
+                            )
+
+                    image_features_df = self.image_features_df.groupby(
+                        self.strata, dropna=False
+                    )
+
+                    if self.aggregation_operation == "median":
+                        image_features_df = image_features_df.median().reset_index()
+                    else:
+                        image_features_df = image_features_df.mean().reset_index()
+
+                    fields_count_df = fields_count_df.merge(
+                        image_features_df, on=self.strata, how="left"
+                    )
 
                 partial_object_df = fields_count_df.merge(
                     partial_object_df,
@@ -757,6 +806,7 @@ class SingleCells(object):
                     compartment=compartment,
                     compute_subsample=compute_subsample,
                     compute_counts=True,
+                    image_features=self.add_image_features,
                     n_aggregation_memory_strata=n_aggregation_memory_strata,
                 )
             else:

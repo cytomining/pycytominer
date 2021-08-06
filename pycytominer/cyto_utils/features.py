@@ -67,13 +67,19 @@ def label_compartment(cp_features, compartment, metadata_cols):
 
 
 def infer_cp_features(
-    population_df, compartments=["Cells", "Nuclei", "Cytoplasm"], metadata=False
+    population_df,
+    compartments=["Cells", "Nuclei", "Cytoplasm"],
+    metadata=False,
+    image_features=False,
 ):
     """
     Given a dataframe, output features that we expect to be cell painting features
     """
     compartments = convert_compartment_format_to_list(compartments)
     compartments = [x.title() for x in compartments]
+
+    if image_features:
+        compartments = ["Image"] + compartments
 
     features = []
     for col in population_df.columns.tolist():
