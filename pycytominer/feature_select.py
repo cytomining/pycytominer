@@ -9,6 +9,7 @@ from pycytominer.operations import (
     correlation_threshold,
     variance_threshold,
     get_na_columns,
+    noise_removal
 )
 from pycytominer.cyto_utils import (
     load_profiles,
@@ -17,7 +18,6 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
     drop_outlier_features,
 )
-from pycytominer.operations.noise_removal import noise_removal
 
 
 def feature_select(
@@ -69,6 +69,8 @@ def feature_select(
                      across a full experiment is excluded. Note that this
                      procedure is typically applied (and therefore the default is
                      suitable) for after normalization.
+    perturb_list - [default: None] list of perturbation groups corresponding to rows in profiles
+    stdev_cutoff - [default: None] maximum mean feature standard deviation to be kept for noise removal
     """
     all_ops = [
         "variance_threshold",

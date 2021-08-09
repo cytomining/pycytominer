@@ -92,13 +92,6 @@ def test_feature_select_noise_removal():
     pd.testing.assert_frame_equal(result2, expected_result2)
     pd.testing.assert_frame_equal(result3, expected_result3)
 
-    # Test assertion error for insufficient non-NaN data
-    try:
-        feature_select(data_feature_infer_df, features='infer', operation='noise_removal', perturb_list=data_df_groups,
-                       stdev_cutoff=3.5)
-    except Exception as e:
-        assert isinstance(e, AssertionError)
-
     # Test on data_unique_test_df
     data_unique_test_df_groups = []
     for elem in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']:
