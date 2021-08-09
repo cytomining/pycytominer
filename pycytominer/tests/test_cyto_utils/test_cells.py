@@ -6,7 +6,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from pycytominer import aggregate, normalize
-from pycytominer.cyto_utils.cells import SingleCells
+from pycytominer.cyto_utils.cells import SingleCells, _sqlite_strata_conditions
 from pycytominer.cyto_utils import (
     get_default_linking_cols,
     get_default_compartments,
@@ -488,6 +488,95 @@ def test_aggregate_subsampling_profile_compress():
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_aggregate_subsampling_profile_compress_multiple_queries():
+    compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
+
+    _ = ap_subsample.aggregate_profiles(
+        output_file=compress_file,
+        compute_subsample=True,
+        compression_options={"method": "gzip"},
+        n_aggregation_memory_strata=1,  # this will force multiple queries from each compartment
+    )
+    result = pd.read_csv(compress_file)
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "Metadata_Site_Count": [1] * 2,
+            "Metadata_Object_Count": [ap_subsample.subsample_n] * 2,
+            "Cells_a": [110.0, 680.5],
+            "Cells_b": [340.5, 201.5],
+            "Cells_c": [285.0, 481.0],
+            "Cells_d": [352.0, 549.0],
+            "Cytoplasm_a": [407.5, 705.5],
+            "Cytoplasm_b": [650.0, 439.5],
+            "Cytoplasm_c": [243.5, 78.5],
+            "Cytoplasm_d": [762.5, 625.0],
+            "Nuclei_a": [683.5, 171.0],
+            "Nuclei_b": [50.5, 625.0],
+            "Nuclei_c": [431.0, 483.0],
+            "Nuclei_d": [519.0, 286.5],
+        }
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_n_aggregation_memory_strata():
+
+    df_n1 = ap.aggregate_profiles(n_aggregation_memory_strata=1)
+    df_n2 = ap.aggregate_profiles(n_aggregation_memory_strata=2)
+    df_n3 = ap.aggregate_profiles(n_aggregation_memory_strata=3)
+    df_n_large = ap.aggregate_profiles(n_aggregation_memory_strata=1000)
+
+    pd.testing.assert_frame_equal(df_n1, df_n2)
+    pd.testing.assert_frame_equal(df_n1, df_n3)
+    pd.testing.assert_frame_equal(df_n1, df_n_large)
+
+
+def test_invalid_n_aggregation_memory_strata():
+    # expect an AssertionError when an invalid parameter value is specified
+    with pytest.raises(AssertionError):
+        ap.aggregate_profiles(n_aggregation_memory_strata=0)
+
+
+def test_sqlite_strata_conditions():
+
+    df = pd.DataFrame(
+        data={
+            "TableNumber": [[1], [2], [3], [4]],
+            "ImageNumber": [[1], [1, 2, 3], [1, 2], [1]],
+        }
+    )
+
+    n1_expected_output = [
+        "(TableNumber in (1) and ImageNumber in (1))",
+        "(TableNumber in (2) and ImageNumber in (1, 2, 3))",
+        "(TableNumber in (3) and ImageNumber in (1, 2))",
+        "(TableNumber in (4) and ImageNumber in (1))",
+    ]
+    out1 = _sqlite_strata_conditions(
+        df=df,
+        dtypes={"TableNumber": "integer", "ImageNumber": "integer"},
+        n=1,
+    )
+    for s1, s2 in zip(n1_expected_output, out1):
+        assert s1 == s2
+
+    n2_expected_output = [
+        "(TableNumber in ('1') and ImageNumber in (1)) or (TableNumber in ('2') and ImageNumber in (1, 2, 3))",
+        "(TableNumber in ('3') and ImageNumber in (1, 2)) or (TableNumber in ('4') and ImageNumber in (1))",
+    ]
+    out2 = _sqlite_strata_conditions(
+        df=df,
+        dtypes={"TableNumber": "text", "ImageNumber": "integer"},
+        n=2,
+    )
+    for s1, s2 in zip(n2_expected_output, out2):
+        assert s1 == s2
 
 
 def test_aggregate_count_cells_multiple_strata():
