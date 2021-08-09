@@ -401,6 +401,7 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
+        n_aggregation_memory_strata=1,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
@@ -411,7 +412,14 @@ class SingleCells(object):
         compute_subsample : bool, default False
             Whether or not to subsample.
         compute_counts : bool, default False
-            Whether or not to compute the number of objects in each compartment and the number of fields of view per well.
+            Whether or not to compute the number of objects in each compartment
+            and the number of fields of view per well.
+        n_aggregation_memory_strata : int, default 1
+            Number of unique strata to pull from the database into working memory
+            at once.  Typically 1 is fastest.  A larger number uses more memory.
+            For example, if aggregating by "well", then n_aggregation_memory_strata=1
+            means that one "well" will be pulled from the SQLite database into
+            memory at a time.
 
         Returns
         -------
@@ -430,45 +438,140 @@ class SingleCells(object):
             self.load_image()
             self.load_image_data = True
 
-        population_df = self.image_df.merge(
-            self.load_compartment(compartment=compartment),
-            how="inner",
-            on=self.merge_cols,
-        ).rename(self.linking_col_rename, axis="columns")
+        # Iteratively call aggregate() on chunks of the full compartment table
+        object_dfs = []
+        for compartment_df in self._compartment_df_generator(
+            compartment=compartment,
+            n_aggregation_memory_strata=n_aggregation_memory_strata,
+        ):
 
-        if self.features == "infer":
-            aggregate_features = infer_cp_features(
-                population_df, compartments=compartment
-            )
-        else:
-            aggregate_features = self.features
+            population_df = self.image_df.merge(
+                compartment_df,
+                how="inner",
+                on=self.merge_cols,
+            ).rename(self.linking_col_rename, axis="columns")
 
-        object_df = aggregate(
-            population_df=population_df,
-            strata=self.strata,
-            compute_object_count=compute_counts,
-            operation=self.aggregation_operation,
-            subset_data_df=self.subset_data_df,
-            features=aggregate_features,
-            object_feature=self.object_feature,
-        )
-
-        if compute_counts and self.fields_of_view_feature not in self.strata:
-            fields_count_df = self.image_df.loc[
-                :, list(np.union1d(self.strata, self.fields_of_view_feature))
-            ]
-            fields_count_df = (
-                fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
-                .count()
-                .reset_index()
-                .rename(
-                    columns={f"{self.fields_of_view_feature}": f"Metadata_Site_Count"}
+            if self.features == "infer":
+                aggregate_features = infer_cp_features(
+                    population_df, compartments=compartment
                 )
+            else:
+                aggregate_features = self.features
+
+            partial_object_df = aggregate(
+                population_df=population_df,
+                strata=self.strata,
+                compute_object_count=compute_counts,
+                operation=self.aggregation_operation,
+                subset_data_df=self.subset_data_df,
+                features=aggregate_features,
+                object_feature=self.object_feature,
             )
 
-            object_df = fields_count_df.merge(object_df, on=self.strata, how="right")
+            if compute_counts and self.fields_of_view_feature not in self.strata:
+                fields_count_df = self.image_df.loc[
+                    :, list(np.union1d(self.strata, self.fields_of_view_feature))
+                ]
+                fields_count_df = (
+                    fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
+                    .count()
+                    .reset_index()
+                    .rename(
+                        columns={
+                            f"{self.fields_of_view_feature}": f"Metadata_Site_Count"
+                        }
+                    )
+                )
+
+                partial_object_df = fields_count_df.merge(
+                    partial_object_df,
+                    on=self.strata,
+                    how="right",
+                )
+
+            object_dfs.append(partial_object_df)
+
+        # Concatenate one or more aggregated dataframes row-wise into final output
+        object_df = pd.concat(object_dfs, axis=0).reset_index(drop=True)
 
         return object_df
+
+    def _compartment_df_generator(
+        self,
+        compartment,
+        n_aggregation_memory_strata=1,
+    ):
+        """A generator function that returns chunks of the entire compartment
+        table from disk.
+
+        We want to return dataframes with all compartment entries within unique
+        combinations of self.merge_cols when aggregated by self.strata
+
+        Parameters
+        ----------
+        compartment : str
+            Compartment to aggregate.
+        n_aggregation_memory_strata : int, default 1
+            Number of unique strata to pull from the database into working memory
+            at once.  Typically 1 is fastest.  A larger number uses more memory.
+
+        Returns
+        -------
+        image_df : Iterator[pandas.core.frame.DataFrame]
+            A generator whose __next__() call returns a chunk of the compartment
+            table, where rows comprising a unique aggregation stratum are not split
+            between chunks, and thus groupby aggregations are valid
+
+        """
+
+        assert (
+            n_aggregation_memory_strata > 0
+        ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
+
+        # Obtain data types of all columns of the compartment table
+        cols = "*"
+        compartment_row1 = pd.read_sql(
+            sql=f"select {cols} from {compartment} limit 1",
+            con=self.conn,
+        )
+        typeof_str = ", ".join([f"typeof({x})" for x in compartment_row1.columns])
+        compartment_dtypes = pd.read_sql(
+            sql=f"select {typeof_str} from {compartment} limit 1",
+            con=self.conn,
+        )
+        # Strip the characters "typeof(" from the beginning and ")" from the end of
+        # compartment column names returned by SQLite
+        strip_typeof = lambda s: s[7:-1]
+        dtype_dict = dict(
+            zip(
+                [strip_typeof(s) for s in compartment_dtypes.columns],  # column names
+                compartment_dtypes.iloc[0].values,  # corresponding data types
+            )
+        )
+
+        # Obtain all valid strata combinations, and their merge_cols values
+        df_unique_mergecols = (
+            self.image_df[self.strata + self.merge_cols]
+            .groupby(self.strata)
+            .agg(lambda s: np.unique(s).tolist())
+            .reset_index(drop=True)
+        )
+
+        # Group the unique strata values into a list of SQLite condition strings
+        # Find unique aggregated strata for the output
+        strata_conditions = _sqlite_strata_conditions(
+            df=df_unique_mergecols,
+            dtypes=dtype_dict,
+            n=n_aggregation_memory_strata,
+        )
+
+        # The generator, for each group of compartment values
+        for strata_condition in strata_conditions:
+            specific_compartment_query = (
+                f"select {cols} from {compartment} where {strata_condition}"
+            )
+            image_df_chunk = pd.read_sql(sql=specific_compartment_query, con=self.conn)
+            yield image_df_chunk
 
     def merge_single_cells(
         self,
@@ -618,6 +721,7 @@ class SingleCells(object):
         output_file="none",
         compression_options=None,
         float_format=None,
+        n_aggregation_memory_strata=1,
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -632,6 +736,9 @@ class SingleCells(object):
             Compression arguments as input to pandas.to_csv() with pandas version >= 1.2.
         float_format : str, optional
             Decimal precision to use in writing output file.
+        n_aggregation_memory_strata : int, default 1
+            Number of unique strata to pull from the database into working memory
+            at once.  Typically 1 is fastest.  A larger number uses more memory.
 
         Returns
         -------
@@ -650,10 +757,14 @@ class SingleCells(object):
                     compartment=compartment,
                     compute_subsample=compute_subsample,
                     compute_counts=True,
+                    n_aggregation_memory_strata=n_aggregation_memory_strata,
                 )
             else:
                 aggregated = aggregated.merge(
-                    self.aggregate_compartment(compartment=compartment),
+                    self.aggregate_compartment(
+                        compartment=compartment,
+                        n_aggregation_memory_strata=n_aggregation_memory_strata,
+                    ),
                     on=self.strata,
                     how="inner",
                 )
@@ -670,3 +781,67 @@ class SingleCells(object):
             )
         else:
             return aggregated
+
+
+def _sqlite_strata_conditions(df, dtypes, n=1):
+    """Given a dataframe where columns are merge_cols and rows are unique
+    value combinations that appear as aggregation strata, return a list
+    of strings which constitute valid SQLite conditional statements.
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        A dataframe where columns are merge_cols and rows represent
+        unique aggregation strata of the compartment table
+    dtypes : Dict[str, str]
+        Dictionary to look up SQLite datatype based on column name
+    n : int
+        Number of rows of the input df to combine in each output
+        conditional statement. n=1 means each row of the input will
+        correspond to one string in the output list. n=2 means one
+        string in the output list is comprised of two rows from the
+        input df.
+
+    Returns
+    -------
+    grouped_conditions : List[str]
+        A list of strings, each string being a valid SQLite conditional
+
+    Examples
+    --------
+    Suppose df looks like this:
+        TableNumber | ImageNumber
+        =========================
+        [1]         | [1]
+        [2]         | [1, 2, 3]
+        [3]         | [1, 2]
+        [4]         | [1]
+
+    >>> _sqlite_strata_conditions(df, dtypes={'TableNumber': 'integer', 'ImageNumber': 'integer'}, n=1)
+    ["(TableNumber in (1) and ImageNumber in (1))",
+     "(TableNumber in (2) and ImageNumber in (1, 2, 3))",
+     "(TableNumber in (3) and ImageNumber in (1, 2))",
+     "(TableNumber in (4) and ImageNumber in (1))"]
+
+    >>> _sqlite_strata_conditions(df, dtypes={'TableNumber': 'text', 'ImageNumber': 'integer'}, n=2)
+    ["(TableNumber in ('1') and ImageNumber in (1))
+      or (TableNumber in ('2') and ImageNumber in (1, 2, 3))",
+     "(TableNumber in ('3') and ImageNumber in (1, 2))
+      or (TableNumber in ('4') and ImageNumber in (1))"]
+    """
+    conditions = []
+    for row in df.iterrows():
+        series = row[1]
+        values = [
+            [f"'{a}'" for a in y] if dtypes[x] == "text" else y
+            for x, y in zip(series.index, series.values)
+        ]  # put quotes around text entries
+        condition_list = [
+            f"{x} in ({', '.join([str(a) for a in y]) if len(y) > 1 else y[0]})"
+            for x, y in zip(series.index, values)
+        ]
+        conditions.append(f"({' and '.join(condition_list)})")
+    grouped_conditions = [
+        " or ".join(conditions[i : (i + n)]) for i in range(0, len(conditions), n)
+    ]
+    return grouped_conditions
