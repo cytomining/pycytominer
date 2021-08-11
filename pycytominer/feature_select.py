@@ -87,15 +87,6 @@ def feature_select(
         data.
 
     """
-    """
-    blocklist_file - [default: None] file location of dataframe with features to exclude
-                     Note that if "blocklist" in operation then will remove standard
-                     blocklist
-    outlier_cutoff - [default: 15] the threshold at which the maximum or minimum value of a feature
-                     across a full experiment is excluded. Note that this
-                     procedure is typically applied (and therefore the default is
-                     suitable) for after normalization.
-    """
 
     all_ops = [
         "variance_threshold",
