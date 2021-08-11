@@ -80,11 +80,11 @@ def test_feature_select_noise_removal():
 
     # Tests on data_df
     result1 = feature_select(data_df, features=data_df.columns.tolist(), operation='noise_removal',
-                             perturb_list=data_df_groups, stdev_cutoff=2.5)
+                             noise_removal_perturb_list=data_df_groups, noise_removal_stdev_cutoff=2.5)
     result2 = feature_select(data_df, features=data_df.columns.tolist(), operation='noise_removal',
-                             perturb_list=data_df_groups, stdev_cutoff=2)
+                             noise_removal_perturb_list=data_df_groups, noise_removal_stdev_cutoff=2)
     result3 = feature_select(data_df, features=data_df.columns.tolist(), operation='noise_removal',
-                             perturb_list=data_df_groups, stdev_cutoff=3.5)
+                             noise_removal_perturb_list=data_df_groups, noise_removal_stdev_cutoff=3.5)
     expected_result1 = data_df[['x', 'y']]
     expected_result2 = data_df[[]]
     expected_result3 = data_df[['x', 'y', 'z', 'zz']]
@@ -98,9 +98,9 @@ def test_feature_select_noise_removal():
         data_unique_test_df_groups.append([elem] * 10)
     data_unique_test_df_groups = [item for sublist in data_unique_test_df_groups for item in sublist]
     result4 = feature_select(data_unique_test_df, features=data_unique_test_df.columns.tolist(),
-                             operation='noise_removal', perturb_list=data_unique_test_df_groups, stdev_cutoff=3.5)
+                             operation='noise_removal', noise_removal_perturb_list=data_unique_test_df_groups, noise_removal_stdev_cutoff=3.5)
     result5 = feature_select(data_unique_test_df, features=data_unique_test_df.columns.tolist(),
-                             operation='noise_removal', perturb_list=data_unique_test_df_groups, stdev_cutoff=500)
+                             operation='noise_removal', noise_removal_perturb_list=data_unique_test_df_groups, noise_removal_stdev_cutoff=500)
     expected_result4 = data_unique_test_df[['a', 'b']]
     expected_result5 = data_unique_test_df[['a', 'b', 'c', 'd']]
     pd.testing.assert_frame_equal(result4, expected_result4)

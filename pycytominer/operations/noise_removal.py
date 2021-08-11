@@ -8,7 +8,7 @@ from pycytominer.cyto_utils import infer_cp_features
 
 
 def noise_removal(
-        population_df, perturb_list, features, samples="all", stdev_cutoff=0.8,
+        population_df, noise_removal_perturb_list, features, samples="all", noise_removal_stdev_cutoff=0.8,
 ):
     """
 
@@ -42,11 +42,11 @@ def noise_removal(
     population_df = population_df.loc[:, features]
 
     # Label each row with the identity of its perturbation group
-    population_df['group'] = perturb_list
+    population_df['group'] = noise_removal_perturb_list
 
     # Get the standard deviations of features within each group
     stdev_df = population_df.groupby('group').apply(lambda x: np.std(x))
     stdev_means_df = stdev_df.mean()
-    to_remove = stdev_means_df[stdev_means_df > stdev_cutoff].index.tolist()
+    to_remove = stdev_means_df[stdev_means_df > noise_removal_stdev_cutoff].index.tolist()
 
     return to_remove

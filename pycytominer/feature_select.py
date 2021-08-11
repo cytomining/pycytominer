@@ -21,22 +21,22 @@ from pycytominer.cyto_utils import (
 
 
 def feature_select(
-    profiles,
-    features="infer",
-    samples="all",
-    operation="variance_threshold",
-    output_file="none",
-    na_cutoff=0.05,
-    corr_threshold=0.9,
-    corr_method="pearson",
-    freq_cut=0.05,
-    unique_cut=0.1,
-    compression_options=None,
-    float_format=None,
-    blocklist_file=None,
-    outlier_cutoff=15,
-    perturb_list=None,
-    stdev_cutoff=None,
+        profiles,
+        features="infer",
+        samples="all",
+        operation="variance_threshold",
+        output_file="none",
+        na_cutoff=0.05,
+        corr_threshold=0.9,
+        corr_method="pearson",
+        freq_cut=0.05,
+        unique_cut=0.1,
+        compression_options=None,
+        float_format=None,
+        blocklist_file=None,
+        outlier_cutoff=15,
+        noise_removal_perturb_list=None,
+        noise_removal_stdev_cutoff=None,
 ):
     """
     Performs feature selection based on the given operation
@@ -69,8 +69,11 @@ def feature_select(
                      across a full experiment is excluded. Note that this
                      procedure is typically applied (and therefore the default is
                      suitable) for after normalization.
-    perturb_list - [default: None] list of perturbation groups corresponding to rows in profiles
-    stdev_cutoff - [default: None] maximum mean feature standard deviation to be kept for noise removal
+    noise_removal_perturb_list - [default: None] list of perturbation groups corresponding to rows in profiles
+                                 Note that noise removal should only be used on normalized data.
+    noise_removal_stdev_cutoff - [default: None] maximum mean feature standard deviation to be kept for noise removal,
+                                 grouped by the identity of the perturbation from perturb_list.
+                                 The data must already be normalized so that this cutoff can apply to all columns.
     """
     all_ops = [
         "variance_threshold",
@@ -143,8 +146,8 @@ def feature_select(
             exclude = noise_removal(
                 population_df=profiles,
                 features=features,
-                perturb_list=perturb_list,
-                stdev_cutoff=stdev_cutoff
+                noise_removal_perturb_list=noise_removal_perturb_list,
+                noise_removal_stdev_cutoff=noise_removal_stdev_cutoff
             )
         excluded_features += exclude
 
