@@ -8,7 +8,11 @@ from pycytominer.cyto_utils import infer_cp_features
 
 
 def noise_removal(
-        population_df, noise_removal_perturb_groups, features, samples="all", noise_removal_stdev_cutoff=0.8,
+    population_df,
+    noise_removal_perturb_groups,
+    features,
+    samples="all",
+    noise_removal_stdev_cutoff=0.8,
 ):
     """
 
@@ -46,24 +50,32 @@ def noise_removal(
         if noise_removal_perturb_groups not in features:
             features.append(noise_removal_perturb_groups)
         population_df = population_df.loc[:, features]
-        assert noise_removal_perturb_groups in population_df.columns, 'f"{perturb} not found. Are you sure it is a ' \
-                                                                      'metadata column?'
-        population_df.rename(columns={noise_removal_perturb_groups: 'group'}, inplace=True)
+        assert noise_removal_perturb_groups in population_df.columns, (
+            'f"{perturb} not found. Are you sure it is a ' "metadata column?"
+        )
+        population_df.rename(
+            columns={noise_removal_perturb_groups: "group"}, inplace=True
+        )
     # Otherwise, the user specifies a list of perturbs
     elif isinstance(noise_removal_perturb_groups, list):
-        assert len(noise_removal_perturb_groups) == len(
-            population_df), f"The length of input list: {len(noise_removal_perturb_groups)} is not equivalent to your " \
-                            f"data: {population_df.shape[0]}"
+        assert len(noise_removal_perturb_groups) == len(population_df), (
+            f"The length of input list: {len(noise_removal_perturb_groups)} is not equivalent to your "
+            f"data: {population_df.shape[0]}"
+        )
         population_df = population_df.loc[:, features]
-        population_df['group'] = noise_removal_perturb_groups
+        population_df["group"] = noise_removal_perturb_groups
     else:
-        raise TypeError("noise_removal_perturb_groups must be a list corresponding to row perturbations or a str \
-                        specifying the name of the metadata column.")
+        raise TypeError(
+            "noise_removal_perturb_groups must be a list corresponding to row perturbations or a str \
+                        specifying the name of the metadata column."
+        )
 
     # Get the standard deviations of features within each group
-    stdev_means_df = population_df.groupby('group').apply(lambda x: np.std(x)).mean()
+    stdev_means_df = population_df.groupby("group").apply(lambda x: np.std(x)).mean()
 
     # Identify noisy features with a greater mean stdev within perturbation group than the threshold
-    to_remove = stdev_means_df[stdev_means_df > noise_removal_stdev_cutoff].index.tolist()
+    to_remove = stdev_means_df[
+        stdev_means_df > noise_removal_stdev_cutoff
+    ].index.tolist()
 
     return to_remove

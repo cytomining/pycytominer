@@ -9,7 +9,7 @@ from pycytominer.operations import (
     correlation_threshold,
     variance_threshold,
     get_na_columns,
-    noise_removal
+    noise_removal,
 )
 from pycytominer.cyto_utils import (
     load_profiles,
@@ -21,22 +21,22 @@ from pycytominer.cyto_utils import (
 
 
 def feature_select(
-        profiles,
-        features="infer",
-        samples="all",
-        operation="variance_threshold",
-        output_file="none",
-        na_cutoff=0.05,
-        corr_threshold=0.9,
-        corr_method="pearson",
-        freq_cut=0.05,
-        unique_cut=0.1,
-        compression_options=None,
-        float_format=None,
-        blocklist_file=None,
-        outlier_cutoff=15,
-        noise_removal_perturb_groups=None,
-        noise_removal_stdev_cutoff=None,
+    profiles,
+    features="infer",
+    samples="all",
+    operation="variance_threshold",
+    output_file="none",
+    na_cutoff=0.05,
+    corr_threshold=0.9,
+    corr_method="pearson",
+    freq_cut=0.05,
+    unique_cut=0.1,
+    compression_options=None,
+    float_format=None,
+    blocklist_file=None,
+    outlier_cutoff=15,
+    noise_removal_perturb_groups=None,
+    noise_removal_stdev_cutoff=None,
 ):
     """
     Performs feature selection based on the given operation
@@ -148,7 +148,7 @@ def feature_select(
                 population_df=profiles,
                 features=features,
                 noise_removal_perturb_groups=noise_removal_perturb_groups,
-                noise_removal_stdev_cutoff=noise_removal_stdev_cutoff
+                noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
             )
         excluded_features += exclude
 
