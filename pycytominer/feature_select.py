@@ -35,7 +35,7 @@ def feature_select(
         float_format=None,
         blocklist_file=None,
         outlier_cutoff=15,
-        noise_removal_perturb_list=None,
+        noise_removal_perturb_groups=None,
         noise_removal_stdev_cutoff=None,
 ):
     """
@@ -69,7 +69,8 @@ def feature_select(
                      across a full experiment is excluded. Note that this
                      procedure is typically applied (and therefore the default is
                      suitable) for after normalization.
-    noise_removal_perturb_list - [default: None] list of perturbation groups corresponding to rows in profiles
+    noise_removal_perturb_groups - [default: None] list of perturbation groups corresponding to rows in profiles or
+                                   str specifying the name of the metadata column containing this information.
                                  Note that noise removal should only be used on normalized data.
     noise_removal_stdev_cutoff - [default: None] maximum mean feature standard deviation to be kept for noise removal,
                                  grouped by the identity of the perturbation from perturb_list.
@@ -146,7 +147,7 @@ def feature_select(
             exclude = noise_removal(
                 population_df=profiles,
                 features=features,
-                noise_removal_perturb_list=noise_removal_perturb_list,
+                noise_removal_perturb_groups=noise_removal_perturb_groups,
                 noise_removal_stdev_cutoff=noise_removal_stdev_cutoff
             )
         excluded_features += exclude
