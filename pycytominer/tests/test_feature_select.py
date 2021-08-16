@@ -74,7 +74,7 @@ data_outlier_df = pd.DataFrame(
 def test_feature_select_noise_removal():
     """
     Testing noise_removal feature selection operation
-    #"""
+    """
     # Set perturbation groups for the test dataframes
     data_df_groups = ["a", "a", "a", "b", "b", "b"]
 
