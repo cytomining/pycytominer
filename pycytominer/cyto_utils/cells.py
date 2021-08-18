@@ -41,6 +41,8 @@ class SingleCells(object):
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
         Columns to select from the image table.
+    image_features : list of str, optional
+        List of category of features from the image table to add to the profiles.
     add_image_features: bool, default False
         Whether to add image features.
     features: str or list of str, default "infer"
@@ -82,7 +84,7 @@ class SingleCells(object):
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
         image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
-        add_image_features=False,
+        image_features=None,
         features="infer",
         load_image_data=True,
         subsample_frac=1,
@@ -111,7 +113,6 @@ class SingleCells(object):
         self.output_file = output_file
         self.merge_cols = merge_cols
         self.image_cols = image_cols
-        self.add_image_features = add_image_features
         self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
@@ -123,6 +124,12 @@ class SingleCells(object):
         self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
+
+        if image_features:
+            self.add_image_features = True
+            self.image_feature_categories = [_.capitalize() for _ in image_features]
+        else:
+            self.add_image_features = False
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
@@ -254,8 +261,9 @@ class SingleCells(object):
         if self.add_image_features:
             image_features = list(
                 self.image_df.columns[
-                    self.image_df.columns.str.startswith("Texture")
-                    | self.image_df.columns.str.startswith("Granularity")
+                    self.image_df.columns.str.startswith(
+                        tuple(self.image_feature_categories)
+                    )
                 ]
             )
             image_features_df = self.image_df[image_features]
@@ -513,13 +521,38 @@ class SingleCells(object):
                 )
 
                 if add_image_features:
-                    for col in list(self.image_cols):
+                    # Aggregate Count features separately
+                    if "Count" in self.image_feature_categories:
+                        count_features = list(
+                            self.image_features_df.columns[
+                                self.image_features_df.columns.str.startswith(
+                                    "Image_Count"
+                                )
+                            ]
+                        )
+                        remove_cols = list(np.union1d(self.image_cols, count_features))
+                        keep_cols = list(np.union1d(self.strata, count_features))
+                        count_df = self.image_features_df[keep_cols].copy()
+                        count_df = (
+                            count_df.groupby(self.strata, dropna=False)
+                            .sum()
+                            .reset_index()
+                        )
+                        fields_count_df = fields_count_df.merge(
+                            count_df, on=self.strata, how="left"
+                        )
+                    else:
+                        remove_cols = list(self.image_cols)
+
+                    image_features_df = self.image_features_df.copy()
+
+                    for col in remove_cols:
                         if col in self.image_features_df.columns:
-                            self.image_features_df = self.image_features_df.drop(
+                            image_features_df = image_features_df.drop(
                                 [col], axis="columns"
                             )
 
-                    image_features_df = self.image_features_df.groupby(
+                    image_features_df = image_features_df.groupby(
                         self.strata, dropna=False
                     )
 
