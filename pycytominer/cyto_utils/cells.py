@@ -394,9 +394,7 @@ class SingleCells(object):
         """
         compartment_query = "select * from {}".format(compartment)
         dflist=[]
-        for chunk in pd.read_sql(sql=compartment_query, con=self.conn,chunksize=10000):
-            dflist.append(chunk)
-        df = pd.concat(dflist)
+        df = pd.read_sql(sql=compartment_query, con=self.conn)
         return df
 
     def aggregate_compartment(
@@ -457,7 +455,6 @@ class SingleCells(object):
             if self.features == "infer":
                 aggregate_features = infer_cp_features(
                     population_df, compartments=compartment
-
                 )
             else:
                 aggregate_features = self.features
