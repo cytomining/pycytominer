@@ -393,7 +393,6 @@ class SingleCells(object):
 
         """
         compartment_query = "select * from {}".format(compartment)
-        dflist=[]
         df = pd.read_sql(sql=compartment_query, con=self.conn)
         return df
 
