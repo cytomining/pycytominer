@@ -3,6 +3,7 @@ import random
 import tempfile
 import numpy as np
 import pandas as pd
+import pytest
 from pycytominer.feature_select import feature_select
 
 random.seed(123)
@@ -80,21 +81,21 @@ def test_feature_select_noise_removal():
 
     # Tests on data_df
     result1 = feature_select(
-        data_df,
+        profiles=data_df,
         features=data_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups=data_df_groups,
         noise_removal_stdev_cutoff=2.5,
     )
     result2 = feature_select(
-        data_df,
+        profiles=data_df,
         features=data_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups=data_df_groups,
         noise_removal_stdev_cutoff=2,
     )
     result3 = feature_select(
-        data_df,
+        profiles=data_df,
         features=data_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups=data_df_groups,
@@ -118,14 +119,14 @@ def test_feature_select_noise_removal():
     ]
 
     result4 = feature_select(
-        data_unique_test_df,
+        profiles=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups=data_unique_test_df_groups,
         noise_removal_stdev_cutoff=3.5,
     )
     result5 = feature_select(
-        data_unique_test_df,
+        profiles=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups=data_unique_test_df_groups,
@@ -136,18 +137,18 @@ def test_feature_select_noise_removal():
     pd.testing.assert_frame_equal(result4, expected_result4)
     pd.testing.assert_frame_equal(result5, expected_result5)
 
-    # Test the same as above, except that data_unique_test_df_groups is now made into a metadata cpl
+    # Test the same as above, except that data_unique_test_df_groups is now made into a metadata column
     data_unique_test_df2 = data_unique_test_df.copy()
     data_unique_test_df2["perturb_group"] = data_unique_test_df_groups
     result4b = feature_select(
-        data_unique_test_df2,
+        profiles=data_unique_test_df2,
         features=data_unique_test_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups="perturb_group",
         noise_removal_stdev_cutoff=3.5,
     )
     result5b = feature_select(
-        data_unique_test_df2,
+        profiles=data_unique_test_df2,
         features=data_unique_test_df.columns.tolist(),
         operation="noise_removal",
         noise_removal_perturb_groups="perturb_group",
@@ -158,7 +159,40 @@ def test_feature_select_noise_removal():
     pd.testing.assert_frame_equal(result4b, expected_result4b)
     pd.testing.assert_frame_equal(result5b, expected_result5b)
 
-    # Test assertions based on type of perturbation groups passed
+    # Test assertion errors for the user inputting the perturbation groupings
+    bad_perturb_list = ["a", "a", "b", "b", "a", "a", "b"]
+    with pytest.raises(
+        AssertionError
+    ):  # When the inputted perturb list doesn't match the length of the data
+        feature_select(
+            data_df,
+            features=data_df.columns.tolist(),
+            operation="noise_removal",
+            noise_removal_perturb_groups=bad_perturb_list,
+            noise_removal_stdev_cutoff=3,
+        )
+
+    with pytest.raises(
+        AssertionError
+    ):  # When the perturb list is inputted as string, but there is no such metadata column in the population_df
+        feature_select(
+            profiles=data_df,
+            features=data_df.columns.tolist(),
+            operation="noise_removal",
+            noise_removal_perturb_groups="bad_string",
+            noise_removal_stdev_cutoff=2.5,
+        )
+
+    with pytest.raises(
+        TypeError
+    ):  # When the perturbation groups are not either a list or metadata column string
+        feature_select(
+            profiles=data_df,
+            features=data_df.columns.tolist(),
+            operation="noise_removal",
+            noise_removal_perturb_groups=12345,
+            noise_removal_stdev_cutoff=2.5,
+        )
 
 
 def test_feature_select_get_na_columns():
