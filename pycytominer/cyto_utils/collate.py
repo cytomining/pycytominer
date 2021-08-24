@@ -240,7 +240,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--aggregate_only",
-        action="store_true"
+        action="store_true",
         default=False,
         help="Whether to perform only the aggregation of existant SQLite files and bypass previous collation steps",
     )
