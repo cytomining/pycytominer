@@ -9,6 +9,7 @@ from pycytominer.operations import (
     correlation_threshold,
     variance_threshold,
     get_na_columns,
+    noise_removal,
 )
 from pycytominer.cyto_utils import (
     load_profiles,
@@ -35,6 +36,8 @@ def feature_select(
     float_format=None,
     blocklist_file=None,
     outlier_cutoff=15,
+    noise_removal_perturb_groups=None,
+    noise_removal_stdev_cutoff=None,
 ):
     """Performs feature selection based on the given operation.
 
@@ -78,6 +81,10 @@ def feature_select(
         File location of datafrmame with with features to exclude. Note that if "blocklist" in operation then will remove standard blocklist
     outlier_cutoff : float, default 15
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied (and therefore the default is uitable) for after normalization.
+    noise_removal_perturb_groups: str or list of str, optional
+        Perturbation groups corresponding to rows in profiles or the the name of the metadata column containing this information.
+    noise_removal_stdev_cutoff: float,optional
+        Maximum mean feature standard deviation to be kept for noise removal, grouped by the identity of the perturbation from perturb_list. The data must already be normalized so that this cutoff can apply to all columns.
 
     Returns
     -------
@@ -94,6 +101,7 @@ def feature_select(
         "drop_na_columns",
         "blocklist",
         "drop_outliers",
+        "noise_removal",
     ]
 
     # Make sure the user provides a supported operation
@@ -154,7 +162,13 @@ def feature_select(
                 samples=samples,
                 outlier_cutoff=outlier_cutoff,
             )
-
+        elif op == "noise_removal":
+            exclude = noise_removal(
+                population_df=profiles,
+                features=features,
+                noise_removal_perturb_groups=noise_removal_perturb_groups,
+                noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
+            )
         excluded_features += exclude
 
     excluded_features = list(set(excluded_features))
