@@ -32,6 +32,7 @@ def correlation_threshold(
     Return:
     list of features to exclude from the population_df
     """
+
     # Check that the input method is supported
     method = check_correlation_method(method)
 
