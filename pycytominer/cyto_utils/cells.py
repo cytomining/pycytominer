@@ -556,6 +556,8 @@ class SingleCells(object):
                         self.strata, dropna=False
                     )
 
+                    # Aggregate other image features
+
                     if self.aggregation_operation == "median":
                         image_features_df = image_features_df.median().reset_index()
                     else:
