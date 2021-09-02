@@ -23,6 +23,7 @@ def normalize(
     output_file="none",
     compression_options=None,
     float_format=None,
+    mad_robustize_epsilon=1e-18,
     spherize_center=True,
     spherize_method="ZCA-cor",
     spherize_epsilon=1e-6,
@@ -63,6 +64,10 @@ def normalize(
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
+    mad_robustize_epsilon: float, optional
+        The mad_robustize fudge factor parameter. The function only uses
+        this variable if method = "mad_robustize". Set this to 0 if
+        mad_robustize generates features with large values.
     spherize_center : bool
         If the function should center data before sphering (aka whitening). The
         function only uses this variable if method = "spherize". Defaults to True.
@@ -70,9 +75,9 @@ def normalize(
         The sphering (aka whitening) normalization selection. The function only uses
         this variable if method = "spherize". Defaults to "ZCA-corr". See
         :py:func:`pycytominer.operations.transform` for available spherize methods.
-    spherize_epsilon : float
+    spherize_epsilon : float, default 1e-6.
         The sphering (aka whitening) fudge factor parameter. The function only uses
-        this variable if method = "spherize". Defaults 1e-6.
+        this variable if method = "spherize".
 
     Returns
     -------
@@ -129,7 +134,7 @@ def normalize(
     elif method == "robustize":
         scaler = RobustScaler()
     elif method == "mad_robustize":
-        scaler = RobustMAD()
+        scaler = RobustMAD(epsilon=mad_robustize_epsilon)
     elif method == "spherize":
         scaler = Spherize(
             center=spherize_center, method=spherize_method, epsilon=spherize_epsilon
