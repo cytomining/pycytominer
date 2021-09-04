@@ -13,6 +13,7 @@ from pycytominer.cyto_utils import (
     provide_linking_cols_feature_name_update,
     check_fields_of_view_format,
     check_fields_of_view,
+    check_image_features,
 )
 
 default_compartments = get_default_compartments()
@@ -259,6 +260,10 @@ class SingleCells(object):
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
         if self.add_image_features:
+            check_image_features(
+                self.image_feature_categories, list(self.image_df.columns)
+            )
+
             image_features = list(
                 self.image_df.columns[
                     self.image_df.columns.str.startswith(
@@ -544,33 +549,47 @@ class SingleCells(object):
                     else:
                         remove_cols = list(self.image_cols)
 
-                    image_features_df = self.image_features_df.copy()
+                    if (
+                        not len(np.setdiff1d(self.image_feature_categories, ["Count"]))
+                        == 0
+                    ):  # The following block will not be run if the input image category is only "Count"
+                        image_features_df = self.image_features_df.copy()
 
-                    for col in remove_cols:
-                        if col in self.image_features_df.columns:
-                            image_features_df = image_features_df.drop(
-                                [col], axis="columns"
-                            )
+                        for col in remove_cols:
+                            if col in self.image_features_df.columns:
+                                image_features_df = image_features_df.drop(
+                                    [col], axis="columns"
+                                )
 
-                    image_features_df = image_features_df.groupby(
-                        self.strata, dropna=False
-                    )
+                        image_features_df = image_features_df.groupby(
+                            self.strata, dropna=False
+                        )
 
-                    # Aggregate other image features
+                        # Aggregate other image features
 
-                    if self.aggregation_operation == "median":
-                        image_features_df = image_features_df.median().reset_index()
-                    else:
-                        image_features_df = image_features_df.mean().reset_index()
+                        if self.aggregation_operation == "median":
+                            image_features_df = image_features_df.median().reset_index()
+                        else:
+                            image_features_df = image_features_df.mean().reset_index()
 
-                    fields_count_df = fields_count_df.merge(
-                        image_features_df, on=self.strata, how="left"
-                    )
+                        fields_count_df = fields_count_df.merge(
+                            image_features_df, on=self.strata, how="left"
+                        )
 
                 partial_object_df = fields_count_df.merge(
                     partial_object_df,
                     on=self.strata,
                     how="right",
+                )
+
+                # Separate all the metadata and feature columns.
+
+                metadata_cols = infer_cp_features(partial_object_df, metadata=True)
+                feature_cols = infer_cp_features(partial_object_df, image_features=True)
+
+                partial_object_df = pd.concat(
+                    [partial_object_df[metadata_cols], partial_object_df[feature_cols]],
+                    axis=1,
                 )
 
             object_dfs.append(partial_object_df)

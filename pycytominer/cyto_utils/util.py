@@ -229,6 +229,33 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
         )
 
 
+def check_image_features(image_features, image_columns):
+    """Confirm that the input list of image features are present in the image table
+
+    Parameters
+    ----------
+    image_features: list of str
+        Input image features to extract from the image table.
+    image_columns: list of str
+        Columns in the image table
+
+    Returns
+    -------
+    None
+        Nothing is returned.
+    """
+
+    try:
+        assert all(
+            feature in list(set(_.split("_")[0] for _ in image_columns))
+            for feature in image_features
+        )
+    except AssertionError:
+        raise ValueError(
+            "Some of the input image features are not present in the image table."
+        )
+
+
 def get_pairwise_correlation(population_df, method="pearson"):
     """Given a population dataframe, calculate all pairwise correlations.
 
