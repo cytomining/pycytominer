@@ -179,7 +179,7 @@ def test_modz_multiple_columns_feature_specify():
 
 
 def test_modz_unbalanced_sample_numbers():
-    # The expected result is to completely remove influence of anticorrelated sample
+    # The expected result is to not freak out when only one sample exists for a piece of metadata
     data_replicate_multi_df = data_replicate_df.assign(
         Metadata_h=["c", "c", "c", "c", "c", "d"]
     )
