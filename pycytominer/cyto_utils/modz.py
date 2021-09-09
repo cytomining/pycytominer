@@ -57,7 +57,7 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
     # Step 3: Normalize
     if population_df.shape[1] == 1:
         # There is only one sample (note that columns are now samples)
-        modz_df = population_df
+        modz_df = population_df.sum(axis=1)
     else:
         modz_df = population_df * weights
         modz_df = modz_df.sum(axis=1)

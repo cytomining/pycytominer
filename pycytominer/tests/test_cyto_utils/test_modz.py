@@ -176,3 +176,27 @@ def test_modz_multiple_columns_feature_specify():
     )
     expected_result.index.name = "g"
     pd.testing.assert_frame_equal(expected_result.reset_index(), consensus_df)
+
+
+def test_modz_unbalanced_sample_numbers():
+    # The expected result is to not freak out when only one sample exists for a piece of metadata
+    data_replicate_multi_df = data_replicate_df.assign(
+        Metadata_h=["c", "c", "c", "c", "c", "d"]
+    )
+
+    consensus_df = modz(
+        data_replicate_multi_df,
+        replicate_columns="Metadata_h",
+        min_weight=0,
+        precision=precision,
+    )
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_h": ["c", "d"],
+            "Cells_x": [0.9999, 5.0],
+            "Cytoplasm_y": [5.9994, 1.0],
+            "Nuclei_z": [2.9997, 1],
+        },
+    )
+    pd.testing.assert_frame_equal(expected_result, consensus_df)
