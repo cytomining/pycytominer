@@ -14,6 +14,7 @@ from pycytominer.cyto_utils.util import (
     check_consensus_operation,
     check_fields_of_view,
     check_fields_of_view_format,
+    check_image_features,
 )
 
 tmpdir = tempfile.gettempdir()
@@ -196,4 +197,27 @@ def test_check_fields_of_view_format():
         assert (
             str(err)
             == "Variables of type int expected, however some of the input fields of view are not integers."
+        )
+
+
+def test_check_image_features():
+    data_image_cols = [
+        "Count_Cells",
+        "Granularity_1_Mito",
+        "Texture_Variance_RNA_20_00",
+        "Texture_InfoMeas2_DNA_5_02",
+    ]
+
+    valid_image_feature_groups = ["Count", "Granularity"]
+    assert check_image_features(valid_image_feature_groups, data_image_cols) is None
+
+    valid_image_feature_groups = ["Count", "Granularity", "Texture"]
+    assert check_image_features(valid_image_feature_groups, data_image_cols) is None
+
+    invalid_image_feature_groups = ["Count", "IncorrectFeatureGroup"]
+    with pytest.raises(ValueError) as err:
+        check_image_features(invalid_image_feature_groups, data_image_cols)
+        assert (
+            str(err)
+            == "Some of the input image features are not present in the image table."
         )
