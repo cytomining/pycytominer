@@ -35,7 +35,7 @@ def annotate(
     Parameters
     ----------
     profiles : pandas.core.frame.DataFrame or file
-        DataFrame or file of profiles.
+        DataFrame or file path of profiles.
     platemap : pandas.core.frame.DataFrame or file
         Dataframe or file of platemap metadata.
     join_on : list or str, default: ["Metadata_well_position", "Metadata_Well"]
