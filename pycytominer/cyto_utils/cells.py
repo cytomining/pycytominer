@@ -13,7 +13,7 @@ from pycytominer.cyto_utils import (
     provide_linking_cols_feature_name_update,
     check_fields_of_view_format,
     check_fields_of_view,
-    check_image_features,
+    extract_image_features,
 )
 
 default_compartments = get_default_compartments()
@@ -115,6 +115,8 @@ class SingleCells(object):
         self.output_file = output_file
         self.merge_cols = merge_cols
         self.image_cols = image_cols
+        self.add_image_features = add_image_features
+        self.image_feature_categories = image_feature_categories
         self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
@@ -126,14 +128,6 @@ class SingleCells(object):
         self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
-
-        if add_image_features:
-            self.add_image_features = True
-            self.image_feature_categories = [
-                _.capitalize() for _ in image_feature_categories
-            ]
-        else:
-            self.add_image_features = False
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
@@ -263,32 +257,18 @@ class SingleCells(object):
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
         if self.add_image_features:
-            check_image_features(
-                self.image_feature_categories, list(self.image_df.columns)
+            (
+                self.image_features_df,
+                self.image_feature_categories,
+            ) = extract_image_features(
+                self.image_feature_categories,
+                self.image_df,
+                self.image_cols,
+                self.strata,
             )
 
-            image_features = list(
-                self.image_df.columns[
-                    self.image_df.columns.str.startswith(
-                        tuple(self.image_feature_categories)
-                    )
-                ]
-            )
-            image_features_df = self.image_df[image_features]
-            other_features_df = self.image_df[
-                list(np.union1d(self.image_cols, self.strata))
-            ]
-            image_features_df.columns = [
-                f"Image_{x}" if not x.startswith("Image_") else x
-                for x in image_features_df.columns
-            ]
-
-            self.image_features_df = pd.concat(
-                [other_features_df, image_features_df], axis=1
-            )
-
-        all_features = list(np.union1d(self.image_cols, self.strata))
-        self.image_df = self.image_df[all_features]
+        image_features = list(np.union1d(self.image_cols, self.strata))
+        self.image_df = self.image_df[image_features]
 
         if self.fields_of_view != "all":
             check_fields_of_view(

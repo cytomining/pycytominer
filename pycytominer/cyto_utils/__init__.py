@@ -10,6 +10,7 @@ from .util import (
     check_fields_of_view_format,
     check_fields_of_view,
     check_image_features,
+    extract_image_features,
 )
 from .single_cell_ingest_utils import (
     get_default_linking_cols,
