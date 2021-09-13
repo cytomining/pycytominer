@@ -278,7 +278,11 @@ class SingleCells(object):
             other_features_df = self.image_df[
                 list(np.union1d(self.image_cols, self.strata))
             ]
-            image_features_df = image_features_df.add_prefix("Image_")
+            image_features_df.columns = [
+                f"Image_{x}" if not x.startswith("Image_") else x
+                for x in image_features_df.columns
+            ]
+
             self.image_features_df = pd.concat(
                 [other_features_df, image_features_df], axis=1
             )
