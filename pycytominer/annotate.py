@@ -37,7 +37,7 @@ def annotate(
     profiles : pandas.core.frame.DataFrame or file
         DataFrame or file path of profiles.
     platemap : pandas.core.frame.DataFrame or file
-        Dataframe or file of platemap metadata.
+        Dataframe or file path of platemap metadata.
     join_on : list or str, default: ["Metadata_well_position", "Metadata_Well"]
         Which variables to merge profiles and plate. The first element indicates variable(s) in platemap and the second element indicates variable(s) in profiles to merge using. Note the setting of `add_metadata_id_to_platemap`
     output_file : str, optional
