@@ -143,14 +143,20 @@ ap_new = SingleCells(
 )
 
 ap_image_all_features = SingleCells(
-    file_or_conn=image_file, image_features=["count", "granularity", "Texture"]
+    file_or_conn=image_file,
+    add_image_features=True,
+    image_feature_categories=["count", "granularity", "Texture"],
 )
 
 ap_image_subset_features = SingleCells(
-    file_or_conn=image_file, image_features=["count", "Texture"]
+    file_or_conn=image_file,
+    add_image_features=True,
+    image_feature_categories=["count", "Texture"],
 )
 
-ap_image_count = SingleCells(file_or_conn=image_file, image_features=["count"])
+ap_image_count = SingleCells(
+    file_or_conn=image_file, add_image_features=True, image_feature_categories=["count"]
+)
 
 
 def test_SingleCells_init():

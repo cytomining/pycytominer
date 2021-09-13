@@ -42,10 +42,10 @@ class SingleCells(object):
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
         Columns to select from the image table.
-    image_features : list of str, optional
-        List of category of features from the image table to add to the profiles.
     add_image_features: bool, default False
-        Whether to add image features.
+        Whether to add image features to the profiles.
+    image_feature_categories : list of str, optional
+        List of categories of features from the image table to add to the profiles.
     features: str or list of str, default "infer"
         List of features that should be aggregated.
     load_image_data : bool, default True
@@ -85,7 +85,8 @@ class SingleCells(object):
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
         image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
-        image_features=None,
+        add_image_features=False,
+        image_feature_categories=None,
         features="infer",
         load_image_data=True,
         subsample_frac=1,
@@ -126,9 +127,11 @@ class SingleCells(object):
         self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
 
-        if image_features:
+        if add_image_features:
             self.add_image_features = True
-            self.image_feature_categories = [_.capitalize() for _ in image_features]
+            self.image_feature_categories = [
+                _.capitalize() for _ in image_feature_categories
+            ]
         else:
             self.add_image_features = False
 
