@@ -44,8 +44,8 @@ def aggregate(
         Object number feature. Only used if compute_object_count=True.
     subset_data_df : pandas.core.frame.DataFrame
         How to subset the input.
-    compression_options : str, optional
-        Contain compression options as input to
+    compression_options : str or dict, optional
+        Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
     float_format : str, optional
         Decimal precision to use in writing output file as input to

@@ -54,8 +54,8 @@ def annotate(
         Merge column in the profile metadata.
     external_join_right: str, optional
         Merge column in the external metadata.
-    compression_options : str, optional
-        Contain compression options as input to
+    compression_options : str or dict, optional
+        Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
     float_format : str, optional
         Decimal precision to use in writing output file as input to

@@ -70,8 +70,8 @@ def feature_select(
         Ratio (2nd most common feature val / most common).
     unique_cut: float, default 0.1
         Ratio (num unique features / num samples).
-    compression_options : dict, optional
-        Contain compression options as input to
+    compression_options : str or dict, optional
+        Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
     float_format : str, optional
         Decimal precision to use in writing output file as input to

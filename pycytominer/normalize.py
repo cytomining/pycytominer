@@ -57,8 +57,8 @@ def normalize(
         If provided, will write annotated profiles to file. If not specified, will
         return the normalized profiles as output. We recommend that this output file be
         suffixed with "_normalized.csv".
-    compression_options : dict, optional
-        Contain compression options as input to
+    compression_options : str or dict, optional
+        Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
     float_format : str, optional
         Decimal precision to use in writing output file as input to
