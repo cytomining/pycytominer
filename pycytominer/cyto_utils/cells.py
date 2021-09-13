@@ -583,7 +583,6 @@ class SingleCells(object):
                 )
 
                 # Separate all the metadata and feature columns.
-
                 metadata_cols = infer_cp_features(partial_object_df, metadata=True)
                 feature_cols = infer_cp_features(partial_object_df, image_features=True)
 
