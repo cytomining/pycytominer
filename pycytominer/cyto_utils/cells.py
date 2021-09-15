@@ -14,6 +14,8 @@ from pycytominer.cyto_utils import (
     check_fields_of_view_format,
     check_fields_of_view,
     extract_image_features,
+    aggregate_fields_count,
+    aggregate_image_features,
 )
 
 default_compartments = get_default_compartments()
@@ -58,6 +60,8 @@ class SingleCells(object):
         The random state to init subsample.
     fields_of_view : list of int, str, default "all"
         List of fields of view to aggregate.
+    fields_of_view_feature : str, default "Metadata_Site"
+        Name of the fields of view feature.
     object_feature : str, default "Metadata_ObjectNumber"
         Object number feature.
 
@@ -498,70 +502,19 @@ class SingleCells(object):
             )
 
             if compute_counts and self.fields_of_view_feature not in self.strata:
-                fields_count_df = self.image_df.loc[
-                    :, list(np.union1d(self.strata, self.fields_of_view_feature))
-                ]
-                fields_count_df = (
-                    fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
-                    .count()
-                    .reset_index()
-                    .rename(
-                        columns={
-                            f"{self.fields_of_view_feature}": f"Metadata_Site_Count"
-                        }
-                    )
+                fields_count_df = aggregate_fields_count(
+                    self.image_df, self.strata, self.fields_of_view_feature
                 )
 
                 if add_image_features:
-                    # Aggregate Count features separately
-                    if "Count" in self.image_feature_categories:
-                        count_features = list(
-                            self.image_features_df.columns[
-                                self.image_features_df.columns.str.startswith(
-                                    "Image_Count"
-                                )
-                            ]
-                        )
-                        remove_cols = list(np.union1d(self.image_cols, count_features))
-                        keep_cols = list(np.union1d(self.strata, count_features))
-                        count_df = self.image_features_df[keep_cols].copy()
-                        count_df = (
-                            count_df.groupby(self.strata, dropna=False)
-                            .sum()
-                            .reset_index()
-                        )
-                        fields_count_df = fields_count_df.merge(
-                            count_df, on=self.strata, how="left"
-                        )
-                    else:
-                        remove_cols = list(self.image_cols)
-
-                    if (
-                        not len(np.setdiff1d(self.image_feature_categories, ["Count"]))
-                        == 0
-                    ):  # The following block will not be run if the input image category is only "Count"
-                        image_features_df = self.image_features_df.copy()
-
-                        for col in remove_cols:
-                            if col in self.image_features_df.columns:
-                                image_features_df = image_features_df.drop(
-                                    [col], axis="columns"
-                                )
-
-                        image_features_df = image_features_df.groupby(
-                            self.strata, dropna=False
-                        )
-
-                        # Aggregate other image features
-
-                        if self.aggregation_operation == "median":
-                            image_features_df = image_features_df.median().reset_index()
-                        else:
-                            image_features_df = image_features_df.mean().reset_index()
-
-                        fields_count_df = fields_count_df.merge(
-                            image_features_df, on=self.strata, how="left"
-                        )
+                    fields_count_df = aggregate_image_features(
+                        fields_count_df,
+                        self.image_features_df,
+                        self.image_feature_categories,
+                        self.image_cols,
+                        self.strata,
+                        self.aggregation_operation,
+                    )
 
                 partial_object_df = fields_count_df.merge(
                     partial_object_df,
