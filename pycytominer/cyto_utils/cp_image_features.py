@@ -1,9 +1,10 @@
 """
-Functions for aggregating "non-compartment" features
+Functions for counting the number of fields and aggregating other images features
 """
 
 import pandas as pd
 import numpy as np
+from pycytominer import aggregate
 
 
 def aggregate_fields_count(image_df, strata, fields_of_view_feature):
@@ -37,7 +38,9 @@ def aggregate_fields_count(image_df, strata, fields_of_view_feature):
     return fields_count_df
 
 
-def aggregate_image_count_features(df, image_features_df, image_cols, strata):
+def aggregate_image_count_features(
+    df, image_features_df, image_cols, strata, count_prefix="Count"
+):
     """Aggregate the Count features in the Image table.
 
     Parameters
@@ -50,6 +53,8 @@ def aggregate_image_count_features(df, image_features_df, image_cols, strata):
         Columns to select from the image table.
     strata :  list of str
         The columns to groupby and aggregate single cells.
+    count_prefix : str, default "Count"
+        Prefix of the count columns in the image table.
 
     Returns
     -------
@@ -61,7 +66,7 @@ def aggregate_image_count_features(df, image_features_df, image_cols, strata):
 
     count_features = list(
         image_features_df.columns[
-            image_features_df.columns.str.startswith("Image_Count")
+            image_features_df.columns.str.startswith("Image_" + str(count_prefix))
         ]
     )
 
@@ -81,6 +86,7 @@ def aggregate_image_features(
     image_cols,
     strata,
     aggregation_operation,
+    count_prefix="Count",
 ):
     """Aggregate the non-Count image features.
 
@@ -98,6 +104,8 @@ def aggregate_image_features(
         The columns to groupby and aggregate single cells.
     aggregation_operation : str
         Operation to perform image table feature aggregation.
+    count_prefix : str, default "Count"
+        Prefix of the count columns in the image table.
 
     Returns
     -------
@@ -106,32 +114,30 @@ def aggregate_image_features(
 
     """
 
-    if "Count" in image_feature_categories:
+    # Aggregate image count features
+    if count_prefix in image_feature_categories:
         df, remove_cols = aggregate_image_count_features(
             df, image_features_df, image_cols, strata
         )
     else:
         remove_cols = list(image_cols) + list(
             image_features_df.columns[
-                image_features_df.columns.str.startswith("Image_Count")
+                image_features_df.columns.str.startswith("Image_" + str(count_prefix))
             ]
         )
 
-    if (
-        not len(np.setdiff1d(image_feature_categories, ["Count"])) == 0
-    ):  # The following block will not be run if the input image category is only "Count"
-        for col in remove_cols:
-            if col in image_features_df.columns:
-                image_features_df = image_features_df.drop([col], axis="columns")
-
-        image_features_df = image_features_df.groupby(strata, dropna=False)
-
-        # Aggregate the other image features
-
-        if aggregation_operation == "median":
-            image_features_df = image_features_df.median().reset_index()
-        else:
-            image_features_df = image_features_df.mean().reset_index()
+    # Aggregate other image features
+    if not len(np.setdiff1d(image_feature_categories, [count_prefix])) == 0:
+        image_features_df = image_features_df.drop(
+            remove_cols, axis="columns", errors="ignore"
+        )
+        features = list(np.setdiff1d(list(image_features_df.columns), strata))
+        image_features_df = aggregate.aggregate(
+            population_df=image_features_df,
+            strata=strata,
+            features=features,
+            operation=aggregation_operation,
+        )
 
         df = df.merge(image_features_df, on=strata, how="left")
 

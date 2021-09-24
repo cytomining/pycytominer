@@ -526,9 +526,8 @@ class SingleCells(object):
                 metadata_cols = infer_cp_features(partial_object_df, metadata=True)
                 feature_cols = infer_cp_features(partial_object_df, image_features=True)
 
-                partial_object_df = pd.concat(
-                    [partial_object_df[metadata_cols], partial_object_df[feature_cols]],
-                    axis=1,
+                partial_object_df = partial_object_df.reindex(
+                    columns=metadata_cols + feature_cols
                 )
 
             object_dfs.append(partial_object_df)

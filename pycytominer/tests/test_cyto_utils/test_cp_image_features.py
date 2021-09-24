@@ -146,7 +146,12 @@ def test_aggregate_image_features():
 
     image_feature_categories = ["Granularity", "Texture"]
     result = aggregate_image_features(
-        df, image_site_all, image_feature_categories, image_cols, strata, "median"
+        df=df,
+        image_features_df=image_site_all,
+        image_feature_categories=image_feature_categories,
+        image_cols=image_cols,
+        strata=strata,
+        aggregation_operation="median",
     )
 
     pd.testing.assert_frame_equal(
