@@ -247,7 +247,7 @@ def test_extract_image_features():
             "ImageNumber": ["x", "y"],
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A01"],
-            "Image_Count_Cells": [50, 50],
+            "Metadata_Count_Cells": [50, 50],
             "Image_Granularity_1_Mito": [3.0, 4.0],
         }
     )
