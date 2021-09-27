@@ -14,18 +14,26 @@ def variance_threshold(
     """
     Exclude features that have low variance (low information content)
 
-    Arguments:
-    population_df - pandas DataFrame that includes metadata and observation features
-    features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that start with
-               "Cells_", "Nuclei_", or "Cytoplasm_"
-    samples - list samples to perform operation on
-              [default: "all"] - if "all", use all samples to calculate
-    freq_cut - float of ratio (second most common feature value / most common) [default: 0.1]
-    unique_cut - float of ratio (num unique features / num samples) [default: 0.1]
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame or file
+        DataFrame that includes metadata and observation features.
+    features : list, default "infer"
+         List of features present in the population dataframe [default: "infer"]
+         if "infer", then assume cell painting features are those that start with
+         "Cells_", "Nuclei_", or "Cytoplasm_".
+    samples : list or str, default "all"
+        List of samples to perform operation on. If "all", use all samples to calculate.
+    freq_cut : float, default 0.05
+        Ratio (2nd most common feature val / most common).
+    unique_cut: float, default 0.01
+        Ratio (num unique features / num samples).
 
-    Return:
-    list of features to exclude from the population_df
+    Returns
+    -------
+    excluded_features : list of str
+         List of features to exclude from the population_df.
+
     """
 
     assert 0 <= freq_cut <= 1, "freq_cut variable must be between (0 and 1)"
@@ -66,13 +74,19 @@ def calculate_frequency(feature_column, freq_cut):
     Calculate frequency of second most common to most common feature.
     Used in pandas.apply()
 
-    Arguments:
-    feature_column - pandas series of the specific feature in the population_df
-    freq_cut - float of ratio (second most common feature value / most common)
+    Parameters
+    ----------
+    feature_column : pandas.core.series.series
+        Pandas series of the specific feature in the population_df
+    freq_cut : float
+        Ratio (2nd most common feature val / most common).
 
-    Return:
+    Returns
+    -------
     Feature name if it passes threshold, "NA" otherwise
+
     """
+
     val_count = feature_column.value_counts()
     try:
         max_count = val_count.iloc[0]

@@ -66,9 +66,9 @@ def feature_select(
         Value between (0, 1) to exclude features above if any two features are correlated above this threshold.
     corr_method : str, default "pearson"
         Correlation type to compute. Allowed methods are "spearman", "kendall" and "pearson".
-    freq_cut : float, default 0.1
+    freq_cut : float, default 0.05
         Ratio (2nd most common feature val / most common).
-    unique_cut: float, default 0.1
+    unique_cut: float, default 0.01
         Ratio (num unique features / num samples).
     compression_options : str or dict, optional
         Contains compression options as input to
