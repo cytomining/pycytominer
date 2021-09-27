@@ -229,6 +229,84 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
         )
 
 
+def check_image_features(image_features, image_columns):
+    """Confirm that the input list of image features are present in the image table
+
+    Parameters
+    ----------
+    image_features: list of str
+        Input image features to extract from the image table.
+    image_columns: list of str
+        Columns in the image table
+
+    Returns
+    -------
+    None
+        Nothing is returned.
+    """
+
+    try:
+        assert all(
+            feature in list(set(_.split("_")[0] for _ in image_columns))
+            for feature in image_features
+        )
+    except AssertionError:
+        raise ValueError(
+            "Some of the input image features are not present in the image table."
+        )
+
+
+def extract_image_features(image_feature_categories, image_df, image_cols, strata):
+    """Confirm that the input list of image features categories are present in the image table and then extract those features.
+
+    Parameters
+    ----------
+    image_feature_categories : list of str
+        Input image feature groups to extract from the image table.
+    image_df : pandas.core.frame.DataFrame
+        Image dataframe.
+    image_cols : list of str
+        Columns to select from the image table.
+    strata :  list of str
+        The columns to groupby and aggregate single cells.
+
+    Returns
+    -------
+    image_features_df : pandas.core.frame.DataFrame
+        Dataframe with extracted image features.
+    image_feature_categories : list of str
+        Correctly formatted image feature categories.
+
+    """
+
+    image_feature_categories = [_.capitalize() for _ in image_feature_categories]
+
+    # Check if the input image feature groups are valid.
+    check_image_features(image_feature_categories, list(image_df.columns))
+
+    # Extract Image features from image_feature_categories
+    image_features = list(
+        image_df.columns[
+            image_df.columns.str.startswith(tuple(image_feature_categories))
+        ]
+    )
+
+    image_features_df = image_df[image_features]
+
+    # Add "Image_" prefix to the features
+    image_features_df.columns = [
+        f"Image_{x}" if not x.startswith("Image_") else x
+        for x in image_features_df.columns
+    ]
+
+    # Add image_cols and strata to the dataframe
+    image_features_df = pd.concat(
+        [image_df[list(np.union1d(image_cols, strata))], image_features_df], axis=1
+    )
+
+    return image_features_df, image_feature_categories
+
+
 def get_pairwise_correlation(population_df, method="pearson"):
     """Given a population dataframe, calculate all pairwise correlations.
 

@@ -13,6 +13,9 @@ from pycytominer.cyto_utils import (
     provide_linking_cols_feature_name_update,
     check_fields_of_view_format,
     check_fields_of_view,
+    extract_image_features,
+    aggregate_fields_count,
+    aggregate_image_features,
 )
 
 default_compartments = get_default_compartments()
@@ -41,7 +44,11 @@ class SingleCells(object):
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
         Columns to select from the image table.
-    feature: str or list of str, default "infer"
+    add_image_features: bool, default False
+        Whether to add image features to the profiles.
+    image_feature_categories : list of str, optional
+        List of categories of features from the image table to add to the profiles.
+    features: str or list of str, default "infer"
         List of features that should be aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
@@ -53,6 +60,8 @@ class SingleCells(object):
         The random state to init subsample.
     fields_of_view : list of int, str, default "all"
         List of fields of view to aggregate.
+    fields_of_view_feature : str, default "Metadata_Site"
+        Name of the fields of view feature.
     object_feature : str, default "Metadata_ObjectNumber"
         Object number feature.
 
@@ -80,6 +89,8 @@ class SingleCells(object):
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
         image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
+        add_image_features=False,
+        image_feature_categories=None,
         features="infer",
         load_image_data=True,
         subsample_frac=1,
@@ -108,6 +119,8 @@ class SingleCells(object):
         self.output_file = output_file
         self.merge_cols = merge_cols
         self.image_cols = image_cols
+        self.add_image_features = add_image_features
+        self.image_feature_categories = image_feature_categories
         self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
@@ -244,11 +257,23 @@ class SingleCells(object):
 
         """
 
-        # Extract image metadata
-        image_query = "select {} from image".format(
-            ", ".join(np.union1d(self.image_cols, self.strata))
-        )
+        image_query = "select * from image"
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
+
+        if self.add_image_features:
+            (
+                self.image_features_df,
+                self.image_feature_categories,
+            ) = extract_image_features(
+                self.image_feature_categories,
+                self.image_df,
+                self.image_cols,
+                self.strata,
+            )
+
+        image_features = list(np.union1d(self.image_cols, self.strata))
+        self.image_df = self.image_df[image_features]
+
         if self.fields_of_view != "all":
             check_fields_of_view(
                 list(np.unique(self.image_df[self.fields_of_view_feature])),
@@ -257,6 +282,11 @@ class SingleCells(object):
             self.image_df = self.image_df.query(
                 f"{self.fields_of_view_feature}==@self.fields_of_view"
             )
+
+            if self.add_image_features:
+                self.image_features_df = self.image_features_df.query(
+                    f"{self.fields_of_view_feature}==@self.fields_of_view"
+                )
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
@@ -401,6 +431,7 @@ class SingleCells(object):
         compartment,
         compute_subsample=False,
         compute_counts=False,
+        add_image_features=False,
         n_aggregation_memory_strata=1,
     ):
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
@@ -414,6 +445,8 @@ class SingleCells(object):
         compute_counts : bool, default False
             Whether or not to compute the number of objects in each compartment
             and the number of fields of view per well.
+        add_image_features : bool, default False
+            Whether or not to add image features.
         n_aggregation_memory_strata : int, default 1
             Number of unique strata to pull from the database into working memory
             at once.  Typically 1 is fastest.  A larger number uses more memory.
@@ -469,24 +502,32 @@ class SingleCells(object):
             )
 
             if compute_counts and self.fields_of_view_feature not in self.strata:
-                fields_count_df = self.image_df.loc[
-                    :, list(np.union1d(self.strata, self.fields_of_view_feature))
-                ]
-                fields_count_df = (
-                    fields_count_df.groupby(self.strata)[self.fields_of_view_feature]
-                    .count()
-                    .reset_index()
-                    .rename(
-                        columns={
-                            f"{self.fields_of_view_feature}": f"Metadata_Site_Count"
-                        }
-                    )
+                fields_count_df = aggregate_fields_count(
+                    self.image_df, self.strata, self.fields_of_view_feature
                 )
+
+                if add_image_features:
+                    fields_count_df = aggregate_image_features(
+                        fields_count_df,
+                        self.image_features_df,
+                        self.image_feature_categories,
+                        self.image_cols,
+                        self.strata,
+                        self.aggregation_operation,
+                    )
 
                 partial_object_df = fields_count_df.merge(
                     partial_object_df,
                     on=self.strata,
                     how="right",
+                )
+
+                # Separate all the metadata and feature columns.
+                metadata_cols = infer_cp_features(partial_object_df, metadata=True)
+                feature_cols = infer_cp_features(partial_object_df, image_features=True)
+
+                partial_object_df = partial_object_df.reindex(
+                    columns=metadata_cols + feature_cols
                 )
 
             object_dfs.append(partial_object_df)
@@ -757,6 +798,7 @@ class SingleCells(object):
                     compartment=compartment,
                     compute_subsample=compute_subsample,
                     compute_counts=True,
+                    add_image_features=self.add_image_features,
                     n_aggregation_memory_strata=n_aggregation_memory_strata,
                 )
             else:

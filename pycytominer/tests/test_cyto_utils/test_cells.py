@@ -45,7 +45,7 @@ def build_random_data(
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
 
-# Lauch a sqlite connection
+# Launch a sqlite connection
 file = "sqlite:///{}/test.sqlite".format(tmpdir)
 
 test_engine = create_engine(file)
@@ -65,6 +65,20 @@ image_df = pd.DataFrame(
         "Metadata_Plate": ["plate", "plate"],
         "Metadata_Well": ["A01", "A02"],
         "Metadata_Site": [1, 1],
+    }
+)
+
+image_df_additional_features = pd.DataFrame(
+    {
+        "TableNumber": ["x_hash", "y_hash"],
+        "ImageNumber": ["x", "y"],
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A01"],
+        "Metadata_Site": [1, 2],
+        "Count_Cells": [50, 50],
+        "Granularity_1_Mito": [3.0, 4.0],
+        "Texture_Variance_RNA_20_00": [12.0, 14.0],
+        "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
     }
 )
 
@@ -98,6 +112,22 @@ new_linking_cols = get_default_linking_cols()
 new_linking_cols["cytoplasm"]["new"] = "Cytoplasm_Parent_New"
 new_linking_cols["new"] = {"cytoplasm": "ObjectNumber"}
 
+# Ingest data with additional image features to temporary sqlite file
+
+image_file = "sqlite:///{}/test_image.sqlite".format(tmpdir)
+
+test_engine_image = create_engine(image_file)
+test_conn_image = test_engine_image.connect()
+
+image_df_additional_features.to_sql(
+    "image", con=test_engine_image, index=False, if_exists="replace"
+)
+cells_df.to_sql("cells", con=test_engine_image, index=False, if_exists="replace")
+cytoplasm_df.to_sql(
+    "cytoplasm", con=test_engine_image, index=False, if_exists="replace"
+)
+nuclei_df.to_sql("nuclei", con=test_engine_image, index=False, if_exists="replace")
+
 # Setup SingleCells Class
 ap = SingleCells(file_or_conn=file)
 ap_subsample = SingleCells(
@@ -110,6 +140,22 @@ ap_new = SingleCells(
     load_image_data=False,
     compartments=new_compartments,
     compartment_linking_cols=new_linking_cols,
+)
+
+ap_image_all_features = SingleCells(
+    file_or_conn=image_file,
+    add_image_features=True,
+    image_feature_categories=["count", "granularity", "Texture"],
+)
+
+ap_image_subset_features = SingleCells(
+    file_or_conn=image_file,
+    add_image_features=True,
+    image_feature_categories=["count", "Texture"],
+)
+
+ap_image_count = SingleCells(
+    file_or_conn=image_file, add_image_features=True, image_feature_categories=["count"]
 )
 
 
@@ -650,3 +696,91 @@ def test_aggregate_count_cells_multiple_strata():
         }
     )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+
+def test_add_image_features():
+    result = ap_image_all_features.aggregate_profiles()
+    expected_result_all_features = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate"],
+            "Metadata_Well": ["A01"],
+            "Metadata_Site_Count": [2],
+            "Metadata_Object_Count": [100],
+            "Image_Count_Cells": [100],
+            "Image_Granularity_1_Mito": [3.5],
+            "Image_Texture_Variance_RNA_20_00": [13.0],
+            "Image_Texture_InfoMeas2_DNA_5_02": [3.0],
+            "Cells_a": [530.0],
+            "Cells_b": [478.5],
+            "Cells_c": [489.5],
+            "Cells_d": [514.5],
+            "Cytoplasm_a": [480.5],
+            "Cytoplasm_b": [446.5],
+            "Cytoplasm_c": [383.0],
+            "Cytoplasm_d": [539.5],
+            "Nuclei_a": [481.0],
+            "Nuclei_b": [574.0],
+            "Nuclei_c": [571.0],
+            "Nuclei_d": [493.0],
+        }
+    )
+
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1), expected_result_all_features.sort_index(axis=1)
+    )
+
+    result = ap_image_subset_features.aggregate_profiles()
+    expected_result_subset_features = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate"],
+            "Metadata_Well": ["A01"],
+            "Metadata_Site_Count": [2],
+            "Metadata_Object_Count": [100],
+            "Image_Count_Cells": [100],
+            "Image_Texture_Variance_RNA_20_00": [13.0],
+            "Image_Texture_InfoMeas2_DNA_5_02": [3.0],
+            "Cells_a": [530.0],
+            "Cells_b": [478.5],
+            "Cells_c": [489.5],
+            "Cells_d": [514.5],
+            "Cytoplasm_a": [480.5],
+            "Cytoplasm_b": [446.5],
+            "Cytoplasm_c": [383.0],
+            "Cytoplasm_d": [539.5],
+            "Nuclei_a": [481.0],
+            "Nuclei_b": [574.0],
+            "Nuclei_c": [571.0],
+            "Nuclei_d": [493.0],
+        }
+    )
+
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1), expected_result_subset_features.sort_index(axis=1)
+    )
+
+    result = ap_image_count.aggregate_profiles()
+    expected_result_count = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate"],
+            "Metadata_Well": ["A01"],
+            "Metadata_Site_Count": [2],
+            "Metadata_Object_Count": [100],
+            "Image_Count_Cells": [100],
+            "Cells_a": [530.0],
+            "Cells_b": [478.5],
+            "Cells_c": [489.5],
+            "Cells_d": [514.5],
+            "Cytoplasm_a": [480.5],
+            "Cytoplasm_b": [446.5],
+            "Cytoplasm_c": [383.0],
+            "Cytoplasm_d": [539.5],
+            "Nuclei_a": [481.0],
+            "Nuclei_b": [574.0],
+            "Nuclei_c": [571.0],
+            "Nuclei_d": [493.0],
+        }
+    )
+
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1), expected_result_count.sort_index(axis=1)
+    )

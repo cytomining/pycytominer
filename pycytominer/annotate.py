@@ -30,35 +30,46 @@ def annotate(
     float_format=None,
     cmap_args={},
 ):
-    """
-    Exclude features that have correlations above a certain threshold
+    """Add metadata to aggregated profiles.
 
-    Arguments:
-    profiles - either pandas DataFrame or a file that stores profile data
-    platemap - either pandas DataFrame or a file that stores platemap metadata
-    join_on - list of length two indicating which variables to merge profiles and plate
-              [default: ["Metadata_well_position", "Metadata_Well"]]. The first element
-              indicates variable(s) in platemap and the second element indicates
-              variable(s) in profiles to merge using.
-              Note the setting of `add_metadata_id_to_platemap`
-    output_file - [default: "none"] if provided, will write annotated profiles to file
-                  if not specified, will return the annotated profiles. We recommend
-                  that this output file be suffixed with "_augmented.csv".
-    add_metadata_id_to_platemap - [default: True] boolean if the platemap variables possibly need "Metadata" pre-pended
-    format_broad_cmap - [default: False] boolean if we need to add columns to make
-                        compatible with Broad CMAP naming conventions.
-    external_metadata - [default: "none"] a string indicating a file with additional
-                        metadata information
-    external_join_left - [default: "none"] the merge column in the profile metadata
-    external_join_right - [default: "none"] the merge column in the external metadata
-    compression_options - the mechanism to compress [default: None] See cyto_utils/output.py for options.
-    float_format - decimal precision to use in writing output file [default: None]
-                       For example, use "%.3g" for 3 decimal precision.
-    cmap_args - [default: {}] - potential keyword arguments for annotate_cmap().
-                See cyto_utils/annotate_cmap.py for more details.
+    Parameters
+    ----------
+    profiles : pandas.core.frame.DataFrame or file
+        DataFrame or file path of profiles.
+    platemap : pandas.core.frame.DataFrame or file
+        Dataframe or file path of platemap metadata.
+    join_on : list or str, default: ["Metadata_well_position", "Metadata_Well"]
+        Which variables to merge profiles and plate. The first element indicates variable(s) in platemap and the second element indicates variable(s) in profiles to merge using. Note the setting of `add_metadata_id_to_platemap`
+    output_file : str, optional
+       If not specified, will return the annotated profiles. We recommend that this output file be suffixed with "_augmented.csv".
+    add_metadata_id_to_platemap : bool, default True
+        Whether the plate map variables possibly need "Metadata" pre-pended
+    format_broad_cmap : bool, default False
+        Whether we need to add columns to make compatible with Broad CMAP naming conventions.
+    clean_cellprofiler: bool, default True
+        Clean specific CellProfiler feature names.
+    external_metadata : str, optional
+        File with additional metadata information
+    external_join_left : str, optional
+        Merge column in the profile metadata.
+    external_join_right: str, optional
+        Merge column in the external metadata.
+    compression_options : str or dict, optional
+        Contains compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
+    float_format : str, optional
+        Decimal precision to use in writing output file as input to
+        pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
+        decimal precision.
+    cmap_args : dict, default {}
+        Potential keyword arguments for annotate_cmap(). See cyto_utils/annotate_custom.py for more details.
 
-    Return:
-    Pandas DataFrame of annotated profiles or written to file
+    Returns
+    -------
+    annotated : pandas.core.frame.DataFrame, optional
+        DataFrame of annotated features. If output_file="none", then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
     """
 
     # Load Data

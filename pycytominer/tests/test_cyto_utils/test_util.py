@@ -14,6 +14,8 @@ from pycytominer.cyto_utils.util import (
     check_consensus_operation,
     check_fields_of_view,
     check_fields_of_view_format,
+    check_image_features,
+    extract_image_features,
 )
 
 tmpdir = tempfile.gettempdir()
@@ -197,3 +199,68 @@ def test_check_fields_of_view_format():
             str(err)
             == "Variables of type int expected, however some of the input fields of view are not integers."
         )
+
+
+def test_check_image_features():
+    data_image_cols = [
+        "Count_Cells",
+        "Granularity_1_Mito",
+        "Texture_Variance_RNA_20_00",
+        "Texture_InfoMeas2_DNA_5_02",
+    ]
+
+    valid_image_feature_groups = ["Count", "Granularity"]
+    assert check_image_features(valid_image_feature_groups, data_image_cols) is None
+
+    valid_image_feature_groups = ["Count", "Granularity", "Texture"]
+    assert check_image_features(valid_image_feature_groups, data_image_cols) is None
+
+    invalid_image_feature_groups = ["Count", "IncorrectFeatureGroup"]
+    with pytest.raises(ValueError) as err:
+        check_image_features(invalid_image_feature_groups, data_image_cols)
+        assert (
+            str(err)
+            == "Some of the input image features are not present in the image table."
+        )
+
+
+def test_extract_image_features():
+    image_df = pd.DataFrame(
+        {
+            "TableNumber": ["x_hash", "y_hash"],
+            "ImageNumber": ["x", "y"],
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A01"],
+            "Count_Cells": [50, 50],
+            "Granularity_1_Mito": [3.0, 4.0],
+            "Texture_Variance_RNA_20_00": [12.0, 14.0],
+            "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
+        }
+    )
+
+    image_feature_categories = ["count", "Granularity"]
+    expected_image_feature_categories = ["Count", "Granularity"]
+
+    expected_result = pd.DataFrame(
+        {
+            "TableNumber": ["x_hash", "y_hash"],
+            "ImageNumber": ["x", "y"],
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A01"],
+            "Image_Count_Cells": [50, 50],
+            "Image_Granularity_1_Mito": [3.0, 4.0],
+        }
+    )
+
+    result, corrected_image_feature_categories = extract_image_features(
+        image_feature_categories,
+        image_df,
+        ["TableNumber", "ImageNumber"],
+        ["Metadata_Plate", "Metadata_Well"],
+    )
+
+    pd.testing.assert_frame_equal(
+        expected_result.sort_index(axis=1), result.sort_index(axis=1)
+    )
+
+    assert expected_image_feature_categories == corrected_image_feature_categories

@@ -16,6 +16,8 @@ data_df = pd.DataFrame(
         "Nothing_somethingwrong": [9, 3, 8, 9, 2, 9],
         "": [9, 3, 8, 9, 2, 9],
         "dont pick me": [9, 3, 8, 9, 2, 9],
+        "Image_Feature_1": [4, 7, 9, 2, 3, 1],
+        "Image_Feature_2": [10, 4, 6, 1, 4, 5],
     }
 ).reset_index(drop=True)
 
@@ -65,3 +67,17 @@ def test_feature_infer_compartments():
 
     assert features == expected
     assert features2 == expected2
+
+
+def test_feature_infer_image():
+    features = infer_cp_features(population_df=data_df, image_features=True)
+    expected = [
+        "Cells_Something_Something",
+        "Cytoplasm_Something_Something",
+        "Nuclei_Correlation_Manders_AGP_DNA",
+        "Nuclei_Correlation_RWC_ER_RNA",
+        "Image_Feature_1",
+        "Image_Feature_2",
+    ]
+
+    assert features == expected

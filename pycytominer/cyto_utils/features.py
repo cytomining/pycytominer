@@ -11,15 +11,19 @@ blocklist_file = os.path.join(
 
 
 def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
-    """
-    Get a list of blocklist features
+    """Get a list of blocklist features.
 
-    Arguments:
-    blocklist_file - file location of dataframe with features to exclude
-    population_df - profile dataframe used to subset blocklist features [default: None]
+    Parameters
+    ----------
+    blocklist_file : path-like object
+        Location of the dataframe with features to exclude.
+    population_df : pandas.core.frame.DataFrame, optional
+        Profile dataframe used to subset blocklist features.
 
-    Return:
-    list of features to exclude from downstream analysis
+    Returns
+    -------
+    blocklist_features : list of str
+        Features to exclude from downstream analysis.
     """
 
     blocklist = pd.read_csv(blocklist_file)
@@ -37,16 +41,21 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
 
 
 def label_compartment(cp_features, compartment, metadata_cols):
-    """
-    Assign compartment label to each features as a prefix
+    """Assign compartment label to each features as a prefix.
 
-    Arguments:
-    cp_features - list of all features being used
-    compartment - a string indicating the measured compartment
-    metadata_cols - a list indicating which columns should be considered metadata
+    Parameters
+    ----------
+    cp_features : list of str
+        All features being used.
+    compartment : str
+       Measured compartment.
+    metadata_cols : list
+        Columns that should be considered metadata.
 
-    Return:
-    Recoded column names with appopriate metadata and compartment labels
+    Returns
+    -------
+    cp_features: list of str
+        Recoded column names with appropriate metadata and compartment labels.
     """
 
     compartment = compartment.Title()
@@ -67,13 +76,35 @@ def label_compartment(cp_features, compartment, metadata_cols):
 
 
 def infer_cp_features(
-    population_df, compartments=["Cells", "Nuclei", "Cytoplasm"], metadata=False
+    population_df,
+    compartments=["Cells", "Nuclei", "Cytoplasm"],
+    metadata=False,
+    image_features=False,
 ):
+    """Given a dataframe, output features that we expect to be Cell Painting features.
+
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame from which features are to be inferred.
+    compartments : list of str, default ["Cells", "Nuclei", "Cytoplasm"]
+        Compartments from which Cell Painting features were extracted.
+    metadata : bool, default False
+        Whether or not to infer metadata features.
+    image_features : bool, default False
+        Whether or not the profiles contain image features.
+
+    Returns
+    -------
+    features: list of str
+        List of Cell Painting features.
     """
-    Given a dataframe, output features that we expect to be cell painting features
-    """
+
     compartments = convert_compartment_format_to_list(compartments)
     compartments = [x.title() for x in compartments]
+
+    if image_features:
+        compartments = list(set(["Image"] + compartments))
 
     features = []
     for col in population_df.columns.tolist():
@@ -93,15 +124,18 @@ def infer_cp_features(
 
 
 def count_na_features(population_df, features):
-    """
-    Given a population dataframe and features, count how many nas per feature
+    """Given a population dataframe and features, count how many nas per feature.
 
-    Arguments:
-    population_df - pandas DataFrame storing profiles
-    features - a list of features present in the population dataframe
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame of profiles.
+    features : list of str
+        Features present in the population dataframe.
 
-    Return:
-    Dataframe of NA counts per variable
+    Returns
+    -------
+    Dataframe of NA counts per feature
     """
 
     return pd.DataFrame(population_df.loc[:, features].isna().sum(), columns=["num_na"])
@@ -110,21 +144,25 @@ def count_na_features(population_df, features):
 def drop_outlier_features(
     population_df, features="infer", samples="all", outlier_cutoff=15
 ):
-    """
-    Exclude a feature if its min or max absolute value is greater than the threshold
+    """Exclude a feature if its min or max absolute value is greater than the threshold.
 
-    Arguments:
-    population_df - pandas DataFrame that includes metadata and observation features
-    features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that start with
-               "Cells_", "Nuclei_", or "Cytoplasm_"
-    samples - list samples to perform operation on
-              [default: "all"] - if "all", use all samples to calculate
-    outlier_cutoff - threshold to remove feature if absolute value is greater
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame that includes metadata and observation features.
+    features : list of str or str, default "infer"
+        Features present in the population dataframe. If "infer", then assume Cell Painting features are those that start with "Cells_", "Nuclei_", or "Cytoplasm_"
+    samples : list of str or str, default "all"
+        Samples to perform the operation on
+    outlier_cutoff : int or float, default 15
+        Threshold to remove features if absolute values is greater
 
-    Return:
-    list of features to exclude from the population_df
+    Returns
+    -------
+    outlier_features: list of str
+        Features greater than the threshold.
     """
+
     # Subset dataframe
     if samples != "all":
         population_df = population_df.loc[samples, :]
@@ -146,6 +184,19 @@ def drop_outlier_features(
 
 
 def convert_compartment_format_to_list(compartments):
+    """Converts compartment to a list.
+
+    Parameters
+    ----------
+    compartments : list of str or str
+        Cell Painting compartment(s).
+
+    Returns
+    -------
+    compartments : list of str
+        List of Cell Painting compartments.
+    """
+
     if isinstance(compartments, list):
         compartments = [x.lower() for x in compartments]
     elif isinstance(compartments, str):

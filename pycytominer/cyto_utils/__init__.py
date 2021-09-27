@@ -9,6 +9,8 @@ from .util import (
     get_pairwise_correlation,
     check_fields_of_view_format,
     check_fields_of_view,
+    check_image_features,
+    extract_image_features,
 )
 from .single_cell_ingest_utils import (
     get_default_linking_cols,
@@ -28,3 +30,7 @@ from .write_gct import write_gct
 from .modz import modz
 from .annotate_custom import annotate_cmap, cp_clean
 from .DeepProfiler_processing import AggregateDeepProfiler
+from .cp_image_features import (
+    aggregate_fields_count,
+    aggregate_image_features,
+)
