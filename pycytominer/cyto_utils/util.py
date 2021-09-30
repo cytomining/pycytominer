@@ -293,9 +293,12 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
 
     image_features_df = image_df[image_features]
 
-    # Add "Image_" prefix to the features
     image_features_df.columns = [
-        f"Image_{x}" if not x.startswith("Image_") else x
+        f"Image_{x}"
+        if not x.startswith("Image_") and not x.startswith("Count_")
+        else f"Metadata_{x}"
+        if x.startswith("Count_")
+        else x
         for x in image_features_df.columns
     ]
 
