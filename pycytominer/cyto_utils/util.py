@@ -279,8 +279,6 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
 
     """
 
-    image_feature_categories = [_.capitalize() for _ in image_feature_categories]
-
     # Check if the input image feature groups are valid.
     check_image_features(image_feature_categories, list(image_df.columns))
 
@@ -307,7 +305,7 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
         [image_df[list(np.union1d(image_cols, strata))], image_features_df], axis=1
     )
 
-    return image_features_df, image_feature_categories
+    return image_features_df
 
 
 def get_pairwise_correlation(population_df, method="pearson"):

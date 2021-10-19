@@ -261,10 +261,7 @@ class SingleCells(object):
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
         if self.add_image_features:
-            (
-                self.image_features_df,
-                self.image_feature_categories,
-            ) = extract_image_features(
+            self.image_features_df = extract_image_features(
                 self.image_feature_categories,
                 self.image_df,
                 self.image_cols,
