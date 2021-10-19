@@ -122,7 +122,9 @@ def aggregate_image_features(
     else:
         remove_cols = list(image_cols) + list(
             image_features_df.columns[
-                image_features_df.columns.str.startswith("Metadata_" + str(count_prefix))
+                image_features_df.columns.str.startswith(
+                    "Metadata_" + str(count_prefix)
+                )
             ]
         )
 

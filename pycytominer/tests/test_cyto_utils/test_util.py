@@ -235,11 +235,11 @@ def test_extract_image_features():
             "Granularity_1_Mito": [3.0, 4.0],
             "Texture_Variance_RNA_20_00": [12.0, 14.0],
             "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
+            "ImageQuality_XX_YY_ZZ": [10, 20],
         }
     )
 
-    image_feature_categories = ["count", "Granularity"]
-    expected_image_feature_categories = ["Count", "Granularity"]
+    image_feature_categories = ["Count", "Granularity", "ImageQuality"]
 
     expected_result = pd.DataFrame(
         {
@@ -249,10 +249,11 @@ def test_extract_image_features():
             "Metadata_Well": ["A01", "A01"],
             "Metadata_Count_Cells": [50, 50],
             "Image_Granularity_1_Mito": [3.0, 4.0],
+            "Image_ImageQuality_XX_YY_ZZ": [10, 20],
         }
     )
 
-    result, corrected_image_feature_categories = extract_image_features(
+    result = extract_image_features(
         image_feature_categories,
         image_df,
         ["TableNumber", "ImageNumber"],
@@ -262,5 +263,3 @@ def test_extract_image_features():
     pd.testing.assert_frame_equal(
         expected_result.sort_index(axis=1), result.sort_index(axis=1)
     )
-
-    assert expected_image_feature_categories == corrected_image_feature_categories
