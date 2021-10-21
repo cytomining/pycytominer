@@ -23,8 +23,6 @@ class AggregateDeepProfiler:
         method of aggregation
     aggregate_on : ['site', 'well', 'plate']
         up to which level to aggregate
-    filename_delimiter : default = '_'
-        delimiter for the filenames of the profiles (e.g. B02_4.npz).
     file_extension : default = '.npz'
         extension of the profile file.
     index_df : pandas.DataFrame
@@ -52,7 +50,6 @@ class AggregateDeepProfiler:
         profile_dir,
         aggregate_operation="median",
         aggregate_on="well",
-        filename_delimiter="_",
         file_extension=".npz",
         output_file="none",
     ):
@@ -80,7 +77,6 @@ class AggregateDeepProfiler:
         self.profile_dir = profile_dir
         self.aggregate_operation = aggregate_operation
         self.aggregate_on = aggregate_on
-        self.filename_delimiter = filename_delimiter
         self.file_extension = file_extension
         if not self.file_extension.startswith("."):
             self.file_extension = f".{self.file_extension}"
@@ -105,31 +101,29 @@ class AggregateDeepProfiler:
         well = row["Metadata_Well"]
         site = row["Metadata_Site"]
 
-        filename = f"{plate}/{well}_{site}{self.file_extension}"
+        filename = f"{plate}/{well}/{site}{self.file_extension}"
         return filename
 
-    def extract_filename_metadata(self, npz_file, delimiter="_"):
+    def extract_filename_metadata(self, npz_file):
         """
         Extract metadata (site, well and plate) from the filename.
-        The input format of the file: path/plate/well_site.npz
+        The input format of the file: path/plate/well/site.npz
 
         Arguments
         ---------
-        npz_file : str
+        npz_file : PurePath
             file path
-
-        delimiter : str
-            the delimiter used in the naming convention of the files. default = '_'
 
         Returns
         -------
         loc : dict
             dict with metadata
         """
-        base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
-        site = base_file[-1]
-        well = base_file[-2]
-        plate = str(npz_file).split("/")[-2]
+        npz_file = str(npz_file)
+        split_file = npz_file.split(".")[0].split("/")
+        site = split_file[-1]
+        well = split_file[-2]
+        plate = split_file[-3]
 
         loc = {"site": site, "well": well, "plate": plate}
         return loc
@@ -147,9 +141,7 @@ class AggregateDeepProfiler:
 
         self.file_aggregate = {}
         for filename in self.filenames:
-            file_info = self.extract_filename_metadata(
-                filename, self.filename_delimiter
-            )
+            file_info = self.extract_filename_metadata(filename)
             file_key = file_info[self.aggregate_on]
 
             if self.aggregate_on == "site":
