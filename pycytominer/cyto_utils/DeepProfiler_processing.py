@@ -182,6 +182,7 @@ class AggregateDeepProfiler:
 
         # Iterates over all sites, wells or plates
         for metadata_level in self.file_aggregate:
+            print(metadata_level)
             # uses custom load function to create df with metadata and profiles
             arr = [load_npz(x) for x in self.file_aggregate[metadata_level]["files"]]
             # empty dataframes from missing files are deleted
