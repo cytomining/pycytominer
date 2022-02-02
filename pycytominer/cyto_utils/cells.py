@@ -28,8 +28,9 @@ class SingleCells(object):
 
     Attributes
     ----------
-    file_or_conn : str or pandas.core.frame.DataFrame
-        A file string or database connection storing the location of single cell profiles.
+    sql_file : str
+        SQLite connection pointing to the single cell database.
+        The string prefix must be "sqlite:///".
     strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
         The columns to groupby and aggregate single cells.
     aggregation_operation : str, default "median"
@@ -81,7 +82,7 @@ class SingleCells(object):
 
     def __init__(
         self,
-        file_or_conn,
+        sql_file,
         strata=["Metadata_Plate", "Metadata_Well"],
         aggregation_operation="median",
         output_file="none",
@@ -112,7 +113,7 @@ class SingleCells(object):
             0 < subsample_frac and 1 >= subsample_frac
         ), "subsample_frac must be between 0 and 1"
 
-        self.file_or_conn = file_or_conn
+        self.sql_file = sql_file
         self.strata = strata
         self.load_image_data = load_image_data
         self.aggregation_operation = aggregation_operation.lower()
@@ -147,7 +148,7 @@ class SingleCells(object):
             self.set_subsample_n(self.subsample_n)
 
         # Connect to sqlite engine
-        self.engine = create_engine(self.file_or_conn)
+        self.engine = create_engine(self.sql_file)
         self.conn = self.engine.connect()
 
         # Throw an error if both subsample_frac and subsample_n is set
