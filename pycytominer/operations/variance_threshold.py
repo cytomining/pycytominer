@@ -26,8 +26,8 @@ def variance_threshold(
     freq_cut : float, default 0.05
         Ratio (2nd most common feature val / most common). Must range between 0 and 1.
         Remove features lower than freq_cut. A low freq_cut will remove features
-        that have large difference between the most common feature and second most
-        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
+        that have large difference between the most common feature value and second most
+        common feature value. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
     unique_cut: float, default 0.01
         Ratio (num unique features / num samples). Must range between 0 and 1.
         Remove features less than unique cut. A low unique_cut will remove features
