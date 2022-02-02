@@ -11,8 +11,7 @@ from pycytominer.cyto_utils import infer_cp_features
 def variance_threshold(
     population_df, features="infer", samples="all", freq_cut=0.05, unique_cut=0.01
 ):
-    """
-    Exclude features that have low variance (low information content)
+    """Exclude features that have low variance (low information content)
 
     Parameters
     ----------
@@ -75,8 +74,7 @@ def variance_threshold(
 
 
 def calculate_frequency(feature_column, freq_cut):
-    """
-    Calculate frequency of second most common to most common feature.
+    """Calculate frequency of second most common to most common feature.
     Used in pandas.apply()
 
     Parameters
