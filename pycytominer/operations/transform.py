@@ -1,5 +1,8 @@
-"""
-Transform observation variables by specified groups
+"""Transform observation variables by specified groups.
+
+References
+----------
+.. [1] Kessy et al. 2016 "Optimal Whitening and Decorrelation" arXiv: https://arxiv.org/abs/1512.00809
 """
 
 import os
@@ -11,23 +14,35 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class Spherize(BaseEstimator, TransformerMixin):
-    """
-    Class to apply a sphering transform (aka whitening) data in the base sklearn
+    """Class to apply a sphering transform (aka whitening) data in the base sklearn
     transform API. Note, this implementation is modified/inspired from the following
     sources:
     1) A custom function written by Juan C. Caicedo
     2) A custom ZCA function at https://github.com/mwv/zca
     3) Notes from Niranj Chandrasekaran (https://github.com/cytomining/pycytominer/issues/90)
     4) The R package "whitening" written by Strimmer et al (http://strimmerlab.org/software/whitening/)
-    5) Kessy et al. 2016 "Optimal Whitening and Decorrelation"
+    5) Kessy et al. 2016 "Optimal Whitening and Decorrelation" [1]_
+
+    Attributes
+    ----------
+    epsilon : float
+        fudge factor parameter
+    center : bool
+        option to center the input X matrix
+    method : str
+        a string indicating which class of sphering to perform
     """
 
     def __init__(self, epsilon=1e-6, center=True, method="ZCA"):
         """
-        Arguments:
-        epsilon - fudge factor parameter
-        center - option to center input X matrix
-        method - a string indicating which class of sphering to perform
+        Parameters
+        ----------
+        epsilon : float, default 1e-6
+            fudge factor parameter
+        center : bool, default True
+            option to center the input X matrix
+        method : str, default "ZCA"
+            a string indicating which class of sphering to perform
         """
         avail_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
 
@@ -40,11 +55,17 @@ class Spherize(BaseEstimator, TransformerMixin):
         self.method = method
 
     def fit(self, X, y=None):
-        """
-        Identify the sphering transform given self.X
+        """Identify the sphering transform given self.X
 
-        Argument:
-        X - dataframe to fit sphering transform
+        Parameters
+        ----------
+        X : pandas.core.frame.DataFrame
+            dataframe to fit sphering transform
+
+        Returns
+        -------
+        self
+            With computed weights attribute
         """
         # Get the mean of the features (columns) and center if specified
         self.mu = X.mean()
@@ -102,28 +123,42 @@ class Spherize(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-        """
-        Perform the sphering transform
+        """Perform the sphering transform
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Spherized dataframe
         """
         return np.dot(X - self.mu, self.W.transpose())
 
 
 class RobustMAD(BaseEstimator, TransformerMixin):
-    """
-    Class to perform a "Robust" normalization with respect to median and mad
+    """Class to perform a "Robust" normalization with respect to median and mad
 
         scaled = (x - median) / mad
+
+    Attributes
+    ----------
+    epsilon : float
+        fudge factor parameter
     """
 
     def __init__(self, epsilon=1e-18):
         self.epsilon = epsilon
 
     def fit(self, X, y=None):
-        """
-        Compute the median and mad to be used for later scaling.
+        """Compute the median and mad to be used for later scaling.
 
-        Argument:
-        X - pandas dataframe to fit RobustMAD transform
+        Parameters
+        ----------
+        X : pandas.core.frame.DataFrame
+            dataframe to fit RobustMAD transform
+
+        Returns
+        -------
+        self
+            With computed median and mad attributes
         """
         # Get the mean of the features (columns) and center if specified
         self.median = X.median()
@@ -133,10 +168,16 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, copy=None):
-        """
-        Apply the RobustMAD calculation
+        """Apply the RobustMAD calculation
 
-        Argument:
-        X - pandas dataframe to apply RobustMAD transform
+        Parameters
+        ----------
+        X : pandas.core.frame.DataFrame
+            dataframe to fit RobustMAD transform
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            RobustMAD transformed dataframe
         """
         return (X - self.median) / (self.mad + self.epsilon)

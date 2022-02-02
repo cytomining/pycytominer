@@ -15,22 +15,27 @@ from pycytominer.cyto_utils import (
 def correlation_threshold(
     population_df, features="infer", samples="all", threshold=0.9, method="pearson"
 ):
-    """
-    Exclude features that have correlations above a certain threshold
+    """Exclude features that have correlations above a certain threshold
 
-    Arguments:
-    population_df - pandas DataFrame that includes metadata and observation features
-    features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that start with
-               "Cells_", "Nuclei_", or "Cytoplasm_"
-    samples - list samples to perform operation on
-              [default: "all"] - if "all", use all samples to calculate
-    threshold - float between (0, 1) to exclude features [default: 0.9]
-    method - string indicating which correlation metric to use to test cutoff
-             [default: "pearson"]
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame that includes metadata and observation features.
+    features : list, default "infer"
+         List of features present in the population dataframe [default: "infer"]
+         if "infer", then assume cell painting features are those that start with
+         "Cells_", "Nuclei_", or "Cytoplasm_".
+    samples : list or str, default "all"
+        List of samples to perform operation on. If "all", use all samples to calculate.
+    threshold - float, default 0.9
+        Must be between (0, 1) to exclude features
+    method - str, default "pearson"
+        indicating which correlation metric to use to test cutoff
 
-    Return:
-    list of features to exclude from the population_df
+    Returns
+    -------
+    excluded_features : list of str
+         List of features to exclude from the population_df.
     """
 
     # Check that the input method is supported
@@ -73,11 +78,19 @@ def correlation_threshold(
 
 
 def determine_high_cor_pair(correlation_row, sorted_correlation_pairs):
-    """
-    Select highest correlated variable given a correlation row with columns:
-    ["pair_a", "pair_b", "correlation"]
+    """Select highest correlated variable given a correlation row with columns:
+    ["pair_a", "pair_b", "correlation"]. For use in a pandas.apply().
 
-    For use in a pandas.apply()
+    Parameters
+    ----------
+    correlation_row : pandas.core.series.series
+        Pandas series of the specific feature in the pairwise_df
+    sorted_correlation_pairs : pandas.DataFrame.index
+        A sorted object by total correlative sum to all other features
+
+    Returns
+    -------
+    The feature that has a lower total correlation sum with all other features
     """
 
     pair_a = correlation_row["pair_a"]

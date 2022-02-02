@@ -8,20 +8,25 @@ from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
-    """
-    Get features that have more NA values than cutoff defined
+    """Get features that have more NA values than cutoff defined
 
-    Arguments:
-    population_df - pandas DataFrame storing profiles
-    features - list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that do not
-               start with "Cells", "Nuclei", or "Cytoplasm"
-    samples - if provided, a list of samples to provide operation on
-              [default: "all"] - if "all", use all samples to calculate
-    cutoff - float to exclude features that have a higher proportion of missingness
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame that includes metadata and observation features.
+    features : list, default "infer"
+         List of features present in the population dataframe [default: "infer"]
+         if "infer", then assume cell painting features are those that start with
+         "Cells_", "Nuclei_", or "Cytoplasm_".
+    samples : list or str, default "all"
+        List of samples to perform operation on. If "all", use all samples to calculate.
+    cutoff : float
+        Exclude features that have a certain proportion of missingness
 
-    Output:
-    A list of the features to exclude
+    Returns
+    -------
+    excluded_features : list of str
+         List of features to exclude from the population_df.
     """
 
     if samples != "all":
