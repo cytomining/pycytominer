@@ -171,6 +171,7 @@ def feature_select(
             exclude = noise_removal(
                 population_df=profiles,
                 features=features,
+                samples=samples,
                 noise_removal_perturb_groups=noise_removal_perturb_groups,
                 noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
             )
