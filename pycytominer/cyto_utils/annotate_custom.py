@@ -6,8 +6,23 @@ import pandas as pd
 def annotate_cmap(
     annotated, annotate_join_on, cell_id="unknown", perturbation_mode="none"
 ):
-    """
-    cell_id - [default: "unknown"] provide a string to annotate cell id column
+    """Annotates data frame with custom options according to CMAP specifications
+
+    Parameters
+    ----------
+    annotated : pandas.core.frame.DataFrame
+        DataFrame of profiles.
+    annotate_join_on : str
+        Typically the well metadata, but how to join external data
+    cell_id : str, default "unknown"
+        provide a string to annotate cell id column
+    perturbation_mode : str, default "none"
+        How to annotate CMAP specific data (options = ["chemical" , "genetic"])
+
+    Returns
+    -------
+    annotated
+        CMAP annotated data
     """
     pert_opts = ["none", "chemical", "genetic"]
     assert perturbation_mode in pert_opts, "perturbation mode must be one of {}".format(
@@ -91,8 +106,17 @@ def annotate_cmap(
 
 
 def cp_clean(profiles):
-    """
-    Specifically clean certain column names derived from different CellProfiler versions
+    """Specifically clean certain column names derived from different CellProfiler versions
+
+    Parameters
+    ----------
+    profiles : pandas.core.frame.DataFrame
+        DataFrame of profiles.
+
+    Returns
+    -------
+    profiles
+        Renamed to standard metadata
     """
 
     profiles = profiles.rename(
