@@ -21,21 +21,31 @@ def write_gct(
     feature_metadata="none",
     version="#1.3",
 ):
-    """
-    Convert profiles to a .gct file
+    """Convert profiles to a .gct file
 
-    Arguments:
-    profiles - either pandas DataFrame or a file that stores profile data
-    output_file - the name of the gct file to save processed data to
-    features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that start with
-               "Cells_", "Nuclei_", or "Cytoplasm_"
-    meta_features - if specified, then output these values in the gct file
-         [default: "infer"]
-    feature_metadata - pandas DataFrame linking features to additional metadata [default: "none"]
+    Parameters
+    ----------
+    profiles : pandas.core.frame.DataFrame
+        DataFrame of profiles.
+    output_file : str
+        If provided, will write gct to file.
+    features : list
+        A list of strings corresponding to feature measurement column names in the
+        `profiles` DataFrame. All features listed must be found in `profiles`.
+        Defaults to "infer". If "infer", then assume cell painting features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
+    meta_features : list
+        A list of strings corresponding to metadata column names in the `profiles`
+        DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
+        If "infer", then assume metadata features are those prefixed with "Metadata"
+    feature_metadata : pandas.core.frame.DataFrame, default "none"
+    version : str, default "#1.3"
+        Important for gct loading into Morpheus
 
-    Return:
-    Pandas DataFrame of audits or written to file
+    Returns
+    -------
+    None
+        Writes gct to file
     """
 
     # Note, only version 1.3 is currently supported
