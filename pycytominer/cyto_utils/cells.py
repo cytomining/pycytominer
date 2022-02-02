@@ -167,7 +167,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         # Check that the user didn't specify both subset frac and subsample all
@@ -187,7 +186,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         self.output_file = output_file
@@ -204,7 +202,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         self.subsample_frac = subsample_frac
@@ -222,7 +219,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         try:
@@ -243,7 +239,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         self.subsampling_random_state = random_state
@@ -255,7 +250,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         image_query = "select * from image"
@@ -300,7 +294,6 @@ class SingleCells(object):
         -------
         pandas.core.frame.DataFrame
             DataFrame of cell counts in the experiment.
-
         """
 
         check_compartments(compartment)
@@ -343,7 +336,6 @@ class SingleCells(object):
         -------
         pandas.core.frame.DataFrame
             A subsampled pandas dataframe of single cell profiles.
-
         """
 
         if self.subsampling_random_state == "none":
@@ -384,7 +376,6 @@ class SingleCells(object):
         -------
         None
             Nothing is returned.
-
         """
 
         check_compartments(compartment)
@@ -418,7 +409,6 @@ class SingleCells(object):
         -------
         pandas.core.frame.DataFrame
             Compartment dataframe.
-
         """
         compartment_query = "select * from {}".format(compartment)
         df = pd.read_sql(sql=compartment_query, con=self.conn)
@@ -456,7 +446,6 @@ class SingleCells(object):
         -------
         pandas.core.frame.DataFrame
             DataFrame of aggregated profiles.
-
         """
 
         check_compartments(compartment)
@@ -642,7 +631,6 @@ class SingleCells(object):
         -------
         pandas.core.frame.DataFrame
             Either a dataframe (if output_file="none") or will write to file.
-
         """
 
         # Load the single cell dataframe by merging on the specific linking columns
@@ -783,7 +771,6 @@ class SingleCells(object):
         -------
         pandas.core.frame.DataFrame
             Either a dataframe (if output_file="none") or will write to file.
-
         """
 
         if output_file != "none":
