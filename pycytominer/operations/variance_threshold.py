@@ -25,9 +25,14 @@ def variance_threshold(
     samples : list or str, default "all"
         List of samples to perform operation on. If "all", use all samples to calculate.
     freq_cut : float, default 0.05
-        Ratio (2nd most common feature val / most common).
+        Ratio (2nd most common feature val / most common). Must range between 0 and 1.
+        Remove features lower than freq_cut. A low freq_cut will remove features
+        that have large difference between the most common feature and second most
+        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
     unique_cut: float, default 0.01
-        Ratio (num unique features / num samples).
+        Ratio (num unique features / num samples). Must range between 0 and 1.
+        Remove features less than unique cut. A low unique_cut will remove features
+        that have very few different measurements compared to the number of samples.
 
     Returns
     -------
@@ -48,7 +53,7 @@ def variance_threshold(
 
     population_df = population_df.loc[:, features]
 
-    # Test if excluded for low frequency
+    # Exclude features with extreme (defined by freq_cut ratio) common values
     excluded_features_freq = population_df.apply(
         lambda x: calculate_frequency(x, freq_cut), axis="rows"
     )
@@ -57,7 +62,7 @@ def variance_threshold(
         excluded_features_freq.isna()
     ].index.tolist()
 
-    # Test if excluded for uniqueness
+    # Exclude features with too many (defined by unique_ratio) values in common
     n = population_df.shape[0]
     num_unique_features = population_df.nunique()
 
@@ -78,8 +83,11 @@ def calculate_frequency(feature_column, freq_cut):
     ----------
     feature_column : pandas.core.series.series
         Pandas series of the specific feature in the population_df
-    freq_cut : float
-        Ratio (2nd most common feature val / most common).
+    freq_cut : float, default 0.05
+        Ratio (2nd most common feature val / most common). Must range between 0 and 1.
+        Remove features lower than freq_cut. A low freq_cut will remove features
+        that have large difference between the most common feature and second most
+        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
 
     Returns
     -------
