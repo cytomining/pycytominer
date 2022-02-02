@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you have used pycytominer in your project, please cite us as:"
+authors:
+  - family-names: Way
+    given-names: Gregory
+    orcid: https://orcid.org/0000-0002-0503-9348
+  - family-names: Chandrasekaran
+    given-names: Srinivas Niranj
+    orcid:  https://orcid.org/0000-0001-8874-9988
+  - family-names: Bornholdt
+    given-names: Michael
+  - family-names: Fleming
+    given-names: Stephen
+    orcid: https://orcid.org/0000-0002-1885-4405
+  - family-names: Tsang
+    given-names: Hillary
+    orcid: https://orcid.org/0000-0001-6461-3402
+  - family-names: Adeboye
+    given-names: Adeniyi
+  - family-names: Cimini
+    given-names: Beth
+    orcid: https://orcid.org/0000-0001-9640-9318
+  - family-names: Weisbart
+    given-names: Erin
+    orcid: https://orcid.org/0000-0002-6437-2458
+  - family-names: Ryder
+    given-names: Pearl
+    orcid: https://orcid.org/0000-0003-3699-3633
+  - family-names: Stirling
+    given-names: David
+    orcid: https://orcid.org/0000-0001-6802-4103
+  - family-names: Jamali
+    given-names: Nasim
+    orcid: https://orcid.org/0000-0003-1851-6585
+  - family-names: Carpenter
+    given-names: Anne
+    orcid: https://orcid.org/0000-0003-1555-8261
+  - family-names: Singh
+    given-names: Shantanu
+    orcid: https://orcid.org/0000-0003-3150-3025
+title: "Pycytominer: Data processing functions for profiling perturbations"
+version: 0.1
+license: BSD 3-Clause License
+repository-code: "https://github.com/cytomining/pycytominer"
