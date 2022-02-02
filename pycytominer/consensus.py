@@ -26,24 +26,42 @@ def consensus(
 ):
     """Form level 5 consensus profile data.
 
-    :param profiles: A file or pandas DataFrame of profile data
-    :type profiles: str
-    :param replicate_columns: Metadata columns indicating which replicates to collapse, defaults to ["Metadata_Plate", "Metadata_Well"]
-    :type replicate_columns: list
-    :param operation: The method used to form consensus profiles, defaults to "median"
-    :type operation: str
-    :param features: The features to collapse, defaults to "infer"
-    :type features: str, list
-    :param output_file: If specified, the location to write the file, defaults to "none"
-    :type output_file: str
-    :param modz_args: Additional custom arguments passed as kwargs if operation="modz". See pycytominer.cyto_utils.modz for more details.
-    :type modz_args: dict
-    :param compression_options: the method to compress output data, defaults to None. See pycytominer.cyto_utils.output.py for options
-    :type compression_options: str
-    :param float_format: decimal precision to use in writing output file, defaults to None. For example, use "%.3g" for 3 decimal precision.
+    Parameters
+    ----------
+    profiles : pandas.core.frame.DataFrame or file
+        DataFrame or file of profiles.
+    replicate_columns : list, defaults to ["Metadata_Plate", "Metadata_Well"]
+        Metadata columns indicating which replicates to collapse
+    operation : str, defaults to "median"
+        The method used to form consensus profiles.
+    features : list
+        A list of strings corresponding to feature measurement column names in the
+        `profiles` DataFrame. All features listed must be found in `profiles`.
+        Defaults to "infer". If "infer", then assume cell painting features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
+    output_file : str, optional
+        If provided, will write consensus profiles to file. If not specified, will
+        return the normalized profiles as output.
+    compression_options : str or dict, optional
+        Contains compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
+    float_format : str, optional
+        Decimal precision to use in writing output file as input to
+        pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
+        decimal precision.
+    modz_args : dict, optional
+        Additional custom arguments passed as kwargs if operation="modz".
+        See pycytominer.cyto_utils.modz for more details.
 
-    :Example:
+    Returns
+    -------
+    consensus_df : pandas.core.frame.DataFrame, optional
+        The consensus profile DataFrame. If output_file="none", then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
 
+    Examples
+    --------
     import pandas as pd
     from pycytominer import consensus
 
@@ -107,25 +125,3 @@ def consensus(
         )
     else:
         return consensus_df
-
-
-data_df = pd.concat(
-    [
-        pd.DataFrame(
-            {
-                "Metadata_Plate": "X",
-                "Metadata_Well": "a",
-                "Cells_x": [0.1, 0.3, 0.8],
-                "Nuclei_y": [0.5, 0.3, 0.1],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "Metadata_Plate": "X",
-                "Metadata_Well": "b",
-                "Cells_x": [0.4, 0.2, -0.5],
-                "Nuclei_y": [-0.8, 1.2, -0.5],
-            }
-        ),
-    ]
-).reset_index(drop=True)
