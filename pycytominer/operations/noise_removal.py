@@ -9,9 +9,9 @@ from pycytominer.cyto_utils import infer_cp_features
 
 def noise_removal(
     population_df,
+    noise_removal_perturb_groups,
     features="infer",
     samples="all",
-    noise_removal_perturb_groups,
     noise_removal_stdev_cutoff=0.8,
 ):
     """
@@ -20,15 +20,15 @@ def noise_removal(
     ----------
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
+    noise_removal_perturb_groups : list or array of str
+        The list of unique perturbations corresponding to the rows in population_df. For example,
+        perturb1_well1 and perturb1_well2 would both be "perturb1".
     features : list, default "infer"
          List of features present in the population dataframe [default: "infer"]
          if "infer", then assume cell painting features are those that start with
          "Cells_", "Nuclei_", or "Cytoplasm_".
     samples : list or str, default "all"
         List of samples to perform operation on. If "all", use all samples to calculate.
-    noise_removal_perturb_groups : list or array of str
-        The list of unique perturbations corresponding to the rows in population_df. For example,
-        perturb1_well1 and perturb1_well2 would both be "perturb1".
     noise_removal_stdev_cutoff : float
         Maximum mean stdev value for a feature to be kept, with features grouped according to the perturbations in
         noise_removal_perturbation_groups.
