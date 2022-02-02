@@ -129,33 +129,33 @@ cytoplasm_df.to_sql(
 nuclei_df.to_sql("nuclei", con=test_engine_image, index=False, if_exists="replace")
 
 # Setup SingleCells Class
-ap = SingleCells(file_or_conn=file)
+ap = SingleCells(sql_file=file)
 ap_subsample = SingleCells(
-    file_or_conn=file,
+    sql_file=file,
     subsample_n=2,
     subsampling_random_state=123,
 )
 ap_new = SingleCells(
-    file_or_conn=new_file,
+    sql_file=new_file,
     load_image_data=False,
     compartments=new_compartments,
     compartment_linking_cols=new_linking_cols,
 )
 
 ap_image_all_features = SingleCells(
-    file_or_conn=image_file,
+    sql_file=image_file,
     add_image_features=True,
     image_feature_categories=["Count", "Granularity", "Texture"],
 )
 
 ap_image_subset_features = SingleCells(
-    file_or_conn=image_file,
+    sql_file=image_file,
     add_image_features=True,
     image_feature_categories=["Count", "Texture"],
 )
 
 ap_image_count = SingleCells(
-    file_or_conn=image_file, add_image_features=True, image_feature_categories=["Count"]
+    sql_file=image_file, add_image_features=True, image_feature_categories=["Count"]
 )
 
 
@@ -163,7 +163,7 @@ def test_SingleCells_init():
     """
     Testing initialization of SingleCells
     """
-    assert ap.file_or_conn == file
+    assert ap.sql_file == file
     assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
     assert ap.merge_cols == ["TableNumber", "ImageNumber"]
     assert ap.image_cols == ["TableNumber", "ImageNumber", "Metadata_Site"]
@@ -192,7 +192,7 @@ def test_SingleCells_reset_variables():
     """
     Testing initialization of SingleCells
     """
-    ap_switch = SingleCells(file_or_conn=file)
+    ap_switch = SingleCells(sql_file=file)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
     assert ap_switch.subsampling_random_state == "none"
@@ -357,7 +357,7 @@ def test_merge_single_cells():
 def test_merge_single_cells_subsample():
 
     for subsample_frac in [0.1, 0.5, 0.9]:
-        ap_subsample = SingleCells(file_or_conn=file, subsample_frac=subsample_frac)
+        ap_subsample = SingleCells(sql_file=file, subsample_frac=subsample_frac)
 
         sc_merged_df = ap_subsample.merge_single_cells(
             sc_output_file="none",
@@ -383,7 +383,7 @@ def test_merge_single_cells_subsample():
         assert sc_merged_df.shape[0] == cells_df.shape[0] * subsample_frac
 
     for subsample_n in [2, 5, 10]:
-        ap_subsample = SingleCells(file_or_conn=file, subsample_n=subsample_n)
+        ap_subsample = SingleCells(sql_file=file, subsample_n=subsample_n)
 
         sc_merged_df = ap_subsample.merge_single_cells(
             sc_output_file="none",
@@ -668,7 +668,7 @@ def test_aggregate_count_cells_multiple_strata():
 
     # Setup SingleCells Class
     ap_strata = SingleCells(
-        file_or_conn=file,
+        sql_file=file,
         subsample_n="4",
         strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
     )
