@@ -19,7 +19,7 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
     ----------
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
-    method : str, default "spearman
+    method : str, default "spearman"
         indicating which correlation metric to use.
     min_weight : float, default 0.01
         the minimum correlation to clip all non-negative values lower to
