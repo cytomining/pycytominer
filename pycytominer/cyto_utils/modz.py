@@ -93,7 +93,7 @@ def modz(
          List of features present in the population dataframe [default: "infer"]
          if "infer", then assume cell painting features are those that start with
          "Cells_", "Nuclei_", or "Cytoplasm_".
-    method : str, default "spearman
+    method : str, default "spearman"
         indicating which correlation metric to use.
     min_weight : float, default 0.01
         the minimum correlation to clip all non-negative values lower to
