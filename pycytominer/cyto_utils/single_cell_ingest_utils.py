@@ -35,6 +35,11 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
     compartments : str or list, default "default"
         Which compartments used in the experiment.
 
+    Returns
+    -------
+    None
+        Asserts linking columns are appropriately defined
+
     .. note::
         assert_linking_cols_complete() does not check if columns are present
     """

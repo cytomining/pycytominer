@@ -125,6 +125,13 @@ class Spherize(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         """Perform the sphering transform
 
+        Parameters
+        ----------
+        X : pd.core.frame.DataFrame
+            Profile dataframe to be transformed using the precompiled weights
+        y : None
+            Has no effect; only used for consistency in sklearn transform API
+
         Returns
         -------
         pandas.core.frame.DataFrame

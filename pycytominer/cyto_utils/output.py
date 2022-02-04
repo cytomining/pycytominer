@@ -118,6 +118,11 @@ def check_compression_method(compression):
     ----------
     compression : str
         The category of compression options available
+
+    Returns
+    -------
+    None
+        Asserts available options
     """
     assert (
         compression in compress_options
