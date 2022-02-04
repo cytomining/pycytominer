@@ -5,8 +5,10 @@ from pycytominer.cyto_utils import check_compartments, get_default_compartments
 def get_default_linking_cols():
     """Define the standard experiment linking columns between tables
 
-    :return: Dictionary of compartment-specific column names used to link compartments across tables
-    :rtype: dict
+    Returns
+    -------
+    linking_cols, dict
+        A dictionary mapping columns that links together CellProfiler objects
 
     .. note::
         every dictionary pair has a 1 to 1 correspondence (e.g. cytoplasm-cells and cells-cytoplasm both must exist)
@@ -26,8 +28,17 @@ def get_default_linking_cols():
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
     """Confirm that the linking cols and compartments are compatible
 
-    :return: Dictionary of compartment-specific column names used to link compartments across tables
-    :rtype: dict
+    Parameters
+    ----------
+    linking_cols : str or dict, default "default"
+        Specify how to link objects
+    compartments : str or list, default "default"
+        Which compartments used in the experiment.
+
+    Returns
+    -------
+    None
+        Asserts linking columns are appropriately defined
 
     .. note::
         assert_linking_cols_complete() does not check if columns are present
@@ -71,8 +82,15 @@ def provide_linking_cols_feature_name_update(linking_cols="default"):
     """Output a dictionary to use to update pandas dataframe column names. The linking
     cols must be Metadata.
 
-    :return: Dictionary of the linking column names to update after they are used
-    :rtype: dict
+    Parameters
+    ----------
+    linking_cols : str or dict, default "default"
+        Specify how to link objects
+
+    Returns
+    -------
+    update_name, dict
+        Dictionary of the linking column names to update after they are used
     """
     if linking_cols == "default":
         linking_cols = get_default_linking_cols()

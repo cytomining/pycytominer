@@ -15,7 +15,7 @@ def variance_threshold(
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame or file
+    population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
          List of features present in the population dataframe [default: "infer"]

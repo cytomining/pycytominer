@@ -8,22 +8,29 @@ from pycytominer.cyto_utils.util import (
 
 
 def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
-    """
-    Perform a modified z score transformation. This code is modified from cmapPy.
+    """Perform a modified z score transformation.
+
+    This code is modified from cmapPy.
     (see https://github.com/cytomining/pycytominer/issues/52). Note that this will
     apply the transformation to the FULL population_df.
     See modz() for replicate level procedures.
 
-    Arguments:
-    population_df - pandas DataFrame that includes metadata and observation features.
-                    rows are samples and columns are features
-    method - string indicating which correlation metric to use [default: "spearman"]
-    min_weight - the minimum correlation to clip all non-negative values lower to
-    precision - how many significant digits to round weights to
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame that includes metadata and observation features.
+    method : str, default "spearman"
+        indicating which correlation metric to use.
+    min_weight : float, default 0.01
+        the minimum correlation to clip all non-negative values lower to
+    precision : int, default 4
+        how many significant digits to round weights to
 
-    Return:
-    modz transformed dataframe - a consensus signature of the input population_df
-    weighted by replicate correlation
+    Returns
+    -------
+    modz_df : pandas.core.frame.DataFrame
+        modz transformed dataframe - a consensus signature of the input data
+        weighted by replicate correlation
     """
     assert population_df.shape[0] > 0, "population_df must include at least one sample"
 
@@ -73,23 +80,30 @@ def modz(
     min_weight=0.01,
     precision=4,
 ):
-    """
-    Collapse replicates into a consensus signature using a weighted transformation
+    """Collapse replicates into a consensus signature using a weighted transformation
 
-    Arguments:
-    population_df - pandas DataFrame that includes metadata and observation features.
-                    rows are samples and columns are features
-    replicate_columns - a string or list of column(s) in the population dataframe that
-                        indicate replicate level information
-    features - a list of features present in the population dataframe [default: "infer"]
-               if "infer", then assume cell painting features are those that start with
-               "Cells_", "Nuclei_", or "Cytoplasm_"
-    method - string indicating which correlation metric to use [default: "spearman"]
-    min_weight - the minimum correlation to clip all non-negative values lower to
-    precision - how many significant digits to round weights to
+    Parameters
+    ----------
+    population_df : pandas.core.frame.DataFrame
+        DataFrame that includes metadata and observation features.
+    replicate_columns : str, list
+        a string or list of column(s) in the population dataframe that
+        indicate replicate level information
+    features : list, default "infer"
+         List of features present in the population dataframe [default: "infer"]
+         if "infer", then assume cell painting features are those that start with
+         "Cells_", "Nuclei_", or "Cytoplasm_".
+    method : str, default "spearman"
+        indicating which correlation metric to use.
+    min_weight : float, default 0.01
+        the minimum correlation to clip all non-negative values lower to
+    precision : int, default 4
+        how many significant digits to round weights to
 
-    Return:
-    Consensus signatures for all replicates in the given DataFrame
+    Returns
+    -------
+    modz_df : pandas.core.frame.DataFrame
+        Consensus signatures with metadata for all replicates in the given DataFrame
     """
     population_features = population_df.columns.tolist()
     assert_error = "{} not in input dataframe".format(replicate_columns)

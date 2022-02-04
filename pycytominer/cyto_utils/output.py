@@ -18,19 +18,29 @@ def output(
 ):
     """Given an output file and compression options, write file to disk
 
-    :param df: a pandas dataframe that will be written to file
-    :type df: pandas.DataFrame
-    :param output_filename: a string or path object that stores location of file
-    :type output_filename: str
-    :param sep: file delimiter
-    :type sep: str
-    :param float_format: decimal precision to use in writing output file [default: None]
-    :type float_format: str
-    :param compression_options: compression arguments as input to pandas.to_csv() [default: check different function call]
-    :type compression_options: str, dict
+    Parameters
+    ----------
+    df :  pandas.core.frame.DataFrame
+        a pandas dataframe that will be written to file
+    output_filename : str
+        location of file to write
+    sep : str
+        file delimiter
+    float_format : str, default None
+        Decimal precision to use in writing output file as input to
+        pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
+        decimal precision.
+    compression_options : str or dict, default {"method": "gzip", "mtime": 1}
+        Contains compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
 
-    :Example:
+    Returns
+    -------
+    None
+        Writes to file
 
+    Examples
+    --------
     import pandas as pd
     from pycytominer.cyto_utils import output
 
@@ -79,8 +89,16 @@ def output(
 def set_compression_method(compression):
     """Set the compression options
 
-    :param compression: indicating compression options
-    :type compression: str, dict
+    Parameters
+    ----------
+    compression : str or dict
+        Contains compression options as input to
+        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
+
+    Returns
+    -------
+    compression, dict
+        A formated dictionary expected by output()
     """
 
     if compression is None:
@@ -96,8 +114,15 @@ def set_compression_method(compression):
 def check_compression_method(compression):
     """Ensure compression options are set properly
 
-    :param compression: the compression used to output data
-    :type compression: str
+    Parameters
+    ----------
+    compression : str
+        The category of compression options available
+
+    Returns
+    -------
+    None
+        Asserts available options
     """
     assert (
         compression in compress_options

@@ -10,7 +10,7 @@ from pycytominer.cyto_utils import infer_cp_features
 def noise_removal(
     population_df,
     noise_removal_perturb_groups,
-    features,
+    features="infer",
     samples="all",
     noise_removal_stdev_cutoff=0.8,
 ):
@@ -18,23 +18,24 @@ def noise_removal(
 
     Parameters
     ----------
-    population_df: pandas.core.frame.DataFrame
-        Dataframe which contains all measurement data and optionally metadata such as the identity of the perturbation
-        group for each row.
-    noise_removal_perturb_groups: list or array of str
+    population_df : pandas.core.frame.DataFrame
+        DataFrame that includes metadata and observation features.
+    noise_removal_perturb_groups : list or array of str
         The list of unique perturbations corresponding to the rows in population_df. For example,
         perturb1_well1 and perturb1_well2 would both be "perturb1".
-    features: list of str, default "infer"
-        List of features. Can be inferred or manually supplied.
-    samples: list of str, default "infer"
-        Which rows to use from population_df. Use "all" if applicable.
-    noise_removal_stdev_cutoff: float
+    features : list, default "infer"
+         List of features present in the population dataframe [default: "infer"]
+         if "infer", then assume cell painting features are those that start with
+         "Cells_", "Nuclei_", or "Cytoplasm_".
+    samples : list or str, default "all"
+        List of samples to perform operation on. If "all", use all samples to calculate.
+    noise_removal_stdev_cutoff : float
         Maximum mean stdev value for a feature to be kept, with features grouped according to the perturbations in
         noise_removal_perturbation_groups.
 
     Returns
-    ----------
-    list
+    -------
+    to_remove : list
         A list of features to be removed, due to having too high standard deviation within replicate groups.
 
     """
@@ -51,6 +52,7 @@ def noise_removal(
             'f"{perturb} not found. Are you sure it is a ' "metadata column?"
         )
         group_info = population_df[noise_removal_perturb_groups]
+
     # Otherwise, the user specifies a list of perturbs
     elif isinstance(noise_removal_perturb_groups, list):
         assert len(noise_removal_perturb_groups) == len(population_df), (
@@ -63,6 +65,7 @@ def noise_removal(
             "noise_removal_perturb_groups must be a list corresponding to row perturbations or a str \
                         specifying the name of the metadata column."
         )
+
     # Subset and df and assign each row with the identity of its perturbation group
     population_df = population_df.loc[:, features]
     population_df = population_df.assign(group_id=group_info)

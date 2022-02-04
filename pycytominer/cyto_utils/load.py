@@ -8,8 +8,8 @@ def infer_delim(file):
     """
     Sniff the delimiter in the given file
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     file : str
         File name
 
@@ -33,8 +33,8 @@ def load_profiles(profiles):
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     profiles : {str, pandas.DataFrame}
         file location or actual pandas dataframe of profiles
 
@@ -55,8 +55,8 @@ def load_platemap(platemap, add_metadata_id=True):
     """
     Unless a dataframe is provided, load the given platemap dataframe from path or string
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     platemap : pandas dataframe
         location or actual pandas dataframe of platemap file
 
@@ -65,7 +65,7 @@ def load_platemap(platemap, add_metadata_id=True):
 
     Return
     ------
-    platemap : pandas DataFrame
+    platemap : pandas.core.frame.DataFrame
         pandas DataFrame of profiles
     """
     if not isinstance(platemap, pd.DataFrame):
@@ -93,12 +93,17 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
 
     If the npz file does not exist, this function returns an empty dataframe.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     npz_file : str
         file path to the compressed output (typically DeepProfiler output)
     fallback_feature_prefix :str
         a string to prefix all features [default: "DP"].
+
+    Return
+    ------
+    df : pandas.core.frame.DataFrame
+        pandas DataFrame of profiles
     """
     try:
         npz = np.load(npz_file, allow_pickle=True)
