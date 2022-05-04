@@ -46,7 +46,7 @@ def test_modz_base():
     consensus_df = modz_base(data_df, min_weight=1, precision=precision)
     expected_result = data_df.mean().round(precision)
     pd.testing.assert_series_equal(
-        expected_result, consensus_df, check_less_precise=True
+        expected_result, consensus_df, check_exact=False, atol=1e-3
     )
 
 
@@ -69,7 +69,7 @@ def test_modz():
     expected_result = data_replicate_df.groupby(replicate_columns).mean().round(4)
     expected_result.index.name = replicate_columns
     pd.testing.assert_frame_equal(
-        expected_result.reset_index(), consensus_df, check_less_precise=True
+        expected_result.reset_index(), consensus_df, check_exact=False, atol=1e-3
     )
 
 
@@ -116,7 +116,7 @@ def test_modz_multiple_columns():
     expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
 
     pd.testing.assert_frame_equal(
-        expected_result.reset_index(), consensus_df, check_less_precise=True
+        expected_result.reset_index(), consensus_df, check_exact=False, atol=1e-3
     )
 
 
@@ -146,7 +146,7 @@ def test_modz_multiple_columns_one_metadata_column():
     expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
     expected_result.index.name = replicate_columns
     pd.testing.assert_frame_equal(
-        expected_result.reset_index(), consensus_df, check_less_precise=True
+        expected_result.reset_index(), consensus_df, check_exact=False, atol=1e-3
     )
 
 

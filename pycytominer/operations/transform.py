@@ -9,7 +9,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.linalg import eigh
-from scipy.stats import median_absolute_deviation
+from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -170,7 +170,7 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         # Get the mean of the features (columns) and center if specified
         self.median = X.median()
         self.mad = pd.Series(
-            median_absolute_deviation(X, nan_policy="omit"), index=self.median.index
+            median_abs_deviation(X, nan_policy="omit", scale=1/1.4826), index=self.median.index
         )
         return self
 

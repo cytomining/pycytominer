@@ -55,7 +55,7 @@ def test_compress():
     result = pd.read_csv(output_filename)
 
     pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_less_precise=1
+        result, data_df, check_names=False, check_exact=False, atol=1e-3
     )
 
 
@@ -72,7 +72,7 @@ def test_compress_tsv():
 
     result = pd.read_csv(output_filename, sep="\t")
     pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_less_precise=1
+        result, data_df, check_names=False, check_exact=False, atol=1e-3
     )
 
 
@@ -88,7 +88,7 @@ def test_output_none():
 
     result = pd.read_csv(output_filename)
     pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_less_precise=1
+        result, data_df, check_names=False, check_exact=False, atol=1e-3
     )
 
 
