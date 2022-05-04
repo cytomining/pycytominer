@@ -327,8 +327,15 @@ def get_pairwise_correlation(population_df, method="pearson"):
     # Check that the input method is supported
     method = check_correlation_method(method)
 
-    # Get a symmetrical correlation matrix
-    data_cor_df = population_df.corr(method=method)
+    # Get a symmetrical correlation matrix. Use numpy for non NaN/Inf matrices.
+    has_nan = np.any(np.isnan(population_df.values))
+    has_inf = np.any(np.isinf(population_df.values))
+    if method == "pearson" and not (has_nan or has_inf):
+        pop_names = population_df.columns
+        data_cor_df = np.corrcoef(population_df.transpose())
+        data_cor_df = pd.DataFrame(data_cor_df, index=pop_names, columns=pop_names)
+    else:
+        data_cor_df = population_df.corr(method=method)
 
     # Create a copy of the dataframe to generate upper triangle of zeros
     data_cor_natri_df = data_cor_df.copy()
