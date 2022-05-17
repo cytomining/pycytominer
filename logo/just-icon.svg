@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100">
+  <!-- cell -->
+  <g transform="scale(0.9)">
+    <!-- wall -->
+    <path
+      fill="#d8a9e0"
+      transform="rotate(15)"
+      d="M9.38 -45.5L9.38 -45.5C12.18 -41.44 17.22 -39.62 21.98 -40.88L21.98 -40.88C29.68 -43.12 37.24 -36.82 36.4 -28.7V-28.7C35.84 -23.8 38.64 -19.18 43.12 -17.08L43.12 -17.08C50.4 -13.86 52.22 -4.2 46.34 1.4L46.34 1.4C42.84 4.76 41.86 10.08 43.96 14.56L43.96 14.56C47.46 21.84 42.56 30.38 34.58 30.94H34.58C29.68 31.36 25.62 34.72 24.36 39.48L24.36 39.48C22.4 47.32 13.16 50.68 6.58 45.92L6.58 45.92C2.66 42.98 -2.8 42.98 -6.72 45.92L-6.72 45.92C-13.3 50.68 -22.54 47.32 -24.5 39.48L-24.5 39.48C-25.76 34.72 -29.82 31.22 -34.72 30.94H-34.72C-42.7 30.38 -47.6 21.84 -44.1 14.56L-44.1 14.56C-42 10.08 -42.84 4.9 -46.48 1.4L-46.48 1.4C-52.22 -4.2 -50.54 -13.86 -43.26 -17.22L-43.26 -17.22C-38.78 -19.18 -36.12 -23.94 -36.54 -28.84L-36.54 -28.84C-37.38 -36.82 -29.82 -43.12 -22.12 -41.02L-22.12 -41.02C-17.36 -39.62 -12.32 -41.58 -9.52 -45.64L-9.52 -45.64C-4.9 -52.08 4.9 -52.08 9.38 -45.5Z"
+    />
+    <!-- nucleus -->
+    <circle fill="#ffffff" opacity="0.5" cx="0" cy="0" r="20" />
+    <!-- floaties -->
+    <path
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="5"
+      stroke-linecap="round"
+      opacity="0.2"
+      transform="rotate(20)"
+      d="M -34 -10 a 35 35 0 0 0 0 20"
+    />
+    <path
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="5"
+      stroke-linecap="round"
+      opacity="0.2"
+      transform="rotate(-120)"
+      d="M -34 -5 a 35 35 0 0 0 0 10"
+    />
+    <path
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="5"
+      stroke-linecap="round"
+      opacity="0.2"
+      transform="rotate(-80)"
+      d="M -35 -5 a 35 35 0 0 0 0 10"
+    />
+    <path
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="5"
+      stroke-linecap="round"
+      opacity="0.2"
+      transform="rotate(110)"
+      d="M -38 -2.55 a 35 35 0 0 0 0 5"
+    />
+  </g>
+
+  <!-- pickaxe -->
+  <g transform="scale(0.9) rotate(45)">
+    <!-- shaft -->
+    <rect fill="#8c5845" x="-4" y="-35" width="8" height="65" rx="4" ry="4" />
+    <!-- shaft highlight -->
+    <rect
+      fill="#ffffff"
+      opacity="0.15"
+      x="-4"
+      y="5"
+      width="8"
+      height="25"
+      rx="4"
+      ry="4"
+    />
+    <!-- blade -->
+    <path
+      fill="#404050"
+      d="
+        M -30 -15
+        A 40 40 0 0 1 30 -15
+        A 1.9 1.9 0 0 1 28 -12
+        A 80 80 0 0 0 -28 -12
+        A 1.9 1.9 0 0 1 -30 -15
+        z
+      "
+    />
+    <!-- blade highlight -->
+    <path
+      fill="#ffffff"
+      opacity="0.1"
+      d="
+        M -30 -15
+        A 60 60 0 0 1 30 -15
+        A 1.9 1.9 0 0 1 28 -12
+        A 80 80 0 0 0 -28 -12
+        A 1.9 1.9 0 0 1 -30 -15
+        z
+      "
+    />
+    <!-- connector -->
+    <rect fill="#707080" x="-6" y="-30" width="12" height="16" rx="3" ry="3" />
+    <!-- band -->
+    <rect fill="#e6ae87" x="-7" y="-10" width="14" height="6" rx="3" ry="3" />
+    <!-- band highlight -->
+    <rect
+      fill="#ffffff"
+      opacity="0.2"
+      x="0"
+      y="-10"
+      width="7"
+      height="6"
+      rx="3"
+      ry="3"
+    />
+  </g>
+</svg>
