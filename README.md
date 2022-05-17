@@ -1,3 +1,5 @@
+<img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/master/logo/with-text-for-light-bg.png?raw=true">
+
 # Pycytominer: Data processing functions for profiling perturbations
 
 [![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=master)](https://travis-ci.org/cytomining/pycytominer)
