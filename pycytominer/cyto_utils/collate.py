@@ -30,7 +30,7 @@ def collate(
     overwrite=False,
     add_image_features=True,
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
-    print=True,
+    printtoscreen=True,
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -62,7 +62,7 @@ def collate(
         Whether or not to add the image features to the profiles
     image_feature_categories: list, optional, default ['Number','Intensity','Granularity','Texture','ImageQuality','Count','Threshold']
         The list of image feature groups to be used by add_image_features during aggregation
-    print: bool, optional, default True
+    printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
     """
 
@@ -108,7 +108,7 @@ def collate(
                 + " "
                 + input_dir
             )
-            if print:
+            if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
 
@@ -143,7 +143,7 @@ def collate(
             ]
             run_check_errors(update_cmd)
 
-        if print:
+        if printtoscreen:
             print(f"Indexing database {cache_backend_file}")
         index_cmd_1 = [
             "sqlite3",
@@ -178,12 +178,12 @@ def collate(
 
         if remote:
 
-            if print:
+            if printtoscreen:
                 print(f"Uploading {cache_backend_file} to {remote_backend_file}")
             cp_cmd = ["aws", "s3", "cp", cache_backend_file, remote_backend_file]
             run_check_errors(cp_cmd)
 
-            if print:
+            if printtoscreen:
                 print(
                     f"Removing analysis files from {input_dir} and {cache_backend_dir}"
                 )
@@ -191,11 +191,11 @@ def collate(
 
             shutil.rmtree(input_dir)
 
-        if print:
+        if printtoscreen:
             print(f"Renaming {cache_backend_file} to {backend_file}")
         os.rename(cache_backend_file, backend_file)
 
-    if print:
+    if printtoscreen:
         print(f"Aggregating sqlite:///{backend_file}")
 
     if aggregate_only and remote:
@@ -207,7 +207,7 @@ def collate(
         )
 
         cp_cmd = ["aws", "s3", "cp", remote_backend_file, backend_file]
-        if print:
+        if printtoscreen:
             print(
                 f"Downloading SQLite files from {remote_backend_file} to {backend_file}"
             )
@@ -230,12 +230,12 @@ def collate(
     database.aggregate_profiles(output_file=aggregated_file)
 
     if remote:
-        if print:
+        if printtoscreen:
             print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
         csv_cp_cmd = ["aws", "s3", "cp", aggregated_file, remote_aggregated_file]
         run_check_errors(csv_cp_cmd)
 
-        if print:
+        if printtoscreen:
             print(f"Removing backend files from {backend_dir}")
         import shutil
 
