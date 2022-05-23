@@ -63,7 +63,7 @@ def test_base_case():
         base_directory=test_data_location,
         temp=test_data_location,
         add_image_features=False,
-        print=False,
+        printtoscreen=False,
     )
     assert os.path.exists(test_backend_location)
 
@@ -84,7 +84,7 @@ def test_base_case_with_image_features():
         temp=test_data_location,
         add_image_features=True,
         image_feature_categories=["Granularity"],
-        print=False,
+        printtoscreen=False,
     )
     assert os.path.exists(test_backend_location)
 
@@ -110,7 +110,7 @@ def test_overwrite():
         base_directory=test_data_location,
         temp=test_data_location,
         add_image_features=False,
-        print=False,
+        printtoscreen=False,
     )
     assert os.path.exists(test_backend_location)
 
@@ -124,7 +124,7 @@ def test_overwrite():
         temp=test_data_location,
         overwrite=True,
         add_image_features=False,
-        print=False,
+        printtoscreen=False,
     )
 
     with pytest.raises(SystemExit) as exitcode:
@@ -135,7 +135,7 @@ def test_overwrite():
             base_directory=test_data_location,
             temp=test_data_location,
             add_image_features=False,
-            print=False,
+            printtoscreen=False,
         )
     assert "overwrite is set to False" in exitcode.value.code
 
@@ -156,7 +156,7 @@ def test_aggregate_only():
             temp=test_data_location,
             aggregate_only=True,
             add_image_features=False,
-            print=False,
+            printtoscreen=False,
         )
     assert "does not exist" in exitcode.value.code
 
@@ -167,7 +167,7 @@ def test_aggregate_only():
         base_directory=test_data_location,
         temp=test_data_location,
         add_image_features=False,
-        print=False,
+        printtoscreen=False,
     )
 
     assert os.path.exists(test_csv_location)
@@ -182,7 +182,7 @@ def test_aggregate_only():
         temp=test_data_location,
         aggregate_only=True,
         add_image_features=False,
-        print=False,
+        printtoscreen=False,
     )
 
     validate(test_csv_location, master_csv_location)
