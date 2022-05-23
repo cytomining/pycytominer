@@ -66,7 +66,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dont-print",
-        dest="print",
+        dest="printtoscreen",
         action="store_false",
         default=True,
         help="Whether to print status updates",
@@ -88,5 +88,5 @@ if __name__ == "__main__":
         overwrite=args.overwrite,
         add_image_features=args.add_image_features,
         image_feature_categories=args.image_feature_categories,
-        print=args.print,
+        print=args.printtoscreen,
     )
