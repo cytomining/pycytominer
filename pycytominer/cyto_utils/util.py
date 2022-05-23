@@ -254,7 +254,7 @@ def check_image_features(image_features, image_columns):
 
     try:
         assert all(
-            feature in list(set(_.split("_")[0] for _ in image_columns))
+            feature in list(set(_.split("_")[level] for _ in image_columns))
             for feature in image_features
         )
     except AssertionError:
