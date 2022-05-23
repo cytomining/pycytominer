@@ -88,5 +88,5 @@ if __name__ == "__main__":
         overwrite=args.overwrite,
         add_image_features=args.add_image_features,
         image_feature_categories=args.image_feature_categories,
-        print=args.printtoscreen,
+        printtoscreen=args.printtoscreen,
     )
