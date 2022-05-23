@@ -2,9 +2,6 @@ import os
 import subprocess
 import sys
 
-from pycytominer.cyto_utils.cells import SingleCells
-
-
 def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
     if type(cmd) == str:
@@ -67,6 +64,8 @@ def collate(
     print: bool, optional, default True
         Whether or not to print output to the terminal
     """
+    
+    from pycytominer.cyto_utils.cells import SingleCells
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
     input_dir = os.path.abspath(
