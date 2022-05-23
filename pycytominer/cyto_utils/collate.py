@@ -123,7 +123,7 @@ def collate(
         if not munge:
             # munge is by default True in cytominer-database
             ingest_cmd.append("--no-munge")
-        if print:
+        if printtoscreen:
             print(f"Ingesting {input_dir}")
         run_check_errors(ingest_cmd)
 
