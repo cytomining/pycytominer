@@ -1,9 +1,15 @@
 """ Tests for pycytominer.cyto_utils.sqlite """
 
+import tempfile
+
 import pytest
+from pycytominer.cyto_utils.sqlite import (
+    contains_conflicting_aff_strg_class,
+    engine_from_str,
+    update_columns_to_nullable,
+)
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
-from pycytominer.cyto_utils.sqlite import contains_conflicting_aff_strg_class
 
 
 @pytest.fixture
@@ -13,9 +19,12 @@ def database_engine_for_testing() -> Engine:
     to other tests within this file.
     """
 
-    # set our path to an in-memory database and create the engine
-    sql_path = ":memory:"
-    engine = create_engine(f"sqlite:///{sql_path}")
+    # get temporary directory
+    tmpdir = tempfile.gettempdir()
+
+    # create a temporary sqlite connection
+    sql_path = "sqlite:///{}/test.sqlite".format(tmpdir)
+    engine = create_engine(sql_path)
 
     # statements for creating database with simple structure
     create_stmts = [
@@ -24,11 +33,14 @@ def database_engine_for_testing() -> Engine:
     """,
         """
     create table tbl_a (
-    col_integer INTEGER
+    col_integer INTEGER NOT NULL
     ,col_text TEXT
     ,col_blob BLOB
     ,col_real REAL
     );
+    """,
+        """
+    drop table if exists tbl_b;
     """,
         """
     create table tbl_b (
@@ -52,13 +64,28 @@ def database_engine_for_testing() -> Engine:
     """
     insert_vals = [1, "sample", b"sample_blob", 0.5]
 
-    with engine.connect() as e:
+    with engine.begin() as connection:
         for stmt in create_stmts:
-            e.execute(stmt)
-        e.execute(insert_stmt_a, insert_vals)
-        e.execute(insert_stmt_b, insert_vals)
+            connection.execute(stmt)
+        connection.execute(insert_stmt_a, insert_vals)
+        connection.execute(insert_stmt_b, insert_vals)
 
     return engine
+
+
+def test_engine_from_str():
+    """
+    Testing engine_from_str
+    """
+    # test str functionality
+    engine = engine_from_str(":memory:")
+    assert isinstance(engine, Engine)
+    assert engine.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+
+    # test sqlalchemy engine
+    engine = engine_from_str(create_engine("sqlite:///:memory:"))
+    assert isinstance(engine, Engine)
+    assert engine.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
 
 
 def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
@@ -69,23 +96,26 @@ def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
     # test string-based sql_path and empty database (no schema should mean no conflict)
     assert contains_conflicting_aff_strg_class(sql_engine=":memory:") == False
 
-    engine = database_engine_for_testing
-
     # test non-conflicting database
-    assert contains_conflicting_aff_strg_class(engine) == False
+    assert contains_conflicting_aff_strg_class(database_engine_for_testing) == False
     # test non-conlicting database single table
-    assert contains_conflicting_aff_strg_class(engine, table_name="tbl_a") == False
+    assert (
+        contains_conflicting_aff_strg_class(
+            database_engine_for_testing, table_name="tbl_a"
+        )
+        == False
+    )
     # test non-conlicting database single table and single column
     assert (
         contains_conflicting_aff_strg_class(
-            engine, table_name="tbl_a", column_name="col_integer"
+            database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
         )
         == False
     )
 
     # add a conflicting row of values for tbl_a
-    with engine.connect() as e:
-        e.execute(
+    with database_engine_for_testing.begin() as connection:
+        connection.execute(
             """
         INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
         VALUES ('nan', 'another', 'example', 0.5);
@@ -93,22 +123,71 @@ def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
         )
 
     # test conflicting database
-    assert contains_conflicting_aff_strg_class(engine) == True
+    assert contains_conflicting_aff_strg_class(database_engine_for_testing) == True
     # test conflicting database single table, conflicting table
-    assert contains_conflicting_aff_strg_class(engine, table_name="tbl_a") == True
+    assert (
+        contains_conflicting_aff_strg_class(
+            database_engine_for_testing, table_name="tbl_a"
+        )
+        == True
+    )
     # test conflicting database single table, non-conflicting table
-    assert contains_conflicting_aff_strg_class(engine, table_name="tbl_b") == False
+    assert (
+        contains_conflicting_aff_strg_class(
+            database_engine_for_testing, table_name="tbl_b"
+        )
+        == False
+    )
     # test conflicting database single table and single conflicting column
     assert (
         contains_conflicting_aff_strg_class(
-            engine, table_name="tbl_a", column_name="col_integer"
+            database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
         )
         == True
     )
     # test conflicting database single table and single non-conflicting column
     assert (
         contains_conflicting_aff_strg_class(
-            engine, table_name="tbl_a", column_name="col_text"
+            database_engine_for_testing, table_name="tbl_a", column_name="col_text"
         )
         == False
     )
+
+
+def test_update_columns_to_nullable(database_engine_for_testing):
+    """
+    Testing update_columns_to_nullable
+    """
+
+    # test updating whole database
+    updated_engine = update_columns_to_nullable(sql_engine=database_engine_for_testing)
+
+    # test return type as sqlalchemy
+    assert isinstance(updated_engine, Engine)
+    # test whole database changed correct column
+    assert (
+        updated_engine.execute(
+            "SELECT [notnull] FROM pragma_table_info('tbl_a') WHERE name = 'col_integer';"
+        ).fetchone()[0]
+        == 0
+    )
+    # check that we didn't update inplace
+    assert updated_engine.url != database_engine_for_testing.url
+
+    # test updating table with no changes
+    updated_engine = update_columns_to_nullable(
+        sql_engine=database_engine_for_testing, table_name="tbl_b"
+    )
+    # check that tbl_a not null column is still not null
+    assert (
+        updated_engine.execute(
+            "SELECT [notnull] FROM pragma_table_info('tbl_a') WHERE name = 'col_integer';"
+        ).fetchone()[0]
+        == 1
+    )
+
+    # test updating inplace
+    updated_engine = update_columns_to_nullable(
+        sql_engine=database_engine_for_testing, inplace=True
+    )
+    assert updated_engine.url == database_engine_for_testing.url
