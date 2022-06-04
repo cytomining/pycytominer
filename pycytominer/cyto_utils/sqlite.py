@@ -82,6 +82,52 @@ def engine_from_str(sql_engine: Union[str, Engine]) -> Engine:
     return engine
 
 
+def collect_columns(
+    sql_engine: Union[str, Engine],
+    table_name: Optional[str] = None,
+    column_name: Optional[str] = None,
+) -> list:
+    """
+    Collect a list of columns from the given engine's
+    database using optional table or column level
+    specification.
+    """
+
+    # create column list for return result
+    column_list = []
+
+    # create an engine
+    engine = engine_from_str(sql_engine)
+
+    with engine.connect() as connection:
+        if table_name is None:
+            # if no table name is provided, we assume all tables must be scanned
+            tables = connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table';"
+            ).fetchall()
+        else:
+            # otherwise we will focus on just the table name provided
+            tables = [(table_name,)]
+
+        for table in tables:
+            if column_name is None:
+                # if no column name is specified we will focus on all columns within the table
+                sql_stmt = "SELECT :table_name, name, type FROM pragma_table_info(:table_name);"
+            else:
+                # otherwise we will focus on only the column name provided
+                sql_stmt = """
+                SELECT :table_name, name, type FROM pragma_table_info(:table_name) WHERE name = :col_name;
+                """
+
+            # append to column list the results
+            column_list += connection.execute(
+                sql_stmt,
+                {"table_name": str(table[0]), "col_name": str(column_name)},
+            ).fetchall()
+
+    return column_list
+
+
 def contains_conflicting_aff_strg_class(
     sql_engine: Union[str, Engine],
     table_name: Optional[str] = None,
@@ -117,73 +163,54 @@ def contains_conflicting_aff_strg_class(
         )
     )
 
+    # create an engine
     engine = engine_from_str(sql_engine)
 
+    # gather columns to be used below
+    columns = collect_columns(engine, table_name, column_name)
+
     with engine.connect() as connection:
-        if table_name is None:
-            # if no table name is provided, we assume all tables must be scanned
-            tables = connection.execute(
-                "SELECT name FROM sqlite_master WHERE type = 'table';"
-            ).fetchall()
-        else:
-            # otherwise we will focus on just the table name provided
-            tables = [(table_name,)]
+        for col in columns:
+            # the sql below seeks to efficiently detect existence of values which
+            # do not match the column affinity type (for ex. a string in an integer column).
+            sql_stmt = """
+            SELECT
+                EXISTS(
+                    SELECT 1 FROM {table_name} 
+                    WHERE TYPEOF({col_name}) NOT IN ({col_types})
+                );
+            """
+            # join formatted string for use with sql query in {col_types} var
+            col_types = ",".join(
+                ["'{}'".format(x.lower()) for x in SQLITE_AFF_REF[col[2]]]
+            )
 
-        for table in tables:
-            if column_name is None:
-                # if no column name is specified we will focus on all columns within the table
-                sql_stmt = "SELECT name, type FROM pragma_table_info(:table_name);"
-            else:
-                # otherwise we will focus on only the column name provided
-                sql_stmt = """
-                SELECT name, type FROM pragma_table_info(:table_name) WHERE name = :col_name;
-                """
-
-            cols = connection.execute(
-                sql_stmt,
-                {"table_name": str(table[0]), "col_name": str(column_name)},
-            ).fetchall()
-
-            for col in cols:
-                # the sql below seeks to efficiently detect existence of values which
-                # do not match the column affinity type (for ex. a string in an integer column).
-                sql_stmt = """
-                SELECT
-                    EXISTS(
-                        SELECT 1 FROM {table_name} 
-                        WHERE TYPEOF({col_name}) NOT IN ({col_types})
-                    );
-                """
-                # join formatted string for use with sql query in {col_types} var
-                col_types = ",".join(
-                    ["'{}'".format(x.lower()) for x in SQLITE_AFF_REF[col[1]]]
+            # there are challenges with using sqlalchemy vars in the same manner as above
+            # so we use format here along with nosec
+            result = connection.execute(
+                sql_stmt.format(
+                    table_name=col[0],
+                    col_name=col[1],
+                    col_types=col_types,
                 )
-
-                # there are challenges with using sqlalchemy vars in the same manner as above
-                # so we use format here along with nosec
-                result = connection.execute(
-                    sql_stmt.format(
-                        table_name=table[0],
-                        col_name=col[0],
-                        col_types=col_types,
-                    )
-                ).fetchall()[0][
-                    0
-                ]  # nosec
-                if result > 0:
-                    # if our result is greater than 0 it means values with conflicting storage
-                    # class existed within the focus column and as a result, we return False
-                    logger.warning(
-                        "Discovered conflicting %s column %s affinity type and storage class.",
-                        table[0],
-                        col[0],
-                    )
-                    return True
+            ).fetchall()[0][
+                0
+            ]  # nosec
+            if result > 0:
+                # if our result is greater than 0 it means values with conflicting storage
+                # class existed within the focus column and as a result, we return False
+                logger.warning(
+                    "Discovered conflicting %s column %s affinity type and storage class.",
+                    col[0],
+                    col[1],
+                )
+                return True
 
     # return false if we did not find conflicting affinity vs storage class values
     logger.info(
         "Found no conflicting affinity vs storage class data within provided database."
     )
+
     return False
 
 
@@ -191,7 +218,7 @@ def update_columns_to_nullable(
     sql_engine: Union[str, Engine],
     dest_path: str = None,
     table_name: Optional[str] = None,
-    inplace: bool = False,
+    inplace: bool = True,
 ) -> Engine:
     """
     Update SQLite database columns to nullable where appropriate.
@@ -212,7 +239,7 @@ def update_columns_to_nullable(
     table_name: str
         optional specific table name to update within database
     inplace: bool
-        whether to replace the source sql database, by default set to false.
+        whether to replace the source sql database
 
     Returns
     -------
@@ -326,3 +353,37 @@ def update_columns_to_nullable(
 
     # return copied and modified destination database
     return engine_from_str(dest_path)
+
+
+def update_columns_nan_to_null(
+    sql_engine: Union[str, Engine],
+    table_name: Optional[str] = None,
+    column_name: Optional[str] = None,
+) -> Engine:
+
+    logger.info("Updating columns with str 'nan' to NULL values.")
+
+    # create an engine
+    engine = engine_from_str(sql_engine)
+
+    # gather columns to be used below
+    columns = collect_columns(engine, table_name, column_name)
+
+    with engine.begin() as connection:
+        for col in columns:
+            # sql to update nan strings to sqlite nulls
+            sql_stmt = """
+            UPDATE {table_name} SET {col_name}=NULL 
+            WHERE {col_name}='nan'
+            AND EXISTS(SELECT 1 FROM {table_name}
+                WHERE {col_name}='nan'
+            )
+            """
+            connection.execute(
+                statement=sql_stmt.format(
+                    table_name=col[0],
+                    col_name=col[1],
+                )
+            )  # nosec
+
+    return engine
