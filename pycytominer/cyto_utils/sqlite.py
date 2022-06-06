@@ -454,7 +454,7 @@ def update_columns_to_nullable(
     return engine_from_str(dest_path)
 
 
-def update_columns_like_null_to_null(
+def update_values_like_null_to_null(
     sql_engine: Union[str, Engine],
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
@@ -546,7 +546,7 @@ def clean_like_nulls(
             )
 
         # update the like nulls to actual null
-        sql_engine = update_columns_like_null_to_null(
+        sql_engine = update_values_like_null_to_null(
             sql_engine, table_name, column_name
         )
 

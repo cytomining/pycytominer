@@ -4,14 +4,14 @@ import tempfile
 
 import pytest
 from pycytominer.cyto_utils.sqlite import (
+    LIKE_NULLS,
     clean_like_nulls,
     collect_columns,
     contains_conflicting_aff_strg_class,
     contains_str_like_null,
     engine_from_str,
-    update_columns_like_null_to_null,
     update_columns_to_nullable,
-    LIKE_NULLS,
+    update_values_like_null_to_null,
 )
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
@@ -269,13 +269,13 @@ def test_update_columns_to_nullable(database_engine_for_testing):
     assert updated_engine.url == database_engine_for_testing.url
 
 
-def test_update_columns_like_null_to_null(database_engine_for_testing):
+def test_update_values_like_null_to_null(database_engine_for_testing):
     """
-    Testing update_columns_like_null_to_null
+    Testing update_values_like_null_to_null
     """
 
     # test updating tbl_b
-    updated_engine = update_columns_like_null_to_null(
+    updated_engine = update_values_like_null_to_null(
         sql_engine=database_engine_for_testing
     )
 
@@ -292,7 +292,7 @@ def test_update_columns_like_null_to_null(database_engine_for_testing):
         )
 
     # test updating only tbl_a col_text
-    updated_engine = update_columns_like_null_to_null(
+    updated_engine = update_values_like_null_to_null(
         sql_engine=database_engine_for_testing,
         table_name="tbl_a",
         column_name="col_text",
@@ -306,7 +306,7 @@ def test_update_columns_like_null_to_null(database_engine_for_testing):
     assert updated_engine.execute(sql_stmt).fetchone()[0] == 0
 
     # test updating only tbl_a col_blob
-    updated_engine = update_columns_like_null_to_null(
+    updated_engine = update_values_like_null_to_null(
         sql_engine=database_engine_for_testing,
         table_name="tbl_a",
         column_name="col_blob",
@@ -322,7 +322,7 @@ def test_update_columns_like_null_to_null(database_engine_for_testing):
     # test updating only tbl_a col_integer
     # should raise exception due to not null constraint
     with pytest.raises(IntegrityError):
-        updated_engine = update_columns_like_null_to_null(
+        updated_engine = update_values_like_null_to_null(
             sql_engine=database_engine_for_testing,
             table_name="tbl_a",
             column_name="col_integer",
