@@ -105,19 +105,19 @@ def test_collect_columns(database_engine_for_testing):
     assert len(collect_columns(database_engine_for_testing)) == 8
 
     # test single database table collected
-    assert len(collect_columns(database_engine_for_testing, table_name="tbl_a")) == 4
+    assert collect_columns(database_engine_for_testing, table_name="tbl_a") == [
+        ("tbl_a", "col_integer", "INTEGER"),
+        ("tbl_a", "col_text", "TEXT"),
+        ("tbl_a", "col_blob", "BLOB"),
+        ("tbl_a", "col_real", "REAL"),
+    ]
 
     # test single column from single table collected
-    assert (
-        len(
-            collect_columns(
-                database_engine_for_testing,
-                table_name="tbl_a",
-                column_name="col_integer",
-            )
-        )
-        == 1
-    )
+    assert collect_columns(
+        database_engine_for_testing,
+        table_name="tbl_b",
+        column_name="col_integer",
+    ) == [("tbl_b", "col_integer", "INTEGER")]
 
 
 def test_contains_conflicting_aff_strg_class(database_engine_for_testing):

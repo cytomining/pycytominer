@@ -91,6 +91,21 @@ def collect_columns(
     Collect a list of columns from the given engine's
     database using optional table or column level
     specification.
+
+    Parameters
+    ----------
+    sql_engine: str | sqlalchemy.engine.base.Engine
+        filename of the SQLite database or existing sqlalchemy engine
+    table_name: str
+        optional specific table name to check within database
+    column_name: str
+        optional specific column name to check within database
+
+    Returns
+    -------
+    list
+        Returns list of tuples with values
+        ('table_name', 'column_name', 'column_affinity_type')
     """
 
     # create column list for return result
@@ -360,7 +375,23 @@ def update_columns_nan_to_null(
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
 ) -> Engine:
+    """
+    Updates column values from 'nan' to NULL where possible.
 
+    Parameters
+    ----------
+    sql_engine: str | sqlalchemy.engine.base.Engine
+        filename of the SQLite database or existing sqlalchemy engine
+    table_name: str
+        optional specific table name to check within database
+    column_name: str
+        optional specific column name to check within database
+
+    Returns
+    -------
+    sqlalchemy.engine.base.Engine
+        A SQLAlchemy engine for the changed database
+    """
     logger.info("Updating columns with str 'nan' to NULL values.")
 
     # create an engine
