@@ -476,7 +476,7 @@ def update_values_like_null_to_null(
     sqlalchemy.engine.base.Engine
         A SQLAlchemy engine for the changed database
     """
-    logger.info("Updating columns with str 'nan' to NULL values.")
+    logger.info("Updating column values with str 'nan' to NULL values.")
 
     # create an engine
     engine = engine_from_str(sql_engine)
@@ -531,6 +531,13 @@ def clean_like_nulls(
     sqlalchemy.engine.base.Engine
         A SQLAlchemy engine for the database
     """
+
+    logger.info(
+        (
+            "Updating column values with str 'nan' to NULL values, "
+            "making changes where necessary."
+        )
+    )
 
     # if we detect that there are strings like nulls in the database
     if contains_str_like_null(sql_engine, table_name, column_name):
