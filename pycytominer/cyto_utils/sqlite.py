@@ -130,11 +130,15 @@ def collect_columns(
         for table in tables:
             if column_name is None:
                 # if no column name is specified we will focus on all columns within the table
-                sql_stmt = "SELECT :table_name, name, type FROM pragma_table_info(:table_name);"
+                sql_stmt = """
+                SELECT :table_name, name, type, [notnull] 
+                FROM pragma_table_info(:table_name);
+                """
             else:
                 # otherwise we will focus on only the column name provided
                 sql_stmt = """
-                SELECT :table_name, name, type FROM pragma_table_info(:table_name) WHERE name = :col_name;
+                SELECT :table_name, name, type, [notnull]
+                FROM pragma_table_info(:table_name) WHERE name = :col_name;
                 """
 
             # append to column list the results
@@ -500,3 +504,51 @@ def update_columns_like_null_to_null(
             )  # nosec
 
     return engine
+
+
+def clean_like_nulls(
+    sql_engine: Union[str, Engine],
+    dest_path: str = None,
+    table_name: Optional[str] = None,
+    column_name: Optional[str] = None,
+    inplace: bool = True,
+) -> Engine:
+    """
+    Updates column values from 'nan' to NULL, performing necessary
+    database schema updates where necessary.
+
+    Parameters
+    ----------
+    sql_engine: str | sqlalchemy.engine.base.Engine
+        filename of the SQLite database or existing sqlalchemy engine
+    table_name: str
+        optional specific table name to check within database
+    column_name: str
+        optional specific column name to check within database
+
+    Returns
+    -------
+    sqlalchemy.engine.base.Engine
+        A SQLAlchemy engine for the database
+    """
+
+    # if we detect that there are strings like nulls in the database
+    if contains_str_like_null(sql_engine, table_name, column_name):
+
+        # if we have at least one not-nullable column we must update the database
+        # to allow for null values in those columns
+        if 1 in [
+            column[3] for column in collect_columns(sql_engine, table_name, column_name)
+        ]:
+            # perform the schema update
+            sql_engine = update_columns_to_nullable(
+                sql_engine, dest_path, table_name, inplace
+            )
+
+        # update the like nulls to actual null
+        sql_engine = update_columns_like_null_to_null(
+            sql_engine, table_name, column_name
+        )
+
+    # return the sql engine
+    return sql_engine

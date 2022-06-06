@@ -4,12 +4,14 @@ import tempfile
 
 import pytest
 from pycytominer.cyto_utils.sqlite import (
+    clean_like_nulls,
     collect_columns,
     contains_conflicting_aff_strg_class,
     contains_str_like_null,
     engine_from_str,
     update_columns_like_null_to_null,
     update_columns_to_nullable,
+    LIKE_NULLS,
 )
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
@@ -107,10 +109,10 @@ def test_collect_columns(database_engine_for_testing):
 
     # test single database table collected
     assert collect_columns(database_engine_for_testing, table_name="tbl_a") == [
-        ("tbl_a", "col_integer", "INTEGER"),
-        ("tbl_a", "col_text", "TEXT"),
-        ("tbl_a", "col_blob", "BLOB"),
-        ("tbl_a", "col_real", "REAL"),
+        ("tbl_a", "col_integer", "INTEGER", 1),
+        ("tbl_a", "col_text", "TEXT", 0),
+        ("tbl_a", "col_blob", "BLOB", 0),
+        ("tbl_a", "col_real", "REAL", 0),
     ]
 
     # test single column from single table collected
@@ -118,7 +120,7 @@ def test_collect_columns(database_engine_for_testing):
         database_engine_for_testing,
         table_name="tbl_b",
         column_name="col_integer",
-    ) == [("tbl_b", "col_integer", "INTEGER")]
+    ) == [("tbl_b", "col_integer", "INTEGER", 0)]
 
 
 def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
@@ -325,3 +327,100 @@ def test_update_columns_like_null_to_null(database_engine_for_testing):
             table_name="tbl_a",
             column_name="col_integer",
         )
+
+
+def test_clean_like_nulls(database_engine_for_testing):
+    """
+    Testing clean_like_nulls
+    """
+
+    # gather schema_version
+    schema_version = database_engine_for_testing.execute(
+        "PRAGMA schema_version;"
+    ).fetchall()[0][0]
+
+    # gather database url
+    database_url = str(database_engine_for_testing.url)
+
+    cleaned_database = clean_like_nulls(database_engine_for_testing)
+    # test that the schema version has not changed
+    # (no changes necessary, so the engine is passed back as-is)
+    assert (
+        cleaned_database.execute("PRAGMA schema_version;").fetchall()[0][0]
+        == schema_version
+    )
+
+    # assert that the database url did not change
+    assert str(cleaned_database.url) == database_url
+
+    # add a conflicting row of values for tbl_a
+    with database_engine_for_testing.begin() as connection:
+        connection.execute(
+            """
+        INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
+        VALUES ('nan', 'None', 'Null', 'NaN');
+        """
+        )
+
+    # clean the like nulls for single table without nulls
+    cleaned_database = clean_like_nulls(database_engine_for_testing, table_name="tbl_b")
+
+    # test that the schema version has not changed
+    assert (
+        cleaned_database.execute("PRAGMA schema_version;").fetchall()[0][0]
+        == schema_version
+    )
+
+    # clean the like nulls for single table with nulls
+    cleaned_database = clean_like_nulls(
+        database_engine_for_testing, table_name="tbl_a", column_name="col_text"
+    )
+
+    # test that the schema version has not changed
+    assert (
+        cleaned_database.execute("PRAGMA schema_version;").fetchall()[0][0]
+        == schema_version
+    )
+
+    # build sql to check for the like_nulls
+    like_nulls_str_list = ",".join(["'{}'".format(x) for x in LIKE_NULLS])
+    select_stmt = """
+    SELECT EXISTS(
+        SELECT 1 FROM tbl_a 
+        WHERE LOWER(col_text) in ({like_nulls})
+        );
+    """.format(
+        like_nulls=like_nulls_str_list
+    )
+    # check that there are no like nulls any longer within the table
+    assert cleaned_database.execute(select_stmt).fetchall()[0][0] == 0
+
+    # clean the like nulls for single table with nulls
+    cleaned_database = clean_like_nulls(
+        database_engine_for_testing,
+        table_name="tbl_a",
+        inplace=False,
+    )
+
+    # test that the schema version has changed
+    assert (
+        cleaned_database.execute("PRAGMA schema_version;").fetchall()[0][0]
+        != schema_version
+    )
+
+    # assert that the database url did not change
+    assert str(cleaned_database.url) != database_url
+
+    select_stmt = """
+    SELECT EXISTS(
+        SELECT 1 FROM tbl_a 
+        WHERE LOWER(col_integer) in ({like_nulls})
+        OR LOWER(col_text) in ({like_nulls})
+        OR LOWER(col_blob) in ({like_nulls})
+        OR LOWER(col_real) in ({like_nulls})
+        );
+    """.format(
+        like_nulls=like_nulls_str_list
+    )
+    # check that there are no like nulls any longer within the table
+    assert cleaned_database.execute(select_stmt).fetchall()[0][0] == 0
