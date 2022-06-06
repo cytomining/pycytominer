@@ -315,7 +315,7 @@ def contains_str_like_null(
 
 def update_columns_to_nullable(
     sql_engine: Union[str, Engine],
-    dest_path: str = None,
+    dest_path: Optional[str] = None,
     table_name: Optional[str] = None,
     inplace: bool = True,
 ) -> Engine:
@@ -508,7 +508,7 @@ def update_values_like_null_to_null(
 
 def clean_like_nulls(
     sql_engine: Union[str, Engine],
-    dest_path: str = None,
+    dest_path: Optional[str] = None,
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
     inplace: bool = True,
