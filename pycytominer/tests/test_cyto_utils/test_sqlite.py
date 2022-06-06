@@ -29,7 +29,7 @@ def database_engine_for_testing() -> Engine:
     tmpdir = tempfile.gettempdir()
 
     # create a temporary sqlite connection
-    sql_path = "sqlite:///{}/test.sqlite".format(tmpdir)
+    sql_path = "sqlite:///{}/test_sqlite.sqlite".format(tmpdir)
     engine = create_engine(sql_path)
 
     # statements for creating database with simple structure

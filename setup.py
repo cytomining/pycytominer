@@ -21,6 +21,6 @@ setup(
     packages=find_packages(),
     license=about["__license__"],
     install_requires=["numpy", "pandas", "scikit-learn", "sqlalchemy"],
-    python_requires=">=3.4",
+    python_requires=">=3.7",
     include_package_data=True,
 )
