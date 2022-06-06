@@ -54,6 +54,9 @@ SQLITE_AFF_REF = {
     ],
 }
 
+# strings which may represent null values
+LIKE_NULLS = ["null", "none", "nan"]
+
 
 def engine_from_str(sql_engine: Union[str, Engine]) -> Engine:
     """
@@ -173,8 +176,8 @@ def contains_conflicting_aff_strg_class(
 
     logger.info(
         (
-            "Determining if SQLite database contains conflicting column ",
-            "affinity vs storage class values.",
+            "Determining if SQLite database contains conflicting column "
+            "affinity vs storage class values."
         )
     )
 
@@ -229,6 +232,83 @@ def contains_conflicting_aff_strg_class(
     return False
 
 
+def contains_str_like_null(
+    sql_engine: Union[str, Engine],
+    table_name: Optional[str] = None,
+    column_name: Optional[str] = None,
+) -> bool:
+    """
+    Detect whether the given database, table, or column contains
+    a string value which is similar to NULL. Strings instead of
+    SQLite NULL may be interpreted at read as a string (value)
+    instead of a NULL (non-value).
+
+    Parameters
+    ----------
+    sql_engine: str | sqlalchemy.engine.base.Engine
+        filename of the SQLite database or existing sqlalchemy engine
+    table_name: str
+        optional specific table name to check within database
+    column_name: str
+        optional specific column name to check within database
+
+    Returns
+    -------
+    bool
+        Returns True if found a str value similar to null, else returns False.
+    """
+
+    logger.info("Determining if SQLite database contains string values like NULL's.")
+
+    # create an engine
+    engine = engine_from_str(sql_engine)
+
+    # gather columns to be used below
+    columns = collect_columns(engine, table_name, column_name)
+
+    # strings which are like nulls for later use in below SQL 'in'
+    like_nulls_str_list = ",".join(["'{}'".format(x) for x in LIKE_NULLS])
+
+    with engine.connect() as connection:
+        for col in columns:
+            # the sql below seeks to efficiently detect existence of string
+            # values which are like nulls in columns which contain at least
+            # one string value. Note that we must check the individual value
+            # types instead of the column types due to SQLite's flexible
+            # typing system.
+            sql_stmt = """
+            SELECT
+                EXISTS(
+                    SELECT 1 FROM {table_name} 
+                    WHERE TYPEOF({col_name}) = 'text'
+                )
+                AND EXISTS(
+                    SELECT 1 FROM {table_name} 
+                    WHERE LOWER({col_name}) IN ({like_nulls})
+                );
+            """
+            result = connection.execute(
+                sql_stmt.format(
+                    table_name=col[0],
+                    col_name=col[1],
+                    like_nulls=like_nulls_str_list,
+                )
+            ).fetchall()[0][
+                0
+            ]  # nosec
+            if result > 0:
+                # if our result is greater than 0 it means values with conflicting storage
+                # class existed within the focus column and as a result, we return False
+                logger.warning(
+                    "Discovered strings like nulls in %s column %s.",
+                    col[0],
+                    col[1],
+                )
+                return True
+
+    return False
+
+
 def update_columns_to_nullable(
     sql_engine: Union[str, Engine],
     dest_path: str = None,
@@ -254,7 +334,7 @@ def update_columns_to_nullable(
     table_name: str
         optional specific table name to update within database
     inplace: bool
-        whether to replace the source sql database
+        whether to replace the source sql database, by default True
 
     Returns
     -------
@@ -370,7 +450,7 @@ def update_columns_to_nullable(
     return engine_from_str(dest_path)
 
 
-def update_columns_nan_to_null(
+def update_columns_like_null_to_null(
     sql_engine: Union[str, Engine],
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
@@ -400,20 +480,22 @@ def update_columns_nan_to_null(
     # gather columns to be used below
     columns = collect_columns(engine, table_name, column_name)
 
+    # strings which are like nulls for later use in below SQL 'in'
+    like_nulls_str_list = ",".join(["'{}'".format(x) for x in LIKE_NULLS])
+
     with engine.begin() as connection:
         for col in columns:
             # sql to update nan strings to sqlite nulls
             sql_stmt = """
             UPDATE {table_name} SET {col_name}=NULL 
-            WHERE {col_name}='nan'
+            WHERE LOWER({col_name}) IN ({like_nulls})
             AND EXISTS(SELECT 1 FROM {table_name}
-                WHERE {col_name}='nan'
+                WHERE LOWER({col_name}) IN ({like_nulls})
             )
             """
             connection.execute(
                 statement=sql_stmt.format(
-                    table_name=col[0],
-                    col_name=col[1],
+                    table_name=col[0], col_name=col[1], like_nulls=like_nulls_str_list
                 )
             )  # nosec
 

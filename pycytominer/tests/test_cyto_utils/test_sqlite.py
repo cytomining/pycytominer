@@ -6,8 +6,9 @@ import pytest
 from pycytominer.cyto_utils.sqlite import (
     collect_columns,
     contains_conflicting_aff_strg_class,
+    contains_str_like_null,
     engine_from_str,
-    update_columns_nan_to_null,
+    update_columns_like_null_to_null,
     update_columns_to_nullable,
 )
 from sqlalchemy import create_engine
@@ -186,6 +187,45 @@ def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
     )
 
 
+def test_contains_str_like_null(database_engine_for_testing):
+    """
+    Testing contains_str_like_null
+    """
+
+    # assert no strs like nulls in full database
+    assert contains_str_like_null(database_engine_for_testing) == False
+
+    # add a str like null
+    with database_engine_for_testing.begin() as connection:
+        connection.execute(
+            """
+        INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
+        VALUES ('NaN', 'NULL', 'nan', 'None');
+        """
+        )
+
+    # assert strs like nulls in specific cols
+    assert (
+        contains_str_like_null(
+            database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
+        )
+        and contains_str_like_null(
+            database_engine_for_testing, table_name="tbl_a", column_name="col_text"
+        )
+        and contains_str_like_null(
+            database_engine_for_testing, table_name="tbl_a", column_name="col_blob"
+        )
+        and contains_str_like_null(
+            database_engine_for_testing, table_name="tbl_a", column_name="col_real"
+        )
+    ) == True
+
+    # assert no strs like nulls in specific table
+    assert (
+        contains_str_like_null(database_engine_for_testing, table_name="tbl_b") == False
+    )
+
+
 def test_update_columns_to_nullable(database_engine_for_testing):
     """
     Testing update_columns_to_nullable
@@ -227,13 +267,15 @@ def test_update_columns_to_nullable(database_engine_for_testing):
     assert updated_engine.url == database_engine_for_testing.url
 
 
-def test_update_columns_nan_to_null(database_engine_for_testing):
+def test_update_columns_like_null_to_null(database_engine_for_testing):
     """
-    Testing update_columns_nan_to_null
+    Testing update_columns_like_null_to_null
     """
 
     # test updating tbl_b
-    updated_engine = update_columns_nan_to_null(sql_engine=database_engine_for_testing)
+    updated_engine = update_columns_like_null_to_null(
+        sql_engine=database_engine_for_testing
+    )
 
     # test return type as sqlalchemy
     assert isinstance(updated_engine, Engine)
@@ -243,27 +285,42 @@ def test_update_columns_nan_to_null(database_engine_for_testing):
         connection.execute(
             """
         INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
-        VALUES ('nan', 'nan', 'example', 0.5);
+        VALUES ('nan', 'None', 'Null', 0.5);
         """
         )
 
     # test updating only tbl_a col_text
-    updated_engine = update_columns_nan_to_null(
+    updated_engine = update_columns_like_null_to_null(
         sql_engine=database_engine_for_testing,
         table_name="tbl_a",
         column_name="col_text",
     )
-    assert (
-        updated_engine.execute(
-            "SELECT EXISTS(SELECT 1 FROM tbl_a WHERE col_text='nan');"
-        ).fetchone()[0]
-        == 0
+    sql_stmt = """
+    SELECT EXISTS(
+        SELECT 1 FROM tbl_a 
+        WHERE col_text='None'
+        );
+    """
+    assert updated_engine.execute(sql_stmt).fetchone()[0] == 0
+
+    # test updating only tbl_a col_blob
+    updated_engine = update_columns_like_null_to_null(
+        sql_engine=database_engine_for_testing,
+        table_name="tbl_a",
+        column_name="col_blob",
     )
+    sql_stmt = """
+    SELECT EXISTS(
+        SELECT 1 FROM tbl_a 
+        WHERE col_blob='Null'
+        );
+    """
+    assert updated_engine.execute(sql_stmt).fetchone()[0] == 0
 
     # test updating only tbl_a col_integer
     # should raise exception due to not null constraint
     with pytest.raises(IntegrityError):
-        updated_engine = update_columns_nan_to_null(
+        updated_engine = update_columns_like_null_to_null(
             sql_engine=database_engine_for_testing,
             table_name="tbl_a",
             column_name="col_integer",
