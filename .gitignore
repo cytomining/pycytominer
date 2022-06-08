@@ -6,5 +6,7 @@ build
 .coverage*
 .idea/*
 /dist
-**/*.sqlite
-pycytominer/tests/test_data/collate/backend/2021_04_20_Target2/BR00121431/BR00121431.csv
+*.sqlite
+pycytominer/tests/test_data/collate/backend/**/*.csv
+!pycytominer/tests/test_data/collate/backend/**/*master.csv
+
