@@ -5,7 +5,7 @@ import pandas as pd
 from pycytominer.cyto_utils.collate import collate
 
 test_config_location = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "cyto_utils/ingest_config.ini")
+    os.path.join(os.path.dirname(__file__), "..", "..", "cyto_utils/database_config/ingest_config.ini")
 )
 test_data_location = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "test_data/collate")
