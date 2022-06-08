@@ -37,7 +37,7 @@ from .cp_image_features import (
 from .sqlite import (
     clean_like_nulls,
     collect_columns,
-    contains_conflicting_aff_strg_class,
+    contains_conflicting_aff_storage_class,
     contains_str_like_null,
     engine_from_str,
     update_columns_to_nullable,

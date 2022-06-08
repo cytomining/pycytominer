@@ -10,7 +10,7 @@ from pycytominer.cyto_utils.sqlite import (
     LIKE_NULLS,
     clean_like_nulls,
     collect_columns,
-    contains_conflicting_aff_strg_class,
+    contains_conflicting_aff_storage_class,
     contains_str_like_null,
     engine_from_str,
     update_columns_to_nullable,
@@ -119,26 +119,26 @@ def test_collect_columns(database_engine_for_testing):
     ) == [("tbl_b", "col_integer", "INTEGER", 0)]
 
 
-def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
+def test_contains_conflicting_aff_storage_class(database_engine_for_testing):
     """
-    Testing contains_conflicting_aff_strg_class
+    Testing contains_conflicting_aff_storage_class
     """
 
     # test string-based sql_path and empty database (no schema should mean no conflict)
-    assert contains_conflicting_aff_strg_class(sql_engine=":memory:") is False
+    assert contains_conflicting_aff_storage_class(sql_engine=":memory:") is False
 
     # test non-conflicting database
-    assert contains_conflicting_aff_strg_class(database_engine_for_testing) is False
+    assert contains_conflicting_aff_storage_class(database_engine_for_testing) is False
     # test non-conlicting database single table
     assert (
-        contains_conflicting_aff_strg_class(
+        contains_conflicting_aff_storage_class(
             database_engine_for_testing, table_name="tbl_a"
         )
         is False
     )
     # test non-conlicting database single table and single column
     assert (
-        contains_conflicting_aff_strg_class(
+        contains_conflicting_aff_storage_class(
             database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
         )
         is False
@@ -154,31 +154,31 @@ def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
         )
 
     # test conflicting database
-    assert contains_conflicting_aff_strg_class(database_engine_for_testing) is True
+    assert contains_conflicting_aff_storage_class(database_engine_for_testing) is True
     # test conflicting database single table, conflicting table
     assert (
-        contains_conflicting_aff_strg_class(
+        contains_conflicting_aff_storage_class(
             database_engine_for_testing, table_name="tbl_a"
         )
         is True
     )
     # test conflicting database single table, non-conflicting table
     assert (
-        contains_conflicting_aff_strg_class(
+        contains_conflicting_aff_storage_class(
             database_engine_for_testing, table_name="tbl_b"
         )
         is False
     )
     # test conflicting database single table and single conflicting column
     assert (
-        contains_conflicting_aff_strg_class(
+        contains_conflicting_aff_storage_class(
             database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
         )
         is True
     )
     # test conflicting database single table and single non-conflicting column
     assert (
-        contains_conflicting_aff_strg_class(
+        contains_conflicting_aff_storage_class(
             database_engine_for_testing, table_name="tbl_a", column_name="col_text"
         )
         is False

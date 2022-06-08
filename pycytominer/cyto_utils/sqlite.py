@@ -141,7 +141,7 @@ def collect_columns(
 
             if column_name is not None:
                 # otherwise we will focus on only the column name provided
-                sql_stmt += " WHERE name = :col_name;"
+                sql_stmt = f"{sql_stmt} WHERE name = :col_name;"
 
             # append to column list the results
             column_list += connection.execute(
@@ -152,7 +152,7 @@ def collect_columns(
     return column_list
 
 
-def contains_conflicting_aff_strg_class(
+def contains_conflicting_aff_storage_class(
     sql_engine: Union[str, Engine],
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
