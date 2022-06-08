@@ -5,12 +5,10 @@ Pycytominer SQLite utilities
 import logging
 import os
 import sqlite3
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
-
-# pylint: disable=consider-using-f-string
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +53,7 @@ SQLITE_AFF_REF = {
 }
 
 # strings which may represent null values
-LIKE_NULLS = ["null", "none", "nan"]
+LIKE_NULLS = ("null", "none", "nan")
 
 
 def engine_from_str(sql_engine: Union[str, Engine]) -> Engine:
@@ -67,6 +65,7 @@ def engine_from_str(sql_engine: Union[str, Engine]) -> Engine:
     ----------
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
+
     Returns
     -------
     sqlalchemy.engine.base.Engine
@@ -77,7 +76,7 @@ def engine_from_str(sql_engine: Union[str, Engine]) -> Engine:
     if isinstance(sql_engine, str):
         # if we don't already have the sqlite filestring, add it
         if "sqlite:///" not in sql_engine:
-            sql_engine = "sqlite:///{}".format(sql_engine)
+            sql_engine = f"sqlite:///{sql_engine}"
         engine = create_engine(sql_engine)
     else:
         engine = sql_engine
@@ -100,15 +99,17 @@ def collect_columns(
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
     table_name: str
-        optional specific table name to check within database
+        optional specific table name to check within database, by default None
     column_name: str
-        optional specific column name to check within database
+        optional specific column name to check within database, by default None
 
     Returns
     -------
     list
-        Returns list of tuples with values
-        ('table_name', 'column_name', 'column_affinity_type')
+        Returns list, and if populated, contains tuples with values
+        similar to the following. These may also be accessed by name
+        similar to dictionaries, as they are SQLAlchemy Row objects.
+        [('table_name', 'column_name', 'column_type', 'notnull'),...]
     """
 
     # create column list for return result
@@ -121,30 +122,31 @@ def collect_columns(
         if table_name is None:
             # if no table name is provided, we assume all tables must be scanned
             tables = connection.execute(
-                "SELECT name FROM sqlite_master WHERE type = 'table';"
+                "SELECT name as table_name FROM sqlite_master WHERE type = 'table';"
             ).fetchall()
         else:
             # otherwise we will focus on just the table name provided
-            tables = [(table_name,)]
+            tables = [{"table_name": table_name}]
 
         for table in tables:
-            if column_name is None:
-                # if no column name is specified we will focus on all columns within the table
-                sql_stmt = """
-                SELECT :table_name, name, type, [notnull] 
-                FROM pragma_table_info(:table_name);
-                """
-            else:
+
+            # if no column name is specified we will focus on all columns within the table
+            sql_stmt = """
+            SELECT :table_name as table_name,
+                    name as column_name,
+                    type as column_type,
+                    [notnull]
+            FROM pragma_table_info(:table_name)
+            """
+
+            if column_name is not None:
                 # otherwise we will focus on only the column name provided
-                sql_stmt = """
-                SELECT :table_name, name, type, [notnull]
-                FROM pragma_table_info(:table_name) WHERE name = :col_name;
-                """
+                sql_stmt += " WHERE name = :col_name;"
 
             # append to column list the results
             column_list += connection.execute(
                 sql_stmt,
-                {"table_name": str(table[0]), "col_name": str(column_name)},
+                {"table_name": str(table["table_name"]), "col_name": str(column_name)},
             ).fetchall()
 
     return column_list
@@ -167,9 +169,9 @@ def contains_conflicting_aff_strg_class(
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
     table_name: str
-        optional specific table name to check within database
+        optional specific table name to check within database, by default None
     column_name: str
-        optional specific column name to check within database
+        optional specific column name to check within database, by default None
 
     Returns
     -------
@@ -188,43 +190,43 @@ def contains_conflicting_aff_strg_class(
     # create an engine
     engine = engine_from_str(sql_engine)
 
-    # gather columns to be used below
+    # Gather columns to be used below.
+    # Data returned is similar to the following
+    # and may be accessed using index or key name.
+    # [('table_name', 'column_name', 'column_type', 'notnull'),...]
     columns = collect_columns(engine, table_name, column_name)
 
     with engine.connect() as connection:
         for col in columns:
-            # the sql below seeks to efficiently detect existence of values which
-            # do not match the column affinity type (for ex. a string in an integer column).
-            sql_stmt = """
-            SELECT
-                EXISTS(
-                    SELECT 1 FROM {table_name} 
-                    WHERE TYPEOF({col_name}) NOT IN ({col_types})
-                );
-            """
+
             # join formatted string for use with sql query in {col_types} var
             col_types = ",".join(
-                ["'{}'".format(x.lower()) for x in SQLITE_AFF_REF[col[2]]]
+                [f"'{x.lower()}'" for x in SQLITE_AFF_REF[col["column_type"]]]
             )
 
             # there are challenges with using sqlalchemy vars in the same manner as above
-            # so we use format here along with nosec
+            # so we use an f-string here along with nosec
             result = connection.execute(
-                sql_stmt.format(
-                    table_name=col[0],
-                    col_name=col[1],
-                    col_types=col_types,
+                # the sql below seeks to efficiently detect existence of values which
+                # do not match the column affinity type (for ex. a string in an integer column).
+                f"""
+                SELECT
+                EXISTS(
+                    SELECT 1 FROM {col["table_name"]}
+                    WHERE TYPEOF({col["column_name"]}) NOT IN ({col_types})
                 )
-            ).fetchall()[0][
-                0
+                AS 'CONFLICTING_TYPES_EXIST';
+                """
+            ).fetchone()[
+                "CONFLICTING_TYPES_EXIST"
             ]  # nosec
             if result > 0:
                 # if our result is greater than 0 it means values with conflicting storage
                 # class existed within the focus column and as a result, we return False
                 logger.warning(
                     "Discovered conflicting %s column %s affinity type and storage class.",
-                    col[0],
-                    col[1],
+                    col["table_name"],
+                    col["column_name"],
                 )
                 return True
 
@@ -240,6 +242,7 @@ def contains_str_like_null(
     sql_engine: Union[str, Engine],
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
+    like_nulls: Tuple[str] = LIKE_NULLS,
 ) -> bool:
     """
     Detect whether the given database, table, or column contains
@@ -252,9 +255,11 @@ def contains_str_like_null(
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
     table_name: str
-        optional specific table name to check within database
+        optional specific table name to check within database, by default None
     column_name: str
-        optional specific column name to check within database
+        optional specific column name to check within database, by default None
+    like_nulls: List[str]
+        tuple strings which may represent null values, by default LIKE_NULLS global
 
     Returns
     -------
@@ -262,7 +267,9 @@ def contains_str_like_null(
         Returns True if found a str value similar to null, else returns False.
     """
 
-    logger.info("Determining if SQLite database contains string values like NULL's.")
+    logger.info(
+        "Determining if SQLite database contains table entries with string values like NULL's."
+    )
 
     # create an engine
     engine = engine_from_str(sql_engine)
@@ -271,7 +278,7 @@ def contains_str_like_null(
     columns = collect_columns(engine, table_name, column_name)
 
     # strings which are like nulls for later use in below SQL 'in'
-    like_nulls_str_list = ",".join(["'{}'".format(x) for x in LIKE_NULLS])
+    like_nulls_str_list = ",".join([f"'{x}'" for x in like_nulls])
 
     with engine.connect() as connection:
         for col in columns:
@@ -280,33 +287,29 @@ def contains_str_like_null(
             # one string value. Note that we must check the individual value
             # types instead of the column types due to SQLite's flexible
             # typing system.
-            sql_stmt = """
-            SELECT
-                EXISTS(
-                    SELECT 1 FROM {table_name} 
-                    WHERE TYPEOF({col_name}) = 'text'
+            result = connection.execute(
+                f"""
+                SELECT
+                (EXISTS(
+                    SELECT 1 FROM {col["table_name"]}
+                    WHERE TYPEOF({col["column_name"]}) = 'text'
                 )
                 AND EXISTS(
-                    SELECT 1 FROM {table_name} 
-                    WHERE LOWER({col_name}) IN ({like_nulls})
-                );
-            """
-            result = connection.execute(
-                sql_stmt.format(
-                    table_name=col[0],
-                    col_name=col[1],
-                    like_nulls=like_nulls_str_list,
-                )
-            ).fetchall()[0][
-                0
+                    SELECT 1 FROM {col["table_name"]}
+                    WHERE LOWER({col["column_name"]}) IN ({like_nulls_str_list})
+                ))
+                AS 'LIKE_NULL_EXISTS';
+                """
+            ).fetchone()[
+                "LIKE_NULL_EXISTS"
             ]  # nosec
             if result > 0:
-                # if our result is greater than 0 it means values with conflicting storage
-                # class existed within the focus column and as a result, we return False
+                # if our result is greater than 0 it means values with str's like null
+                # existed within the focus column and as a result, we return False
                 logger.warning(
                     "Discovered strings like nulls in %s column %s.",
-                    col[0],
-                    col[1],
+                    col["table_name"],
+                    col["column_name"],
                 )
                 return True
 
@@ -334,9 +337,9 @@ def update_columns_to_nullable(
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
     dest_path: str
-        the destination of the updated database with nullable columns.
+        the destination of the updated database with nullable columns, by default None
     table_name: str
-        optional specific table name to update within database
+        optional specific table name to update within database, by default None
     inplace: bool
         whether to replace the source sql database, by default True
 
@@ -359,7 +362,7 @@ def update_columns_to_nullable(
 
     # add a default destination path which is separate from our source
     if dest_path is None:
-        dest_path = src_sql_url + "_column_update"
+        dest_path = f"{src_sql_url}_column_update"
 
     # setup a destination database connection
     dest_engine = sqlite3.connect(dest_path)
@@ -371,15 +374,10 @@ def update_columns_to_nullable(
     schema_version = dest_engine.execute("PRAGMA schema_version;").fetchall()[0][0]
 
     # gather existing table(s) sql later update
+    sql_stmt = "SELECT name, sql FROM sqlite_master WHERE type = 'table'"
     if table_name is not None:
         # if we have a table name provided, target only that table for the modifications
-        sql_stmt = (
-            "SELECT name, sql FROM sqlite_master "
-            "WHERE type = 'table' and UPPER(name) = UPPER(:table_name)"
-        )
-    else:
-        # else we target all tables within the database
-        sql_stmt = "SELECT name, sql FROM sqlite_master WHERE type = 'table';"
+        sql_stmt += " and UPPER(name) = UPPER(:table_name)"
 
     table_sql_fetch = dest_engine.execute(
         sql_stmt, {"table_name": table_name}
@@ -405,7 +403,7 @@ def update_columns_to_nullable(
 
             # prepare update statement which will perform the table sql update
             sql_stmt = """
-            UPDATE sqlite_schema SET sql = :modified_sql 
+            UPDATE sqlite_schema SET sql = :modified_sql
             WHERE type = 'table' AND UPPER(name) = UPPER(:table_name);
             """
             for name, modified_sql in table_sql_mod.items():
@@ -413,11 +411,7 @@ def update_columns_to_nullable(
                     sql_stmt, {"table_name": name, "modified_sql": modified_sql}
                 )
             # increment the schema version to track the change
-            cursor.execute(
-                "PRAGMA schema_version={new_version};".format(
-                    new_version=schema_version + 1
-                ),
-            )
+            cursor.execute(f"PRAGMA schema_version={schema_version+1};")
 
             # disable schema writes
             cursor.execute("PRAGMA writable_schema=OFF")
@@ -458,6 +452,7 @@ def update_values_like_null_to_null(
     sql_engine: Union[str, Engine],
     table_name: Optional[str] = None,
     column_name: Optional[str] = None,
+    like_nulls: Tuple[str] = LIKE_NULLS,
 ) -> Engine:
     """
     Updates column values from 'nan' to NULL where possible.
@@ -467,16 +462,18 @@ def update_values_like_null_to_null(
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
     table_name: str
-        optional specific table name to check within database
+        optional specific table name to check within database, by default None
     column_name: str
-        optional specific column name to check within database
+        optional specific column name to check within database, by default None
+    like_nulls: List[str]
+        tuple strings which may represent null values
 
     Returns
     -------
     sqlalchemy.engine.base.Engine
         A SQLAlchemy engine for the changed database
     """
-    logger.info("Updating column values with str 'nan' to NULL values.")
+    logger.info("Updating column values with str's %s to NULL values.", like_nulls)
 
     # create an engine
     engine = engine_from_str(sql_engine)
@@ -485,22 +482,19 @@ def update_values_like_null_to_null(
     columns = collect_columns(engine, table_name, column_name)
 
     # strings which are like nulls for later use in below SQL 'in'
-    like_nulls_str_list = ",".join(["'{}'".format(x) for x in LIKE_NULLS])
+    like_nulls_str_list = ",".join([f"'{x}'" for x in like_nulls])
 
     with engine.begin() as connection:
         for col in columns:
             # sql to update nan strings to sqlite nulls
-            sql_stmt = """
-            UPDATE {table_name} SET {col_name}=NULL 
-            WHERE LOWER({col_name}) IN ({like_nulls})
-            AND EXISTS(SELECT 1 FROM {table_name}
-                WHERE LOWER({col_name}) IN ({like_nulls})
-            )
-            """
             connection.execute(
-                statement=sql_stmt.format(
-                    table_name=col[0], col_name=col[1], like_nulls=like_nulls_str_list
+                f"""
+                UPDATE {col["table_name"]} SET {col["column_name"]}=NULL
+                WHERE LOWER({col["column_name"]}) IN ({like_nulls_str_list})
+                AND EXISTS(SELECT 1 FROM {col["table_name"]}
+                    WHERE LOWER({col["column_name"]}) IN ({like_nulls_str_list})
                 )
+                """
             )  # nosec
 
     return engine
@@ -521,10 +515,14 @@ def clean_like_nulls(
     ----------
     sql_engine: str | sqlalchemy.engine.base.Engine
         filename of the SQLite database or existing sqlalchemy engine
+        dest_path: str
+        the destination of the updated database with nullable columns, by default None
     table_name: str
-        optional specific table name to check within database
+        optional specific table name to check within database, by default None
     column_name: str
-        optional specific column name to check within database
+        optional specific column name to check within database, by default None
+    inplace: bool
+        whether to replace the source sql database, by default True
 
     Returns
     -------
@@ -543,9 +541,10 @@ def clean_like_nulls(
     if contains_str_like_null(sql_engine, table_name, column_name):
 
         # if we have at least one not-nullable column we must update the database
-        # to allow for null values in those columns
+        # to allow for null values in those columns. Note: 1=True for notnull.
         if 1 in [
-            column[3] for column in collect_columns(sql_engine, table_name, column_name)
+            col["notnull"]
+            for col in collect_columns(sql_engine, table_name, column_name)
         ]:
             # perform the schema update
             sql_engine = update_columns_to_nullable(

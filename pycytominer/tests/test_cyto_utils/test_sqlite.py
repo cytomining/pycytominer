@@ -3,6 +3,9 @@
 import tempfile
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 from pycytominer.cyto_utils.sqlite import (
     LIKE_NULLS,
     clean_like_nulls,
@@ -13,9 +16,6 @@ from pycytominer.cyto_utils.sqlite import (
     update_columns_to_nullable,
     update_values_like_null_to_null,
 )
-from sqlalchemy import create_engine
-from sqlalchemy.engine.base import Engine
-from sqlalchemy.exc import IntegrityError
 
 
 @pytest.fixture
@@ -29,33 +29,29 @@ def database_engine_for_testing() -> Engine:
     tmpdir = tempfile.gettempdir()
 
     # create a temporary sqlite connection
-    sql_path = "sqlite:///{}/test_sqlite.sqlite".format(tmpdir)
+    sql_path = f"sqlite:///{tmpdir}/test_sqlite.sqlite"
     engine = create_engine(sql_path)
 
     # statements for creating database with simple structure
     create_stmts = [
+        "drop table if exists tbl_a;",
         """
-    drop table if exists tbl_a;
-    """,
+        create table tbl_a (
+        col_integer INTEGER NOT NULL
+        ,col_text TEXT
+        ,col_blob BLOB
+        ,col_real REAL
+        );
+        """,
+        "drop table if exists tbl_b;",
         """
-    create table tbl_a (
-    col_integer INTEGER NOT NULL
-    ,col_text TEXT
-    ,col_blob BLOB
-    ,col_real REAL
-    );
-    """,
-        """
-    drop table if exists tbl_b;
-    """,
-        """
-    create table tbl_b (
-    col_integer INTEGER
-    ,col_text TEXT
-    ,col_blob BLOB
-    ,col_real REAL
-    );
-    """,
+        create table tbl_b (
+        col_integer INTEGER
+        ,col_text TEXT
+        ,col_blob BLOB
+        ,col_real REAL
+        );
+        """,
     ]
 
     insert_vals = [1, "sample", b"sample_blob", 0.5]
@@ -129,63 +125,63 @@ def test_contains_conflicting_aff_strg_class(database_engine_for_testing):
     """
 
     # test string-based sql_path and empty database (no schema should mean no conflict)
-    assert contains_conflicting_aff_strg_class(sql_engine=":memory:") == False
+    assert contains_conflicting_aff_strg_class(sql_engine=":memory:") is False
 
     # test non-conflicting database
-    assert contains_conflicting_aff_strg_class(database_engine_for_testing) == False
+    assert contains_conflicting_aff_strg_class(database_engine_for_testing) is False
     # test non-conlicting database single table
     assert (
         contains_conflicting_aff_strg_class(
             database_engine_for_testing, table_name="tbl_a"
         )
-        == False
+        is False
     )
     # test non-conlicting database single table and single column
     assert (
         contains_conflicting_aff_strg_class(
             database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
         )
-        == False
+        is False
     )
 
     # add a conflicting row of values for tbl_a
     with database_engine_for_testing.begin() as connection:
         connection.execute(
             """
-        INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
-        VALUES ('nan', 'nan', 'example', 0.5);
-        """
+            INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
+            VALUES ('nan', 'None', 'example', 0.5);
+            """
         )
 
     # test conflicting database
-    assert contains_conflicting_aff_strg_class(database_engine_for_testing) == True
+    assert contains_conflicting_aff_strg_class(database_engine_for_testing) is True
     # test conflicting database single table, conflicting table
     assert (
         contains_conflicting_aff_strg_class(
             database_engine_for_testing, table_name="tbl_a"
         )
-        == True
+        is True
     )
     # test conflicting database single table, non-conflicting table
     assert (
         contains_conflicting_aff_strg_class(
             database_engine_for_testing, table_name="tbl_b"
         )
-        == False
+        is False
     )
     # test conflicting database single table and single conflicting column
     assert (
         contains_conflicting_aff_strg_class(
             database_engine_for_testing, table_name="tbl_a", column_name="col_integer"
         )
-        == True
+        is True
     )
     # test conflicting database single table and single non-conflicting column
     assert (
         contains_conflicting_aff_strg_class(
             database_engine_for_testing, table_name="tbl_a", column_name="col_text"
         )
-        == False
+        is False
     )
 
 
@@ -195,15 +191,15 @@ def test_contains_str_like_null(database_engine_for_testing):
     """
 
     # assert no strs like nulls in full database
-    assert contains_str_like_null(database_engine_for_testing) == False
+    assert contains_str_like_null(database_engine_for_testing) is False
 
     # add a str like null
     with database_engine_for_testing.begin() as connection:
         connection.execute(
             """
-        INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
-        VALUES ('NaN', 'NULL', 'nan', 'None');
-        """
+            INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
+            VALUES ('NaN', 'NULL', 'nan', 'None');
+            """
         )
 
     # assert strs like nulls in specific cols
@@ -220,11 +216,11 @@ def test_contains_str_like_null(database_engine_for_testing):
         and contains_str_like_null(
             database_engine_for_testing, table_name="tbl_a", column_name="col_real"
         )
-    ) == True
+    ) is True
 
     # assert no strs like nulls in specific table
     assert (
-        contains_str_like_null(database_engine_for_testing, table_name="tbl_b") == False
+        contains_str_like_null(database_engine_for_testing, table_name="tbl_b") is False
     )
 
 
@@ -286,9 +282,9 @@ def test_update_values_like_null_to_null(database_engine_for_testing):
     with database_engine_for_testing.begin() as connection:
         connection.execute(
             """
-        INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
-        VALUES ('nan', 'None', 'Null', 0.5);
-        """
+            INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
+            VALUES ('nan', 'None', 'Null', 0.5);
+            """
         )
 
     # test updating only tbl_a col_text
@@ -357,9 +353,9 @@ def test_clean_like_nulls(database_engine_for_testing):
     with database_engine_for_testing.begin() as connection:
         connection.execute(
             """
-        INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
-        VALUES ('nan', 'None', 'Null', 'NaN');
-        """
+            INSERT INTO tbl_a (col_integer, col_text, col_blob, col_real)
+            VALUES ('nan', 'None', 'Null', 'NaN');
+            """
         )
 
     # clean the like nulls for single table without nulls
@@ -383,15 +379,13 @@ def test_clean_like_nulls(database_engine_for_testing):
     )
 
     # build sql to check for the like_nulls
-    like_nulls_str_list = ",".join(["'{}'".format(x) for x in LIKE_NULLS])
-    select_stmt = """
+    like_nulls_str_list = ",".join([f"'{x}'" for x in LIKE_NULLS])
+    select_stmt = f"""
     SELECT EXISTS(
         SELECT 1 FROM tbl_a 
-        WHERE LOWER(col_text) in ({like_nulls})
+        WHERE LOWER(col_text) in ({like_nulls_str_list})
         );
-    """.format(
-        like_nulls=like_nulls_str_list
-    )
+    """
     # check that there are no like nulls any longer within the table
     assert cleaned_database.execute(select_stmt).fetchall()[0][0] == 0
 
@@ -411,16 +405,14 @@ def test_clean_like_nulls(database_engine_for_testing):
     # assert that the database url did not change
     assert str(cleaned_database.url) != database_url
 
-    select_stmt = """
+    select_stmt = f"""
     SELECT EXISTS(
         SELECT 1 FROM tbl_a 
-        WHERE LOWER(col_integer) in ({like_nulls})
-        OR LOWER(col_text) in ({like_nulls})
-        OR LOWER(col_blob) in ({like_nulls})
-        OR LOWER(col_real) in ({like_nulls})
+        WHERE LOWER(col_integer) in ({like_nulls_str_list})
+        OR LOWER(col_text) in ({like_nulls_str_list})
+        OR LOWER(col_blob) in ({like_nulls_str_list})
+        OR LOWER(col_real) in ({like_nulls_str_list})
         );
-    """.format(
-        like_nulls=like_nulls_str_list
-    )
+    """
     # check that there are no like nulls any longer within the table
     assert cleaned_database.execute(select_stmt).fetchall()[0][0] == 0

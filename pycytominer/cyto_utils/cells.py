@@ -16,6 +16,7 @@ from pycytominer.cyto_utils import (
     extract_image_features,
     aggregate_fields_count,
     aggregate_image_features,
+    engine_from_str,
 )
 
 default_compartments = get_default_compartments()
@@ -148,7 +149,7 @@ class SingleCells(object):
             self.set_subsample_n(self.subsample_n)
 
         # Connect to sqlite engine
-        self.engine = create_engine(self.sql_file)
+        self.engine = engine_from_str(self.sql_file)
         self.conn = self.engine.connect()
 
         # Throw an error if both subsample_frac and subsample_n is set
