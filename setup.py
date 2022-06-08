@@ -21,6 +21,7 @@ setup(
     packages=find_packages(),
     license=about["__license__"],
     install_requires=["numpy", "pandas", "scikit-learn", "sqlalchemy"],
+    extras_require={"collate": ["cytominer-database==0.3.4"]},
     python_requires=">=3.4",
     include_package_data=True,
 )

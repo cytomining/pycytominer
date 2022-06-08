@@ -46,6 +46,15 @@ Since the project is actively being developed, with new features added regularly
 pip install git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470
 ```
 
+If you want to perform data collation inside pycytominer, you will need an extra package; this will change your installation commands slightly
+
+```bash
+# Example for general case commit:
+pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer"
+# Example for specific commit:
+pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
+```
+
 ## Usage
 
 Using pycytominer is simple and fun.
