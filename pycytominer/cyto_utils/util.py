@@ -245,7 +245,7 @@ def check_image_features(image_features, image_columns):
         Nothing is returned.
     """
 
-    if "Image" in list(set(_.split("_")[0] for _ in image_columns)):
+    if "Image" in list(set(img_col.split("_")[0] for img_col in image_columns)):
         # Image has already been prepended to most, but not all, columns
         level = 1
         image_columns = [x for x in image_columns if "_" in x]
@@ -254,7 +254,7 @@ def check_image_features(image_features, image_columns):
 
     try:
         assert all(
-            feature in list(set(_.split("_")[level] for _ in image_columns))
+            feature in list(set(img_col.split("_")[level] for img_col in image_columns))
             for feature in image_features
         )
     except AssertionError:
