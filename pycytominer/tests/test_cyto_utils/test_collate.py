@@ -1,35 +1,30 @@
 import os
+import pathlib
 import pytest
 
 import pandas as pd
 from pycytominer.cyto_utils.collate import collate
 
-test_config_location = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "cyto_utils/database_config/ingest_config.ini")
+batch = "2021_04_20_Target2"
+
+plate = "BR00121431"
+
+test_config_location = pathlib.Path(
+    f"{os.path.dirname(__file__)}/../../cyto_utils/database_config/ingest_config.ini"
 )
-test_data_location = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "test_data/collate")
+
+test_data_location = pathlib.Path(f"{os.path.dirname(__file__)}/../test_data/collate")
+
+test_backend_location = pathlib.Path(
+    f"{os.path.dirname(__file__)}/../test_data/collate/backend/{batch}/{plate}/{plate}.sqlite"
 )
-test_backend_location = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "test_data/collate/backend/2021_04_20_Target2/BR00121431/BR00121431.sqlite",
-    )
+
+test_csv_location = pathlib.Path(
+    f"{os.path.dirname(__file__)}/../test_data/collate/backend/{batch}/{plate}/{plate}.csv"
 )
-test_csv_location = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "test_data/collate/backend/2021_04_20_Target2/BR00121431/BR00121431.csv",
-    )
-)
-master_csv_location = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "test_data/collate/backend/2021_04_20_Target2/BR00121431/BR00121431_master.csv",
-    )
+
+master_csv_location = pathlib.Path(
+    f"{os.path.dirname(__file__)}/../test_data/collate/backend/{batch}/{plate}/{plate}_master.csv"
 )
 
 
@@ -61,7 +56,7 @@ def test_base_case():
         test_config_location,
         "BR00121431",
         base_directory=test_data_location,
-        temp=test_data_location,
+        tmp_dir=test_data_location,
         add_image_features=False,
         printtoscreen=False,
     )
@@ -81,7 +76,7 @@ def test_base_case_with_image_features():
         test_config_location,
         "BR00121431",
         base_directory=test_data_location,
-        temp=test_data_location,
+        tmp_dir=test_data_location,
         add_image_features=True,
         image_feature_categories=["Granularity"],
         printtoscreen=False,
@@ -108,7 +103,7 @@ def test_overwrite():
         test_config_location,
         "BR00121431",
         base_directory=test_data_location,
-        temp=test_data_location,
+        tmp_dir=test_data_location,
         add_image_features=False,
         printtoscreen=False,
     )
@@ -121,7 +116,7 @@ def test_overwrite():
         test_config_location,
         "BR00121431",
         base_directory=test_data_location,
-        temp=test_data_location,
+        tmp_dir=test_data_location,
         overwrite=True,
         add_image_features=False,
         printtoscreen=False,
@@ -133,7 +128,7 @@ def test_overwrite():
             test_config_location,
             "BR00121431",
             base_directory=test_data_location,
-            temp=test_data_location,
+            tmp_dir=test_data_location,
             add_image_features=False,
             printtoscreen=False,
         )
@@ -153,7 +148,7 @@ def test_aggregate_only():
             test_config_location,
             "BR00121431",
             base_directory=test_data_location,
-            temp=test_data_location,
+            tmp_dir=test_data_location,
             aggregate_only=True,
             add_image_features=False,
             printtoscreen=False,
@@ -165,7 +160,7 @@ def test_aggregate_only():
         test_config_location,
         "BR00121431",
         base_directory=test_data_location,
-        temp=test_data_location,
+        tmp_dir=test_data_location,
         add_image_features=False,
         printtoscreen=False,
     )
@@ -179,7 +174,7 @@ def test_aggregate_only():
         test_config_location,
         "BR00121431",
         base_directory=test_data_location,
-        temp=test_data_location,
+        tmp_dir=test_data_location,
         aggregate_only=True,
         add_image_features=False,
         printtoscreen=False,

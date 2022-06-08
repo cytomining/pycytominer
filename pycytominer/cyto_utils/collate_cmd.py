@@ -1,6 +1,7 @@
+import argparse
+from pycytominer.cyto_utils.collate import collate
+
 if __name__ == "__main__":
-    import argparse
-    from pycytominer.cyto_utils.collate import collate
 
     parser = argparse.ArgumentParser(description="Collate CSVs")
     parser.add_argument("batch", help="Batch name to process")
@@ -11,7 +12,7 @@ if __name__ == "__main__":
         "--base-directory",
         dest="base_directory",
         default="../..",
-        help="Base directory where the CSV files will be located",
+        help="Base directory for subdirectories containing CSVs, backends, etc; in our preferred structure, this is the 'workspace' directory",
     )
     parser.add_argument(
         "--column",
@@ -22,15 +23,19 @@ if __name__ == "__main__":
         "--munge",
         action="store_true",
         default=False,
-        help="Whether munge should be passed to cytominer-database, if True will break a single object CSV down by objects",
+        help="Whether munge should be passed to cytominer-database, if True cytominer-database will expect a single all-object CSV; it will split each object into its own table",
     )
     parser.add_argument(
-        "--pipeline", default="analysis", help="A string used in path creation"
+        "--csv-dir",
+        dest="csv_dir",
+        default="analysis",
+        help="The directory under the base directory where the analysis CSVs will be found. If running the analysis pipeline, this should nearly always be 'analysis'",
     )
     parser.add_argument(
-        "--remote",
+        "--aws-remote",
+        dest="aws_remote",
         default=None,
-        help="A remote AWS directory, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run",
+        help="A remote AWS prefix, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run",
     )
     parser.add_argument(
         "--aggregate-only",
@@ -81,8 +86,8 @@ if __name__ == "__main__":
         base_directory=args.base_directory,
         column=args.column,
         munge=args.munge,
-        pipeline=args.pipeline,
-        remote=args.remote,
+        csv_dir=args.csv_dir,
+        aws_remote=args.aws_remote,
         aggregate_only=args.aggregate_only,
         temp=args.temp,
         overwrite=args.overwrite,
