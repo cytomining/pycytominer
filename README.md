@@ -60,7 +60,7 @@ pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer"
 pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
 ```
 
-If using `pycytominer` in a conda environment, you will also want to make sure to add `cytominer-database=0.3.4`to your list of `dependencies`.
+If using `pycytominer` in a conda environment, in order to run `collate.py`, you will also want to make sure to add `cytominer-database=0.3.4` to your list of dependencies.
 
 ## Usage
 
