@@ -51,7 +51,7 @@ If running your images on a cluster, unless you have a MySQL or similar large da
 In order to look at full plates, therefore, we first need to collate all of these CSVs into a single file (currently SQLite) per plate.
 We currently do this with a library called [cytominer-database](https://github.com/cytomining/cytominer-database). 
 
-If you want to perform this data collation inside pycytominer using the `cyto_utils` function `collate` (and/or you want to be able to run the tests and have them all pass!), you will need `cytominer-database==0.3.4`; this will change your installation commands slightly
+If you want to perform this data collation inside pycytominer using the `cyto_utils` function `collate` (and/or you want to be able to run the tests and have them all pass!), you will need `cytominer-database==0.3.4`; this will change your installation commands slightly:
 
 ```bash
 # Example for general case commit:
