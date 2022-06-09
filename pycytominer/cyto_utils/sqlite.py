@@ -401,9 +401,13 @@ def update_columns_to_nullable(
             # enable schema writes
             cursor.execute("PRAGMA writable_schema=ON")
 
-            # prepare update statement which will perform the table sql update
+            # Prepare update statement which will perform the table sql update.
+            # Here we use table sqlite_master as a reference instead of sqlite_schema
+            # to avoid possible issues with os/image sqlite version differences.
+            # See the following for more information:
+            # https://sqlite.org/schematab.html#alternative_names
             sql_stmt = """
-            UPDATE sqlite_schema SET sql = :modified_sql
+            UPDATE sqlite_master SET sql = :modified_sql
             WHERE type = 'table' AND UPPER(name) = UPPER(:table_name);
             """
             for name, modified_sql in table_sql_mod.items():
