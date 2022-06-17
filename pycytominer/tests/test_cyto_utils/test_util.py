@@ -224,6 +224,29 @@ def test_check_image_features():
         )
 
 
+def test_check_image_features_image_table():
+    data_image_cols = [
+        "Metadata_Count_Cells",
+        "Image_Granularity_1_Mito",
+        "Image_Texture_Variance_RNA_20_00",
+        "Image_Texture_InfoMeas2_DNA_5_02",
+    ]
+
+    valid_image_feature_groups = ["Count", "Granularity"]
+    assert check_image_features(valid_image_feature_groups, data_image_cols) is None
+
+    valid_image_feature_groups = ["Count", "Granularity", "Texture"]
+    assert check_image_features(valid_image_feature_groups, data_image_cols) is None
+
+    invalid_image_feature_groups = ["Count", "IncorrectFeatureGroup"]
+    with pytest.raises(ValueError) as err:
+        check_image_features(invalid_image_feature_groups, data_image_cols)
+        assert (
+            str(err)
+            == "Some of the input image features are not present in the image table."
+        )
+
+
 def test_extract_image_features():
     image_df = pd.DataFrame(
         {

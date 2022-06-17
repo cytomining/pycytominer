@@ -6,3 +6,7 @@ build
 .coverage*
 .idea/*
 /dist
+*.sqlite
+pycytominer/tests/test_data/collate/backend/**/*.csv
+!pycytominer/tests/test_data/collate/backend/**/*master.csv
+

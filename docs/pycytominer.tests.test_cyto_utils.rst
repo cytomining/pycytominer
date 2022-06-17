@@ -20,6 +20,14 @@ pycytominer.tests.test\_cyto\_utils.test\_cells module
    :undoc-members:
    :show-inheritance:
 
+pycytominer.tests.test\_cyto\_utils.test\_collate module
+------------------------------------------------------
+
+.. automodule:: pycytominer.tests.test_cyto_utils.test_collate
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
 pycytominer.tests.test\_cyto\_utils.test\_feature\_blocklist module
 -------------------------------------------------------------------
 

@@ -34,3 +34,4 @@ from .cp_image_features import (
     aggregate_fields_count,
     aggregate_image_features,
 )
+from .collate import collate

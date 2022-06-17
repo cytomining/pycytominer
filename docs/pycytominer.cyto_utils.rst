@@ -12,6 +12,14 @@ pycytominer.cyto\_utils.cells module
    :undoc-members:
    :show-inheritance:
 
+pycytominer.cyto\_utils.collate module
+------------------------------------
+
+.. automodule:: pycytominer.cyto_utils.collate
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
 pycytominer.cyto\_utils.features module
 ---------------------------------------
 
