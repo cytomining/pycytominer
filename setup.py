@@ -15,8 +15,6 @@ setup(
     description="Processing perturbation profiling readouts.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author=about["__author__"],
-    author_email="gregory.way@gmail.com",
     url="https://github.com/cytomining/pycytominer",
     packages=find_packages(),
     license=about["__license__"],
