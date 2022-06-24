@@ -11,7 +11,8 @@ from pycytominer import aggregate
 from pycytominer.cyto_utils import load_npz, infer_cp_features
 
 
-class AggregateDeepProfiler:
+class DeepProfilerData:
+    
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
 
     Attributes
@@ -31,30 +32,21 @@ class AggregateDeepProfiler:
         load in the index.csv file from DeepProfiler, provided by an input index file.
     filenames : list of paths
         list of Purepaths that point to the npz files.
-    aggregated_profiles : pandas.DataFrame
-        df to hold the metadata and profiles.
-    file_aggregate : dict
-        dict that holds the file names and metadata.
-        Is used to load in the npz files in the correct order and grouping.
-    output_file : str
-        If provided, will write annotated profiles to folder. Defaults to "none".
 
     Methods
     -------
-    aggregate_deep()
-        Given an initialized AggregateDeepProfiler() class, run this function to output
-        level 3 profiles (aggregated profiles with annotated metadata).
+    build_filenames()
+        build filenames from index_df
+    extract_filename_metadata(npz_file, delimiter="_")
+        get site, well, plate info for npz file
     """
 
     def __init__(
         self,
         index_file,
         profile_dir,
-        aggregate_operation="median",
-        aggregate_on="well",
         filename_delimiter="_",
         file_extension=".npz",
-        output_file="none",
     ):
         """
         __init__ function for this class.
@@ -66,25 +58,13 @@ class AggregateDeepProfiler:
 
         See above for all other parameters.
         """
-        assert aggregate_operation in [
-            "median",
-            "mean",
-        ], "Input of aggregate_operation is incorrect, it must be either median or mean"
-        assert aggregate_on in [
-            "site",
-            "well",
-            "plate",
-        ], "Input of aggregate_on is incorrect, it must be either site or well or plate"
 
         self.index_df = pd.read_csv(index_file, dtype=str)
         self.profile_dir = profile_dir
-        self.aggregate_operation = aggregate_operation
-        self.aggregate_on = aggregate_on
         self.filename_delimiter = filename_delimiter
         self.file_extension = file_extension
         if not self.file_extension.startswith("."):
             self.file_extension = f".{self.file_extension}"
-        self.output_file = output_file
 
     def build_filenames(self):
         """
@@ -111,7 +91,7 @@ class AggregateDeepProfiler:
     def extract_filename_metadata(self, npz_file, delimiter="_"):
         """
         Extract metadata (site, well and plate) from the filename.
-        The input format of the file: path/plate/well_site.npz
+        The input format of the file: path/plate/well{delimiter}site.npz
 
         Arguments
         ---------
@@ -138,6 +118,68 @@ class AggregateDeepProfiler:
         loc = {"site": site, "well": well, "plate": plate}
         return loc
 
+
+class AggregateDeepProfiler:
+    
+    """This class holds all functions needed to aggregate the DeepProfiler (DP) run.
+
+    Attributes
+    ----------
+    deep_data : DeepProfilerData
+        DeepProfilerData object to load data from DeepProfiler project
+    aggregated_profiles : pandas.DataFrame
+        df to hold the metadata and profiles.
+    file_aggregate : dict
+        dict that holds the file names and metadata.
+        Is used to load in the npz files in the correct order and grouping.
+    output_file : str
+        If provided, will write annotated profiles to folder. Defaults to "none".
+
+    Methods
+    -------
+    aggregate_deep()
+        Given an initialized AggregateDeepProfiler() class, run this function to output
+        level 3 profiles (aggregated profiles with annotated metadata).
+        
+    Example
+    -------
+    index_file = pathlib.Path("path/to/index.csv")
+    profile_dir = pathlib.Path("path/to/features/")
+
+    deep_data = DeepProfiler_processing.DeepProfilerData(index_file, profile_dir, filename_delimiter="/", file_extension=".npz")
+    deep_aggregate = DeepProfiler_processing.AggregateDeepProfiler(deep_data)
+    aggregation = aggregate.aggregate_deep()
+    """
+
+    def __init__(
+        self,
+        deep_data,
+        aggregate_operation="median",
+        aggregate_on="well",
+        output_file="none",
+    ):
+        """
+        __init__ function for this class.
+
+        Arguments
+        ---------
+        See above for all parameters.
+        """
+        assert aggregate_operation in [
+            "median",
+            "mean",
+        ], "Input of aggregate_operation is incorrect, it must be either median or mean"
+        assert aggregate_on in [
+            "site",
+            "well",
+            "plate",
+        ], "Input of aggregate_on is incorrect, it must be either site or well or plate"
+        
+        self.deep_data = deep_data
+        self.aggregate_operation = aggregate_operation
+        self.aggregate_on = aggregate_on
+        self.output_file = output_file
+
     def setup_aggregate(self):
         """
         Sets up the file_aggregate attribute. This is a helper function to aggregate_deep().
@@ -146,13 +188,13 @@ class AggregateDeepProfiler:
         If for example we are grouping by well then the keys of self.file_aggregate would be:
         plate1/well1, plate1/well2, plate2/well1, etc.
         """
-        if not hasattr(self, "filenames"):
-            self.build_filenames()
+        if not hasattr(self.deep_data, "filenames"):
+            self.deep_data.build_filenames()
 
         self.file_aggregate = {}
-        for filename in self.filenames:
-            file_info = self.extract_filename_metadata(
-                filename, self.filename_delimiter
+        for filename in self.deep_data.filenames:
+            file_info = self.deep_data.extract_filename_metadata(
+                filename, self.deep_data.filename_delimiter
             )
             file_key = file_info[self.aggregate_on]
 
@@ -260,3 +302,4 @@ class AggregateDeepProfiler:
 
         df_out = self.aggregated_profiles
         return df_out
+    
