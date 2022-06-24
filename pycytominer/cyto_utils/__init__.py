@@ -17,7 +17,7 @@ from .single_cell_ingest_utils import (
     assert_linking_cols_complete,
     provide_linking_cols_feature_name_update,
 )
-from .load import load_profiles, load_platemap, load_npz, infer_delim
+from .load import load_profiles, load_platemap, load_npz_features, load_npz_locations, infer_delim
 from .features import (
     get_blocklist_features,
     label_compartment,

@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from pycytominer import aggregate
-from pycytominer.cyto_utils import load_npz, infer_cp_features
+from pycytominer import aggregate, normalize
+from pycytominer.cyto_utils import load_npz_features, load_npz_locations, infer_cp_features
 
 
 class DeepProfilerData:
@@ -143,17 +143,20 @@ class AggregateDeepProfiler:
         
     Example
     -------
+    import pathlib
+    from pycytominer.cyto_utils import DeepProfiler_processing
+    
     index_file = pathlib.Path("path/to/index.csv")
     profile_dir = pathlib.Path("path/to/features/")
 
     deep_data = DeepProfiler_processing.DeepProfilerData(index_file, profile_dir, filename_delimiter="/", file_extension=".npz")
     deep_aggregate = DeepProfiler_processing.AggregateDeepProfiler(deep_data)
-    aggregation = aggregate.aggregate_deep()
+    deep_aggregate = aggregate.aggregate_deep()
     """
 
     def __init__(
         self,
-        deep_data,
+        deep_data : DeepProfilerData,
         aggregate_operation="median",
         aggregate_on="well",
         output_file="none",
@@ -237,7 +240,7 @@ class AggregateDeepProfiler:
         # Iterates over all sites, wells or plates
         for metadata_level in self.file_aggregate:
             # uses custom load function to create df with metadata and profiles
-            arr = [load_npz(x) for x in self.file_aggregate[metadata_level]["files"]]
+            arr = [load_npz_features(x) for x in self.file_aggregate[metadata_level]["files"]]
             # empty dataframes from missing files are deleted
             arr = [x for x in arr if not x.empty]
             # if no files were found there is a miss-match between the index and the output files
@@ -302,4 +305,133 @@ class AggregateDeepProfiler:
 
         df_out = self.aggregated_profiles
         return df_out
+
+
+class SingleCellDeepProfiler:
     
+    """This class holds all functions needed to analyze single cells from the DeepProfiler (DP) run. Only normalization is implemented.
+
+    Attributes
+    ----------
+    deep_data : DeepProfilerData
+        DeepProfilerData object to load data from DeepProfiler project
+    aggregated_profiles : pandas.DataFrame
+        df to hold the metadata and profiles.
+    file_aggregate : dict
+        dict that holds the file names and metadata.
+        Is used to load in the npz files in the correct order and grouping.
+    output_file : str
+        If provided, will write annotated profiles to folder. Defaults to "none".
+
+    Methods
+    -------
+    normalize(profiles, features, image_features, meta_features, samples, method, output_file, compression_options,
+    float_format, mad_robustize_epsilon, spherize_center, spherize_method, spherize_epsilon)
+        normalize profiling features from DeepProfiler run.
+        
+    Example
+    -------
+    import pathlib
+    from pycytominer.cyto_utils import DeepProfiler_processing
+    
+    index_file = pathlib.Path("path/to/index.csv")
+    profile_dir = pathlib.Path("path/to/features/")
+
+    deep_data = DeepProfiler_processing.DeepProfilerData(index_file, profile_dir, filename_delimiter="/", file_extension=".npz")
+    deep_single_cell = DeepProfiler_processing.SingleCellDeepProfiler(deep_data)
+    normalization = deep_single_cell.normalize()
+    """
+
+    def __init__(
+        self,
+        deep_data : DeepProfilerData,
+    ):
+        """
+        __init__ function for this class.
+
+        Arguments
+        ---------
+        See above for all parameters.
+        """
+
+        self.deep_data = deep_data
+        
+    def normalize_deep_single_cells(
+            self,
+            image_features=False, #not implemented with DeepProfiler
+            meta_features="infer",
+            samples="all",
+            method="standardize",
+            output_file="none",
+            compression_options=None,
+            float_format=None,
+            mad_robustize_epsilon=1e-18,
+            spherize_center=True,
+            spherize_method="ZCA-cor",
+            spherize_epsilon=1e-6,
+        ):
+        """
+        Normalizes all cells into a pandas dataframe.
+
+        For each file in the DP project features folder, the features from each cell are loaded.
+        These features are put into a profiles dataframe for use in pycytominer.normalize.
+        A features list is also compiled for use in pycytominer.normalize.
+
+        Returns
+        -------
+        df_out : pandas.dataframe
+            dataframe with all metadata and the feature space.
+            This is the input to any further pycytominer or pycytominer-eval processing
+        """
+        # build filenames if they do not already exist
+        if not hasattr(self.deep_data, "filenames"):
+            self.deep_data.build_filenames()
+        
+        # compile features dataframe with single cell locations
+        total_df = []
+        for features_path in self.deep_data.filenames:
+            features = load_npz_features(features_path)
+            # skip a file if there are no features
+            if len(features.index) == 0:
+                warnings.warn(
+                    f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
+                )
+                continue
+            locations = load_npz_locations(features_path)
+            detailed_df = pd.concat([locations,features],axis=1)
+            
+            total_df.append(detailed_df)
+
+        total_df =  pd.concat(total_df).reset_index(drop=True)
+        
+        # extract metadata prior to normalization
+        metadata_cols = infer_cp_features(total_df, metadata=True)
+        # locations are not automatically inferred with cp features
+        metadata_cols.append("Location_Center_X")
+        metadata_cols.append("Location_Center_Y")
+        derived_features = [x for x in total_df.columns.tolist() if x not in metadata_cols]
+        
+        #wrapper for pycytominer.normalize function
+        normalized = normalize.normalize(
+            profiles=total_df,
+            features=derived_features,
+            image_features=image_features,
+            meta_features=meta_features,
+            samples=samples,
+            method=method,
+            output_file=output_file,
+            compression_options=compression_options,
+            float_format=float_format,
+            mad_robustize_epsilon=mad_robustize_epsilon,
+            spherize_center=spherize_center,
+            spherize_method=spherize_method,
+            spherize_epsilon=spherize_epsilon,
+        )
+        
+        # move x locations and y locations to metadata columns of normalized df
+        x_locations = total_df.pop("Location_Center_X")
+        normalized.insert(0, "Location_Center_X", x_locations)
+        y_locations = total_df.pop("Location_Center_Y")
+        normalized.insert(1, "Location_Center_Y", y_locations)
+        
+        return normalized

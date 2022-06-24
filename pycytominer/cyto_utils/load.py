@@ -83,7 +83,7 @@ def load_platemap(platemap, add_metadata_id=True):
     return platemap
 
 
-def load_npz(npz_file, fallback_feature_prefix="DP"):
+def load_npz_features(npz_file, fallback_feature_prefix="DP"):
     """
     Load an npz file storing features and, sometimes, metadata.
 
@@ -114,6 +114,68 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
 
     # Load features
     df = pd.DataFrame(npz["features"])
+
+    # Load metadata
+    if "metadata" in files:
+        metadata = npz["metadata"].item()
+        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]), dtype=str)
+        metadata_df.columns = [
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
+        ]
+
+        # Determine the appropriate metadata prefix
+        if "Metadata_Model" in metadata_df.columns:
+            feature_prefix = metadata_df.Metadata_Model.unique()[0]
+        else:
+            feature_prefix = fallback_feature_prefix
+    else:
+        feature_prefix = fallback_feature_prefix
+
+    # Append feature prefix
+    df.columns = [
+        f"{feature_prefix}_{x}" if not str(x).startswith(feature_prefix) else x
+        for x in df
+    ]
+
+    # Append metadata with features
+    if "metadata" in files:
+        df = metadata_df.merge(df, how="outer", left_index=True, right_index=True)
+
+    return df
+
+def load_npz_locations(npz_file, fallback_feature_prefix="DP"):
+    """
+    Load an npz file storing locations and, sometimes, metadata.
+
+    The function will first search the .npz file for a metadata column called
+    "Metadata_Model". If the field exists, the function uses this entry as the
+    feature prefix. If it doesn't exist, use the fallback_feature_prefix.
+
+    If the npz file does not exist, this function returns an empty dataframe.
+
+    Parameters
+    ----------
+    npz_file : str
+        file path to the compressed output (typically DeepProfiler output)
+    fallback_feature_prefix :str
+        a string to prefix all features [default: "DP"].
+
+    Return
+    ------
+    df : pandas.core.frame.DataFrame
+        pandas DataFrame of profiles
+    """
+    try:
+        npz = np.load(npz_file, allow_pickle=True)
+    except FileNotFoundError:
+        return pd.DataFrame([])
+
+    files = npz.files
+
+    # Load features
+    df = pd.DataFrame(npz["locations"], columns=["Location_Center_X", "Location_Center_Y"])
+    
+    return df
 
     # Load metadata
     if "metadata" in files:
