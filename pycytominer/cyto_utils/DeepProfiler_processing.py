@@ -105,7 +105,7 @@ class AggregateDeepProfiler:
         well = row["Metadata_Well"]
         site = row["Metadata_Site"]
 
-        filename = f"{plate}/{well}_{site}{self.file_extension}"
+        filename = f"{plate}/{well}{self.filename_delimiter}{site}{self.file_extension}"
         return filename
 
     def extract_filename_metadata(self, npz_file, delimiter="_"):
@@ -126,9 +126,13 @@ class AggregateDeepProfiler:
         loc : dict
             dict with metadata
         """
-        base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
-        site = base_file[-1]
-        well = base_file[-2]
+        if delimiter == "/":
+            site = str(npz_file).split("/")[-1].strip(".npz")
+            well = str(npz_file).split("/")[-2]
+        else:
+            base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
+            site = base_file[-1]
+            well = base_file[-2]
         plate = str(npz_file).split("/")[-2]
 
         loc = {"site": site, "well": well, "plate": plate}
