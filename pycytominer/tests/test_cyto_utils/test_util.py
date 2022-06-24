@@ -1,5 +1,4 @@
 import os
-import random
 import pytest
 import tempfile
 import warnings
@@ -131,23 +130,6 @@ def test_check_consensus_operation_method():
         method = check_consensus_operation(operation="DOES NOT EXIST")
 
     assert "not supported, select one of" in str(nomethod.value)
-
-
-def test_get_pairwise_correlation():
-    data_df = pd.concat(
-        [
-            pd.DataFrame({"x": [1, 3, 8], "y": [5, 3, 1]}),
-            pd.DataFrame({"x": [1, 3, 5], "y": [8, 3, 1]}),
-        ]
-    ).reset_index(drop=True)
-
-    cor_df, pair_df = get_pairwise_correlation(data_df, method="pearson")
-
-    pd.testing.assert_frame_equal(cor_df, data_df.corr(method="pearson"))
-
-    expected_result = -0.8
-    x_y_cor = pair_df.query("correlation != 0").round(1).correlation.values[0]
-    assert x_y_cor == expected_result
 
 
 def test_check_fields_of_view():
@@ -286,3 +268,61 @@ def test_extract_image_features():
     pd.testing.assert_frame_equal(
         expected_result.sort_index(axis=1), result.sort_index(axis=1)
     )
+
+
+def _assert_pairwise_corr_helper(data_df, expected_result):
+    '''Assert `get_pairwise_correlation` and `pd.DataFrame.corr` get the same
+    output. It also checks if the first correlation value match the `expected_result`.'''
+    cor_df, pair_df = get_pairwise_correlation(data_df, method="pearson")
+
+    pd.testing.assert_frame_equal(cor_df, data_df.corr(method="pearson"))
+
+    x_y_cor = pair_df.query("correlation != 0").round(1).correlation.values[0]
+    assert x_y_cor == expected_result
+
+
+def test_get_pairwise_correlation():
+    data_df = pd.concat(
+        [
+            pd.DataFrame({"x": [1, 3, 8], "y": [5, 3, 1]}),
+            pd.DataFrame({"x": [1, 3, 5], "y": [8, 3, 1]}),
+        ]
+    ).reset_index(drop=True)
+    expected_result = -0.8
+    _assert_pairwise_corr_helper(data_df, expected_result)
+
+
+def test_pairwise_corr_with_nan():
+    data_df = pd.concat(
+        [
+            pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, None]}),
+            pd.DataFrame({"x": [1, 3, 5, None], "y": [8, 3, 1, 3]}),
+        ]
+    ).reset_index(drop=True)
+
+    expected_result = -0.8
+    _assert_pairwise_corr_helper(data_df, expected_result)
+
+
+def test_pairwise_corr_with_inf():
+    data_df = pd.concat(
+        [
+            pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, float("inf")]}),
+            pd.DataFrame({"x": [1, 3, 5, float("inf")], "y": [8, 3, 1, 3]}),
+        ]
+    ).reset_index(drop=True)
+
+    expected_result = -0.8
+    _assert_pairwise_corr_helper(data_df, expected_result)
+
+
+def test_pairwise_corr_with_inf_and_nan():
+    data_df = pd.concat(
+        [
+            pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, None]}),
+            pd.DataFrame({"x": [1, 3, 5, float("inf")], "y": [8, 3, 1, 3]}),
+        ]
+    ).reset_index(drop=True)
+
+    expected_result = -0.8
+    _assert_pairwise_corr_helper(data_df, expected_result)
