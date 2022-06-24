@@ -339,7 +339,7 @@ class SingleCellDeepProfiler:
 
     deep_data = DeepProfiler_processing.DeepProfilerData(index_file, profile_dir, filename_delimiter="/", file_extension=".npz")
     deep_single_cell = DeepProfiler_processing.SingleCellDeepProfiler(deep_data)
-    normalization = deep_single_cell.normalize()
+    normalized = deep_single_cell.normalize_deep_single_cells()
     """
 
     def __init__(
