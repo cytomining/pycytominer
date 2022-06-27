@@ -11,7 +11,11 @@ import tempfile
 import numpy.testing as npt
 
 
-from pycytominer.cyto_utils.DeepProfiler_processing import DeepProfilerData, AggregateDeepProfiler, SingleCellDeepProfiler
+from pycytominer.cyto_utils.DeepProfiler_processing import (
+    DeepProfilerData,
+    AggregateDeepProfiler,
+    SingleCellDeepProfiler,
+)
 
 
 tmpdir = tempfile.gettempdir()
@@ -33,9 +37,7 @@ deep_data = DeepProfilerData(
     profile_dir=profile_dir,
 )
 
-single_cells = SingleCellDeepProfiler(
-    deep_data=deep_data
-)
+single_cells = SingleCellDeepProfiler(deep_data=deep_data)
 output_file = os.path.join(output_folder, "normalized.csv")
 df_normalized = single_cells.normalize_deep_single_cells(output_file=output_file)
 
@@ -88,7 +90,7 @@ def test_columns():
     meta_cols = [x for x in df_normalized.columns if x.startswith("Location_")]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
-    
+
     meta_cols = [x for x in df_site.columns if x.startswith("Metadata_")]
     assert meta_cols.index("Metadata_Site_Position")
 
