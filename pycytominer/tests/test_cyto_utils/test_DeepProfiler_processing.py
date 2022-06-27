@@ -11,7 +11,7 @@ import tempfile
 import numpy.testing as npt
 
 
-from pycytominer.cyto_utils.DeepProfiler_processing import AggregateDeepProfiler
+from pycytominer.cyto_utils.DeepProfiler_processing import DeepProfilerData, AggregateDeepProfiler, SingleCellDeepProfiler
 
 
 tmpdir = tempfile.gettempdir()
@@ -27,19 +27,27 @@ index_file = os.path.join(example_project_dir, "inputs", "metadata", "test_index
 
 output_folder = os.path.join(tmpdir, "DeepProfiler")
 
-
 # calculating the dataframe for each depth
-site_class = AggregateDeepProfiler(
+deep_data = DeepProfilerData(
     index_file=index_file,
     profile_dir=profile_dir,
+)
+
+single_cells = SingleCellDeepProfiler(
+    deep_data=deep_data
+)
+output_file = os.path.join(output_folder, "normalized.csv")
+df_normalized = single_cells.normalize_deep_single_cells(output_file=output_file)
+
+site_class = AggregateDeepProfiler(
+    deep_data=deep_data,
     aggregate_operation="median",
     aggregate_on="site",
 )
 df_site = site_class.aggregate_deep()
 
 well_class = AggregateDeepProfiler(
-    index_file=index_file,
-    profile_dir=profile_dir,
+    deep_data=deep_data,
     aggregate_operation="median",
     aggregate_on="well",
     output_file=output_folder,
@@ -47,8 +55,7 @@ well_class = AggregateDeepProfiler(
 df_well = well_class.aggregate_deep()
 
 plate_class = AggregateDeepProfiler(
-    index_file=index_file,
-    profile_dir=profile_dir,
+    deep_data=deep_data,
     aggregate_operation="median",
     aggregate_on="plate",
     output_file=output_folder,
@@ -57,6 +64,7 @@ df_plate = plate_class.aggregate_deep()
 
 
 def test_output_size():
+    assert df_normalized.shape == (10132, 6418)
     assert df_site.shape == (36, 6418)
     assert df_well.shape == (4, 6412)
     assert df_plate.shape == (2, 6406)
@@ -65,6 +73,7 @@ def test_output_size():
 def test_output_files():
     files = os.listdir(output_folder)
     files_should_be = [
+        "normalized.csv",
         "SQ00014812.csv",
         "SQ00014813.csv",
         "SQ00014812_A01.csv",
@@ -76,6 +85,10 @@ def test_output_files():
 
 
 def test_columns():
+    meta_cols = [x for x in df_normalized.columns if x.startswith("Location_")]
+    assert meta_cols.index("Location_Center_X") == 0
+    assert meta_cols.index("Location_Center_Y") == 1
+    
     meta_cols = [x for x in df_site.columns if x.startswith("Metadata_")]
     assert meta_cols.index("Metadata_Site_Position")
 
@@ -93,12 +106,13 @@ def test_columns():
 
 
 def test_for_nan():
-    for df in [df_site, df_well, df_plate]:
+    for df in [df_normalized, df_site, df_well, df_plate]:
         assert not df.isnull().values.any()
 
 
 def test_exact_values():
     # random value checks
+    npt.assert_almost_equal(df_normalized.efficientnet_3.loc[2], -0.70791286)
     npt.assert_almost_equal(df_plate.efficientnet_4.loc[1], -0.09470577538013458)
     npt.assert_almost_equal(df_well.efficientnet_0.loc[3], -0.16986790299415588)
     npt.assert_almost_equal(df_site.efficientnet_2.loc[14], -0.14057332277297974)

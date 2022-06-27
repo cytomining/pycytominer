@@ -8,7 +8,7 @@ import pandas as pd
 import warnings
 
 from pycytominer import aggregate, normalize
-from pycytominer.cyto_utils import load_npz_features, load_npz_locations, infer_cp_features
+from pycytominer.cyto_utils import load_npz_features, load_npz_locations, infer_cp_features, output
 
 
 class DeepProfilerData:
@@ -20,10 +20,6 @@ class DeepProfilerData:
     profile_dir : str
         file location of the output profiles from DeepProfiler
         (e.g. `/project1/outputs/results/features/`)
-    aggregate_operation : ['median', 'mean']
-        method of aggregation
-    aggregate_on : ['site', 'well', 'plate']
-        up to which level to aggregate
     filename_delimiter : default = '_'
         delimiter for the filenames of the profiles (e.g. B02_4.npz).
     file_extension : default = '.npz'
@@ -356,32 +352,11 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
         
-    def normalize_deep_single_cells(
-            self,
-            image_features=False, #not implemented with DeepProfiler
-            meta_features="infer",
-            samples="all",
-            method="standardize",
-            output_file="none",
-            compression_options=None,
-            float_format=None,
-            mad_robustize_epsilon=1e-18,
-            spherize_center=True,
-            spherize_method="ZCA-cor",
-            spherize_epsilon=1e-6,
-        ):
+    def setup_normalize(self):
         """
-        Normalizes all cells into a pandas dataframe.
+        Sets up the single_cells attribute. This is a helper function to normalize_deep_single_cells().
 
-        For each file in the DP project features folder, the features from each cell are loaded.
-        These features are put into a profiles dataframe for use in pycytominer.normalize.
-        A features list is also compiled for use in pycytominer.normalize.
-
-        Returns
-        -------
-        df_out : pandas.dataframe
-            dataframe with all metadata and the feature space.
-            This is the input to any further pycytominer or pycytominer-eval processing
+        single_cells is a pandas dataframe in the format expected by pycytominer.normalize()
         """
         # build filenames if they do not already exist
         if not hasattr(self.deep_data, "filenames"):
@@ -402,24 +377,55 @@ class SingleCellDeepProfiler:
             
             total_df.append(detailed_df)
 
-        total_df =  pd.concat(total_df).reset_index(drop=True)
+        self.single_cells =  pd.concat(total_df).reset_index(drop=True)
+        
+    def normalize_deep_single_cells(
+            self,
+            image_features=False, #not implemented with DeepProfiler
+            meta_features="infer",
+            samples="all",
+            method="standardize",
+            output_file="none",
+            compression_options=None,
+            float_format=None,
+            mad_robustize_epsilon=1e-18,
+            spherize_center=True,
+            spherize_method="ZCA-cor",
+            spherize_epsilon=1e-6,
+        ):
+        
+        """
+        Normalizes all cells into a pandas dataframe.
+
+        For each file in the DP project features folder, the features from each cell are loaded.
+        These features are put into a profiles dataframe for use in pycytominer.normalize.
+        A features list is also compiled for use in pycytominer.normalize.
+
+        Returns
+        -------
+        df_out : pandas.dataframe
+            dataframe with all metadata and the feature space.
+            This is the input to any further pycytominer or pycytominer-eval processing
+        """
+        # setup single_cells attribute
+        self.setup_normalize()
         
         # extract metadata prior to normalization
-        metadata_cols = infer_cp_features(total_df, metadata=True)
+        metadata_cols = infer_cp_features(self.single_cells, metadata=True)
         # locations are not automatically inferred with cp features
         metadata_cols.append("Location_Center_X")
         metadata_cols.append("Location_Center_Y")
-        derived_features = [x for x in total_df.columns.tolist() if x not in metadata_cols]
+        derived_features = [x for x in self.single_cells.columns.tolist() if x not in metadata_cols]
         
         #wrapper for pycytominer.normalize function
         normalized = normalize.normalize(
-            profiles=total_df,
+            profiles=self.single_cells,
             features=derived_features,
             image_features=image_features,
             meta_features=meta_features,
             samples=samples,
             method=method,
-            output_file=output_file,
+            output_file="none",
             compression_options=compression_options,
             float_format=float_format,
             mad_robustize_epsilon=mad_robustize_epsilon,
@@ -429,9 +435,17 @@ class SingleCellDeepProfiler:
         )
         
         # move x locations and y locations to metadata columns of normalized df
-        x_locations = total_df.pop("Location_Center_X")
+        x_locations = self.single_cells["Location_Center_X"]
         normalized.insert(0, "Location_Center_X", x_locations)
-        y_locations = total_df.pop("Location_Center_Y")
+        y_locations = self.single_cells["Location_Center_Y"]
         normalized.insert(1, "Location_Center_Y", y_locations)
+        
+        if output_file != "none":
+            output(
+                df=normalized,
+                output_filename=output_file,
+                compression_options=compression_options,
+                float_format=float_format,
+            )
         
         return normalized
