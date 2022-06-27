@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import numpy as np
 import pandas as pd
-from pycytominer.cyto_utils import load_profiles, load_platemap, load_npz
+from pycytominer.cyto_utils import load_profiles, load_platemap, load_npz_features, load_npz_locations
 from pycytominer.cyto_utils.load import infer_delim
 
 random.seed(123)
@@ -31,6 +31,18 @@ example_npz_file = os.path.join(
     "data",
     "DeepProfiler_example_data",
     "Week1_22123_B02_s1.npz",
+)
+
+example_npz_file_locations = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "test_data",
+    "DeepProfiler_example_data",
+    "outputs",
+    "results",
+    "features",
+    "SQ00014812",
+    "A01_1.npz"
 )
 
 # Build data to use in tests
@@ -117,13 +129,15 @@ def test_load_platemap():
     platemap_df.columns = [f"Metadata_{x}" for x in platemap_df.columns]
     pd.testing.assert_frame_equal(platemap_with_annotation, platemap_df)
 
-
+print(example_npz_file_locations)
+print(load_npz_locations(example_npz_file_locations))
 def test_load_npz():
-    npz_df = load_npz(output_npz_file)
-    npz_custom_prefix_df = load_npz(output_npz_file, fallback_feature_prefix="test")
-    npz_with_model_df = load_npz(output_npz_with_model_file)
-    npz_no_meta_df = load_npz(output_npz_without_metadata_file)
-    real_data_df = load_npz(example_npz_file)
+    npz_df = load_npz_features(output_npz_file)
+    npz_custom_prefix_df = load_npz_features(output_npz_file, fallback_feature_prefix="test")
+    npz_with_model_df = load_npz_features(output_npz_with_model_file)
+    npz_no_meta_df = load_npz_features(output_npz_without_metadata_file)
+    real_data_df = load_npz_features(example_npz_file)
+    real_locations_df = load_npz_locations(example_npz_file_locations)
 
     core_cols = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"]
 
@@ -155,3 +169,7 @@ def test_load_npz():
     assert real_data_df.drop(
         core_cols + ["Metadata_Model"], axis="columns"
     ).columns.tolist() == [f"cnn_{x}" for x in range(0, 50)]
+    
+    # Check locations data
+    assert real_locations_df.shape == (229, 2)
+    assert real_locations_df.columns.tolist() == ["Location_Center_X", "Location_Center_Y"]
