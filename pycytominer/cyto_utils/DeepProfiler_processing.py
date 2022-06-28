@@ -427,7 +427,11 @@ class SingleCellDeepProfiler:
             This is the input to any further pycytominer or pycytominer-eval processing
         """
         # setup single_cells attribute
-        self.setup_normalize()
+        if not isinstance(sc_df, pd.DataFrame):
+            if self.single_cells_loaded:
+                sc_df = self.single_cells
+            else:
+                sc_df = self.get_singlecells(output=True)
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(self.single_cells, metadata=True)
