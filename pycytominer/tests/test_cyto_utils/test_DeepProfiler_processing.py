@@ -41,7 +41,9 @@ deep_data = DeepProfilerData(
 single_cells_DP = SingleCellDeepProfiler(deep_data=deep_data)
 output_file = os.path.join(output_folder, "normalized.csv")
 single_cells = single_cells_DP.get_single_cells(output=True)
-single_cells_normalized = single_cells_DP.normalize_deep_single_cells(output_file=output_file)
+single_cells_normalized = single_cells_DP.normalize_deep_single_cells(
+    output_file=output_file
+)
 
 site_class = AggregateDeepProfiler(
     deep_data=deep_data,
@@ -93,8 +95,10 @@ def test_columns():
     meta_cols = [x for x in single_cells.columns if x.startswith("Location_")]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
-    
-    meta_cols = [x for x in single_cells_normalized.columns if x.startswith("Location_")]
+
+    meta_cols = [
+        x for x in single_cells_normalized.columns if x.startswith("Location_")
+    ]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
 

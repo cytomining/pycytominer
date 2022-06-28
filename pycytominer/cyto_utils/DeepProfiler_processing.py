@@ -365,7 +365,7 @@ class SingleCellDeepProfiler:
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
-        
+
         Arguments
         -----------
         output : bool
@@ -438,9 +438,7 @@ class SingleCellDeepProfiler:
         # locations are not automatically inferred with cp features
         metadata_cols.append("Location_Center_X")
         metadata_cols.append("Location_Center_Y")
-        derived_features = [
-            x for x in sc_df.columns.tolist() if x not in metadata_cols
-        ]
+        derived_features = [x for x in sc_df.columns.tolist() if x not in metadata_cols]
 
         # wrapper for pycytominer.normalize() function
         normalized = normalize.normalize(
@@ -464,7 +462,7 @@ class SingleCellDeepProfiler:
         normalized.insert(0, "Location_Center_X", x_locations)
         y_locations = sc_df["Location_Center_Y"]
         normalized.insert(1, "Location_Center_Y", y_locations)
-        
+
         # separate code because normalize() will not return if it has an output file specified
         if output_file != "none":
             output(
