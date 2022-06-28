@@ -360,11 +360,15 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-    def setup_normalize(self):
+    def get_singlecells(self, output=False):
         """
-        Sets up the single_cells attribute. This is a helper function to normalize_deep_single_cells().
-
-        single_cells is a pandas dataframe in the format expected by pycytominer.normalize()
+        Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
+        single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
+        
+        Arguments
+        -----------
+        output : bool
+            If true, will output the single cell dataframe instead of setting to self attribute
         """
         # build filenames if they do not already exist
         if not hasattr(self.deep_data, "filenames"):
