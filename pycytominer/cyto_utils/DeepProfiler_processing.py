@@ -428,10 +428,8 @@ class SingleCellDeepProfiler:
         """
         # setup single_cells attribute
         if not isinstance(sc_df, pd.DataFrame):
-            if self.single_cells_loaded:
-                sc_df = self.single_cells
-            else:
-                sc_df = self.get_single_cells(output=True)
+            if not self.single_cells_loaded:
+                self.get_single_cells(output=False)
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(sc_df, metadata=True)
