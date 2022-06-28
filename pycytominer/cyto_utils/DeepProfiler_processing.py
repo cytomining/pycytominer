@@ -389,7 +389,12 @@ class SingleCellDeepProfiler:
 
             total_df.append(detailed_df)
 
-        self.single_cells = pd.concat(total_df).reset_index(drop=True)
+        sc_df = pd.concat(total_df).reset_index(drop=True)
+        if output:
+            return sc_df
+        else:
+            self.single_cells_loaded = True
+            self.single_cells = sc_df
 
     def normalize_deep_single_cells(
         self,
