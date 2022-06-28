@@ -7,11 +7,17 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from pycytominer import aggregate
-from pycytominer.cyto_utils import load_npz, infer_cp_features
+from pycytominer import aggregate, normalize
+from pycytominer.cyto_utils import (
+    load_npz_features,
+    load_npz_locations,
+    infer_cp_features,
+    output,
+)
 
 
-class AggregateDeepProfiler:
+class DeepProfilerData:
+
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
 
     Attributes
@@ -19,10 +25,6 @@ class AggregateDeepProfiler:
     profile_dir : str
         file location of the output profiles from DeepProfiler
         (e.g. `/project1/outputs/results/features/`)
-    aggregate_operation : ['median', 'mean']
-        method of aggregation
-    aggregate_on : ['site', 'well', 'plate']
-        up to which level to aggregate
     filename_delimiter : default = '_'
         delimiter for the filenames of the profiles (e.g. B02_4.npz).
     file_extension : default = '.npz'
@@ -31,30 +33,21 @@ class AggregateDeepProfiler:
         load in the index.csv file from DeepProfiler, provided by an input index file.
     filenames : list of paths
         list of Purepaths that point to the npz files.
-    aggregated_profiles : pandas.DataFrame
-        df to hold the metadata and profiles.
-    file_aggregate : dict
-        dict that holds the file names and metadata.
-        Is used to load in the npz files in the correct order and grouping.
-    output_file : str
-        If provided, will write annotated profiles to folder. Defaults to "none".
 
     Methods
     -------
-    aggregate_deep()
-        Given an initialized AggregateDeepProfiler() class, run this function to output
-        level 3 profiles (aggregated profiles with annotated metadata).
+    build_filenames()
+        build filenames from index_df
+    extract_filename_metadata(npz_file, delimiter="_")
+        get site, well, plate info for npz file
     """
 
     def __init__(
         self,
         index_file,
         profile_dir,
-        aggregate_operation="median",
-        aggregate_on="well",
         filename_delimiter="_",
         file_extension=".npz",
-        output_file="none",
     ):
         """
         __init__ function for this class.
@@ -66,25 +59,13 @@ class AggregateDeepProfiler:
 
         See above for all other parameters.
         """
-        assert aggregate_operation in [
-            "median",
-            "mean",
-        ], "Input of aggregate_operation is incorrect, it must be either median or mean"
-        assert aggregate_on in [
-            "site",
-            "well",
-            "plate",
-        ], "Input of aggregate_on is incorrect, it must be either site or well or plate"
 
         self.index_df = pd.read_csv(index_file, dtype=str)
         self.profile_dir = profile_dir
-        self.aggregate_operation = aggregate_operation
-        self.aggregate_on = aggregate_on
         self.filename_delimiter = filename_delimiter
         self.file_extension = file_extension
         if not self.file_extension.startswith("."):
             self.file_extension = f".{self.file_extension}"
-        self.output_file = output_file
 
     def build_filenames(self):
         """
@@ -105,13 +86,13 @@ class AggregateDeepProfiler:
         well = row["Metadata_Well"]
         site = row["Metadata_Site"]
 
-        filename = f"{plate}/{well}_{site}{self.file_extension}"
+        filename = f"{plate}/{well}{self.filename_delimiter}{site}{self.file_extension}"
         return filename
 
     def extract_filename_metadata(self, npz_file, delimiter="_"):
         """
         Extract metadata (site, well and plate) from the filename.
-        The input format of the file: path/plate/well_site.npz
+        The input format of the file: path/plate/well{delimiter}site.npz
 
         Arguments
         ---------
@@ -126,13 +107,82 @@ class AggregateDeepProfiler:
         loc : dict
             dict with metadata
         """
-        base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
-        site = base_file[-1]
-        well = base_file[-2]
+        if delimiter == "/":
+            site = str(npz_file).split("/")[-1].strip(".npz")
+            well = str(npz_file).split("/")[-2]
+        else:
+            base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
+            site = base_file[-1]
+            well = base_file[-2]
         plate = str(npz_file).split("/")[-2]
 
         loc = {"site": site, "well": well, "plate": plate}
         return loc
+
+
+class AggregateDeepProfiler:
+
+    """This class holds all functions needed to aggregate the DeepProfiler (DP) run.
+
+    Attributes
+    ----------
+    deep_data : DeepProfilerData
+        DeepProfilerData object to load data from DeepProfiler project
+    aggregated_profiles : pandas.DataFrame
+        df to hold the metadata and profiles.
+    file_aggregate : dict
+        dict that holds the file names and metadata.
+        Is used to load in the npz files in the correct order and grouping.
+    output_file : str
+        If provided, will write annotated profiles to folder. Defaults to "none".
+
+    Methods
+    -------
+    aggregate_deep()
+        Given an initialized AggregateDeepProfiler() class, run this function to output
+        level 3 profiles (aggregated profiles with annotated metadata).
+
+    Example
+    -------
+    import pathlib
+    from pycytominer.cyto_utils import DeepProfiler_processing
+
+    index_file = pathlib.Path("path/to/index.csv")
+    profile_dir = pathlib.Path("path/to/features/")
+
+    deep_data = DeepProfiler_processing.DeepProfilerData(index_file, profile_dir, filename_delimiter="/", file_extension=".npz")
+    deep_aggregate = DeepProfiler_processing.AggregateDeepProfiler(deep_data)
+    deep_aggregate = aggregate.aggregate_deep()
+    """
+
+    def __init__(
+        self,
+        deep_data: DeepProfilerData,
+        aggregate_operation="median",
+        aggregate_on="well",
+        output_file="none",
+    ):
+        """
+        __init__ function for this class.
+
+        Arguments
+        ---------
+        See above for all parameters.
+        """
+        assert aggregate_operation in [
+            "median",
+            "mean",
+        ], "Input of aggregate_operation is incorrect, it must be either median or mean"
+        assert aggregate_on in [
+            "site",
+            "well",
+            "plate",
+        ], "Input of aggregate_on is incorrect, it must be either site or well or plate"
+
+        self.deep_data = deep_data
+        self.aggregate_operation = aggregate_operation
+        self.aggregate_on = aggregate_on
+        self.output_file = output_file
 
     def setup_aggregate(self):
         """
@@ -142,13 +192,13 @@ class AggregateDeepProfiler:
         If for example we are grouping by well then the keys of self.file_aggregate would be:
         plate1/well1, plate1/well2, plate2/well1, etc.
         """
-        if not hasattr(self, "filenames"):
-            self.build_filenames()
+        if not hasattr(self.deep_data, "filenames"):
+            self.deep_data.build_filenames()
 
         self.file_aggregate = {}
-        for filename in self.filenames:
-            file_info = self.extract_filename_metadata(
-                filename, self.filename_delimiter
+        for filename in self.deep_data.filenames:
+            file_info = self.deep_data.extract_filename_metadata(
+                filename, self.deep_data.filename_delimiter
             )
             file_key = file_info[self.aggregate_on]
 
@@ -191,7 +241,10 @@ class AggregateDeepProfiler:
         # Iterates over all sites, wells or plates
         for metadata_level in self.file_aggregate:
             # uses custom load function to create df with metadata and profiles
-            arr = [load_npz(x) for x in self.file_aggregate[metadata_level]["files"]]
+            arr = [
+                load_npz_features(x)
+                for x in self.file_aggregate[metadata_level]["files"]
+            ]
             # empty dataframes from missing files are deleted
             arr = [x for x in arr if not x.empty]
             # if no files were found there is a miss-match between the index and the output files
@@ -256,3 +309,164 @@ class AggregateDeepProfiler:
 
         df_out = self.aggregated_profiles
         return df_out
+
+
+class SingleCellDeepProfiler:
+
+    """This class holds functions needed to analyze single cells from the DeepProfiler (DP) run. Only pycytominer.normalization() is implemented.
+
+    Attributes
+    ----------
+    deep_data : DeepProfilerData
+        DeepProfilerData object to load data from DeepProfiler project
+    aggregated_profiles : pandas.DataFrame
+        df to hold the metadata and profiles.
+    file_aggregate : dict
+        dict that holds the file names and metadata.
+        Is used to load in the npz files in the correct order and grouping.
+    output_file : str
+        If provided, will write annotated profiles to folder. Defaults to "none".
+
+    Methods
+    -------
+    normalize(profiles, features, image_features, meta_features, samples, method, output_file, compression_options,
+    float_format, mad_robustize_epsilon, spherize_center, spherize_method, spherize_epsilon)
+        normalize profiling features from DeepProfiler run with pycytominer.normalize()
+
+    Example
+    -------
+    import pathlib
+    from pycytominer.cyto_utils import DeepProfiler_processing
+
+    index_file = pathlib.Path("path/to/index.csv")
+    profile_dir = pathlib.Path("path/to/features/")
+
+    deep_data = DeepProfiler_processing.DeepProfilerData(index_file, profile_dir, filename_delimiter="/", file_extension=".npz")
+    deep_single_cell = DeepProfiler_processing.SingleCellDeepProfiler(deep_data)
+    normalized = deep_single_cell.normalize_deep_single_cells()
+    """
+
+    def __init__(
+        self,
+        deep_data: DeepProfilerData,
+    ):
+        """
+        __init__ function for this class.
+
+        Arguments
+        ---------
+        See above for all parameters.
+        """
+
+        self.deep_data = deep_data
+
+    def get_single_cells(self, output=False):
+        """
+        Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
+        single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
+
+        Arguments
+        -----------
+        output : bool
+            If true, will output the single cell dataframe instead of setting to self attribute
+        """
+        # build filenames if they do not already exist
+        if not hasattr(self.deep_data, "filenames"):
+            self.deep_data.build_filenames()
+
+        # compile features dataframe with single cell locations
+        total_df = []
+        for features_path in self.deep_data.filenames:
+            features = load_npz_features(features_path)
+            # skip a file if there are no features
+            if len(features.index) == 0:
+                warnings.warn(
+                    f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
+                )
+                continue
+            locations = load_npz_locations(features_path)
+            detailed_df = pd.concat([locations, features], axis=1)
+
+            total_df.append(detailed_df)
+
+        sc_df = pd.concat(total_df).reset_index(drop=True)
+        if output:
+            return sc_df
+        else:
+            self.single_cells = sc_df
+
+    def normalize_deep_single_cells(
+        self,
+        sc_df="none",
+        image_features=False,  # not implemented with DeepProfiler
+        meta_features="infer",
+        samples="all",
+        method="standardize",
+        output_file="none",
+        compression_options=None,
+        float_format=None,
+        mad_robustize_epsilon=1e-18,
+        spherize_center=True,
+        spherize_method="ZCA-cor",
+        spherize_epsilon=1e-6,
+    ):
+
+        """
+        Normalizes all cells into a pandas dataframe.
+
+        For each file in the DP project features folder, the features from each cell are loaded.
+        These features are put into a profiles dataframe for use in pycytominer.normalize.
+        A features list is also compiled for use in pycytominer.normalize.
+
+        Returns
+        -------
+        df_out : pandas.dataframe
+            dataframe with all metadata and the feature space.
+            This is the input to any further pycytominer or pycytominer-eval processing
+        """
+        # setup single_cells attribute
+        if not hasattr(self, "single_cells"):
+            self.get_single_cells(output=False)
+
+        # extract metadata prior to normalization
+        metadata_cols = infer_cp_features(self.single_cells, metadata=True)
+        # locations are not automatically inferred with cp features
+        metadata_cols.append("Location_Center_X")
+        metadata_cols.append("Location_Center_Y")
+        derived_features = [
+            x for x in self.single_cells.columns.tolist() if x not in metadata_cols
+        ]
+
+        # wrapper for pycytominer.normalize() function
+        normalized = normalize.normalize(
+            profiles=self.single_cells,
+            features=derived_features,
+            image_features=image_features,
+            meta_features=meta_features,
+            samples=samples,
+            method=method,
+            output_file="none",
+            compression_options=compression_options,
+            float_format=float_format,
+            mad_robustize_epsilon=mad_robustize_epsilon,
+            spherize_center=spherize_center,
+            spherize_method=spherize_method,
+            spherize_epsilon=spherize_epsilon,
+        )
+
+        # move x locations and y locations to metadata columns of normalized df
+        x_locations = self.single_cells["Location_Center_X"]
+        normalized.insert(0, "Location_Center_X", x_locations)
+        y_locations = self.single_cells["Location_Center_Y"]
+        normalized.insert(1, "Location_Center_Y", y_locations)
+
+        # separate code because normalize() will not return if it has an output file specified
+        if output_file != "none":
+            output(
+                df=normalized,
+                output_filename=output_file,
+                compression_options=compression_options,
+                float_format=float_format,
+            )
+
+        return normalized

@@ -83,7 +83,7 @@ def load_platemap(platemap, add_metadata_id=True):
     return platemap
 
 
-def load_npz(npz_file, fallback_feature_prefix="DP"):
+def load_npz_features(npz_file, fallback_feature_prefix="DP"):
     """
     Load an npz file storing features and, sometimes, metadata.
 
@@ -142,3 +142,40 @@ def load_npz(npz_file, fallback_feature_prefix="DP"):
         df = metadata_df.merge(df, how="outer", left_index=True, right_index=True)
 
     return df
+
+
+def load_npz_locations(npz_file):
+    """
+    Load an npz file storing locations and, sometimes, metadata.
+
+    The function will first search the .npz file for a metadata column called
+    "locations". If the field exists, the function uses this entry as the
+    feature prefix.
+
+    If the npz file does not exist, this function returns an empty dataframe.
+
+    Parameters
+    ----------
+    npz_file : str
+        file path to the compressed output (typically DeepProfiler output)
+
+    Return
+    ------
+    df : pandas.core.frame.DataFrame
+        pandas DataFrame of profiles
+    """
+    try:
+        npz = np.load(npz_file, allow_pickle=True)
+    except FileNotFoundError:
+        return pd.DataFrame([])
+
+    files = npz.files
+
+    # Load features
+    try:
+        df = pd.DataFrame(
+            npz["locations"], columns=["Location_Center_X", "Location_Center_Y"]
+        )
+        return df
+    except:
+        return pd.DataFrame()
