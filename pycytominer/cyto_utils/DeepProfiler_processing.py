@@ -440,7 +440,7 @@ class SingleCellDeepProfiler:
 
         # wrapper for pycytominer.normalize() function
         normalized = normalize.normalize(
-            profiles=sc_df,
+            profiles=self.single_cells,
             features=derived_features,
             image_features=image_features,
             meta_features=meta_features,
