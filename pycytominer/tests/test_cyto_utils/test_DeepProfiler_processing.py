@@ -16,7 +16,8 @@ from pycytominer.cyto_utils.DeepProfiler_processing import (
     AggregateDeepProfiler,
     SingleCellDeepProfiler,
 )
-
+from pycytominer import normalize
+from pycytominer.cyto_utils import infer_cp_features
 
 tmpdir = tempfile.gettempdir()
 random.seed(42)
@@ -32,19 +33,41 @@ index_file = os.path.join(example_project_dir, "inputs", "metadata", "test_index
 output_folder = os.path.join(tmpdir, "DeepProfiler")
 os.makedirs(output_folder, exist_ok=True)
 
-# calculating the dataframe for each depth
+
 deep_data = DeepProfilerData(
     index_file=index_file,
     profile_dir=profile_dir,
 )
 
+#compile single cell data from DP run
 single_cells_DP = SingleCellDeepProfiler(deep_data=deep_data)
-output_file = os.path.join(output_folder, "normalized.csv")
 single_cells = single_cells_DP.get_single_cells(output=True)
+
+#normalize single cell data with DP processing
+output_file = os.path.join(output_folder, "normalized.csv")
 single_cells_normalized = single_cells_DP.normalize_deep_single_cells(
     output_file=output_file
 )
 
+#normalize single cell data with CP processing
+# extract metadata prior to normalization
+metadata_cols = infer_cp_features(single_cells, metadata=True)
+# locations are not automatically inferred with cp features
+metadata_cols.append("Location_Center_X")
+metadata_cols.append("Location_Center_Y")
+derived_features = [x for x in single_cells.columns.tolist() if x not in metadata_cols]
+
+# wrapper for pycytominer.normalize() function
+CP_single_cells_normalized = normalize(
+    profiles=single_cells,
+    features=derived_features,
+)
+x_locations = single_cells["Location_Center_X"]
+CP_single_cells_normalized.insert(0, "Location_Center_X", x_locations)
+y_locations = single_cells["Location_Center_Y"]
+CP_single_cells_normalized.insert(1, "Location_Center_Y", y_locations)
+
+# calculating the dataframe for each depth
 site_class = AggregateDeepProfiler(
     deep_data=deep_data,
     aggregate_operation="median",
@@ -67,6 +90,10 @@ plate_class = AggregateDeepProfiler(
     output_file=output_folder,
 )
 df_plate = plate_class.aggregate_deep()
+
+
+def test_normalization():
+    pd.testing.assert_frame_equal(single_cells_normalized, CP_single_cells_normalized)
 
 
 def test_output_size():
