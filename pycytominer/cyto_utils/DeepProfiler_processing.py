@@ -359,7 +359,6 @@ class SingleCellDeepProfiler:
         """
 
         self.deep_data = deep_data
-        self.single_cells_loaded = False
 
     def get_single_cells(self, output=False):
         """
@@ -394,7 +393,6 @@ class SingleCellDeepProfiler:
         if output:
             return sc_df
         else:
-            self.single_cells_loaded = True
             self.single_cells = sc_df
 
     def normalize_deep_single_cells(
@@ -427,16 +425,15 @@ class SingleCellDeepProfiler:
             This is the input to any further pycytominer or pycytominer-eval processing
         """
         # setup single_cells attribute
-        if not isinstance(sc_df, pd.DataFrame):
-            if not self.single_cells_loaded:
-                self.get_single_cells(output=False)
+        if not hasattr(self, "single_cells"):
+            self.get_single_cells(output=False)
 
         # extract metadata prior to normalization
-        metadata_cols = infer_cp_features(sc_df, metadata=True)
+        metadata_cols = infer_cp_features(self.single_cells, metadata=True)
         # locations are not automatically inferred with cp features
         metadata_cols.append("Location_Center_X")
         metadata_cols.append("Location_Center_Y")
-        derived_features = [x for x in sc_df.columns.tolist() if x not in metadata_cols]
+        derived_features = [x for x in self.single_cells.columns.tolist() if x not in metadata_cols]
 
         # wrapper for pycytominer.normalize() function
         normalized = normalize.normalize(
@@ -456,9 +453,9 @@ class SingleCellDeepProfiler:
         )
 
         # move x locations and y locations to metadata columns of normalized df
-        x_locations = sc_df["Location_Center_X"]
+        x_locations = self.single_cells["Location_Center_X"]
         normalized.insert(0, "Location_Center_X", x_locations)
-        y_locations = sc_df["Location_Center_Y"]
+        y_locations = self.single_cells["Location_Center_Y"]
         normalized.insert(1, "Location_Center_Y", y_locations)
 
         # separate code because normalize() will not return if it has an output file specified
