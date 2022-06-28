@@ -359,6 +359,7 @@ class SingleCellDeepProfiler:
         """
 
         self.deep_data = deep_data
+        self.single_cells_loaded = False
 
     def get_singlecells(self, output=False):
         """
