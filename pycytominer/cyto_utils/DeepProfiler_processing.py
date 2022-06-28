@@ -433,7 +433,9 @@ class SingleCellDeepProfiler:
         # locations are not automatically inferred with cp features
         metadata_cols.append("Location_Center_X")
         metadata_cols.append("Location_Center_Y")
-        derived_features = [x for x in self.single_cells.columns.tolist() if x not in metadata_cols]
+        derived_features = [
+            x for x in self.single_cells.columns.tolist() if x not in metadata_cols
+        ]
 
         # wrapper for pycytominer.normalize() function
         normalized = normalize.normalize(

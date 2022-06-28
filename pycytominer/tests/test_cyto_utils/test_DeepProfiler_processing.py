@@ -39,17 +39,17 @@ deep_data = DeepProfilerData(
     profile_dir=profile_dir,
 )
 
-#compile single cell data from DP run
+# compile single cell data from DP run
 single_cells_DP = SingleCellDeepProfiler(deep_data=deep_data)
 single_cells = single_cells_DP.get_single_cells(output=True)
 
-#normalize single cell data with DP processing
+# normalize single cell data with DP processing
 output_file = os.path.join(output_folder, "normalized.csv")
 single_cells_normalized = single_cells_DP.normalize_deep_single_cells(
     output_file=output_file
 )
 
-#normalize single cell data with CP processing
+# normalize single cell data with CP processing
 # extract metadata prior to normalization
 metadata_cols = infer_cp_features(single_cells, metadata=True)
 # locations are not automatically inferred with cp features
