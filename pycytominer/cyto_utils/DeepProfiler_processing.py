@@ -399,6 +399,7 @@ class SingleCellDeepProfiler:
 
     def normalize_deep_single_cells(
         self,
+        sc_df="none",
         image_features=False,  # not implemented with DeepProfiler
         meta_features="infer",
         samples="all",
