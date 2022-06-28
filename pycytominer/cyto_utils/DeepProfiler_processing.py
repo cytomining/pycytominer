@@ -361,7 +361,7 @@ class SingleCellDeepProfiler:
         self.deep_data = deep_data
         self.single_cells_loaded = False
 
-    def get_singlecells(self, output=False):
+    def get_single_cells(self, output=False):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -431,20 +431,20 @@ class SingleCellDeepProfiler:
             if self.single_cells_loaded:
                 sc_df = self.single_cells
             else:
-                sc_df = self.get_singlecells(output=True)
+                sc_df = self.get_single_cells(output=True)
 
         # extract metadata prior to normalization
-        metadata_cols = infer_cp_features(self.single_cells, metadata=True)
+        metadata_cols = infer_cp_features(sc_df, metadata=True)
         # locations are not automatically inferred with cp features
         metadata_cols.append("Location_Center_X")
         metadata_cols.append("Location_Center_Y")
         derived_features = [
-            x for x in self.single_cells.columns.tolist() if x not in metadata_cols
+            x for x in sc_df.columns.tolist() if x not in metadata_cols
         ]
 
         # wrapper for pycytominer.normalize() function
         normalized = normalize.normalize(
-            profiles=self.single_cells,
+            profiles=sc_df,
             features=derived_features,
             image_features=image_features,
             meta_features=meta_features,
@@ -460,9 +460,9 @@ class SingleCellDeepProfiler:
         )
 
         # move x locations and y locations to metadata columns of normalized df
-        x_locations = self.single_cells["Location_Center_X"]
+        x_locations = sc_df["Location_Center_X"]
         normalized.insert(0, "Location_Center_X", x_locations)
-        y_locations = self.single_cells["Location_Center_Y"]
+        y_locations = sc_df["Location_Center_Y"]
         normalized.insert(1, "Location_Center_Y", y_locations)
         
         # separate code because normalize() will not return if it has an output file specified
