@@ -71,7 +71,7 @@ def noise_removal(
     population_df = population_df.assign(group_id=group_info)
 
     # Get the standard deviations of features within each group
-    stdev_means_df = population_df.groupby("group_id").apply(lambda x: np.std(x)).mean()
+    stdev_means_df = population_df.groupby("group_id").std(ddof=0).mean()
 
     # Identify noisy features with a greater mean stdev within perturbation group than the threshold
     to_remove = stdev_means_df[
