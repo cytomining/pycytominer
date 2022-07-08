@@ -45,7 +45,8 @@ if __name__ == "__main__":
         help="Whether to perform only the aggregation of existant SQLite files and bypass previous collation steps",
     )
     parser.add_argument(
-        "--temp",
+        "--tmp-dir",
+        dest="tmp_dir",
         default="/tmp",
         help="The temporary directory to be used by cytominer-databases for output",
     )
@@ -89,7 +90,7 @@ if __name__ == "__main__":
         csv_dir=args.csv_dir,
         aws_remote=args.aws_remote,
         aggregate_only=args.aggregate_only,
-        temp=args.temp,
+        tmp_dir=args.tmp_dir,
         overwrite=args.overwrite,
         add_image_features=args.add_image_features,
         image_feature_categories=args.image_feature_categories,
