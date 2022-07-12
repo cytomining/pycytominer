@@ -34,7 +34,8 @@ from .cp_image_features import (
     aggregate_fields_count,
     aggregate_image_features,
 )
-from .sqlite import (
+from .sqlite.meta import engine_from_str, collect_columns, LIKE_NULLS, SQLITE_AFF_REF
+from .sqlite.clean import (
     clean_like_nulls,
     collect_columns,
     contains_conflicting_aff_storage_class,

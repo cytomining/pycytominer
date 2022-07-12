@@ -1,21 +1,27 @@
-""" Tests for pycytominer.cyto_utils.sqlite """
+""" 
+Tests for:
+pycytominer.cyto_utils.sqlite.clean
+pycytominer.cyto_utils.sqlite.meta
+"""
 
 import tempfile
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.engine.base import Engine
-from sqlalchemy.exc import IntegrityError
-from pycytominer.cyto_utils.sqlite import (
-    LIKE_NULLS,
+from pycytominer.cyto_utils.sqlite.clean import (
     clean_like_nulls,
-    collect_columns,
     contains_conflicting_aff_storage_class,
     contains_str_like_null,
-    engine_from_str,
     update_columns_to_nullable,
     update_values_like_null_to_null,
 )
+from pycytominer.cyto_utils.sqlite.meta import (
+    LIKE_NULLS,
+    collect_columns,
+    engine_from_str,
+)
+from sqlalchemy import create_engine
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 
 
 @pytest.fixture
@@ -30,6 +36,7 @@ def database_engine_for_testing() -> Engine:
 
     # create a temporary sqlite connection
     sql_path = f"sqlite:///{tmpdir}/test_sqlite.sqlite"
+
     engine = create_engine(sql_path)
 
     # statements for creating database with simple structure
