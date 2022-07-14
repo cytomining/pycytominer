@@ -27,17 +27,20 @@ def sql_select_distinct_join_chunks(
     """
     Selects distinct chunks of values from SQLite.
 
-    Parameters:
-        sql_engine: Engine:
-            SQLite database engine
-        table_name: str:
-            Name of table to reference for this function
-        join_keys: List[str]:
-            Keys to use for building unique chunk sets
-        chunk_size: int:
-            Size of chunk sets to use
+    Parameters
+    ----------
+    sql_engine: Engine:
+        SQLite database engine
+    table_name: str:
+        Name of table to reference for this function
+    join_keys: List[str]:
+        Keys to use for building unique chunk sets
+    chunk_size: int:
+        Size of chunk sets to use
 
-    Returns:
+    Returns
+    -------
+    List[List[Dict]]
         A list of lists with dictionaries for sets of
         unique join keys.
     """
@@ -76,23 +79,26 @@ def sql_table_to_pd_dataframe(
 ) -> pd.DataFrame:
     """
 
-    Parameters:
-        sql_engine: Engine:
-            SQLite database engine
-        table_name: str:
-            Name of table to reference for this function
-        prepend_tablename_to_cols: bool:
-            Determines whether we prepend table name
-            to column name.
-        avoid_prepend_for: List[str]:
-            List of column names to avoid tablename prepend
-        chunk_list_dicts: list:
-            List of dictionaries for chunked querying
-        column_data: List[dict]:
-            Column metadata extracted from database.
+    Parameters
+    ----------
+    sql_engine: Engine:
+        SQLite database engine
+    table_name: str:
+        Name of table to reference for this function
+    prepend_tablename_to_cols: bool:
+        Determines whether we prepend table name
+        to column name.
+    avoid_prepend_for: List[str]:
+        List of column names to avoid tablename prepend
+    chunk_list_dicts: list:
+        List of dictionaries for chunked querying
+    column_data: List[dict]:
+        Column metadata extracted from database.
 
-    Returns:
-        pd.DataFrame with results of query.
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with results of query.
     """
 
     # adds the tablename to the front of column name for query
@@ -139,13 +145,16 @@ def nan_data_fill(fill_into: pd.DataFrame, fill_from: pd.DataFrame) -> pd.DataFr
     Add columns with nan data where missing for fill_into
     dataframe.
 
-    Parameters:
-        fill_into: pd.DataFrame:
-            Dataframe to fill into.
-        fill_from: pd.DataFrame:
-            Dataframe to reference for fill.
+    Parameters
+    ----------
+    fill_into: pd.DataFrame:
+        Dataframe to fill into.
+    fill_from: pd.DataFrame:
+        Dataframe to reference for fill.
 
-    Returns:
+    Returns
+    -------
+    pd.DataFrame
         New fill_into pd.Dataframe with added column(s)
         and nan data.
     """
@@ -198,22 +207,25 @@ def table_concat_to_parquet(
     the way, and then dumping to uniquely named parquet
     file using a filename prefix.
 
-    Parameters:
-        sql_engine: Engine:
-            SQLite database engine
-        column_data: List[dict]:
-            Column metadata from database
-        prepend_tablename_to_cols: bool:
-            Determines whether we prepend table name
-            to column name.
-        avoid_prepend_for: list:
-            List of column names to avoid tablename prepend
-        chunk_list_dicts: list:
-            List of dictionaries for chunked querying
-        filename: str:
-            Filename to be used as prefix parquet export
+    Parameters
+    ----------
+    sql_engine: Engine:
+        SQLite database engine
+    column_data: List[dict]:
+        Column metadata from database
+    prepend_tablename_to_cols: bool:
+        Determines whether we prepend table name
+        to column name.
+    avoid_prepend_for: list:
+        List of column names to avoid tablename prepend
+    chunk_list_dicts: list:
+        List of dictionaries for chunked querying
+    filename: str:
+        Filename to be used as prefix parquet export
 
-    Returns:
+    Returns
+    -------
+    str
         Filename of parquet file created.
     """
 
@@ -262,13 +274,16 @@ def to_unique_parquet(df: pd.DataFrame, filename: str) -> str:
     """
     Write a uniquely named parquet from provided dataframe.
 
-    Parameters:
-        df: pd.DataFrame:
-            dataframe to use for parquet write
-        filename: str:
-            filename to use as a prefix along with uuid
+    Parameters
+    ----------
+    df: pd.DataFrame:
+        dataframe to use for parquet write
+    filename: str:
+        filename to use as a prefix along with uuid
 
-    Returns:
+    Returns
+    -------
+    str
         Unique filename for parquet file created.
     """
 
@@ -289,19 +304,22 @@ def to_unique_parquet(df: pd.DataFrame, filename: str) -> str:
 def multi_to_single_parquet(
     pq_files: List[str],
     filename: str,
-):
+) -> str:
     """
     Take a list of parquet file paths and write them
     as one single parquet file. Assumes exact same
     data schema for all files.
 
-    Parameters:
-        pq_files: List[str]:
-            List of parquet file paths
-        filename: str:
-            Filename to use for the parquet file.
+    Parameters
+    ----------
+    pq_files: List[str]:
+        List of parquet file paths
+    filename: str:
+        Filename to use for the parquet file.
 
-    Returns:
+    Returns
+    -------
+    str
         Filename of the single parquet file.
     """
 
@@ -342,34 +360,37 @@ def flow_convert_sqlite_to_parquet(
     pq_filename: str = "combined",
 ) -> str:
     """
+    Run a Prefect Flow to convert Pycytominer SQLite data
+    to single parquet file with same data.
 
+    Parameters
+    ----------
+    sql_engine: Engine:
+        SQLite database engine
+    flow_executor: Executor:
+        Prefect flow executor
+    flow_storage: Storage:
+        Prefect flow storage
+    sql_tbl_basis: str:  (Default value = "Image")
+        Database table to use as the basis of building
+        join keys and chunks
+    sql_join_keys: List[str]:  (Default value = ["TableNumber","ImageNumber"]):
+        Database column name keys to be used as for
+        chunking and frame concatenation.
+    sql_chunk_size: int:  (Default value = 10)
+        Chunk size for unique join key datasets.
+        Note: adjust to resource capabilities of
+        machine and provided dataset. Smaller
+        chunksizes may mean greater time duration
+        and lower memory consumption
+    pq_filename: str:  (Default value = "combined")
+        Target parquet filename to be used as an in-process
+        prefix and also as the resulting file from
+        the flow.
 
-    Parameters:
-        sql_engine: Engine:
-            SQLite database engine
-        flow_executor: Executor:
-            Prefect flow executor
-        flow_storage: Storage:
-            Prefect flow storage
-        sql_tbl_basis: str:  (Default value = "Image")
-            Database table to use as the basis of building
-            join keys and chunks
-        sql_join_keys: List[str]:  (Default value = ["TableNumber")
-        "ImageNumber"]:
-            Database column name keys to be used as for
-            chunking and frame concatenation.
-        sql_chunk_size: int:  (Default value = 10)
-            Chunk size for unique join key datasets.
-            Note: adjust to resource capabilities of
-            machine and provided dataset. Smaller
-            chunksizes may mean greater time duration
-            and lower memory consumption
-        pq_filename: str:  (Default value = "combined")
-            Target parquet filename to be used as an in-process
-            prefix and also as the resulting file from
-            the flow.
-
-    Returns:
+    Returns
+    -------
+    str
         Single parquet filename of file which contains
         all SQLite data based on the outcome of a
         Prefect flow.
