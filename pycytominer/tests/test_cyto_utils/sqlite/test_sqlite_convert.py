@@ -1,169 +1,22 @@
 """ 
-Tests for:
-pycytominer.cyto_utils.sqlite.convert
+Tests for: pycytominer.cyto_utils.sqlite.convert
 """
 
 import os
 import tempfile
-import unittest
-from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-import pytest
 from prefect.executors import LocalExecutor
 from prefect.storage import Local
 from pycytominer.cyto_utils.sqlite.convert import (
     flow_convert_sqlite_to_parquet,
     multi_to_single_parquet,
     nan_data_fill,
-    sql_select_distinct_join_chunks,
     sql_table_to_pd_dataframe,
     table_concat_to_parquet,
     to_unique_parquet,
 )
-from pycytominer.cyto_utils.sqlite.meta import collect_columns
-from sqlalchemy import create_engine
-from sqlalchemy.engine.base import Engine
-
-
-@pytest.fixture
-def database_engine_for_conversion_testing() -> Engine:
-    """
-    A database engine for testing as a fixture to be passed
-    to other tests within this file.
-    """
-
-    # get temporary directory
-    tmpdir = tempfile.gettempdir()
-
-    sql_filepath = f"{tmpdir}/test_conversion_sqlite.sqlite"
-
-    # remove db if it exists
-    if os.path.exists(f"{tmpdir}/test_sqlite.sqlite"):
-        os.remove(f"{tmpdir}/test_sqlite.sqlite")
-
-    # create a temporary sqlite connection
-    sql_path = f"sqlite:///{sql_filepath}"
-
-    engine = create_engine(sql_path)
-
-    # statements for creating database with simple structure
-    # intended to very roughly match existing cytomining
-    # community SQLite files.
-    create_stmts = [
-        "drop table if exists Image;",
-        """
-        create table Image (
-        TableNumber INTEGER
-        ,ImageNumber INTEGER
-        ,ImageData INTEGER
-        ,RandomDate DATETIME
-        );
-        """,
-        "drop table if exists Cells;",
-        """
-        create table Cells (
-        TableNumber INTEGER
-        ,ImageNumber INTEGER
-        ,ObjectNumber INTEGER
-        ,CellsData INTEGER
-        );
-        """,
-        "drop table if exists Nuclei;",
-        """
-        create table Nuclei (
-        TableNumber INTEGER
-        ,ImageNumber INTEGER
-        ,ObjectNumber INTEGER
-        ,NucleiData INTEGER
-        );
-        """,
-        "drop table if exists Cytoplasm;",
-        """
-        create table Cytoplasm (
-        TableNumber INTEGER
-        ,ImageNumber INTEGER
-        ,ObjectNumber INTEGER
-        ,Cytoplasm_Parent_Cells INTEGER
-        ,Cytoplasm_Parent_Nuclei INTEGER
-        ,CytoplasmData INTEGER
-        );
-        """,
-    ]
-
-    with engine.begin() as connection:
-        for stmt in create_stmts:
-            connection.execute(stmt)
-
-        # images
-        connection.execute(
-            "INSERT INTO Image VALUES (?, ?, ?, ?);",
-            [1, 1, 1, "123-123"],
-        )
-        connection.execute(
-            "INSERT INTO Image VALUES (?, ?, ?, ?);",
-            [2, 2, 2, "123-123"],
-        )
-
-        # cells
-        connection.execute(
-            "INSERT INTO Cells VALUES (?, ?, ?, ?);",
-            [1, 1, 2, 1],
-        )
-        connection.execute(
-            "INSERT INTO Cells VALUES (?, ?, ?, ?);",
-            [2, 2, 3, 1],
-        )
-
-        # Nuclei
-        connection.execute(
-            "INSERT INTO Nuclei VALUES (?, ?, ?, ?);",
-            [1, 1, 4, 1],
-        )
-        connection.execute(
-            "INSERT INTO Nuclei VALUES (?, ?, ?, ?);",
-            [2, 2, 5, 1],
-        )
-
-        # cytoplasm
-        connection.execute(
-            "INSERT INTO Cytoplasm VALUES (?, ?, ?, ?, ?, ?);",
-            [1, 1, 6, 2, 4, 1],
-        )
-        connection.execute(
-            "INSERT INTO Cytoplasm VALUES (?, ?, ?, ?, ?, ?);",
-            [2, 2, 7, 3, 5, 1],
-        )
-
-    return engine
-
-
-@pytest.fixture
-def database_distinct_join_chunks(
-    database_engine_for_conversion_testing,
-) -> List[List[Dict]]:
-    """
-    Fixture for database chunks
-    """
-
-    return sql_select_distinct_join_chunks.run(
-        sql_engine=database_engine_for_conversion_testing,
-        table_name="Image",
-        join_keys=["TableNumber", "ImageNumber"],
-        chunk_size=1,
-    )
-
-
-@pytest.fixture
-def database_column_data(
-    database_engine_for_conversion_testing,
-) -> List[List[Dict]]:
-    """
-    Fixture for column data from database
-    """
-
-    return collect_columns(sql_engine=database_engine_for_conversion_testing)
 
 
 def test_sql_select_distinct_join_chunks(database_distinct_join_chunks):
@@ -314,15 +167,14 @@ def test_table_concat_to_parquet(
         )
         # compare two dictionaries of data based on
         # parquet chunk output
-        unittest.TestCase().assertDictEqual(
+        pd.testing.assert_frame_equal(
             # dataframe as dictionary data for assertion
-            d1=pd.read_parquet(chunk_file_path)[_test_cols_order]
+            pd.read_parquet(chunk_file_path)[_test_cols_order]
             .sort_values(by=_test_cols_order)
             .reset_index(drop=True)
-            .replace(np.nan, None)
-            .to_dict(orient="dict"),
+            .replace(np.nan, None),
             # data should look like this
-            d2=pd.DataFrame(
+            pd.DataFrame(
                 data={
                     "Cells_CellsData": {0: np.nan, 1: 1.0, 2: np.nan, 3: np.nan},
                     "Cells_ObjectNumber": {0: np.nan, 1: 2.0, 2: np.nan, 3: np.nan},
@@ -355,8 +207,7 @@ def test_table_concat_to_parquet(
             )[_test_cols_order]
             .sort_values(by=_test_cols_order)
             .reset_index(drop=True)
-            .replace(np.nan, None)
-            .to_dict(orient="dict"),
+            .replace(np.nan, None),
         )
 
 
