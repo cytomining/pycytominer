@@ -5,3 +5,4 @@ groundwork-sphinx-theme
 
 mock
 autodoc
+sphinxcontrib-mermaid

@@ -15,6 +15,7 @@ Software for processing image-based profiling readouts.
    install
    tutorial
    modules
+   architecture
 
 Indices and tables
 ==================

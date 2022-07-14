@@ -52,6 +52,32 @@ pycytominer.cyto\_utils.util module
    :undoc-members:
    :show-inheritance:
 
+pycytominer.cyto\_utils.sqlite.clean module
+---------------------------------------------
+
+.. automodule:: pycytominer.cyto_utils.sqlite.clean
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. _sqliteconvert:
+
+pycytominer.cyto\_utils.sqlite.convert module
+---------------------------------------------
+
+.. automodule:: pycytominer.cyto_utils.sqlite.convert
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycytominer.cyto\_utils.sqlite.meta module
+---------------------------------------------
+
+.. automodule:: pycytominer.cyto_utils.sqlite.meta
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pycytominer.cyto\_utils.write\_gct module
 -----------------------------------------
 
