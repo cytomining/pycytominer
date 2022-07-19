@@ -221,7 +221,7 @@ def table_concat_to_parquet(
     chunk_list_dicts: list:
         List of dictionaries for chunked querying
     filename: str:
-        Filename to be used as prefix parquet export
+        Filename to be used for parquet export
 
     Returns
     -------
@@ -277,9 +277,9 @@ def to_unique_parquet(df: pd.DataFrame, filename: str) -> str:
     Parameters
     ----------
     df: pd.DataFrame:
-        dataframe to use for parquet write
+        Dataframe to use for parquet write
     filename: str:
-        filename to use as a prefix along with uuid
+        Filename to use along with uuid for unique filenames
 
     Returns
     -------
@@ -291,7 +291,7 @@ def to_unique_parquet(df: pd.DataFrame, filename: str) -> str:
     file_uuid = str(uuid.uuid4().hex)
 
     # build a unique filename string
-    unique_filename = f"{filename}-{file_uuid}.parquet"
+    unique_filename = f"{filename}-{file_uuid}"
 
     # export the dataframe based on the unique filename
     df.to_parquet(unique_filename, compression=None)
@@ -324,7 +324,7 @@ def multi_to_single_parquet(
     """
 
     # build a resulting filename string
-    concatted_parquet_filename = f"{filename}.parquet"
+    concatted_parquet_filename = f"{filename}"
 
     # if there's already a file remove it
     if os.path.isfile(concatted_parquet_filename):
@@ -357,7 +357,7 @@ def flow_convert_sqlite_to_parquet(
     sql_tbl_basis: str = "Image",
     sql_join_keys: List[str] = ["TableNumber", "ImageNumber"],
     sql_chunk_size: int = 10,
-    pq_filename: str = "combined",
+    pq_filename: str = "combined.parquet",
 ) -> str:
     """
     Run a Prefect Flow to convert Pycytominer SQLite data
@@ -383,10 +383,9 @@ def flow_convert_sqlite_to_parquet(
         machine and provided dataset. Smaller
         chunksizes may mean greater time duration
         and lower memory consumption
-    pq_filename: str:  (Default value = "combined")
-        Target parquet filename to be used as an in-process
-        prefix and also as the resulting file from
-        the flow.
+    pq_filename: str:  (Default value = "combined.parquet")
+        Target parquet filename to be used for chunks
+        and also resulting converted filename.
 
     Returns
     -------
@@ -394,6 +393,34 @@ def flow_convert_sqlite_to_parquet(
         Single parquet filename of file which contains
         all SQLite data based on the outcome of a
         Prefect flow.
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        from prefect.executors import LocalExecutor
+        from prefect.storage import Local
+        from sqlalchemy.engine import create_engine
+
+        from pycytominer.cyto_utils.sqlite.convert import flow_convert_sqlite_to_parquet
+
+        sql_path = "test_SQ00014613.sqlite"
+        sql_url = f"sqlite:///{sql_path}"
+        sql_engine = create_engine(sql_url)
+
+        # note: encapsulate the following within a __main__ block for
+        # dask compatibility if desired and set with executor
+
+        result_file_path = flow_convert_sqlite_to_parquet(
+            sql_engine=sql_engine,
+            flow_executor=LocalExecutor(),
+            flow_storage=Local(),
+            sql_tbl_basis="Image",
+            sql_join_keys=["TableNumber", "ImageNumber"],
+            sql_chunk_size=10,
+            pq_filename="test_SQ00014613.parquet",
+        )
 
     """
 
