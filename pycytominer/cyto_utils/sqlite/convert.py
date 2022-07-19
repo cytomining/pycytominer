@@ -2,6 +2,7 @@
 Pycytominer SQLite utilities - conversion work for sqlite databases
 """
 
+import itertools
 import logging
 import pathlib
 import uuid
@@ -256,8 +257,11 @@ def table_concat_to_parquet(
         else:
             # both the already concatted and target are prepared with matching columns nan's
             # for data they do not contain.
-            concatted = nan_data_fill.run(fill_into=concatted, fill_from=to_concat)
-            to_concat = nan_data_fill.run(fill_into=to_concat, fill_from=concatted)
+            concatted, to_concat = list(
+                itertools.starmap(
+                    nan_data_fill.run, [[concatted, to_concat], [to_concat, concatted]]
+                )
+            )
 
             # bring the prepared dataframes together as the new concatted
             concatted = pd.concat([concatted, to_concat])
