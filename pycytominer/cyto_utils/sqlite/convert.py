@@ -324,7 +324,9 @@ def multi_to_single_parquet(
     """
 
     # if there's already a file remove it
-    pathlib.Path(filename).unlink(missing_ok=True)
+    path = pathlib.Path(filename)
+    if path.exists():
+        path.unlink()
 
     # build a parquet file writer which will be used to append files from pq_files
     # as a single concatted parquet file, referencing the first file's schema
