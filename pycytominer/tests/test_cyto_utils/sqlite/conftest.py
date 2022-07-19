@@ -183,7 +183,7 @@ def database_engine_for_conversion_testing() -> Engine:
             [2, 2, 7, 3, 5, 1],
         )
 
-    return engine
+    return str(engine.url)
 
 
 @pytest.fixture

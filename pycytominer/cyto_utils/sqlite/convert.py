@@ -6,7 +6,7 @@ import itertools
 import logging
 import pathlib
 import uuid
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -14,24 +14,25 @@ import pyarrow.parquet as pq
 from prefect import Flow, Parameter, task, unmapped
 from prefect.executors import Executor
 from prefect.storage import Storage
+from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 
-from .meta import collect_columns, engine_from_str
+from .meta import collect_columns
 
 logger = logging.getLogger(__name__)
 
 
 @task
 def sql_select_distinct_join_chunks(
-    sql_engine: Engine, table_name: str, join_keys: List[str], chunk_size: int
+    sql_engine: str, table_name: str, join_keys: List[str], chunk_size: int
 ) -> List[List[Dict]]:
     """
     Selects distinct chunks of values from SQLite.
 
     Parameters
     ----------
-    sql_engine: Engine:
-        SQLite database engine
+    sql_engine: str:
+        SQLite database engine url url
     table_name: str:
         Name of table to reference for this function
     join_keys: List[str]:
@@ -57,7 +58,7 @@ def sql_select_distinct_join_chunks(
     # gather a dictionary from pandas dataframe based on results from query
     result_dicts = pd.read_sql(
         sql_stmt,
-        sql_engine,
+        create_engine(sql_engine),
     ).to_dict(orient="records")
 
     # build chunked result dict list
@@ -71,7 +72,7 @@ def sql_select_distinct_join_chunks(
 
 @task
 def sql_table_to_pd_dataframe(
-    sql_engine: Engine,
+    sql_engine: str,
     table_name: str,
     prepend_tablename_to_cols: bool,
     avoid_prepend_for: List[str],
@@ -82,8 +83,8 @@ def sql_table_to_pd_dataframe(
 
     Parameters
     ----------
-    sql_engine: Engine:
-        SQLite database engine
+    sql_engine: str:
+        SQLite database engine url
     table_name: str:
         Name of table to reference for this function
     prepend_tablename_to_cols: bool:
@@ -137,7 +138,7 @@ def sql_table_to_pd_dataframe(
     sql_stmt += f" where {chunk_list_dicts_str}"
 
     # return the sql query as pandas dataframe
-    return pd.read_sql(sql_stmt, sql_engine)
+    return pd.read_sql(sql_stmt, create_engine(sql_engine))
 
 
 @task
@@ -195,7 +196,7 @@ def nan_data_fill(fill_into: pd.DataFrame, fill_from: pd.DataFrame) -> pd.DataFr
 
 @task
 def table_concat_to_parquet(
-    sql_engine: Engine,
+    sql_engine: str,
     column_data: List[dict],
     prepend_tablename_to_cols: bool,
     avoid_prepend_for: list,
@@ -210,8 +211,8 @@ def table_concat_to_parquet(
 
     Parameters
     ----------
-    sql_engine: Engine:
-        SQLite database engine
+    sql_engine: str:
+        SQLite database engine url
     column_data: List[dict]:
         Column metadata from database
     prepend_tablename_to_cols: bool:
@@ -351,7 +352,7 @@ def multi_to_single_parquet(
 
 
 def flow_convert_sqlite_to_parquet(
-    sql_engine: Engine,
+    sql_engine: Union[str, Engine],
     flow_executor: Executor,
     flow_storage: Storage,
     sql_tbl_basis: str = "Image",
@@ -365,8 +366,8 @@ def flow_convert_sqlite_to_parquet(
 
     Parameters
     ----------
-    sql_engine: Engine:
-        SQLite database engine
+    sql_engine: Union[str, Engine]:
+        filename of the SQLite database or existing sqlalchemy engine
     flow_executor: Executor:
         Prefect flow executor
     flow_storage: Storage:
@@ -424,6 +425,12 @@ def flow_convert_sqlite_to_parquet(
 
     """
 
+    logger.info("Setting up Prefect flow for running SQLite to parquet conversion.")
+
+    # cast the provided sql_engine to a string from sqlalchemy url if necessary
+    if not isinstance(sql_engine, str):
+        sql_engine = str(sql_engine.url)
+
     # build a prefect flow with explicit storage based on parameter
     with Flow("flow_convert_sqlite_to_parquet", storage=flow_storage) as flow:
 
@@ -435,18 +442,14 @@ def flow_convert_sqlite_to_parquet(
         param_pq_filename = Parameter("pq_filename", default=pq_filename)
 
         # form prefect tasks from sqlite meta utils
-        task_engine_from_str = task(engine_from_str)
         task_collect_columns = task(collect_columns)
 
-        # build an engine which may be used by other tasks
-        engine = task_engine_from_str(sql_engine=param_sql_engine)
-
         # gather sql column and table data flow operations
-        column_data = task_collect_columns(sql_engine=engine)
+        column_data = task_collect_columns(sql_engine=param_sql_engine)
 
         # chunk the dicts so as to create batches
         chunk_dicts = sql_select_distinct_join_chunks(
-            sql_engine=engine,
+            sql_engine=param_sql_engine,
             table_name=param_sql_tbl_basis,
             join_keys=param_sql_join_keys,
             chunk_size=param_sql_chunk_size,
@@ -454,7 +457,7 @@ def flow_convert_sqlite_to_parquet(
 
         # map to gather our concatted/merged pd dataframes as a list within this flow
         pq_files = table_concat_to_parquet.map(
-            sql_engine=unmapped(engine),
+            sql_engine=unmapped(param_sql_engine),
             column_data=unmapped(column_data),
             prepend_tablename_to_cols=unmapped(True),
             avoid_prepend_for=unmapped(param_sql_join_keys),
@@ -471,7 +474,7 @@ def flow_convert_sqlite_to_parquet(
     flow_state = flow.run(
         executor=flow_executor,
         parameters=dict(
-            sql_engine=str(sql_engine.url),
+            sql_engine=sql_engine,
             sql_tbl_basis=sql_tbl_basis,
             sql_join_keys=sql_join_keys,
             sql_chunk_size=sql_chunk_size,
