@@ -3,9 +3,9 @@ Pycytominer SQLite utilities - conversion work for sqlite databases
 """
 
 import logging
-import os
+import pathlib
 import uuid
-from typing import List, Dict
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -323,31 +323,25 @@ def multi_to_single_parquet(
         Filename of the single parquet file.
     """
 
-    # build a resulting filename string
-    concatted_parquet_filename = f"{filename}"
-
     # if there's already a file remove it
-    if os.path.isfile(concatted_parquet_filename):
-        os.remove(concatted_parquet_filename)
+    pathlib.Path(filename).unlink(missing_ok=True)
 
     # build a parquet file writer which will be used to append files from pq_files
     # as a single concatted parquet file, referencing the first file's schema
     # (all must be the same schema)
-    writer = pq.ParquetWriter(
-        concatted_parquet_filename, pq.read_table(pq_files[0]).schema
-    )
+    writer = pq.ParquetWriter(filename, pq.read_table(pq_files[0]).schema)
 
     for tbl in pq_files:
         # read the file from the list and write to the concatted parquet file
         writer.write_table(pq.read_table(tbl))
         # remove the file which was written in the concatted parquet file (we no longer need it)
-        os.remove(tbl)
+        pathlib.Path(tbl).unlink()
 
     # close the single concatted parquet file writer
     writer.close()
 
     # return the concatted parquet filename
-    return concatted_parquet_filename
+    return filename
 
 
 def flow_convert_sqlite_to_parquet(
