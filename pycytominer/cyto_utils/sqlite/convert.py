@@ -379,14 +379,19 @@ def multi_to_single_parquet(
     if path.exists():
         path.unlink()
 
+    # read first file for basis of schema and column order for all others
+    writer_basis = pq.read_table(pq_files[0])
+
     # build a parquet file writer which will be used to append files from pq_files
     # as a single concatted parquet file, referencing the first file's schema
     # (all must be the same schema)
-    writer = pq.ParquetWriter(filename, pq.read_table(pq_files[0]).schema)
+    writer = pq.ParquetWriter(filename, writer_basis.schema)
 
     for tbl in pq_files:
         # read the file from the list and write to the concatted parquet file
-        writer.write_table(pq.read_table(tbl))
+        # note: we pass column order based on the first chunk file to help ensure schema
+        # compatibility for the writer
+        writer.write_table(pq.read_table(tbl, columns=writer_basis.column_names))
         # remove the file which was written in the concatted parquet file (we no longer need it)
         pathlib.Path(tbl).unlink()
 
