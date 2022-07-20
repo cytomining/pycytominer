@@ -345,7 +345,7 @@ def to_unique_parquet(df: pd.DataFrame, filename: str) -> str:
     unique_filename = f"{filename}-{file_uuid}"
 
     # export the dataframe based on the unique filename
-    df.to_parquet(unique_filename, compression=None)
+    df.to_parquet(unique_filename)
 
     # return the unique filename generated
     return unique_filename
