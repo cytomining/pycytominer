@@ -86,7 +86,8 @@ def sql_table_to_pd_dataframe(
     sql_engine: str:
         SQLite database engine url
     table_name: str:
-        Name of table to reference for this function
+        Name of table to reference for this function.
+        Examples for this parameter: "Image", "Cells", "Cytoplasm", "Nuclei"
     prepend_tablename_to_cols: bool:
         Determines whether we prepend table name
         to column name.
@@ -101,6 +102,51 @@ def sql_table_to_pd_dataframe(
     -------
     pd.DataFrame
         DataFrame with results of query.
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        from prefect import Flow, Parameter, task
+        from sqlalchemy.engine import create_engine
+
+        from pycytominer.cyto_utils.sqlite.convert import sql_table_to_pd_dataframe
+        from pycytominer.cyto_utils.sqlite.meta import collect_columns
+
+        sql_path = "test_SQ00014613.sqlite"
+        sql_url = f"sqlite:///{sql_path}"
+
+        with Flow("Example Flow") as flow:
+            param_sql_engine = Parameter("sql_engine", default="")
+
+            # form prefect task from sqlite meta util
+            task_collect_columns = task(collect_columns)
+
+            # gather sql column and table data flow operations
+            column_data = task_collect_columns(sql_engine=param_sql_engine)
+
+            dataframe_result = sql_table_to_pd_dataframe(
+                sql_engine=param_sql_engine,
+                table_name="Image",
+                prepend_tablename_to_cols=True,
+                avoid_prepend_for=["TableNumber", "ImageNumber"],
+                chunk_list_dicts=[
+                    {"TableNumber": "dd77885d07028e67dc9bcaaba4df34c6", "ImageNumber": "1"},
+                    {"TableNumber": "1e5d8facac7508cfd4086f3e3e950182", "ImageNumber": "2"},
+                ],
+                column_data=column_data,
+            )
+
+        # run the flow as outlined above
+        flow_state = flow.run(parameters=dict(sql_engine=sql_url))
+
+        # access the dataframe result of the flow
+        df = flow_state.result[dataframe_result].result
+
+        # print info from dataframe result
+        print(df.info())
+
     """
 
     # adds the tablename to the front of column name for query
