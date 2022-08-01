@@ -349,7 +349,7 @@ def get_pairwise_correlation(population_df, method="pearson"):
 
     # Replace upper triangle in correlation matrix with NaN
     data_cor_natri_df = data_cor_natri_df.where(
-        np.tril(np.ones(data_cor_natri_df.shape), k=-1).astype(np.bool)
+        np.tril(np.ones(data_cor_natri_df.shape), k=-1).astype(bool)
     )
 
     # Acquire pairwise correlations in a long format

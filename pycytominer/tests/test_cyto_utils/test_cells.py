@@ -4,6 +4,7 @@ import pytest
 import tempfile
 import pandas as pd
 from sqlalchemy import create_engine
+import pytest
 
 from pycytominer import aggregate, normalize
 from pycytominer.cyto_utils.cells import SingleCells, _sqlite_strata_conditions
@@ -135,12 +136,15 @@ ap_subsample = SingleCells(
     subsample_n=2,
     subsampling_random_state=123,
 )
-ap_new = SingleCells(
-    sql_file=new_file,
-    load_image_data=False,
-    compartments=new_compartments,
-    compartment_linking_cols=new_linking_cols,
-)
+
+# Warning expected for compartment "new" because is not in default compartment list.
+with pytest.warns(UserWarning, match='Non-canonical compartment detected: new'):
+    ap_new = SingleCells(
+        sql_file=new_file,
+        load_image_data=False,
+        compartments=new_compartments,
+        compartment_linking_cols=new_linking_cols,
+    )
 
 ap_image_all_features = SingleCells(
     sql_file=image_file,
