@@ -397,13 +397,17 @@ class SingleCells(object):
 
         self.is_subset_computed = True
 
-    def load_compartment(self, compartment):
+    def load_compartment(self, compartment, test=False, test_n=None):
         """Creates the compartment dataframe.
 
         Parameters
         ----------
         compartment : str
             The compartment to process.
+        test : bool
+            If true, run in test mode and only load small chunk of data
+        test_n : int
+            Set chunk size of the `read_sql` function.
 
         Returns
         -------
@@ -411,6 +415,10 @@ class SingleCells(object):
             Compartment dataframe.
         """
         compartment_query = "select * from {}".format(compartment)
+        if test:
+            df = pd.read_sql(
+                sql=compartment_query, con=self.conn, chunksize=test_n)
+            return next(df)
         df = pd.read_sql(sql=compartment_query, con=self.conn)
         return df
 
@@ -609,6 +617,8 @@ class SingleCells(object):
         float_format=None,
         single_cell_normalize=False,
         normalize_args=None,
+        test=False,
+        test_n=None,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
 
@@ -626,12 +636,20 @@ class SingleCells(object):
             Whether or not to normalize the single cell data.
         normalize_args : dict, optional
             Additional arguments passed as input to pycytominer.normalize().
+        test : bool, optional
+            If function run in test mode, read dataframe in chunks.
+        test_n : int, optional
+            Specifies size of test chunk loaded in test mode.
+
 
         Returns
         -------
         pandas.core.frame.DataFrame
             Either a dataframe (if output_file="none") or will write to file.
         """
+        # When running in test mode, do not compute subsample
+        if test:
+            self.compute_subsample = False
 
         # Load the single cell dataframe by merging on the specific linking columns
         sc_df = ""
@@ -658,29 +676,35 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    initial_df = self.load_compartment(compartment=left_compartment)
+                    sc_df = self.load_compartment(
+                        compartment=left_compartment, test=test, test_n=test_n)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
-                        self.get_subsample(df=initial_df, rename_col=False)
+                        self.get_subsample(df=sc_df, rename_col=False)
 
                         subset_logic_df = self.subset_data_df.drop(
                             self.image_df.columns, axis="columns"
                         )
 
-                        initial_df = subset_logic_df.merge(
-                            initial_df, how="left", on=subset_logic_df.columns.tolist()
-                        ).reindex(initial_df.columns, axis="columns")
+                        sc_df = subset_logic_df.merge(
+                            sc_df, how="left", on=subset_logic_df.columns.tolist()
+                        ).reindex(sc_df.columns, axis="columns")
 
-                    sc_df = initial_df.merge(
-                        self.load_compartment(compartment=right_compartment),
+                    sc_df = sc_df.merge(
+                        self.load_compartment(
+                            compartment=right_compartment,
+                            test=test, test_n=test_n),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
                     )
+
                 else:
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
+                        self.load_compartment(
+                            compartment=right_compartment,
+                            test=test, test_n=test_n),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
