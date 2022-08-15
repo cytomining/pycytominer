@@ -147,7 +147,7 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     return df
 
 
-def load_npz_locations(npz_file, location_columns=(0, 1)):
+def load_npz_locations(npz_file, location_x_col_index = 0, location_y_col_index = 1):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
@@ -161,8 +161,10 @@ def load_npz_locations(npz_file, location_columns=(0, 1)):
     ----------
     npz_file : str
         file path to the compressed output (typically DeepProfiler output)
-    location_columns : tuple
-        (location_center_x column number, location_center_y column number), column numbers for location data
+    location_x_col_index: int
+        index of the x location column (which column in DP output has X coords)
+    location_y_col_index: int
+        index of the y location column (which column in DP output has Y coords)
 
     Return
     ------
@@ -178,7 +180,7 @@ def load_npz_locations(npz_file, location_columns=(0, 1)):
 
     try:
         df = pd.DataFrame(npz["locations"])
-        df = df[[location_columns[0], location_columns[1]]]
+        df = df[[location_x_col_index, location_y_col_index]]
         df.columns = ["Location_Center_X", "Location_Center_Y"]
         return df
     except:
