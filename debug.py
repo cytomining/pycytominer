@@ -27,12 +27,12 @@ df_merged_sc = ap.merge_single_cells(
     float_format=None,
     single_cell_normalize=True,
     normalize_args=None,
-    test=True,
-    test_n=100
 )
 
 # load additional information of file
 df_info = pd.read_csv("../perturbmatch/datasets/BR00117010_augmented.csv")
+df_info_meta = [m for m in df_info.columns if m.startswith("Metadata_")]
 
 # merge single cell dataframe with additional information
-df_merged_sc = df_merged_sc.merge(right=df_info, how="left", on="Metadata_Well")
+df_merged_sc = df_merged_sc.merge(
+    right=df_info_meta, how="left", on=["Metadata_Plate", "Metadata_Well"])

@@ -397,30 +397,69 @@ class SingleCells(object):
 
         self.is_subset_computed = True
 
-    def load_compartment(self, compartment, test=False, test_n=None):
+    def is_feature_col(self, col):
+        """Check if column is a feature."""
+        return (
+            col.startswith("Cell")
+            or col.startswith("Cytoplasm")
+            or col.startswith("Nuclei")
+        )
+
+    def count(self, table):
+        """Count total number of rows for a table."""
+        (num_rows,) = next(self.conn.execute(f"SELECT COUNT(*) FROM {table}"))
+        return num_rows
+
+    def get_columns(self, table):
+        """Get feature and metadata columns lists."""
+        ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
+        col_names = [obj[0] for obj in ptr.description]
+
+        feat_cols = []
+        meta_cols = []
+        for col in col_names:
+            if self.is_feature_col(col):
+                feat_cols.append(col)
+            else:
+                meta_cols.append(col)
+
+        return meta_cols, feat_cols
+
+    def load_compartment(self, compartment):
         """Creates the compartment dataframe.
 
         Parameters
         ----------
         compartment : str
             The compartment to process.
-        test : bool
-            If true, run in test mode and only load small chunk of data
-        test_n : int
-            Set chunk size of the `read_sql` function.
 
         Returns
         -------
         pandas.core.frame.DataFrame
             Compartment dataframe.
         """
-        compartment_query = "select * from {}".format(compartment)
-        if test:
-            df = pd.read_sql(
-                sql=compartment_query, con=self.conn, chunksize=test_n)
-            return next(df)
-        df = pd.read_sql(sql=compartment_query, con=self.conn)
-        return df
+
+        # Get data useful to pre-alloc memory
+        num_cells = self.count(compartment)
+        meta_cols, feat_cols = self.get_columns(compartment)
+        num_meta, num_feats = len(meta_cols), len(feat_cols)
+
+        feats = np.empty(shape=(num_cells, num_feats), dtype=np.float32)
+        metas = pd.DataFrame(columns=meta_cols, index=range(num_cells))
+
+        # Load data row by row for both meta information and features
+        columns = ", ".join(meta_cols + feat_cols)
+        query = f"select {columns} from {compartment}"
+        resultset = self.conn.execute(query)
+
+        print(f"Loading compartment {compartment}.")
+        for i, row in enumerate(resultset):
+            metas.loc[i] = row[:num_meta]
+            feats[i] = row[num_meta:]
+
+        # Concatenate both into final output per compartment
+        return pd.concat(
+            [pd.DataFrame(columns=feat_cols, data=feats), metas], axis=1)
 
     def aggregate_compartment(
         self,
@@ -617,8 +656,6 @@ class SingleCells(object):
         float_format=None,
         single_cell_normalize=False,
         normalize_args=None,
-        test=False,
-        test_n=None,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
 
@@ -636,20 +673,12 @@ class SingleCells(object):
             Whether or not to normalize the single cell data.
         normalize_args : dict, optional
             Additional arguments passed as input to pycytominer.normalize().
-        test : bool, optional
-            If function run in test mode, read dataframe in chunks.
-        test_n : int, optional
-            Specifies size of test chunk loaded in test mode.
-
 
         Returns
         -------
         pandas.core.frame.DataFrame
             Either a dataframe (if output_file="none") or will write to file.
         """
-        # When running in test mode, do not compute subsample
-        if test:
-            self.compute_subsample = False
 
         # Load the single cell dataframe by merging on the specific linking columns
         sc_df = ""
@@ -676,8 +705,7 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    sc_df = self.load_compartment(
-                        compartment=left_compartment, test=test, test_n=test_n)
+                    sc_df = self.load_compartment(compartment=left_compartment)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -692,9 +720,7 @@ class SingleCells(object):
                         ).reindex(sc_df.columns, axis="columns")
 
                     sc_df = sc_df.merge(
-                        self.load_compartment(
-                            compartment=right_compartment,
-                            test=test, test_n=test_n),
+                        self.load_compartment(compartment=right_compartment),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
@@ -702,9 +728,7 @@ class SingleCells(object):
 
                 else:
                     sc_df = sc_df.merge(
-                        self.load_compartment(
-                            compartment=right_compartment,
-                            test=test, test_n=test_n),
+                        self.load_compartment(compartment=right_compartment),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
