@@ -360,31 +360,6 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-    def get_single_cells_column(self, output=False, column_num=0):
-        # build filenames if they do not already exist
-        if not hasattr(self.deep_data, "filenames"):
-            self.deep_data.build_filenames()
-
-        total_features = np.ndarray(shape=(0, 1280), dtype=np.float32)
-
-        for features_path in self.deep_data.filenames:
-            print(features_path)
-            features = load_npz_features(features_path, metadata=False)
-            # skip a file if there are no features
-            if len(features.index) == 0:
-                warnings.warn(
-                    f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
-                )
-                continue
-            # set column numbers of empty dataframe on first iteration
-            # if total_features.shape == (0,0):
-            #     total_features = np.ndarray(shape=(0,features.shape[1]))
-
-            features = features.astype(np.float32)
-            total_features = np.concatenate((total_features, features), axis=0)
-
-        return total_features
-
     def get_single_cells(self, output=False, location_columns=(0, 1)):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
