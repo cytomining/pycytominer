@@ -114,7 +114,7 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
 
     # Load features
     df = pd.DataFrame(npz["features"])
-    
+
     if not metadata:
         return df
 
@@ -147,7 +147,7 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     return df
 
 
-def load_npz_locations(npz_file, location_columns = (0,1)):
+def load_npz_locations(npz_file, location_columns=(0, 1)):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
@@ -175,11 +175,9 @@ def load_npz_locations(npz_file, location_columns = (0,1)):
         return pd.DataFrame([])
 
     files = npz.files
-    
+
     try:
-        df = pd.DataFrame(
-            npz["locations"]
-        )
+        df = pd.DataFrame(npz["locations"])
         df = df[[location_columns[0], location_columns[1]]]
         df.columns = ["Location_Center_X", "Location_Center_Y"]
         return df

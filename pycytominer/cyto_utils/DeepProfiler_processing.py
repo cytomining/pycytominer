@@ -360,15 +360,13 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-
     def get_single_cells_column(self, output=False, column_num=0):
         # build filenames if they do not already exist
         if not hasattr(self.deep_data, "filenames"):
             self.deep_data.build_filenames()
-        
-        
+
         total_features = np.ndarray(shape=(0, 1280), dtype=np.float32)
-        
+
         for features_path in self.deep_data.filenames:
             print(features_path)
             features = load_npz_features(features_path, metadata=False)
@@ -381,14 +379,13 @@ class SingleCellDeepProfiler:
             # set column numbers of empty dataframe on first iteration
             # if total_features.shape == (0,0):
             #     total_features = np.ndarray(shape=(0,features.shape[1]))
-            
+
             features = features.astype(np.float32)
             total_features = np.concatenate((total_features, features), axis=0)
-        
+
         return total_features
 
-
-    def get_single_cells(self, output=False, location_columns=(0,1)):
+    def get_single_cells(self, output=False, location_columns=(0, 1)):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -397,6 +394,8 @@ class SingleCellDeepProfiler:
         -----------
         output : bool
             If true, will output the single cell dataframe instead of setting to self attribute
+        location_columns : tuple
+            (location_center_x column number, location_center_y column number), column numbers for location data. used when loading locations from DP output
         """
         # build filenames if they do not already exist
         if not hasattr(self.deep_data, "filenames"):
@@ -425,7 +424,7 @@ class SingleCellDeepProfiler:
 
     def normalize_deep_single_cells(
         self,
-        location_columns=(0,1),
+        location_columns=(0, 1),
         image_features=False,  # not implemented with DeepProfiler
         meta_features="infer",
         samples="all",
@@ -455,7 +454,7 @@ class SingleCellDeepProfiler:
         print("getting single cells")
         # setup single_cells attribute
         if not hasattr(self, "single_cells"):
-            self.get_single_cells(output=False, location_columns=location_columns)        
+            self.get_single_cells(output=False, location_columns=location_columns)
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(self.single_cells, metadata=True)
