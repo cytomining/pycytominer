@@ -83,7 +83,7 @@ def load_platemap(platemap, add_metadata_id=True):
     return platemap
 
 
-def load_npz_features(npz_file, fallback_feature_prefix="DP"):
+def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     """
     Load an npz file storing features and, sometimes, metadata.
 
@@ -114,6 +114,9 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP"):
 
     # Load features
     df = pd.DataFrame(npz["features"])
+    
+    if not metadata:
+        return df
 
     # Load metadata
     if "metadata" in files:
@@ -144,7 +147,7 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP"):
     return df
 
 
-def load_npz_locations(npz_file):
+def load_npz_locations(npz_file, location_columns = (0,1)):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
@@ -158,6 +161,8 @@ def load_npz_locations(npz_file):
     ----------
     npz_file : str
         file path to the compressed output (typically DeepProfiler output)
+    location_columns : tuple
+        (location_center_x column number, location_center_y column number), column numbers for location data
 
     Return
     ------
@@ -170,12 +175,13 @@ def load_npz_locations(npz_file):
         return pd.DataFrame([])
 
     files = npz.files
-
-    # Load features
+    
     try:
         df = pd.DataFrame(
-            npz["locations"], columns=["Location_Center_X", "Location_Center_Y"]
+            npz["locations"]
         )
+        df = df[[location_columns[0], location_columns[1]]]
+        df.columns = ["Location_Center_X", "Location_Center_Y"]
         return df
     except:
         return pd.DataFrame()

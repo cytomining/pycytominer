@@ -360,7 +360,35 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-    def get_single_cells(self, output=False):
+
+    def get_single_cells_column(self, output=False, column_num=0):
+        # build filenames if they do not already exist
+        if not hasattr(self.deep_data, "filenames"):
+            self.deep_data.build_filenames()
+        
+        
+        total_features = np.ndarray(shape=(0, 1280), dtype=np.float32)
+        
+        for features_path in self.deep_data.filenames:
+            print(features_path)
+            features = load_npz_features(features_path, metadata=False)
+            # skip a file if there are no features
+            if len(features.index) == 0:
+                warnings.warn(
+                    f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
+                )
+                continue
+            # set column numbers of empty dataframe on first iteration
+            # if total_features.shape == (0,0):
+            #     total_features = np.ndarray(shape=(0,features.shape[1]))
+            
+            features = features.astype(np.float32)
+            total_features = np.concatenate((total_features, features), axis=0)
+        
+        return total_features
+
+
+    def get_single_cells(self, output=False, location_columns=(0,1)):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -384,7 +412,7 @@ class SingleCellDeepProfiler:
                     f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
                 )
                 continue
-            locations = load_npz_locations(features_path)
+            locations = load_npz_locations(features_path, location_columns)
             detailed_df = pd.concat([locations, features], axis=1)
 
             total_df.append(detailed_df)
@@ -397,7 +425,7 @@ class SingleCellDeepProfiler:
 
     def normalize_deep_single_cells(
         self,
-        sc_df="none",
+        location_columns=(0,1),
         image_features=False,  # not implemented with DeepProfiler
         meta_features="infer",
         samples="all",
@@ -424,9 +452,10 @@ class SingleCellDeepProfiler:
             dataframe with all metadata and the feature space.
             This is the input to any further pycytominer or pycytominer-eval processing
         """
+        print("getting single cells")
         # setup single_cells attribute
         if not hasattr(self, "single_cells"):
-            self.get_single_cells(output=False)
+            self.get_single_cells(output=False, location_columns=location_columns)        
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(self.single_cells, metadata=True)
