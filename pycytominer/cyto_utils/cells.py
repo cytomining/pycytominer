@@ -397,6 +397,26 @@ class SingleCells(object):
 
         self.is_subset_computed = True
 
+    def count_sql_table_rows(self, table):
+        """Count total number of rows for a table."""
+        (num_rows,) = next(self.conn.execute(f"SELECT COUNT(*) FROM {table}"))
+        return num_rows
+
+    def get_sql_table_col_names(self, table):
+        """Get feature and metadata columns lists."""
+        ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
+        col_names = [obj[0] for obj in ptr.description]
+
+        feat_cols = []
+        meta_cols = []
+        for col in col_names:
+            if col.lower().startswith(tuple(self.compartments)):
+                feat_cols.append(col)
+            else:
+                meta_cols.append(col)
+
+        return meta_cols, feat_cols
+
     def load_compartment(self, compartment):
         """Creates the compartment dataframe.
 
@@ -410,9 +430,30 @@ class SingleCells(object):
         pandas.core.frame.DataFrame
             Compartment dataframe.
         """
-        compartment_query = "select * from {}".format(compartment)
-        df = pd.read_sql(sql=compartment_query, con=self.conn)
-        return df
+
+        # Get data useful to pre-alloc memory
+        num_cells = self.count_sql_table_rows(compartment)
+        meta_cols, feat_cols = self.get_sql_table_col_names(compartment)
+        num_meta, num_feats = len(meta_cols), len(feat_cols)
+
+        # Use pre-allocated np.array for data
+        feats = np.empty(shape=(num_cells, num_feats), dtype=np.float64)
+        # Use pre-allocated pd.DataFrame for metadata
+        metas = pd.DataFrame(columns=meta_cols, index=range(num_cells))
+
+        # Query database for selected columns of chosen compartment
+        columns = ", ".join(meta_cols + feat_cols)
+        query = f"select {columns} from {compartment}"
+        query_result = self.conn.execute(query)
+
+        # Load data row by row for both meta information and features
+        for i, row in enumerate(query_result):
+            metas.loc[i] = row[:num_meta]
+            feats[i] = row[num_meta:]
+
+        # Return concatenated data and metainformation of compartment
+        return pd.concat(
+            [metas, pd.DataFrame(columns=feat_cols, data=feats)], axis=1)
 
     def aggregate_compartment(
         self,
@@ -658,26 +699,27 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    initial_df = self.load_compartment(compartment=left_compartment)
+                    sc_df = self.load_compartment(compartment=left_compartment)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
-                        self.get_subsample(df=initial_df, rename_col=False)
+                        self.get_subsample(df=sc_df, rename_col=False)
 
                         subset_logic_df = self.subset_data_df.drop(
                             self.image_df.columns, axis="columns"
                         )
 
-                        initial_df = subset_logic_df.merge(
-                            initial_df, how="left", on=subset_logic_df.columns.tolist()
-                        ).reindex(initial_df.columns, axis="columns")
+                        sc_df = subset_logic_df.merge(
+                            sc_df, how="left", on=subset_logic_df.columns.tolist()
+                        ).reindex(sc_df.columns, axis="columns")
 
-                    sc_df = initial_df.merge(
+                    sc_df = sc_df.merge(
                         self.load_compartment(compartment=right_compartment),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
                     )
+
                 else:
                     sc_df = sc_df.merge(
                         self.load_compartment(compartment=right_compartment),
