@@ -397,20 +397,12 @@ class SingleCells(object):
 
         self.is_subset_computed = True
 
-    def is_feature_col(self, col):
-        """Check if column is a feature."""
-        return (
-            col.startswith("Cell")
-            or col.startswith("Cytoplasm")
-            or col.startswith("Nuclei")
-        )
-
-    def count(self, table):
+    def count_sql_table_rows(self, table):
         """Count total number of rows for a table."""
         (num_rows,) = next(self.conn.execute(f"SELECT COUNT(*) FROM {table}"))
         return num_rows
 
-    def get_columns(self, table):
+    def get_sql_table_col_names(self, table):
         """Get feature and metadata columns lists."""
         ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
         col_names = [obj[0] for obj in ptr.description]
@@ -418,7 +410,7 @@ class SingleCells(object):
         feat_cols = []
         meta_cols = []
         for col in col_names:
-            if self.is_feature_col(col):
+            if col.lower().startswith(tuple(self.compartments)):
                 feat_cols.append(col)
             else:
                 meta_cols.append(col)
@@ -440,8 +432,8 @@ class SingleCells(object):
         """
 
         # Get data useful to pre-alloc memory
-        num_cells = self.count(compartment)
-        meta_cols, feat_cols = self.get_columns(compartment)
+        num_cells = self.count_sql_table_rows(compartment)
+        meta_cols, feat_cols = self.get_sql_table_col_names(compartment)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
         # Use pre-allocated np.array for data
@@ -452,10 +444,10 @@ class SingleCells(object):
         # Query database for selected columns of chosen compartment
         columns = ", ".join(meta_cols + feat_cols)
         query = f"select {columns} from {compartment}"
-        resultset = self.conn.execute(query)
+        query_result = self.conn.execute(query)
 
         # Load data row by row for both meta information and features
-        for i, row in enumerate(resultset):
+        for i, row in enumerate(query_result):
             metas.loc[i] = row[:num_meta]
             feats[i] = row[num_meta:]
 
