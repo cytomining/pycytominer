@@ -243,14 +243,14 @@ def test_load_compartment():
         new_compartment_df, ap_new.load_compartment("new"), check_dtype=False)
 
 
-def test_sc_count_sql_table():  # or something
+def test_sc_count_sql_table():
     # Iterate over initialized compartments
     for compartment in ap.compartments:
         result_row_count = ap.count_sql_table_rows(table=compartment)
         assert result_row_count == 100
 
 
-def test_get_sql_table_col_names():  # or something
+def test_get_sql_table_col_names():
     # Iterate over initialized compartments
     for compartment in ap.compartments:
         meta_cols, _ = ap.get_sql_table_col_names(table=compartment)
