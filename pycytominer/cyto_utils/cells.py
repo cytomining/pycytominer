@@ -444,20 +444,22 @@ class SingleCells(object):
         meta_cols, feat_cols = self.get_columns(compartment)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
-        feats = np.empty(shape=(num_cells, num_feats), dtype=np.float32)
+        # Use pre-allocated np.array for data
+        feats = np.empty(shape=(num_cells, num_feats), dtype=np.float64)
+        # Use pre-allocated pd.DataFrame for metadata
         metas = pd.DataFrame(columns=meta_cols, index=range(num_cells))
 
-        # Load data row by row for both meta information and features
+        # Query database for selected columns of chosen compartment
         columns = ", ".join(meta_cols + feat_cols)
         query = f"select {columns} from {compartment}"
         resultset = self.conn.execute(query)
 
-        print(f"Loading compartment {compartment}.")
+        # Load data row by row for both meta information and features
         for i, row in enumerate(resultset):
             metas.loc[i] = row[:num_meta]
             feats[i] = row[num_meta:]
 
-        # Concatenate both into final output per compartment
+        # Return concatenated data and metainformation of compartment
         return pd.concat(
             [pd.DataFrame(columns=feat_cols, data=feats), metas], axis=1)
 

@@ -235,10 +235,12 @@ def test_SingleCells_count():
 
 def test_load_compartment():
     loaded_compartment_df = ap.load_compartment(compartment="cells")
-    pd.testing.assert_frame_equal(loaded_compartment_df, cells_df)
+    pd.testing.assert_frame_equal(
+        loaded_compartment_df, cells_df, check_dtype=False)
 
     # Test non-canonical compartment loading
-    pd.testing.assert_frame_equal(new_compartment_df, ap_new.load_compartment("new"))
+    pd.testing.assert_frame_equal(
+        new_compartment_df, ap_new.load_compartment("new"), check_dtype=False)
 
 
 def test_merge_single_cells():
@@ -307,6 +309,7 @@ def test_merge_single_cells():
                 pd.testing.assert_frame_equal(
                     norm_method_df.sort_index(axis=1),
                     manual_merge_normalize.sort_index(axis=1),
+                    check_dtype=False
                 )
 
     # Test non-canonical compartment merging
@@ -337,7 +340,8 @@ def test_merge_single_cells():
 
     default_feature_infer_df = ap_new.merge_single_cells(single_cell_normalize=True)
 
-    pd.testing.assert_frame_equal(norm_new_method_df, default_feature_infer_df)
+    pd.testing.assert_frame_equal(
+        norm_new_method_df, default_feature_infer_df, check_dtype=False)
     pd.testing.assert_frame_equal(
         norm_new_method_df, norm_new_method_no_feature_infer_df
     )
