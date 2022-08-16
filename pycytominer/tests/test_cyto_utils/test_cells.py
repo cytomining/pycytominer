@@ -253,8 +253,10 @@ def test_sc_count_sql_table():
 def test_get_sql_table_col_names():
     # Iterate over initialized compartments
     for compartment in ap.compartments:
-        meta_cols, _ = ap.get_sql_table_col_names(table=compartment)
+        meta_cols, feat_cols = ap.get_sql_table_col_names(table=compartment)
         assert meta_cols == ['ObjectNumber', 'ImageNumber', 'TableNumber']
+        for i in ['a', 'b', 'c', 'd']:
+            assert f"{compartment.capitalize()}_{i}" in feat_cols
 
 
 def test_merge_single_cells():
