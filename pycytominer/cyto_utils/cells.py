@@ -453,7 +453,7 @@ class SingleCells(object):
 
         # Return concatenated data and metainformation of compartment
         return pd.concat(
-            [pd.DataFrame(columns=feat_cols, data=feats), metas], axis=1)
+            [metas, pd.DataFrame(columns=feat_cols, data=feats)], axis=1)
 
     def aggregate_compartment(
         self,

@@ -236,11 +236,16 @@ def test_SingleCells_count():
 def test_load_compartment():
     loaded_compartment_df = ap.load_compartment(compartment="cells")
     pd.testing.assert_frame_equal(
-        loaded_compartment_df, cells_df, check_dtype=False)
+        loaded_compartment_df,
+        cells_df.reindex(columns=loaded_compartment_df.columns),
+        check_dtype=False)
 
     # Test non-canonical compartment loading
+    loaded_compartment_df = ap_new.load_compartment("new")
     pd.testing.assert_frame_equal(
-        new_compartment_df, ap_new.load_compartment("new"), check_dtype=False)
+        new_compartment_df.reindex(columns=loaded_compartment_df.columns),
+        loaded_compartment_df,
+        check_dtype=False)
 
 
 def test_sc_count_sql_table():
