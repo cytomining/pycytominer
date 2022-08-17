@@ -360,7 +360,7 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-    def get_single_cells(self, output=False):
+    def get_single_cells(self, output=False, location_x_col_index = 0, location_y_col_index = 1):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -369,6 +369,10 @@ class SingleCellDeepProfiler:
         -----------
         output : bool
             If true, will output the single cell dataframe instead of setting to self attribute
+        location_x_col_index: int
+            index of the x location column (which column in DP output has X coords)
+        location_y_col_index: int
+            index of the y location column (which column in DP output has Y coords)
         """
         # build filenames if they do not already exist
         if not hasattr(self.deep_data, "filenames"):
@@ -384,7 +388,7 @@ class SingleCellDeepProfiler:
                     f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
                 )
                 continue
-            locations = load_npz_locations(features_path)
+            locations = load_npz_locations(features_path, location_x_col_index, location_y_col_index)
             detailed_df = pd.concat([locations, features], axis=1)
 
             total_df.append(detailed_df)
@@ -397,7 +401,8 @@ class SingleCellDeepProfiler:
 
     def normalize_deep_single_cells(
         self,
-        sc_df="none",
+        location_x_col_index = 0, 
+        location_y_col_index = 1,
         image_features=False,  # not implemented with DeepProfiler
         meta_features="infer",
         samples="all",
@@ -424,9 +429,10 @@ class SingleCellDeepProfiler:
             dataframe with all metadata and the feature space.
             This is the input to any further pycytominer or pycytominer-eval processing
         """
+        print("getting single cells")
         # setup single_cells attribute
         if not hasattr(self, "single_cells"):
-            self.get_single_cells(output=False)
+            self.get_single_cells(output=False, location_x_col_index=location_x_col_index, location_y_col_index=location_y_col_index)
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(self.single_cells, metadata=True)

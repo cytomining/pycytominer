@@ -83,7 +83,7 @@ def load_platemap(platemap, add_metadata_id=True):
     return platemap
 
 
-def load_npz_features(npz_file, fallback_feature_prefix="DP"):
+def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     """
     Load an npz file storing features and, sometimes, metadata.
 
@@ -115,6 +115,9 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP"):
     # Load features
     df = pd.DataFrame(npz["features"])
 
+    if not metadata:
+        return df
+
     # Load metadata
     if "metadata" in files:
         metadata = npz["metadata"].item()
@@ -144,7 +147,7 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP"):
     return df
 
 
-def load_npz_locations(npz_file):
+def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
@@ -158,6 +161,10 @@ def load_npz_locations(npz_file):
     ----------
     npz_file : str
         file path to the compressed output (typically DeepProfiler output)
+    location_x_col_index: int
+        index of the x location column (which column in DP output has X coords)
+    location_y_col_index: int
+        index of the y location column (which column in DP output has Y coords)
 
     Return
     ------
@@ -169,13 +176,15 @@ def load_npz_locations(npz_file):
     except FileNotFoundError:
         return pd.DataFrame([])
 
-    files = npz.files
+    # number of columns with data in the locations file
+    num_location_cols = npz["locations"].shape[1]
+    # throw error if user tries to index columns that don't exist
+    if location_x_col_index >= num_location_cols:
+        raise IndexError("OutOfBounds indexing via location_x_col_index")
+    if location_y_col_index >= num_location_cols:
+        raise IndexError("OutOfBounds indexing via location_y_col_index")
 
-    # Load features
-    try:
-        df = pd.DataFrame(
-            npz["locations"], columns=["Location_Center_X", "Location_Center_Y"]
-        )
-        return df
-    except:
-        return pd.DataFrame()
+    df = pd.DataFrame(npz["locations"])
+    df = df[[location_x_col_index, location_y_col_index]]
+    df.columns = ["Location_Center_X", "Location_Center_Y"]
+    return df
