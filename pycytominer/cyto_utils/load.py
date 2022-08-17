@@ -177,11 +177,11 @@ def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1)
         return pd.DataFrame([])
 
     # number of columns with data in the locations file
-    location_cols = npz["locations"].shape[1]
+    num_location_cols = npz["locations"].shape[1]
     # throw error if user tries to index columns that don't exist
-    if location_x_col_index >= location_cols:
+    if location_x_col_index >= num_location_cols:
         raise IndexError("OutOfBounds indexing via location_x_col_index")
-    if location_y_col_index >= location_cols:
+    if location_y_col_index >= num_location_cols:
         raise IndexError("OutOfBounds indexing via location_y_col_index")
 
     try:
