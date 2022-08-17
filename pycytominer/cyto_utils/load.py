@@ -147,7 +147,7 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     return df
 
 
-def load_npz_locations(npz_file, location_x_col_index = 0, location_y_col_index = 1):
+def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
@@ -176,7 +176,13 @@ def load_npz_locations(npz_file, location_x_col_index = 0, location_y_col_index 
     except FileNotFoundError:
         return pd.DataFrame([])
 
-    files = npz.files
+    # number of columns with data in the locations file
+    location_cols = npz["locations"].shape[1]
+    # throw error if user tries to index columns that don't exist
+    if location_x_col_index >= location_cols:
+        raise IndexError("OutOfBounds indexing via location_x_col_index")
+    if location_y_col_index >= location_cols:
+        raise IndexError("OutOfBounds indexing via location_y_col_index")
 
     try:
         df = pd.DataFrame(npz["locations"])

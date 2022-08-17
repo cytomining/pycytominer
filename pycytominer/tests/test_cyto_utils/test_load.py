@@ -182,3 +182,17 @@ def test_load_npz():
         "Location_Center_X",
         "Location_Center_Y",
     ]
+
+    # Check that column locations out of bounds throw error
+    with pytest.raises(
+        IndexError, match="OutOfBounds indexing via location_x_col_index"
+    ):
+        load_npz_locations(
+            example_npz_file_locations, location_x_col_index=2, location_y_col_index=1
+        )
+    with pytest.raises(
+        IndexError, match="OutOfBounds indexing via location_y_col_index"
+    ):
+        load_npz_locations(
+            example_npz_file_locations, location_x_col_index=0, location_y_col_index=2
+        )
