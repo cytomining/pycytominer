@@ -2,19 +2,21 @@
 Utility function to compress output data
 """
 
-import os
-import warnings
+from typing import Dict, Union, Optional
+
 import pandas as pd
 
-compress_options = ["gzip", None]
+COMPRESS_OPTIONS = ["gzip", None]
 
 
 def output(
-    df,
-    output_filename,
-    sep=",",
-    float_format=None,
-    compression_options={"method": "gzip", "mtime": 1},
+    df: pd.DataFrame,
+    output_filename: str,
+    output_type: str = "csv",
+    sep: str = ",",
+    float_format: Optional[str] = None,
+    compression_options: Union[str, Dict] = {"method": "gzip", "mtime": 1},
+    **kwargs,
 ):
     """Given an output file and compression options, write file to disk
 
@@ -24,6 +26,8 @@ def output(
         a pandas dataframe that will be written to file
     output_filename : str
         location of file to write
+    output_type : str, default "csv"
+        type of output file to create
     sep : str
         file delimiter
     float_format : str, default None
@@ -36,8 +40,8 @@ def output(
 
     Returns
     -------
-    None
-        Writes to file
+    str
+        returns output_filename
 
     Examples
     --------
@@ -74,19 +78,29 @@ def output(
         float_format=None,
     )
     """
-    # Make sure the compression method is supported
-    compression_options = set_compression_method(compression=compression_options)
 
-    df.to_csv(
-        path_or_buf=output_filename,
-        sep=sep,
-        index=False,
-        float_format=float_format,
-        compression=compression_options,
-    )
+    if output_type == "csv":
+
+        compression_options = set_compression_method(compression=compression_options)
+
+        df.to_csv(
+            path_or_buf=output_filename,
+            sep=sep,
+            index=False,
+            float_format=float_format,
+            compression=compression_options,
+        )
+
+    elif output_type == "parquet":
+
+        # note: compression options will be validated against pd.DataFrame.to_parquet options
+        # raising errors and tested through Pandas, PyArrow, etc. as necessary.
+        df.to_parquet(path=output_filename, compression=compression_options)
+
+    return output_filename
 
 
-def set_compression_method(compression):
+def set_compression_method(compression: Union[str, Dict]):
     """Set the compression options
 
     Parameters
@@ -111,7 +125,7 @@ def set_compression_method(compression):
     return compression
 
 
-def check_compression_method(compression):
+def check_compression_method(compression: str):
     """Ensure compression options are set properly
 
     Parameters
@@ -125,5 +139,5 @@ def check_compression_method(compression):
         Asserts available options
     """
     assert (
-        compression in compress_options
-    ), "{} is not supported, select one of {}".format(compression, compress_options)
+        compression in COMPRESS_OPTIONS
+    ), f"{compression} is not supported, select one of {COMPRESS_OPTIONS}"

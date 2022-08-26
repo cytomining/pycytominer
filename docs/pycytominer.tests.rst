@@ -9,6 +9,7 @@ Subpackages
 
    pycytominer.tests.test_cyto_utils
    pycytominer.tests.test_operations
+   pycytominer.tests.test_data
 
 Submodules
 ----------

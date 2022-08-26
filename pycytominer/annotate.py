@@ -29,6 +29,7 @@ def annotate(
     compression_options=None,
     float_format=None,
     cmap_args={},
+    **kwargs,
 ):
     """Add metadata to aggregated profiles.
 
