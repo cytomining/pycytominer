@@ -676,7 +676,7 @@ class SingleCells(object):
         Returns
         -------
         pandas.core.frame.DataFrame or str
-            if output_file="none") returns a Pandas dataframe
+            if output_file="none" returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
 
