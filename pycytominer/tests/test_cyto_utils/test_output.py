@@ -100,7 +100,7 @@ def test_output_parquet():
 
 
 def test_output_none():
-    output_filename = pathlib.Path(f"{TMPDIR}test_output_none.csv")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_output_none.csv")
     compression = None
     output(
         df=DATA_DF,
@@ -116,7 +116,7 @@ def test_output_none():
 
 
 def test_output_exception():
-    output_filename = pathlib.Path(f"{TMPDIR}test_compress_warning.csv.zip")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_compress_warning.csv.zip")
     with pytest.raises(Exception) as e:
         output(
             df=DATA_DF,

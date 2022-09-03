@@ -500,7 +500,7 @@ def test_merge_single_cells_cytominer_database_test_file():
     # test parquet output from merge_single_cells
     result_file = sc_p.merge_single_cells(
         sc_output_file=pathlib.Path(
-            f"{TMPDIR}test_SQ00014613.parquet",
+            f"{TMPDIR}/test_SQ00014613.parquet",
         ),
         output_type="parquet",
         compression_options="snappy",
@@ -676,7 +676,7 @@ def test_aggregate_subsampling_profile_output():
 
     # test parquet-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
-        output_file=pathlib.Path(f"{TMPDIR}test_aggregate_output.parquet"),
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.parquet"),
         output_type="parquet",
         compute_subsample=True,
         compression_options="snappy",
