@@ -1,4 +1,4 @@
-import os
+import pathlib
 import random
 import tempfile
 
@@ -11,7 +11,7 @@ random.seed(123)
 TMPDIR = tempfile.gettempdir()
 
 # Setup a testing file
-OUTPUT_FILE = os.path.join(TMPDIR, "test.csv")
+OUTPUT_FILE = pathlib.Path(f"{TMPDIR}/test.csv")
 
 # Build data to use in tests
 DATA_DF = pd.concat(
@@ -74,7 +74,7 @@ def test_annotate_output():
 
 
 def test_annotate_output_compress():
-    compress_file = os.path.join(TMPDIR, "test_annotate_compress.csv.gz")
+    compress_file = pathlib.Path(f"{TMPDIR}/test_annotate_compress.csv.gz")
     annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,

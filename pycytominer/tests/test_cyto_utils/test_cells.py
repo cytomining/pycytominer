@@ -1,4 +1,5 @@
 import os
+import pathlib
 import random
 import tempfile
 
@@ -460,11 +461,17 @@ def test_merge_single_cells_cytominer_database_test_file():
     """
 
     # read test file based on cytominer-database exports
-    sql_path = os.path.join(
-        os.path.dirname(__file__),
-        "../test_data/cytominer_database_example_data/test_SQ00014613.sqlite",
+    sql_path = pathlib.Path(
+        f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.sqlite",
+    )
+    csv_path = pathlib.Path(
+        f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.csv.gz",
+    )
+    parquet_path = pathlib.Path(
+        f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.parquet",
     )
     sql_url = f"sqlite:///{sql_path}"
+    print(sql_url)
 
     # build SingleCells from database
     sc_p = SingleCells(
@@ -478,23 +485,22 @@ def test_merge_single_cells_cytominer_database_test_file():
 
     # test csv output from merge_single_cells
     result_file = sc_p.merge_single_cells(
-        sc_output_file=os.path.join(
-            TMPDIR,
-            "test_SQ00014613.csv.gz",
+        sc_output_file=pathlib.Path(
+            f"{TMPDIR}/test_SQ00014613.csv.gz",
         ),
         compression_options={"method": "gzip"},
     )
     # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
     # the result_file dataframe using the base dataframe's types.
     pd.testing.assert_frame_equal(
-        merged_sc, pd.read_csv(result_file).astype(merged_sc.dtypes.to_dict())
+        pd.read_csv(csv_path).astype(merged_sc.dtypes.to_dict()),
+        pd.read_csv(result_file).astype(merged_sc.dtypes.to_dict()),
     )
 
     # test parquet output from merge_single_cells
     result_file = sc_p.merge_single_cells(
-        sc_output_file=os.path.join(
-            TMPDIR,
-            "test_SQ00014613.parquet",
+        sc_output_file=pathlib.Path(
+            f"{TMPDIR}test_SQ00014613.parquet",
         ),
         output_type="parquet",
         compression_options="snappy",
@@ -502,7 +508,7 @@ def test_merge_single_cells_cytominer_database_test_file():
     # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
     # the result_file dataframe using the base dataframe's types.
     pd.testing.assert_frame_equal(
-        merged_sc,
+        pd.read_parquet(parquet_path).astype(merged_sc.dtypes.to_dict()),
         pd.read_parquet(result_file).astype(merged_sc.dtypes.to_dict()),
     )
 
@@ -512,9 +518,8 @@ def test_merge_single_cells_cytominer_database_test_file():
         platemap=PLATEMAP_DF,
     )
     result_file = sc_p.merge_single_cells(
-        sc_output_file=os.path.join(
-            TMPDIR,
-            "test_SQ00014613.parquet",
+        sc_output_file=pathlib.Path(
+            f"{TMPDIR}/test_SQ00014613.parquet",
         ),
         output_type="parquet",
         compression_options="snappy",
@@ -661,7 +666,7 @@ def test_aggregate_subsampling_profile_output():
 
     # test CSV-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
-        output_file=os.path.join(TMPDIR, "test_aggregate_output.csv.gz"),
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.csv.gz"),
         compute_subsample=True,
         compression_options={"method": "gzip"},
     )
@@ -671,7 +676,7 @@ def test_aggregate_subsampling_profile_output():
 
     # test parquet-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
-        output_file=os.path.join(TMPDIR, "test_aggregate_output.parquet"),
+        output_file=pathlib.Path(f"{TMPDIR}test_aggregate_output.parquet"),
         output_type="parquet",
         compute_subsample=True,
         compression_options="snappy",
@@ -706,7 +711,7 @@ def test_aggregate_subsampling_profile_output_multiple_queries():
 
     # test CSV-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
-        output_file=os.path.join(TMPDIR, "test_aggregate_output.csv.gz"),
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.csv.gz"),
         compute_subsample=True,
         compression_options={"method": "gzip"},
         n_aggregation_memory_strata=1,  # this will force multiple queries from each compartment
@@ -717,7 +722,7 @@ def test_aggregate_subsampling_profile_output_multiple_queries():
 
     # test parquet-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
-        output_file=os.path.join(TMPDIR, "test_aggregate_output.parquet"),
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.parquet"),
         output_type="parquet",
         compute_subsample=True,
         compression_options="snappy",

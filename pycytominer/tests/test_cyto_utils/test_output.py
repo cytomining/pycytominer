@@ -1,5 +1,6 @@
 import io
 import os
+import pathlib
 import random
 import tempfile
 import time
@@ -44,7 +45,7 @@ TEST_COMPRESSION_OPTIONS = {"method": "gzip"}
 
 def test_output_default():
 
-    output_filename = os.path.join(TMPDIR, "test_compress.csv.gz")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_compress.csv.gz")
 
     output_result = output(
         df=DATA_DF,
@@ -61,7 +62,7 @@ def test_output_default():
 
 def test_output_tsv():
     # Test input filename of writing a tab separated file
-    output_filename = os.path.join(TMPDIR, "test_compress.tsv.gz")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_compress.tsv.gz")
     output_result = output(
         df=DATA_DF,
         sep="\t",
@@ -81,7 +82,7 @@ def test_output_parquet():
     Tests using output function with parquet type
     """
 
-    output_filename = os.path.join(TMPDIR, "test_output.parquet")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_output.parquet")
 
     # test with base output arguments and
     # kwargs output arguments for pd.DataFrame.to_parquet
@@ -90,8 +91,6 @@ def test_output_parquet():
         output_filename=output_filename,
         output_type="parquet",
         compression_options="snappy",
-        engine="auto",
-        index=None,
     )
     result = pd.read_parquet(output_result)
 
@@ -101,7 +100,7 @@ def test_output_parquet():
 
 
 def test_output_none():
-    output_filename = os.path.join(TMPDIR, "test_output_none.csv")
+    output_filename = pathlib.Path(f"{TMPDIR}test_output_none.csv")
     compression = None
     output(
         df=DATA_DF,
@@ -117,7 +116,7 @@ def test_output_none():
 
 
 def test_output_exception():
-    output_filename = os.path.join(TMPDIR, "test_compress_warning.csv.zip")
+    output_filename = pathlib.Path(f"{TMPDIR}test_compress_warning.csv.zip")
     with pytest.raises(Exception) as e:
         output(
             df=DATA_DF,

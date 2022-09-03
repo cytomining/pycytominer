@@ -13,7 +13,7 @@ It has been shrunk from the original size for demonstrational or efficiency purp
 
   * Original: `SQ00014613.sqlite <https://nih.figshare.com/articles/dataset/Cell_Health_-_Cell_Painting_Single_Cell_Profiles/9995672?file=18506036>`_
   
-  * Code for Generating test_SQ00014613.sqlite: `Source <https://github.com/cytomining/pycytominer/tree/master/pycytominer/data/cytominer-database_example_data/shrink_SQ00014613.sqlite_for_tests.py>`_
+  * Code for Generating test_SQ00014613.sqlite: `Source <https://github.com/cytomining/pycytominer/tree/master/pycytominer/data/cytominer-database_example_data/shrink_SQ00014613.sqlite.py>`_
   
   * Table details:
 
@@ -21,3 +21,11 @@ It has been shrunk from the original size for demonstrational or efficiency purp
     * Cells: 2 rows with ObjectNumber 1 for each distinct (unique) TableNumber and ImageNumber.
     * Cytoplasm: 2 rows with ObjectNumber 1 for each distinct (unique) TableNumber and ImageNumber.
     * Nuclei: 2 rows with ObjectNumber 1 for each distinct (unique) TableNumber and ImageNumber.
+
+* `test_SQ00014613.csv.gz <https://github.com/cytomining/pycytominer/tree/master/pycytominer/data/cytominer-database_example_data/test_SQ00014613.csv.gz>`_
+
+  * Original: Based on SingleCells merge_single_cells output compressed with gzip from `test_SQ00014613.sqlite <https://github.com/cytomining/pycytominer/tree/master/pycytominer/data/cytominer-database_example_data/test_SQ00014613.sqlite>`_
+
+* `test_SQ00014613.parquet <https://github.com/cytomining/pycytominer/tree/master/pycytominer/data/cytominer-database_example_data/test_SQ00014613.parquet>`_
+
+  * Original: Based on SingleCells merge_single_cells output with snappy compression from `test_SQ00014613.sqlite <https://github.com/cytomining/pycytominer/tree/master/pycytominer/data/cytominer-database_example_data/test_SQ00014613.sqlite>`_
