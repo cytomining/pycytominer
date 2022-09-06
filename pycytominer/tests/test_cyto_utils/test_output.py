@@ -90,7 +90,6 @@ def test_output_parquet():
         df=DATA_DF,
         output_filename=output_filename,
         output_type="parquet",
-        compression_options="snappy",
     )
     result = pd.read_parquet(output_result)
 

@@ -503,7 +503,6 @@ def test_merge_single_cells_cytominer_database_test_file():
             f"{TMPDIR}/test_SQ00014613.parquet",
         ),
         output_type="parquet",
-        compression_options="snappy",
     )
     # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
     # the result_file dataframe using the base dataframe's types.
@@ -522,7 +521,6 @@ def test_merge_single_cells_cytominer_database_test_file():
             f"{TMPDIR}/test_SQ00014613.parquet",
         ),
         output_type="parquet",
-        compression_options="snappy",
         join_on=["Metadata_well_position", "Image_Metadata_Well"],
         platemap=PLATEMAP_DF,
     )
@@ -679,7 +677,6 @@ def test_aggregate_subsampling_profile_output():
         output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.parquet"),
         output_type="parquet",
         compute_subsample=True,
-        compression_options="snappy",
     )
     result = pd.read_parquet(output_result)
 
@@ -725,7 +722,6 @@ def test_aggregate_subsampling_profile_output_multiple_queries():
         output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.parquet"),
         output_type="parquet",
         compute_subsample=True,
-        compression_options="snappy",
         n_aggregation_memory_strata=1,  # this will force multiple queries from each compartment
     )
     result = pd.read_parquet(output_result)
