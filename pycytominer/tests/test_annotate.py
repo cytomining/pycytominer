@@ -1,19 +1,20 @@
-import os
-import tempfile
+import pathlib
 import random
+import tempfile
+
 import pandas as pd
 from pycytominer.annotate import annotate
 
 random.seed(123)
 
 # Get temporary directory
-tmpdir = tempfile.gettempdir()
+TMPDIR = tempfile.gettempdir()
 
 # Setup a testing file
-output_file = os.path.join(tmpdir, "test.csv")
+OUTPUT_FILE = pathlib.Path(f"{TMPDIR}/test.csv")
 
 # Build data to use in tests
-data_df = pd.concat(
+DATA_DF = pd.concat(
     [
         pd.DataFrame(
             {"Metadata_Well": ["A01", "A02", "A03"], "x": [1, 3, 8], "y": [5, 3, 1]}
@@ -24,7 +25,7 @@ data_df = pd.concat(
     ]
 ).reset_index(drop=True)
 
-platemap_df = pd.DataFrame(
+PLATEMAP_DF = pd.DataFrame(
     {
         "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
         "gene": ["x", "y", "z"] * 2,
@@ -33,45 +34,50 @@ platemap_df = pd.DataFrame(
 
 
 def test_annotate():
-    result = annotate(
-        profiles=data_df,
-        platemap=platemap_df,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+
+    # create expected result prior to annotate to distinguish modifications
+    # performed by annotate to provided dataframes.
+    expected_result = (
+        PLATEMAP_DF.merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
+        .rename(columns={"gene": "Metadata_gene"})
+        .drop("well_position", axis="columns")
     )
 
-    expected_result = platemap_df.merge(
-        data_df, left_on="Metadata_well_position", right_on="Metadata_Well"
-    ).drop(["Metadata_well_position"], axis="columns")
+    result = annotate(
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+    )
 
     pd.testing.assert_frame_equal(result, expected_result)
 
 
-def test_annotate_write():
-    _ = annotate(
-        profiles=data_df,
-        platemap=platemap_df,
+def test_annotate_output():
+    annotate(
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file=output_file,
+        output_file=OUTPUT_FILE,
     )
 
     result = annotate(
-        profiles=data_df,
-        platemap=platemap_df,
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file="none",
     )
-    expected_result = pd.read_csv(output_file)
+    expected_result = pd.read_csv(OUTPUT_FILE)
 
     pd.testing.assert_frame_equal(result, expected_result)
 
 
-def test_annotate_compress():
-    compress_file = os.path.join(tmpdir, "test_annotate_compress.csv.gz")
-    _ = annotate(
-        profiles=data_df,
-        platemap=platemap_df,
+def test_annotate_output_compress():
+    compress_file = pathlib.Path(f"{TMPDIR}/test_annotate_compress.csv.gz")
+    annotate(
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file=compress_file,
@@ -79,8 +85,8 @@ def test_annotate_compress():
     )
 
     result = annotate(
-        profiles=data_df,
-        platemap=platemap_df,
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
         join_on=["Metadata_well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file="none",

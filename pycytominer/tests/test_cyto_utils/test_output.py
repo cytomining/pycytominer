@@ -1,24 +1,25 @@
-import os
 import io
-import time
+import os
+import pathlib
 import random
-import pytest
 import tempfile
-import warnings
+import time
+
 import pandas as pd
+import pytest
 from pycytominer.cyto_utils.output import (
-    output,
     check_compression_method,
+    output,
     set_compression_method,
 )
 
 random.seed(123)
 
 # Get temporary directory
-tmpdir = tempfile.gettempdir()
+TMPDIR = tempfile.gettempdir()
 
 # Build data to use in tests
-data_df = pd.DataFrame(
+DATA_DF = pd.DataFrame(
     {
         "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
         "Metadata_treatment": [
@@ -39,48 +40,69 @@ data_df = pd.DataFrame(
 ).reset_index(drop=True)
 
 # Set default compression options
-compression_options = {"method": "gzip"}
+TEST_COMPRESSION_OPTIONS = {"method": "gzip"}
 
 
-def test_compress():
+def test_output_default():
 
-    output_filename = os.path.join(tmpdir, "test_compress.csv.gz")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_compress.csv.gz")
 
-    output(
-        df=data_df,
+    output_result = output(
+        df=DATA_DF,
         output_filename=output_filename,
-        compression_options=compression_options,
+        compression_options=TEST_COMPRESSION_OPTIONS,
         float_format=None,
     )
-    result = pd.read_csv(output_filename)
+    result = pd.read_csv(output_result)
 
     pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_exact=False, atol=1e-3
+        result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
     )
 
 
-def test_compress_tsv():
+def test_output_tsv():
     # Test input filename of writing a tab separated file
-    output_filename = os.path.join(tmpdir, "test_compress.tsv.gz")
-    output(
-        df=data_df,
+    output_filename = pathlib.Path(f"{TMPDIR}/test_compress.tsv.gz")
+    output_result = output(
+        df=DATA_DF,
         sep="\t",
         output_filename=output_filename,
-        compression_options=compression_options,
+        compression_options=TEST_COMPRESSION_OPTIONS,
         float_format=None,
     )
 
-    result = pd.read_csv(output_filename, sep="\t")
+    result = pd.read_csv(output_result, sep="\t")
     pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_exact=False, atol=1e-3
+        result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
+    )
+
+
+def test_output_parquet():
+    """
+    Tests using output function with parquet type
+    """
+
+    output_filename = pathlib.Path(f"{TMPDIR}/test_output.parquet")
+
+    # test with base output arguments and
+    # kwargs output arguments for pd.DataFrame.to_parquet
+    output_result = output(
+        df=DATA_DF,
+        output_filename=output_filename,
+        output_type="parquet",
+    )
+    result = pd.read_parquet(output_result)
+
+    pd.testing.assert_frame_equal(
+        result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
     )
 
 
 def test_output_none():
-    output_filename = os.path.join(tmpdir, "test_output_none.csv")
+    output_filename = pathlib.Path(f"{TMPDIR}/test_output_none.csv")
     compression = None
     output(
-        df=data_df,
+        df=DATA_DF,
         output_filename=output_filename,
         compression_options=compression,
         float_format=None,
@@ -88,15 +110,15 @@ def test_output_none():
 
     result = pd.read_csv(output_filename)
     pd.testing.assert_frame_equal(
-        result, data_df, check_names=False, check_exact=False, atol=1e-3
+        result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
     )
 
 
-def test_compress_exception():
-    output_filename = os.path.join(tmpdir, "test_compress_warning.csv.zip")
+def test_output_exception():
+    output_filename = pathlib.Path(f"{TMPDIR}/test_compress_warning.csv.zip")
     with pytest.raises(Exception) as e:
         output(
-            df=data_df,
+            df=DATA_DF,
             output_filename=output_filename,
             compression_options="not an option",
         )
@@ -135,12 +157,12 @@ def test_check_set_compression():
     assert "not supported" in str(e.value)
 
 
-def test_compress_no_timestamp():
+def test_output_no_timestamp():
     # The default behavior is to ignore timestamps
     buffer = io.BytesIO()
 
     output(
-        df=data_df,
+        df=DATA_DF,
         output_filename=buffer,
         float_format=None,
     )
@@ -152,7 +174,7 @@ def test_compress_no_timestamp():
 
     buffer = io.BytesIO()
     output(
-        df=data_df,
+        df=DATA_DF,
         output_filename=buffer,
         float_format=None,
     )
@@ -161,19 +183,19 @@ def test_compress_no_timestamp():
     # Simulate different time stamps
     buffer = io.BytesIO()
     output(
-        df=data_df,
+        df=DATA_DF,
         output_filename=buffer,
         float_format=None,
-        compression_options=compression_options,
+        compression_options=TEST_COMPRESSION_OPTIONS,
     )
     buffer_output = buffer.getvalue()
 
     time.sleep(2)
     buffer = io.BytesIO()
     output(
-        df=data_df,
+        df=DATA_DF,
         output_filename=buffer,
         float_format=None,
-        compression_options=compression_options,
+        compression_options=TEST_COMPRESSION_OPTIONS,
     )
     assert buffer_output != buffer.getvalue()

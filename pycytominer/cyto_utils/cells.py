@@ -1,22 +1,24 @@
+from typing import Dict, Union, Optional
+
 import numpy as np
 import pandas as pd
-from sqlalchemy import create_engine
-from pycytominer import aggregate, normalize
+from pycytominer import aggregate, annotate, normalize
 from pycytominer.cyto_utils import (
-    output,
-    check_compartments,
-    check_aggregate_operation,
-    infer_cp_features,
-    get_default_linking_cols,
-    get_default_compartments,
-    assert_linking_cols_complete,
-    provide_linking_cols_feature_name_update,
-    check_fields_of_view_format,
-    check_fields_of_view,
-    extract_image_features,
     aggregate_fields_count,
     aggregate_image_features,
+    assert_linking_cols_complete,
+    check_aggregate_operation,
+    check_compartments,
+    check_fields_of_view,
+    check_fields_of_view_format,
+    extract_image_features,
+    get_default_compartments,
+    get_default_linking_cols,
+    infer_cp_features,
+    output,
+    provide_linking_cols_feature_name_update,
 )
+from sqlalchemy import create_engine
 
 default_compartments = get_default_compartments()
 default_linking_cols = get_default_linking_cols()
@@ -452,8 +454,7 @@ class SingleCells(object):
             feats[i] = row[num_meta:]
 
         # Return concatenated data and metainformation of compartment
-        return pd.concat(
-            [metas, pd.DataFrame(columns=feat_cols, data=feats)], axis=1)
+        return pd.concat([metas, pd.DataFrame(columns=feat_cols, data=feats)], axis=1)
 
     def aggregate_compartment(
         self,
@@ -644,12 +645,14 @@ class SingleCells(object):
 
     def merge_single_cells(
         self,
-        compute_subsample=False,
-        sc_output_file="none",
-        compression_options=None,
-        float_format=None,
-        single_cell_normalize=False,
-        normalize_args=None,
+        compute_subsample: bool = False,
+        sc_output_file: str = "none",
+        compression_options: Optional[str] = None,
+        float_format: Optional[str] = None,
+        single_cell_normalize: bool = False,
+        normalize_args: Optional[Dict] = None,
+        platemap: Optional[Union[str, pd.DataFrame]] = None,
+        **kwargs,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
 
@@ -667,11 +670,14 @@ class SingleCells(object):
             Whether or not to normalize the single cell data.
         normalize_args : dict, optional
             Additional arguments passed as input to pycytominer.normalize().
+        platemap: str or pd.DataFrame, default None
+            optional platemap filepath str or pd.DataFrame to be used with results via annotate
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Either a dataframe (if output_file="none") or will write to file.
+        pandas.core.frame.DataFrame or str
+            if output_file="none" returns a Pandas dataframe
+            else will write to file and return the filepath of the file
         """
 
         # Load the single cell dataframe by merging on the specific linking columns
@@ -779,12 +785,20 @@ class SingleCells(object):
 
             sc_df = normalize(profiles=sc_df, **normalize_args)
 
+        # In case platemap metadata is provided, use pycytominer.annotate for metadata
+        if platemap is not None:
+            sc_df = annotate(
+                profiles=sc_df, platemap=platemap, output_file="none", **kwargs
+            )
+
+        # if output argument is provided, call it using df_merged_sc and kwargs
         if sc_output_file != "none":
-            output(
+            return output(
                 df=sc_df,
                 output_filename=sc_output_file,
                 compression_options=compression_options,
                 float_format=float_format,
+                **kwargs,
             )
         else:
             return sc_df
@@ -796,6 +810,7 @@ class SingleCells(object):
         compression_options=None,
         float_format=None,
         n_aggregation_memory_strata=1,
+        **kwargs,
     ):
         """Aggregate and merge compartments. This is the primary entry to this class.
 
@@ -816,8 +831,9 @@ class SingleCells(object):
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Either a dataframe (if output_file="none") or will write to file.
+        pandas.core.frame.DataFrame or str
+            if output_file="none") returns a Pandas dataframe
+            else will write to file and return the filepath of the file
         """
 
         if output_file != "none":
@@ -847,11 +863,12 @@ class SingleCells(object):
         self.is_aggregated = True
 
         if self.output_file != "none":
-            output(
+            return output(
                 df=aggregated,
                 output_filename=self.output_file,
                 compression_options=compression_options,
                 float_format=float_format,
+                **kwargs,
             )
         else:
             return aggregated

@@ -1,18 +1,18 @@
 import os
+import pathlib
 import random
-import pytest
 import tempfile
-import pandas as pd
-from sqlalchemy import create_engine
-import pytest
 
-from pycytominer import aggregate, normalize
-from pycytominer.cyto_utils.cells import SingleCells, _sqlite_strata_conditions
+import pandas as pd
+import pytest
+from pycytominer import aggregate, annotate, normalize
 from pycytominer.cyto_utils import (
-    get_default_linking_cols,
     get_default_compartments,
+    get_default_linking_cols,
     infer_cp_features,
 )
+from pycytominer.cyto_utils.cells import SingleCells, _sqlite_strata_conditions
+from sqlalchemy import create_engine
 
 random.seed(123)
 
@@ -44,22 +44,21 @@ def build_random_data(
 
 
 # Get temporary directory
-tmpdir = tempfile.gettempdir()
+TMPDIR = tempfile.gettempdir()
 
 # Launch a sqlite connection
-file = "sqlite:///{}/test.sqlite".format(tmpdir)
+TMP_SQLITE_FILE = f"sqlite:///{TMPDIR}/test.sqlite"
 
-test_engine = create_engine(file)
-test_conn = test_engine.connect()
+TEST_ENGINE = create_engine(TMP_SQLITE_FILE)
 
 # Setup data
-cells_df = build_random_data(compartment="cells")
-cytoplasm_df = build_random_data(compartment="cytoplasm").assign(
+CELLS_DF = build_random_data(compartment="cells")
+CYTOPLASM_DF = build_random_data(compartment="cytoplasm").assign(
     Cytoplasm_Parent_Cells=(list(range(1, 51)) * 2)[::-1],
     Cytoplasm_Parent_Nuclei=(list(range(1, 51)) * 2)[::-1],
 )
-nuclei_df = build_random_data(compartment="nuclei")
-image_df = pd.DataFrame(
+NUCLEI_DF = build_random_data(compartment="nuclei")
+IMAGE_DF = pd.DataFrame(
     {
         "TableNumber": ["x_hash", "y_hash"],
         "ImageNumber": ["x", "y"],
@@ -69,7 +68,7 @@ image_df = pd.DataFrame(
     }
 )
 
-image_df_additional_features = pd.DataFrame(
+IMAGE_DF_ADDITIONAL_FEATURES = pd.DataFrame(
     {
         "TableNumber": ["x_hash", "y_hash"],
         "ImageNumber": ["x", "y"],
@@ -83,83 +82,90 @@ image_df_additional_features = pd.DataFrame(
     }
 )
 
+# platemap metadata df for optional annotation of SingleCells
+PLATEMAP_DF = pd.DataFrame(
+    {
+        "well_position": ["A01", "A02"],
+        "gene": ["x", "y"],
+    }
+).reset_index(drop=True)
+
+
 # Ingest data into temporary sqlite file
-image_df.to_sql("image", con=test_engine, index=False, if_exists="replace")
-cells_df.to_sql("cells", con=test_engine, index=False, if_exists="replace")
-cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replace")
-nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
+IMAGE_DF.to_sql("image", con=TEST_ENGINE, index=False, if_exists="replace")
+CELLS_DF.to_sql("cells", con=TEST_ENGINE, index=False, if_exists="replace")
+CYTOPLASM_DF.to_sql("cytoplasm", con=TEST_ENGINE, index=False, if_exists="replace")
+NUCLEI_DF.to_sql("nuclei", con=TEST_ENGINE, index=False, if_exists="replace")
 
 # Create a new table with a fourth compartment
-new_file = "sqlite:///{}/test_new.sqlite".format(tmpdir)
-new_compartment_df = build_random_data(compartment="new")
+NEW_FILE = f"sqlite:///{TMPDIR}/test_new.sqlite"
+NEW_COMPARTMENT_DF = build_random_data(compartment="new")
 
-test_new_engine = create_engine(new_file)
-test_new_conn = test_new_engine.connect()
+TEST_NEW_ENGINE = create_engine(NEW_FILE)
 
-image_df.to_sql("image", con=test_new_engine, index=False, if_exists="replace")
-cells_df.to_sql("cells", con=test_new_engine, index=False, if_exists="replace")
-new_cytoplasm_df = cytoplasm_df.assign(
+IMAGE_DF.to_sql("image", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+CELLS_DF.to_sql("cells", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+NEW_CYTOPLASM_DF = CYTOPLASM_DF.assign(
     Cytoplasm_Parent_New=(list(range(1, 51)) * 2)[::-1]
 )
-new_cytoplasm_df.to_sql(
-    "cytoplasm", con=test_new_engine, index=False, if_exists="replace"
+NEW_CYTOPLASM_DF.to_sql(
+    "cytoplasm", con=TEST_NEW_ENGINE, index=False, if_exists="replace"
 )
-nuclei_df.to_sql("nuclei", con=test_new_engine, index=False, if_exists="replace")
-new_compartment_df.to_sql("new", con=test_new_engine, index=False, if_exists="replace")
+NUCLEI_DF.to_sql("nuclei", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+NEW_COMPARTMENT_DF.to_sql("new", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
 
-new_compartments = ["cells", "cytoplasm", "nuclei", "new"]
+NEW_COMPARTMENTS = ["cells", "cytoplasm", "nuclei", "new"]
 
-new_linking_cols = get_default_linking_cols()
-new_linking_cols["cytoplasm"]["new"] = "Cytoplasm_Parent_New"
-new_linking_cols["new"] = {"cytoplasm": "ObjectNumber"}
+NEW_LINKING_COLS = get_default_linking_cols()
+NEW_LINKING_COLS["cytoplasm"]["new"] = "Cytoplasm_Parent_New"
+NEW_LINKING_COLS["new"] = {"cytoplasm": "ObjectNumber"}
 
 # Ingest data with additional image features to temporary sqlite file
 
-image_file = "sqlite:///{}/test_image.sqlite".format(tmpdir)
+IMAGE_FILE = f"sqlite:///{TMPDIR}/test_image.sqlite"
 
-test_engine_image = create_engine(image_file)
-test_conn_image = test_engine_image.connect()
+TEST_ENGINE_IMAGE = create_engine(IMAGE_FILE)
 
-image_df_additional_features.to_sql(
-    "image", con=test_engine_image, index=False, if_exists="replace"
+IMAGE_DF_ADDITIONAL_FEATURES.to_sql(
+    "image", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
 )
-cells_df.to_sql("cells", con=test_engine_image, index=False, if_exists="replace")
-cytoplasm_df.to_sql(
-    "cytoplasm", con=test_engine_image, index=False, if_exists="replace"
+CELLS_DF.to_sql("cells", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
+CYTOPLASM_DF.to_sql(
+    "cytoplasm", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
 )
-nuclei_df.to_sql("nuclei", con=test_engine_image, index=False, if_exists="replace")
+NUCLEI_DF.to_sql("nuclei", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
 
 # Setup SingleCells Class
-ap = SingleCells(sql_file=file)
-ap_subsample = SingleCells(
-    sql_file=file,
+AP = SingleCells(sql_file=TMP_SQLITE_FILE)
+AP_SUBSAMPLE = SingleCells(
+    sql_file=TMP_SQLITE_FILE,
     subsample_n=2,
     subsampling_random_state=123,
 )
 
 # Warning expected for compartment "new" because is not in default compartment list.
-with pytest.warns(UserWarning, match='Non-canonical compartment detected: new'):
-    ap_new = SingleCells(
-        sql_file=new_file,
+with pytest.warns(UserWarning, match="Non-canonical compartment detected: new"):
+    AP_NEW = SingleCells(
+        sql_file=NEW_FILE,
         load_image_data=False,
-        compartments=new_compartments,
-        compartment_linking_cols=new_linking_cols,
+        compartments=NEW_COMPARTMENTS,
+        compartment_linking_cols=NEW_LINKING_COLS,
     )
 
-ap_image_all_features = SingleCells(
-    sql_file=image_file,
+AP_IMAGE_ALL_FEATURES = SingleCells(
+    sql_file=IMAGE_FILE,
     add_image_features=True,
     image_feature_categories=["Count", "Granularity", "Texture"],
 )
 
-ap_image_subset_features = SingleCells(
-    sql_file=image_file,
+AP_IMAGE_SUBSET_FEATURES = SingleCells(
+    sql_file=IMAGE_FILE,
     add_image_features=True,
     image_feature_categories=["Count", "Texture"],
 )
 
-ap_image_count = SingleCells(
-    sql_file=image_file, add_image_features=True, image_feature_categories=["Count"]
+AP_IMAGE_COUNT = SingleCells(
+    sql_file=IMAGE_FILE, add_image_features=True, image_feature_categories=["Count"]
 )
 
 
@@ -167,36 +173,36 @@ def test_SingleCells_init():
     """
     Testing initialization of SingleCells
     """
-    assert ap.sql_file == file
-    assert ap.strata == ["Metadata_Plate", "Metadata_Well"]
-    assert ap.merge_cols == ["TableNumber", "ImageNumber"]
-    assert ap.image_cols == ["TableNumber", "ImageNumber", "Metadata_Site"]
+    assert AP.sql_file == TMP_SQLITE_FILE
+    assert AP.strata == ["Metadata_Plate", "Metadata_Well"]
+    assert AP.merge_cols == ["TableNumber", "ImageNumber"]
+    assert AP.image_cols == ["TableNumber", "ImageNumber", "Metadata_Site"]
     pd.testing.assert_frame_equal(
-        image_df.sort_index(axis=1), ap.image_df.sort_index(axis=1)
+        IMAGE_DF.sort_index(axis=1), AP.image_df.sort_index(axis=1)
     )
-    assert ap.features == "infer"
-    assert ap.subsample_frac == 1
-    assert ap_subsample.subsample_frac == 1
-    assert ap.subsample_n == "all"
-    assert ap_subsample.subsample_n == 2
-    assert ap.subset_data_df == "none"
-    assert ap.output_file == "none"
-    assert ap.aggregation_operation == "median"
-    assert not ap.is_aggregated
-    assert ap.subsampling_random_state == "none"
-    assert ap_subsample.subsampling_random_state == 123
-    assert ap.fields_of_view == "all"
-    assert ap.fields_of_view_feature == "Metadata_Site"
-    assert ap.object_feature == "Metadata_ObjectNumber"
-    assert ap.compartment_linking_cols == get_default_linking_cols()
-    assert ap.compartments == get_default_compartments()
+    assert AP.features == "infer"
+    assert AP.subsample_frac == 1
+    assert AP_SUBSAMPLE.subsample_frac == 1
+    assert AP.subsample_n == "all"
+    assert AP_SUBSAMPLE.subsample_n == 2
+    assert AP.subset_data_df == "none"
+    assert AP.output_file == "none"
+    assert AP.aggregation_operation == "median"
+    assert not AP.is_aggregated
+    assert AP.subsampling_random_state == "none"
+    assert AP_SUBSAMPLE.subsampling_random_state == 123
+    assert AP.fields_of_view == "all"
+    assert AP.fields_of_view_feature == "Metadata_Site"
+    assert AP.object_feature == "Metadata_ObjectNumber"
+    assert AP.compartment_linking_cols == get_default_linking_cols()
+    assert AP.compartments == get_default_compartments()
 
 
 def test_SingleCells_reset_variables():
     """
     Testing initialization of SingleCells
     """
-    ap_switch = SingleCells(sql_file=file)
+    ap_switch = SingleCells(sql_file=TMP_SQLITE_FILE)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
     assert ap_switch.subsampling_random_state == "none"
@@ -222,7 +228,7 @@ def test_SingleCells_reset_variables():
 
 
 def test_SingleCells_count():
-    count_df = ap.count_cells()
+    count_df = AP.count_cells()
     expected_count = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
@@ -234,61 +240,63 @@ def test_SingleCells_count():
 
 
 def test_load_compartment():
-    loaded_compartment_df = ap.load_compartment(compartment="cells")
+    loaded_compartment_df = AP.load_compartment(compartment="cells")
     pd.testing.assert_frame_equal(
         loaded_compartment_df,
-        cells_df.reindex(columns=loaded_compartment_df.columns),
-        check_dtype=False)
+        CELLS_DF.reindex(columns=loaded_compartment_df.columns),
+        check_dtype=False,
+    )
 
     # Test non-canonical compartment loading
-    loaded_compartment_df = ap_new.load_compartment("new")
+    loaded_compartment_df = AP_NEW.load_compartment("new")
     pd.testing.assert_frame_equal(
-        new_compartment_df.reindex(columns=loaded_compartment_df.columns),
+        NEW_COMPARTMENT_DF.reindex(columns=loaded_compartment_df.columns),
         loaded_compartment_df,
-        check_dtype=False)
+        check_dtype=False,
+    )
 
 
 def test_sc_count_sql_table():
     # Iterate over initialized compartments
-    for compartment in ap.compartments:
-        result_row_count = ap.count_sql_table_rows(table=compartment)
+    for compartment in AP.compartments:
+        result_row_count = AP.count_sql_table_rows(table=compartment)
         assert result_row_count == 100
 
 
 def test_get_sql_table_col_names():
     # Iterate over initialized compartments
-    for compartment in ap.compartments:
-        meta_cols, feat_cols = ap.get_sql_table_col_names(table=compartment)
-        assert meta_cols == ['ObjectNumber', 'ImageNumber', 'TableNumber']
-        for i in ['a', 'b', 'c', 'd']:
+    for compartment in AP.compartments:
+        meta_cols, feat_cols = AP.get_sql_table_col_names(table=compartment)
+        assert meta_cols == ["ObjectNumber", "ImageNumber", "TableNumber"]
+        for i in ["a", "b", "c", "d"]:
             assert f"{compartment.capitalize()}_{i}" in feat_cols
 
 
 def test_merge_single_cells():
-    sc_merged_df = ap.merge_single_cells()
+    sc_merged_df = AP.merge_single_cells()
 
     # Assert that the image data was merged
     assert all(x in sc_merged_df.columns for x in ["Metadata_Plate", "Metadata_Well"])
 
     # Assert that metadata columns were renamed appropriately
-    for x in ap.full_merge_suffix_rename:
-        assert ap.full_merge_suffix_rename[x] == "Metadata_{x}".format(x=x)
+    for x in AP.full_merge_suffix_rename:
+        assert AP.full_merge_suffix_rename[x] == f"Metadata_{x}"
 
     # Perform a manual merge
-    manual_merge = cytoplasm_df.merge(
-        cells_df,
+    manual_merge = CYTOPLASM_DF.merge(
+        CELLS_DF,
         left_on=["TableNumber", "ImageNumber", "Cytoplasm_Parent_Cells"],
         right_on=["TableNumber", "ImageNumber", "ObjectNumber"],
         suffixes=["_cytoplasm", "_cells"],
     ).merge(
-        nuclei_df,
+        NUCLEI_DF,
         left_on=["TableNumber", "ImageNumber", "Cytoplasm_Parent_Nuclei"],
         right_on=["TableNumber", "ImageNumber", "ObjectNumber"],
         suffixes=["_cytoplasm", "_nuclei"],
     )
 
-    manual_merge = image_df.merge(manual_merge, on=ap.merge_cols, how="right").rename(
-        ap.full_merge_suffix_rename, axis="columns"
+    manual_merge = IMAGE_DF.merge(manual_merge, on=AP.merge_cols, how="right").rename(
+        AP.full_merge_suffix_rename, axis="columns"
     )
 
     # Confirm that the merge correctly reversed the object number (opposite from Parent)
@@ -314,7 +322,7 @@ def test_merge_single_cells():
         for samples in ["all", "Metadata_ImageNumber == 'x'"]:
             for features in ["infer", ["Cytoplasm_a", "Cells_a"]]:
 
-                norm_method_df = ap.merge_single_cells(
+                norm_method_df = AP.merge_single_cells(
                     single_cell_normalize=True,
                     normalize_args={
                         "method": method,
@@ -330,19 +338,19 @@ def test_merge_single_cells():
                 pd.testing.assert_frame_equal(
                     norm_method_df.sort_index(axis=1),
                     manual_merge_normalize.sort_index(axis=1),
-                    check_dtype=False
+                    check_dtype=False,
                 )
 
     # Test non-canonical compartment merging
-    new_sc_merge_df = ap_new.merge_single_cells()
+    new_sc_merge_df = AP_NEW.merge_single_cells()
 
     assert sum(new_sc_merge_df.columns.str.startswith("New")) == 4
     assert (
-        new_compartment_df.ObjectNumber.tolist()[::-1]
+        NEW_COMPARTMENT_DF.ObjectNumber.tolist()[::-1]
         == new_sc_merge_df.Metadata_ObjectNumber_new.tolist()
     )
 
-    norm_new_method_df = ap_new.merge_single_cells(
+    norm_new_method_df = AP_NEW.merge_single_cells(
         single_cell_normalize=True,
         normalize_args={
             "method": "standardize",
@@ -351,7 +359,7 @@ def test_merge_single_cells():
         },
     )
 
-    norm_new_method_no_feature_infer_df = ap_new.merge_single_cells(
+    norm_new_method_no_feature_infer_df = AP_NEW.merge_single_cells(
         single_cell_normalize=True,
         normalize_args={
             "method": "standardize",
@@ -359,19 +367,20 @@ def test_merge_single_cells():
         },
     )
 
-    default_feature_infer_df = ap_new.merge_single_cells(single_cell_normalize=True)
+    default_feature_infer_df = AP_NEW.merge_single_cells(single_cell_normalize=True)
 
     pd.testing.assert_frame_equal(
-        norm_new_method_df, default_feature_infer_df, check_dtype=False)
+        norm_new_method_df, default_feature_infer_df, check_dtype=False
+    )
     pd.testing.assert_frame_equal(
         norm_new_method_df, norm_new_method_no_feature_infer_df
     )
 
     new_compartment_cols = infer_cp_features(
-        new_compartment_df, compartments=ap_new.compartments
+        NEW_COMPARTMENT_DF, compartments=AP_NEW.compartments
     )
     traditional_norm_df = normalize(
-        ap_new.image_df.merge(new_compartment_df, on=ap.merge_cols),
+        AP_NEW.image_df.merge(NEW_COMPARTMENT_DF, on=AP.merge_cols),
         features=new_compartment_cols,
         samples="all",
         method="standardize",
@@ -386,7 +395,9 @@ def test_merge_single_cells():
 def test_merge_single_cells_subsample():
 
     for subsample_frac in [0.1, 0.5, 0.9]:
-        ap_subsample = SingleCells(sql_file=file, subsample_frac=subsample_frac)
+        ap_subsample = SingleCells(
+            sql_file=TMP_SQLITE_FILE, subsample_frac=subsample_frac
+        )
 
         sc_merged_df = ap_subsample.merge_single_cells(
             sc_output_file="none",
@@ -404,15 +415,13 @@ def test_merge_single_cells_subsample():
 
         # Assert that metadata columns were renamed appropriately
         for x in ap_subsample.full_merge_suffix_rename:
-            assert ap_subsample.full_merge_suffix_rename[x] == "Metadata_{x}".format(
-                x=x
-            )
+            assert ap_subsample.full_merge_suffix_rename[x] == f"Metadata_{x}"
 
         # Assert that the subsample fraction worked
-        assert sc_merged_df.shape[0] == cells_df.shape[0] * subsample_frac
+        assert sc_merged_df.shape[0] == CELLS_DF.shape[0] * subsample_frac
 
     for subsample_n in [2, 5, 10]:
-        ap_subsample = SingleCells(sql_file=file, subsample_n=subsample_n)
+        ap_subsample = SingleCells(sql_file=TMP_SQLITE_FILE, subsample_n=subsample_n)
 
         sc_merged_df = ap_subsample.merge_single_cells(
             sc_output_file="none",
@@ -429,10 +438,104 @@ def test_merge_single_cells_subsample():
         )
 
 
+def test_merge_single_cells_annotate():
+    """
+    Tests SingleCells.merge_single_cells using optional annotate functionality
+    """
+
+    expected_sc_merged_df = annotate(
+        profiles=AP.merge_single_cells(),
+        platemap=PLATEMAP_DF,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+    )
+    sc_merged_df = AP.merge_single_cells(
+        platemap=PLATEMAP_DF, join_on=["Metadata_well_position", "Metadata_Well"]
+    )
+
+    pd.testing.assert_frame_equal(sc_merged_df, expected_sc_merged_df)
+
+
+def test_merge_single_cells_cytominer_database_test_file():
+    """
+    Tests SingleCells.merge_single_cells using cytominer-database test file
+    """
+
+    # read test file based on cytominer-database exports
+    sql_path = pathlib.Path(
+        f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.sqlite",
+    )
+    csv_path = pathlib.Path(
+        f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.csv.gz",
+    )
+    parquet_path = pathlib.Path(
+        f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.parquet",
+    )
+    sql_url = f"sqlite:///{sql_path}"
+    print(sql_url)
+
+    # build SingleCells from database
+    sc_p = SingleCells(
+        sql_url,
+        strata=["Image_Metadata_Plate", "Image_Metadata_Well"],
+        image_cols=["TableNumber", "ImageNumber"],
+    )
+
+    # gather base merge_single_cells df
+    merged_sc = sc_p.merge_single_cells()
+
+    # test csv output from merge_single_cells
+    result_file = sc_p.merge_single_cells(
+        sc_output_file=pathlib.Path(
+            f"{TMPDIR}/test_SQ00014613.csv.gz",
+        ),
+        compression_options={"method": "gzip"},
+    )
+    # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
+    # the result_file dataframe using the base dataframe's types.
+    pd.testing.assert_frame_equal(
+        pd.read_csv(csv_path).astype(merged_sc.dtypes.to_dict()),
+        pd.read_csv(result_file).astype(merged_sc.dtypes.to_dict()),
+    )
+
+    # test parquet output from merge_single_cells
+    result_file = sc_p.merge_single_cells(
+        sc_output_file=pathlib.Path(
+            f"{TMPDIR}/test_SQ00014613.parquet",
+        ),
+        output_type="parquet",
+    )
+    # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
+    # the result_file dataframe using the base dataframe's types.
+    pd.testing.assert_frame_equal(
+        pd.read_parquet(parquet_path).astype(merged_sc.dtypes.to_dict()),
+        pd.read_parquet(result_file).astype(merged_sc.dtypes.to_dict()),
+    )
+
+    # test parquet output from merge_single_cells with annotation meta
+    merged_sc = sc_p.merge_single_cells(
+        join_on=["Metadata_well_position", "Image_Metadata_Well"],
+        platemap=PLATEMAP_DF,
+    )
+    result_file = sc_p.merge_single_cells(
+        sc_output_file=pathlib.Path(
+            f"{TMPDIR}/test_SQ00014613.parquet",
+        ),
+        output_type="parquet",
+        join_on=["Metadata_well_position", "Image_Metadata_Well"],
+        platemap=PLATEMAP_DF,
+    )
+    # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
+    # the result_file dataframe using the base dataframe's types.
+    pd.testing.assert_frame_equal(
+        merged_sc,
+        pd.read_parquet(result_file).astype(merged_sc.dtypes.to_dict()),
+    )
+
+
 def test_aggregate_comparment():
-    df = image_df.merge(cells_df, how="inner", on=["TableNumber", "ImageNumber"])
+    df = IMAGE_DF.merge(CELLS_DF, how="inner", on=["TableNumber", "ImageNumber"])
     result = aggregate(df)
-    ap_result = ap.aggregate_compartment("cells")
+    ap_result = AP.aggregate_compartment("cells")
 
     expected_result = pd.DataFrame(
         {
@@ -451,7 +554,7 @@ def test_aggregate_comparment():
 
 
 def test_aggregate_profiles():
-    result = ap.aggregate_profiles()
+    result = AP.aggregate_profiles()
 
     expected_result = pd.DataFrame(
         {
@@ -479,7 +582,7 @@ def test_aggregate_profiles():
     )
 
     # Confirm aggregation after merging single cells
-    sc_df = ap.merge_single_cells()
+    sc_df = AP.merge_single_cells()
     sc_aggregated_df = aggregate(sc_df, compute_object_count=True).sort_index(
         axis="columns"
     )
@@ -491,7 +594,7 @@ def test_aggregate_profiles():
 
 
 def test_aggregate_subsampling_count_cells():
-    count_df = ap_subsample.count_cells()
+    count_df = AP_SUBSAMPLE.count_cells()
     expected_count = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
@@ -501,9 +604,11 @@ def test_aggregate_subsampling_count_cells():
     )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
-    profiles = ap_subsample.aggregate_profiles(compute_subsample=True)
+    assert isinstance(
+        AP_SUBSAMPLE.aggregate_profiles(compute_subsample=True), pd.DataFrame
+    )
 
-    count_df = ap_subsample.count_cells(count_subset=True)
+    count_df = AP_SUBSAMPLE.count_cells(count_subset=True)
     expected_count = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
@@ -515,7 +620,10 @@ def test_aggregate_subsampling_count_cells():
 
 
 def test_aggregate_subsampling_profile():
-    result = ap_subsample.aggregate_profiles(compute_subsample=True)
+
+    assert isinstance(
+        AP_SUBSAMPLE.aggregate_profiles(compute_subsample=True), pd.DataFrame
+    )
 
     expected_subset = pd.DataFrame(
         {
@@ -528,25 +636,17 @@ def test_aggregate_subsampling_profile():
         }
     )
 
-    pd.testing.assert_frame_equal(ap_subsample.subset_data_df, expected_subset)
+    pd.testing.assert_frame_equal(AP_SUBSAMPLE.subset_data_df, expected_subset)
 
 
-def test_aggregate_subsampling_profile_compress():
-    compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
-
-    _ = ap_subsample.aggregate_profiles(
-        output_file=compress_file,
-        compute_subsample=True,
-        compression_options={"method": "gzip"},
-    )
-    result = pd.read_csv(compress_file)
+def test_aggregate_subsampling_profile_output():
 
     expected_result = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A02"],
             "Metadata_Site_Count": [1] * 2,
-            "Metadata_Object_Count": [ap_subsample.subsample_n] * 2,
+            "Metadata_Object_Count": [AP_SUBSAMPLE.subsample_n] * 2,
             "Cells_a": [110.0, 680.5],
             "Cells_b": [340.5, 201.5],
             "Cells_c": [285.0, 481.0],
@@ -561,27 +661,36 @@ def test_aggregate_subsampling_profile_compress():
             "Nuclei_d": [519.0, 286.5],
         }
     )
+
+    # test CSV-based output
+    output_result = AP_SUBSAMPLE.aggregate_profiles(
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.csv.gz"),
+        compute_subsample=True,
+        compression_options={"method": "gzip"},
+    )
+    result = pd.read_csv(output_result)
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    # test parquet-based output
+    output_result = AP_SUBSAMPLE.aggregate_profiles(
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.parquet"),
+        output_type="parquet",
+        compute_subsample=True,
+    )
+    result = pd.read_parquet(output_result)
 
     pd.testing.assert_frame_equal(result, expected_result)
 
 
-def test_aggregate_subsampling_profile_compress_multiple_queries():
-    compress_file = os.path.join(tmpdir, "test_aggregate_compress.csv.gz")
-
-    _ = ap_subsample.aggregate_profiles(
-        output_file=compress_file,
-        compute_subsample=True,
-        compression_options={"method": "gzip"},
-        n_aggregation_memory_strata=1,  # this will force multiple queries from each compartment
-    )
-    result = pd.read_csv(compress_file)
+def test_aggregate_subsampling_profile_output_multiple_queries():
 
     expected_result = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
             "Metadata_Well": ["A01", "A02"],
             "Metadata_Site_Count": [1] * 2,
-            "Metadata_Object_Count": [ap_subsample.subsample_n] * 2,
+            "Metadata_Object_Count": [AP_SUBSAMPLE.subsample_n] * 2,
             "Cells_a": [110.0, 680.5],
             "Cells_b": [340.5, 201.5],
             "Cells_c": [285.0, 481.0],
@@ -596,16 +705,36 @@ def test_aggregate_subsampling_profile_compress_multiple_queries():
             "Nuclei_d": [519.0, 286.5],
         }
     )
+
+    # test CSV-based output
+    output_result = AP_SUBSAMPLE.aggregate_profiles(
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.csv.gz"),
+        compute_subsample=True,
+        compression_options={"method": "gzip"},
+        n_aggregation_memory_strata=1,  # this will force multiple queries from each compartment
+    )
+    result = pd.read_csv(output_result)
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    # test parquet-based output
+    output_result = AP_SUBSAMPLE.aggregate_profiles(
+        output_file=pathlib.Path(f"{TMPDIR}/test_aggregate_output.parquet"),
+        output_type="parquet",
+        compute_subsample=True,
+        n_aggregation_memory_strata=1,  # this will force multiple queries from each compartment
+    )
+    result = pd.read_parquet(output_result)
 
     pd.testing.assert_frame_equal(result, expected_result)
 
 
 def test_n_aggregation_memory_strata():
 
-    df_n1 = ap.aggregate_profiles(n_aggregation_memory_strata=1)
-    df_n2 = ap.aggregate_profiles(n_aggregation_memory_strata=2)
-    df_n3 = ap.aggregate_profiles(n_aggregation_memory_strata=3)
-    df_n_large = ap.aggregate_profiles(n_aggregation_memory_strata=1000)
+    df_n1 = AP.aggregate_profiles(n_aggregation_memory_strata=1)
+    df_n2 = AP.aggregate_profiles(n_aggregation_memory_strata=2)
+    df_n3 = AP.aggregate_profiles(n_aggregation_memory_strata=3)
+    df_n_large = AP.aggregate_profiles(n_aggregation_memory_strata=1000)
 
     pd.testing.assert_frame_equal(df_n1, df_n2)
     pd.testing.assert_frame_equal(df_n1, df_n3)
@@ -615,7 +744,7 @@ def test_n_aggregation_memory_strata():
 def test_invalid_n_aggregation_memory_strata():
     # expect an AssertionError when an invalid parameter value is specified
     with pytest.raises(AssertionError):
-        ap.aggregate_profiles(n_aggregation_memory_strata=0)
+        AP.aggregate_profiles(n_aggregation_memory_strata=0)
 
 
 def test_sqlite_strata_conditions():
@@ -656,10 +785,9 @@ def test_sqlite_strata_conditions():
 
 def test_aggregate_count_cells_multiple_strata():
     # Lauch a sqlite connection
-    file = "sqlite:///{}/test_strata.sqlite".format(tmpdir)
+    tmp_sqlite_file = f"sqlite:///{TMPDIR}/test_strata.sqlite"
 
-    test_engine = create_engine(file)
-    test_conn = test_engine.connect()
+    test_engine = create_engine(tmp_sqlite_file)
 
     # Setup data
     base_image_number = sorted(["x", "y"] * 50)
@@ -697,7 +825,7 @@ def test_aggregate_count_cells_multiple_strata():
 
     # Setup SingleCells Class
     ap_strata = SingleCells(
-        sql_file=file,
+        sql_file=tmp_sqlite_file,
         subsample_n="4",
         strata=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
     )
@@ -713,7 +841,9 @@ def test_aggregate_count_cells_multiple_strata():
     )
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
-    profiles = ap_strata.aggregate_profiles(compute_subsample=True)
+    assert isinstance(
+        ap_strata.aggregate_profiles(compute_subsample=True), pd.DataFrame
+    )
 
     count_df = ap_strata.count_cells(count_subset=True)
     expected_count = pd.DataFrame(
@@ -728,7 +858,7 @@ def test_aggregate_count_cells_multiple_strata():
 
 
 def test_add_image_features():
-    result = ap_image_all_features.aggregate_profiles()
+    result = AP_IMAGE_ALL_FEATURES.aggregate_profiles()
     expected_result_all_features = pd.DataFrame(
         {
             "Metadata_Plate": ["plate"],
@@ -758,7 +888,7 @@ def test_add_image_features():
         result.sort_index(axis=1), expected_result_all_features.sort_index(axis=1)
     )
 
-    result = ap_image_subset_features.aggregate_profiles()
+    result = AP_IMAGE_SUBSET_FEATURES.aggregate_profiles()
     expected_result_subset_features = pd.DataFrame(
         {
             "Metadata_Plate": ["plate"],
@@ -787,7 +917,7 @@ def test_add_image_features():
         result.sort_index(axis=1), expected_result_subset_features.sort_index(axis=1)
     )
 
-    result = ap_image_count.aggregate_profiles()
+    result = AP_IMAGE_COUNT.aggregate_profiles()
     expected_result_count = pd.DataFrame(
         {
             "Metadata_Plate": ["plate"],
