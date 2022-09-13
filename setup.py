@@ -2,23 +2,29 @@ import pathlib
 from setuptools import setup
 from setuptools import find_packages
 
+LONG_DESCRIPTION = ""
 with open("README.md", encoding="utf-8") as readme_file:
-    long_description = readme_file.read()
+    LONG_DESCRIPTION = readme_file.read()
 
-about = {}
+ABOUT = {}
 with open(pathlib.Path("pycytominer/__about__.py")) as fp:
-    exec(fp.read(), about)
-print(about)
+    exec(fp.read(), ABOUT)
+
+# pull requirements for install_requires
+REQUIRED_PKGS = []
+with open('requirements.txt') as f:
+    REQUIRED_PKGS = f.read().splitlines()
+
 setup(
     name="pycytominer",
-    version=about["__version__"],
+    version=ABOUT["__version__"],
     description="Processing perturbation profiling readouts.",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/cytomining/pycytominer",
     packages=find_packages(),
-    license=about["__license__"],
-    install_requires=["numpy", "pandas", "scikit-learn", "sqlalchemy"],
+    license=ABOUT["__license__"],
+    install_requires=REQUIRED_PKGS,
     extras_require={"collate": ["cytominer-database==0.3.4"]},
     python_requires=">=3.4",
     include_package_data=True,
