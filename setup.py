@@ -1,8 +1,7 @@
 import pathlib
-from setuptools import setup
-from setuptools import find_packages
 
-LONG_DESCRIPTION = ""
+from setuptools import find_packages, setup
+
 with open("README.md", encoding="utf-8") as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
@@ -11,8 +10,7 @@ with open(pathlib.Path("pycytominer/__about__.py")) as fp:
     exec(fp.read(), ABOUT)
 
 # pull requirements for install_requires
-REQUIRED_PKGS = []
-with open('requirements.txt') as f:
+with open("requirements.txt") as f:
     REQUIRED_PKGS = f.read().splitlines()
 
 setup(
