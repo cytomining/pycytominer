@@ -273,6 +273,10 @@ def test_get_sql_table_col_names():
 
 
 def test_merge_single_cells():
+    """
+    Testing various SingleCells.merge_single_cells functionality
+    """
+
     sc_merged_df = AP.merge_single_cells()
 
     # Assert that the image data was merged
@@ -300,21 +304,20 @@ def test_merge_single_cells():
     )
 
     # Confirm that the merge correctly reversed the object number (opposite from Parent)
-    assert (
-        sc_merged_df.Metadata_ObjectNumber_cytoplasm.tolist()[::-1]
-        == sc_merged_df.Metadata_ObjectNumber.tolist()
-    )
-    assert (
-        manual_merge.Metadata_ObjectNumber_cytoplasm.tolist()[::-1]
-        == sc_merged_df.Metadata_ObjectNumber.tolist()
-    )
-    assert (
-        manual_merge.Metadata_ObjectNumber_cytoplasm.tolist()[::-1]
-        == sc_merged_df.Metadata_ObjectNumber.tolist()
-    )
-    assert (
-        manual_merge.Metadata_ObjectNumber_cells.tolist()
-        == sc_merged_df.Metadata_ObjectNumber.tolist()
+    assert_cols = [
+        "Metadata_ObjectNumber",
+        "Metadata_ObjectNumber_cytoplasm",
+        "Metadata_ObjectNumber_cells",
+    ]
+    # check that we have the same data using same cols, sort and a reset index
+    pd.testing.assert_frame_equal(
+        left=manual_merge[assert_cols]
+        .sort_values(by=assert_cols, ascending=True)
+        .reset_index(drop=True),
+        right=sc_merged_df[assert_cols]
+        .sort_values(by=assert_cols, ascending=True)
+        .reset_index(drop=True),
+        check_dtype=False,
     )
 
     # Confirm the merge and adding merge options
@@ -335,9 +338,14 @@ def test_merge_single_cells():
                     manual_merge, method=method, samples=samples, features=features
                 )
 
+                # compare data using identical column order, sorting, and reset index
                 pd.testing.assert_frame_equal(
-                    norm_method_df.sort_index(axis=1),
-                    manual_merge_normalize.sort_index(axis=1),
+                    norm_method_df[norm_method_df.columns]
+                    .sort_values(by="Cells_a")
+                    .reset_index(drop=True),
+                    manual_merge_normalize[norm_method_df.columns]
+                    .sort_values(by="Cells_a")
+                    .reset_index(drop=True),
                     check_dtype=False,
                 )
 
@@ -345,9 +353,26 @@ def test_merge_single_cells():
     new_sc_merge_df = AP_NEW.merge_single_cells()
 
     assert sum(new_sc_merge_df.columns.str.startswith("New")) == 4
-    assert (
-        NEW_COMPARTMENT_DF.ObjectNumber.tolist()[::-1]
-        == new_sc_merge_df.Metadata_ObjectNumber_new.tolist()
+
+    assert_cols = [
+        "New_a",
+        "New_b",
+        "New_c",
+        "New_d",
+        "Metadata_ObjectNumber_new",
+    ]
+    # compare data using identical column order, sorting, and reset index
+    # note: we rename NEW_COMPARTMENT_DF to match new_sc_merge_df's ObjectNumber colname
+    pd.testing.assert_frame_equal(
+        left=NEW_COMPARTMENT_DF.rename(
+            columns={"ObjectNumber": "Metadata_ObjectNumber_new"}
+        )[assert_cols]
+        .sort_values(by=assert_cols)
+        .reset_index(drop=True),
+        right=new_sc_merge_df[assert_cols]
+        .sort_values(by=assert_cols)
+        .reset_index(drop=True),
+        check_dtype=False,
     )
 
     norm_new_method_df = AP_NEW.merge_single_cells(
@@ -471,7 +496,6 @@ def test_merge_single_cells_cytominer_database_test_file():
         f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.parquet",
     )
     sql_url = f"sqlite:///{sql_path}"
-    print(sql_url)
 
     # build SingleCells from database
     sc_p = SingleCells(
@@ -493,8 +517,8 @@ def test_merge_single_cells_cytominer_database_test_file():
     # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
     # the result_file dataframe using the base dataframe's types.
     pd.testing.assert_frame_equal(
-        pd.read_csv(csv_path).astype(merged_sc.dtypes.to_dict()),
-        pd.read_csv(result_file).astype(merged_sc.dtypes.to_dict()),
+        pd.read_csv(csv_path).astype(merged_sc.dtypes.to_dict())[merged_sc.columns],
+        pd.read_csv(result_file).astype(merged_sc.dtypes.to_dict())[merged_sc.columns],
     )
 
     # test parquet output from merge_single_cells
@@ -507,8 +531,12 @@ def test_merge_single_cells_cytominer_database_test_file():
     # note: pd.DataFrame datatypes sometimes appear automatically changed on-read, so we cast
     # the result_file dataframe using the base dataframe's types.
     pd.testing.assert_frame_equal(
-        pd.read_parquet(parquet_path).astype(merged_sc.dtypes.to_dict()),
-        pd.read_parquet(result_file).astype(merged_sc.dtypes.to_dict()),
+        pd.read_parquet(parquet_path).astype(merged_sc.dtypes.to_dict())[
+            merged_sc.columns
+        ],
+        pd.read_parquet(result_file).astype(merged_sc.dtypes.to_dict())[
+            merged_sc.columns
+        ],
     )
 
     # test parquet output from merge_single_cells with annotation meta

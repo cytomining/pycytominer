@@ -652,6 +652,7 @@ class SingleCells(object):
         single_cell_normalize: bool = False,
         normalize_args: Optional[Dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
+        chunksize: Optional[int] = None,
         **kwargs,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
@@ -672,6 +673,10 @@ class SingleCells(object):
             Additional arguments passed as input to pycytominer.normalize().
         platemap: str or pd.DataFrame, default None
             optional platemap filepath str or pd.DataFrame to be used with results via annotate
+        chunksize: int, default None
+            chunksize for merge and concatenation operations to help address performance issues
+            note: if set to None, will infer a chunksize which is the roughly 1/3 the row length
+            of first component df.
 
         Returns
         -------
@@ -681,7 +686,7 @@ class SingleCells(object):
         """
 
         # Load the single cell dataframe by merging on the specific linking columns
-        sc_df = ""
+        sc_df = pd.DataFrame()
         linking_check_cols = []
         merge_suffix_rename = []
         for left_compartment in self.compartment_linking_cols:
@@ -704,8 +709,12 @@ class SingleCells(object):
                     left_compartment
                 ]
 
-                if isinstance(sc_df, str):
+                if sc_df.empty:
                     sc_df = self.load_compartment(compartment=left_compartment)
+
+                    # if chunksize was not set,
+                    if chunksize is None:
+                        chunksize = round(len(sc_df) / 3)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -719,20 +728,25 @@ class SingleCells(object):
                             sc_df, how="left", on=subset_logic_df.columns.tolist()
                         ).reindex(sc_df.columns, axis="columns")
 
-                    sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
-                        left_on=self.merge_cols + [left_link_col],
-                        right_on=self.merge_cols + [right_link_col],
-                        suffixes=merge_suffix,
-                    )
-
-                else:
-                    sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
-                        left_on=self.merge_cols + [left_link_col],
-                        right_on=self.merge_cols + [right_link_col],
-                        suffixes=merge_suffix,
-                    )
+                # perform a segmented merge using pd.concat and
+                # chunksize to help constrain memory
+                sc_df = pd.concat(
+                    [
+                        self.load_compartment(compartment=right_compartment).merge(
+                            right=right,
+                            # note: we reverse left and right for join key merge order reference
+                            left_on=self.merge_cols + [right_link_col],
+                            right_on=self.merge_cols + [left_link_col],
+                            # note: we reverse left and right for join keys
+                            suffixes=reversed(merge_suffix),
+                            how="inner",
+                        )
+                        for right in [
+                            sc_df[i : i + chunksize]
+                            for i in range(0, sc_df.shape[0], chunksize)
+                        ]
+                    ]
+                )
 
                 linking_check_cols.append(linking_check)
 
@@ -759,8 +773,18 @@ class SingleCells(object):
             self.load_image()
             self.load_image_data = True
 
+        # perform a segmented merge using pd.concat and
+        # chunksize to help constrain memory
         sc_df = (
-            self.image_df.merge(sc_df, on=self.merge_cols, how="right")
+            pd.concat(
+                [
+                    self.image_df.merge(right=right, on=self.merge_cols, how="right")
+                    for right in [
+                        sc_df[i : i + chunksize]
+                        for i in range(0, sc_df.shape[0], chunksize)
+                    ]
+                ]
+            )
             # pandas rename performance may be improved using copy=False, inplace=False
             # reference: https://ryanlstevens.github.io/2022-05-06-pandasColumnRenaming/
             .rename(
@@ -769,6 +793,10 @@ class SingleCells(object):
                 self.full_merge_suffix_rename, axis="columns", copy=False, inplace=False
             )
         )
+
+        # reset the index to address above concat merges and memory conservation (inplace)
+        sc_df.reset_index(inplace=True, drop=True)
+
         if single_cell_normalize:
             # Infering features is tricky with non-canonical data
             if normalize_args is None:
