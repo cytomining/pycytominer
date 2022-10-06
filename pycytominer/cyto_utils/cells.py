@@ -712,7 +712,8 @@ class SingleCells(object):
                 if sc_df.empty:
                     sc_df = self.load_compartment(compartment=left_compartment)
 
-                    # if chunksize was not set,
+                    # if chunksize was not set, set it to roughly
+                    # one third the size of our initial compartment
                     if chunksize is None:
                         chunksize = round(len(sc_df) / 3)
 
