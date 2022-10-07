@@ -652,7 +652,7 @@ class SingleCells(object):
         single_cell_normalize: bool = False,
         normalize_args: Optional[Dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
-        chunksize: Optional[int] = None,
+        sc_merge_chunksize: Optional[int] = None,
         **kwargs,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
@@ -734,7 +734,7 @@ class SingleCells(object):
                 sc_df = pd.concat(
                     [
                         self.load_compartment(compartment=right_compartment).merge(
-                            right=right,
+                            right=right_chunk,
                             # note: we reverse left and right for join key merge order reference
                             left_on=self.merge_cols + [right_link_col],
                             right_on=self.merge_cols + [left_link_col],
@@ -742,7 +742,7 @@ class SingleCells(object):
                             suffixes=reversed(merge_suffix),
                             how="inner",
                         )
-                        for right in [
+                        for right_chunk in [
                             sc_df[i : i + chunksize]
                             for i in range(0, sc_df.shape[0], chunksize)
                         ]
