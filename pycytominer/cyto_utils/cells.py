@@ -673,8 +673,8 @@ class SingleCells(object):
             Additional arguments passed as input to pycytominer.normalize().
         platemap: str or pd.DataFrame, default None
             optional platemap filepath str or pd.DataFrame to be used with results via annotate
-        chunksize: int, default None
-            chunksize for merge and concatenation operations to help address performance issues
+        sc_merge_chunksize: int, default None
+            Chunksize for merge and concatenation operations to help address performance issues
             note: if set to None, will infer a chunksize which is the roughly 1/3 the row length
             of first component df.
 
@@ -714,8 +714,8 @@ class SingleCells(object):
 
                     # if chunksize was not set, set it to roughly
                     # one third the size of our initial compartment
-                    if chunksize is None:
-                        chunksize = round(len(sc_df) / 3)
+                    if sc_merge_chunksize is None:
+                        sc_merge_chunksize = round(len(sc_df) / 3)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -730,7 +730,7 @@ class SingleCells(object):
                         ).reindex(sc_df.columns, axis="columns")
 
                 # perform a segmented merge using pd.concat and
-                # chunksize to help constrain memory
+                # sc_merge_chunksize to help constrain memory
                 sc_df = pd.concat(
                     [
                         self.load_compartment(compartment=right_compartment).merge(
@@ -743,8 +743,8 @@ class SingleCells(object):
                             how="inner",
                         )
                         for right_chunk in [
-                            sc_df[i : i + chunksize]
-                            for i in range(0, sc_df.shape[0], chunksize)
+                            sc_df[i : i + sc_merge_chunksize]
+                            for i in range(0, sc_df.shape[0], sc_merge_chunksize)
                         ]
                     ]
                 )
@@ -775,14 +775,16 @@ class SingleCells(object):
             self.load_image_data = True
 
         # perform a segmented merge using pd.concat and
-        # chunksize to help constrain memory
+        # sc_merge_chunksize to help constrain memory
         sc_df = (
             pd.concat(
                 [
-                    self.image_df.merge(right=right, on=self.merge_cols, how="right")
-                    for right in [
-                        sc_df[i : i + chunksize]
-                        for i in range(0, sc_df.shape[0], chunksize)
+                    self.image_df.merge(
+                        right=right_chunk, on=self.merge_cols, how="right"
+                    )
+                    for right_chunk in [
+                        sc_df[i : i + sc_merge_chunksize]
+                        for i in range(0, sc_df.shape[0], sc_merge_chunksize)
                     ]
                 ]
             )

@@ -309,6 +309,7 @@ def test_merge_single_cells():
         "Metadata_ObjectNumber_cytoplasm",
         "Metadata_ObjectNumber_cells",
     ]
+
     # check that we have the same data using same cols, sort and a reset index
     pd.testing.assert_frame_equal(
         left=manual_merge[assert_cols]
