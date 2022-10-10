@@ -419,13 +419,16 @@ class SingleCells(object):
 
         return meta_cols, feat_cols
 
-    def load_compartment(self, compartment):
+    def load_compartment(self, compartment, float_datatype: type = np.float64):
         """Creates the compartment dataframe.
 
         Parameters
         ----------
         compartment : str
             The compartment to process.
+        float_datatype: type, default np.float64
+            Numpy floating point datatype to use for load_compartment and resulting dataframes.
+            Please note: using any besides np.float64 are experimentally unverified.
 
         Returns
         -------
@@ -439,7 +442,7 @@ class SingleCells(object):
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
         # Use pre-allocated np.array for data
-        feats = np.empty(shape=(num_cells, num_feats), dtype=np.float64)
+        feats = np.empty(shape=(num_cells, num_feats), dtype=float_datatype)
         # Use pre-allocated pd.DataFrame for metadata
         metas = pd.DataFrame(columns=meta_cols, index=range(num_cells))
 
@@ -653,6 +656,7 @@ class SingleCells(object):
         normalize_args: Optional[Dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
         sc_merge_chunksize: Optional[int] = None,
+        float_datatype: type = np.float64,
         **kwargs,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
@@ -677,6 +681,9 @@ class SingleCells(object):
             Chunksize for merge and concatenation operations to help address performance issues
             note: if set to None, will infer a chunksize which is the roughly 1/3 the row length
             of first component df.
+        float_datatype: type, default np.float64
+            Numpy floating point datatype to use for load_compartment and resulting dataframes.
+            Please note: using any besides np.float64 are experimentally unverified.
 
         Returns
         -------
@@ -710,7 +717,9 @@ class SingleCells(object):
                 ]
 
                 if sc_df.empty:
-                    sc_df = self.load_compartment(compartment=left_compartment)
+                    sc_df = self.load_compartment(
+                        compartment=left_compartment, float_datatype=float_datatype
+                    )
 
                     # if chunksize was not set, set it to roughly
                     # one third the size of our initial compartment
@@ -733,7 +742,9 @@ class SingleCells(object):
                 # sc_merge_chunksize to help constrain memory
                 sc_df = pd.concat(
                     [
-                        self.load_compartment(compartment=right_compartment).merge(
+                        self.load_compartment(
+                            compartment=right_compartment, float_datatype=float_datatype
+                        ).merge(
                             right=right_chunk,
                             # note: we reverse left and right for join key merge order reference
                             left_on=self.merge_cols + [right_link_col],

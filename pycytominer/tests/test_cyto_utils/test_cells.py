@@ -3,6 +3,7 @@ import pathlib
 import random
 import tempfile
 
+import numpy as np
 import pandas as pd
 import pytest
 from pycytominer import aggregate, annotate, normalize
@@ -252,6 +253,23 @@ def test_load_compartment():
     pd.testing.assert_frame_equal(
         NEW_COMPARTMENT_DF.reindex(columns=loaded_compartment_df.columns),
         loaded_compartment_df,
+        check_dtype=False,
+    )
+
+    # test using non-default float_datatype
+    loaded_compartment_df = AP.load_compartment(
+        compartment="cells", float_datatype=np.float32
+    )
+    pd.testing.assert_frame_equal(
+        loaded_compartment_df,
+        CELLS_DF.astype(
+            # cast any float type columns to float32 for expected comparison
+            {
+                colname: np.float32
+                for colname in CELLS_DF.columns
+                if pd.api.types.is_float(CELLS_DF[colname].dtype)
+            }
+        ).reindex(columns=loaded_compartment_df.columns),
         check_dtype=False,
     )
 
