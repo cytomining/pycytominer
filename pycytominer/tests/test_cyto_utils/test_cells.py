@@ -339,6 +339,28 @@ def test_merge_single_cells():
         check_dtype=False,
     )
 
+    # use non-default float_datatype
+    sc_merged_df = AP.merge_single_cells(float_datatype=np.float32)
+
+    # similar to the assert above, we test non-default float dtype specification
+    pd.testing.assert_frame_equal(
+        left=manual_merge[assert_cols]
+        .astype(
+            # cast any float type columns to float32 for expected comparison
+            {
+                colname: np.float32
+                for colname in manual_merge.columns
+                if pd.api.types.is_float(manual_merge[colname].dtype)
+            }
+        )
+        .sort_values(by=assert_cols, ascending=True)
+        .reset_index(drop=True),
+        right=sc_merged_df[assert_cols]
+        .sort_values(by=assert_cols, ascending=True)
+        .reset_index(drop=True),
+        check_dtype=False,
+    )
+
     # Confirm the merge and adding merge options
     for method in ["standardize", "robustize"]:
         for samples in ["all", "Metadata_ImageNumber == 'x'"]:
