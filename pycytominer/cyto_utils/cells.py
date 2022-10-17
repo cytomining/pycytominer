@@ -55,6 +55,8 @@ class SingleCells(object):
         List of features that should be aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
+    image_table_name : str, default "image"
+        The name of the table inside the SQLite file of image measurements.
     subsample_frac : float, default 1
         The percentage of single cells to select (0 < subsample_frac <= 1).
     subsample_n : str or int, default "all"
@@ -96,6 +98,7 @@ class SingleCells(object):
         image_feature_categories=None,
         features="infer",
         load_image_data=True,
+        image_table_name="image",
         subsample_frac=1,
         subsample_n="all",
         subsampling_random_state="none",
@@ -118,6 +121,7 @@ class SingleCells(object):
         self.sql_file = sql_file
         self.strata = strata
         self.load_image_data = load_image_data
+        self.image_table_name = image_table_name
         self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
         self.merge_cols = merge_cols
@@ -160,7 +164,7 @@ class SingleCells(object):
         self.fields_of_view = check_fields_of_view_format(fields_of_view)
 
         if self.load_image_data:
-            self.load_image()
+            self.load_image(image_table_name=self.image_table_name)
 
     def _check_subsampling(self):
         """Internal method checking if subsampling options were specified correctly.
@@ -245,7 +249,7 @@ class SingleCells(object):
 
         self.subsampling_random_state = random_state
 
-    def load_image(self):
+    def load_image(self, image_table_name="image"):
         """Load image table from sqlite file
 
         Returns
@@ -254,7 +258,7 @@ class SingleCells(object):
             Nothing is returned.
         """
 
-        image_query = "select * from image"
+        image_query = f"select * from {image_table_name}"
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
         if self.add_image_features:
@@ -497,7 +501,7 @@ class SingleCells(object):
 
         # Load image data if not already loaded
         if not self.load_image_data:
-            self.load_image()
+            self.load_image(image_table_name=self.image_table_name)
             self.load_image_data = True
 
         # Iteratively call aggregate() on chunks of the full compartment table
@@ -756,7 +760,7 @@ class SingleCells(object):
 
         # Add image data to single cell dataframe
         if not self.load_image_data:
-            self.load_image()
+            self.load_image(image_table_name=self.image_table_name)
             self.load_image_data = True
 
         sc_df = (
