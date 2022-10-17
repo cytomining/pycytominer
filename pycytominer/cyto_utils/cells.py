@@ -286,6 +286,8 @@ class SingleCells(object):
                     f"{self.fields_of_view_feature}==@self.fields_of_view"
                 )
 
+        self.load_image_data = True
+
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
 
