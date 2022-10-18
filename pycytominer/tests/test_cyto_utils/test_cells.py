@@ -138,7 +138,7 @@ CYTOPLASM_DF.to_sql(
 )
 NUCLEI_DF.to_sql(name="nuclei", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
 
-# Ingest data with differenbt image table name
+# Ingest data with different image table name
 IMAGE_DIFF_FILE = f"sqlite:///{TMPDIR}/test_image_diff_table_name.sqlite"
 
 TEST_ENGINE_IMAGE_DIFF = create_engine(IMAGE_DIFF_FILE)
