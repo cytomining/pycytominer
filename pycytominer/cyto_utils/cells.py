@@ -251,7 +251,7 @@ class SingleCells(object):
 
         self.subsampling_random_state = random_state
 
-    def load_image(self, image_table_name="image"):
+    def load_image(self, image_table_name=None):
         """Load image table from sqlite file
 
         Returns
@@ -259,6 +259,8 @@ class SingleCells(object):
         None
             Nothing is returned.
         """
+        if image_table_name is None:
+            image_table_name = self.image_table_name
 
         image_query = f"select * from {image_table_name}"
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
