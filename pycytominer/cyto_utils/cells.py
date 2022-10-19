@@ -162,11 +162,10 @@ class SingleCells(object):
 
         # Confirm that the input fields of view is valid
         self.fields_of_view = check_fields_of_view_format(fields_of_view)
-
+# attribute to help track image table data load status
         self.image_data_loaded = False
         if self.load_image_data:
             self.load_image(image_table_name=self.image_table_name)
-            self.image_data_loaded = True
 
     def _check_subsampling(self):
         """Internal method checking if subsampling options were specified correctly.
@@ -508,7 +507,6 @@ class SingleCells(object):
         # Load image data if not already loaded
         if not self.image_data_loaded:
             self.load_image(image_table_name=self.image_table_name)
-            self.image_data_loaded = True
 
         # Iteratively call aggregate() on chunks of the full compartment table
         object_dfs = []
@@ -767,7 +765,6 @@ class SingleCells(object):
         # Add image data to single cell dataframe
         if not self.image_data_loaded:
             self.load_image(image_table_name=self.image_table_name)
-            self.image_data_loaded = True
 
         sc_df = (
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")
