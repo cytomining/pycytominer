@@ -55,6 +55,8 @@ class SingleCells(object):
         List of features that should be aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
+    image_table_name : str, default "image"
+        The name of the table inside the SQLite file of image measurements.
     subsample_frac : float, default 1
         The percentage of single cells to select (0 < subsample_frac <= 1).
     subsample_n : str or int, default "all"
@@ -96,6 +98,7 @@ class SingleCells(object):
         image_feature_categories=None,
         features="infer",
         load_image_data=True,
+        image_table_name="image",
         subsample_frac=1,
         subsample_n="all",
         subsampling_random_state="none",
@@ -118,6 +121,7 @@ class SingleCells(object):
         self.sql_file = sql_file
         self.strata = strata
         self.load_image_data = load_image_data
+        self.image_table_name = image_table_name
         self.aggregation_operation = aggregation_operation.lower()
         self.output_file = output_file
         self.merge_cols = merge_cols
@@ -159,8 +163,10 @@ class SingleCells(object):
         # Confirm that the input fields of view is valid
         self.fields_of_view = check_fields_of_view_format(fields_of_view)
 
+        # attribute to track image table data load status
+        self.image_data_loaded = False
         if self.load_image_data:
-            self.load_image()
+            self.load_image(image_table_name=self.image_table_name)
 
     def _check_subsampling(self):
         """Internal method checking if subsampling options were specified correctly.
@@ -245,7 +251,7 @@ class SingleCells(object):
 
         self.subsampling_random_state = random_state
 
-    def load_image(self):
+    def load_image(self, image_table_name=None):
         """Load image table from sqlite file
 
         Returns
@@ -253,8 +259,10 @@ class SingleCells(object):
         None
             Nothing is returned.
         """
+        if image_table_name is None:
+            image_table_name = self.image_table_name
 
-        image_query = "select * from image"
+        image_query = f"select * from {image_table_name}"
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
         if self.add_image_features:
@@ -281,6 +289,8 @@ class SingleCells(object):
                 self.image_features_df = self.image_features_df.query(
                     f"{self.fields_of_view_feature}==@self.fields_of_view"
                 )
+
+        self.image_data_loaded = True
 
     def count_cells(self, compartment="cells", count_subset=False):
         """Determine how many cells are measured per well.
@@ -496,9 +506,8 @@ class SingleCells(object):
             self.get_subsample(compartment=compartment)
 
         # Load image data if not already loaded
-        if not self.load_image_data:
-            self.load_image()
-            self.load_image_data = True
+        if not self.image_data_loaded:
+            self.load_image(image_table_name=self.image_table_name)
 
         # Iteratively call aggregate() on chunks of the full compartment table
         object_dfs = []
@@ -755,9 +764,8 @@ class SingleCells(object):
         )
 
         # Add image data to single cell dataframe
-        if not self.load_image_data:
-            self.load_image()
-            self.load_image_data = True
+        if not self.image_data_loaded:
+            self.load_image(image_table_name=self.image_table_name)
 
         sc_df = (
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")

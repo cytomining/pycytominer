@@ -13,6 +13,7 @@ from pycytominer.cyto_utils import (
 )
 from pycytominer.cyto_utils.cells import SingleCells, _sqlite_strata_conditions
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 
 random.seed(123)
 
@@ -92,10 +93,10 @@ PLATEMAP_DF = pd.DataFrame(
 
 
 # Ingest data into temporary sqlite file
-IMAGE_DF.to_sql("image", con=TEST_ENGINE, index=False, if_exists="replace")
-CELLS_DF.to_sql("cells", con=TEST_ENGINE, index=False, if_exists="replace")
-CYTOPLASM_DF.to_sql("cytoplasm", con=TEST_ENGINE, index=False, if_exists="replace")
-NUCLEI_DF.to_sql("nuclei", con=TEST_ENGINE, index=False, if_exists="replace")
+IMAGE_DF.to_sql(name="image", con=TEST_ENGINE, index=False, if_exists="replace")
+CELLS_DF.to_sql(name="cells", con=TEST_ENGINE, index=False, if_exists="replace")
+CYTOPLASM_DF.to_sql(name="cytoplasm", con=TEST_ENGINE, index=False, if_exists="replace")
+NUCLEI_DF.to_sql(name="nuclei", con=TEST_ENGINE, index=False, if_exists="replace")
 
 # Create a new table with a fourth compartment
 NEW_FILE = f"sqlite:///{TMPDIR}/test_new.sqlite"
@@ -103,16 +104,18 @@ NEW_COMPARTMENT_DF = build_random_data(compartment="new")
 
 TEST_NEW_ENGINE = create_engine(NEW_FILE)
 
-IMAGE_DF.to_sql("image", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
-CELLS_DF.to_sql("cells", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+IMAGE_DF.to_sql(name="image", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+CELLS_DF.to_sql(name="cells", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
 NEW_CYTOPLASM_DF = CYTOPLASM_DF.assign(
     Cytoplasm_Parent_New=(list(range(1, 51)) * 2)[::-1]
 )
 NEW_CYTOPLASM_DF.to_sql(
-    "cytoplasm", con=TEST_NEW_ENGINE, index=False, if_exists="replace"
+    name="cytoplasm", con=TEST_NEW_ENGINE, index=False, if_exists="replace"
 )
-NUCLEI_DF.to_sql("nuclei", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
-NEW_COMPARTMENT_DF.to_sql("new", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+NUCLEI_DF.to_sql(name="nuclei", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
+NEW_COMPARTMENT_DF.to_sql(
+    name="new", con=TEST_NEW_ENGINE, index=False, if_exists="replace"
+)
 
 NEW_COMPARTMENTS = ["cells", "cytoplasm", "nuclei", "new"]
 
@@ -127,13 +130,31 @@ IMAGE_FILE = f"sqlite:///{TMPDIR}/test_image.sqlite"
 TEST_ENGINE_IMAGE = create_engine(IMAGE_FILE)
 
 IMAGE_DF_ADDITIONAL_FEATURES.to_sql(
-    "image", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
+    name="image", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
 )
-CELLS_DF.to_sql("cells", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
+CELLS_DF.to_sql(name="cells", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
 CYTOPLASM_DF.to_sql(
-    "cytoplasm", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
+    name="cytoplasm", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
 )
-NUCLEI_DF.to_sql("nuclei", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
+NUCLEI_DF.to_sql(name="nuclei", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
+
+# Ingest data with different image table name
+IMAGE_DIFF_FILE = f"sqlite:///{TMPDIR}/test_image_diff_table_name.sqlite"
+
+TEST_ENGINE_IMAGE_DIFF = create_engine(IMAGE_DIFF_FILE)
+
+IMAGE_DF.to_sql(
+    name="Per_Image", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
+)
+CELLS_DF.to_sql(
+    name="cells", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
+)
+CYTOPLASM_DF.to_sql(
+    name="cytoplasm", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
+)
+NUCLEI_DF.to_sql(
+    name="nuclei", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
+)
 
 # Setup SingleCells Class
 AP = SingleCells(sql_file=TMP_SQLITE_FILE)
@@ -166,6 +187,10 @@ AP_IMAGE_SUBSET_FEATURES = SingleCells(
 
 AP_IMAGE_COUNT = SingleCells(
     sql_file=IMAGE_FILE, add_image_features=True, image_feature_categories=["Count"]
+)
+
+AP_IMAGE_DIFF_NAME = SingleCells(
+    sql_file=IMAGE_DIFF_FILE, load_image_data=False, image_feature_categories=["Count"]
 )
 
 
@@ -818,10 +843,12 @@ def test_aggregate_count_cells_multiple_strata():
     ).sort_values(by="Metadata_Well")
 
     # Ingest data into temporary sqlite file
-    image_df.to_sql("image", con=test_engine, index=False, if_exists="replace")
-    cells_df.to_sql("cells", con=test_engine, index=False, if_exists="replace")
-    cytoplasm_df.to_sql("cytoplasm", con=test_engine, index=False, if_exists="replace")
-    nuclei_df.to_sql("nuclei", con=test_engine, index=False, if_exists="replace")
+    image_df.to_sql(name="image", con=test_engine, index=False, if_exists="replace")
+    cells_df.to_sql(name="cells", con=test_engine, index=False, if_exists="replace")
+    cytoplasm_df.to_sql(
+        name="cytoplasm", con=test_engine, index=False, if_exists="replace"
+    )
+    nuclei_df.to_sql(name="nuclei", con=test_engine, index=False, if_exists="replace")
 
     # Setup SingleCells Class
     ap_strata = SingleCells(
@@ -942,4 +969,57 @@ def test_add_image_features():
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1), expected_result_count.sort_index(axis=1)
+    )
+
+
+def test_load_non_canonical_image_table():
+    """
+    Loading an image table with non-canonical image table name
+    """
+    # test for exception loading image table with default table name "image"
+    with pytest.raises(OperationalError):
+        AP_IMAGE_DIFF_NAME.load_image()
+
+    AP_IMAGE_DIFF_NAME.load_image(image_table_name="Per_Image")
+    pd.testing.assert_frame_equal(
+        AP_IMAGE_DIFF_NAME.image_df.sort_index(axis="columns"),
+        IMAGE_DF.sort_index(axis="columns"),
+    )
+
+    result = AP_IMAGE_DIFF_NAME.aggregate_profiles()
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_Plate": ["plate", "plate"],
+            "Metadata_Well": ["A01", "A02"],
+            "Metadata_Object_Count": [50, 50],
+            "Metadata_Site_Count": [1, 1],
+            "Cells_a": [368.0, 583.5],
+            "Cells_b": [482.0, 478.5],
+            "Cells_c": [531.0, 461.5],
+            "Cells_d": [585.5, 428.0],
+            "Cytoplasm_a": [479.5, 495.5],
+            "Cytoplasm_b": [445.5, 459.0],
+            "Cytoplasm_c": [407.5, 352.0],
+            "Cytoplasm_d": [533.0, 545.0],
+            "Nuclei_a": [591.5, 435.5],
+            "Nuclei_b": [574.0, 579.0],
+            "Nuclei_c": [588.5, 538.5],
+            "Nuclei_d": [483.0, 560.0],
+        }
+    )
+
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1), expected_result.sort_index(axis=1)
+    )
+
+    # Confirm aggregation after merging single cells
+    sc_df = AP_IMAGE_DIFF_NAME.merge_single_cells()
+    sc_aggregated_df = aggregate(sc_df, compute_object_count=True).sort_index(
+        axis="columns"
+    )
+
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis="columns").drop("Metadata_Site_Count", axis="columns"),
+        sc_aggregated_df,
     )
