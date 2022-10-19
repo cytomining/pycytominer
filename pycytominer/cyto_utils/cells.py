@@ -162,7 +162,8 @@ class SingleCells(object):
 
         # Confirm that the input fields of view is valid
         self.fields_of_view = check_fields_of_view_format(fields_of_view)
-# attribute to help track image table data load status
+
+        # attribute to track image table data load status
         self.image_data_loaded = False
         if self.load_image_data:
             self.load_image(image_table_name=self.image_table_name)

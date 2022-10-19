@@ -976,7 +976,7 @@ def test_load_non_canonical_image_table():
     """
     Loading an image table with non-canonical image table name
     """
-# test for exception attempting to load image table with default table name "image"
+    # test for exception loading image table with default table name "image"
     with pytest.raises(OperationalError):
         AP_IMAGE_DIFF_NAME.load_image()
 
