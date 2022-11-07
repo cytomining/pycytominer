@@ -34,11 +34,6 @@ def test_outlier_default():
     assert sorted(result) == sorted(expected_result)
 
 
-def test_outlier_30_cutoff():
-    result = drop_outlier_features(data_df, outlier_cutoff=30)
-    expected_result = ["Cells_zz"]
-    assert result == expected_result
-
 def test_outlier_15_cutoff():
     result = drop_outlier_features(data_df, outlier_cutoff=15)
     expected_result = ["Cells_zz", "Nuclei_z"]
