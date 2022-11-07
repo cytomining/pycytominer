@@ -67,7 +67,7 @@ data_outlier_df = pd.DataFrame(
         "Cells_x": [1, 2, -8, 2, 5, 5, 5, -1],
         "Cytoplasm_y": [3, -1, 7, 4, 5, -9, 6, 1],
         "Nuclei_z": [-1, 8, 2, 5, -6, 20, 2, -2],
-        "Cells_zz": [14, -46, 1, 60, -30, -100, 2, 2],
+        "Cells_zz": [14, -46, 1, 60, -30, -10000, 2, 2],
     }
 ).reset_index(drop=True)
 
@@ -425,7 +425,7 @@ def test_feature_select_drop_outlier():
     result = feature_select(
         data_outlier_df, features="infer", operation="drop_outliers"
     )
-    expected_result = data_outlier_df.drop(["Cells_zz", "Nuclei_z"], axis="columns")
+    expected_result = data_outlier_df.drop(["Cells_zz"], axis="columns")
     pd.testing.assert_frame_equal(result, expected_result)
 
     result = feature_select(
@@ -435,6 +435,6 @@ def test_feature_select_drop_outlier():
     pd.testing.assert_frame_equal(result, expected_result)
 
     result = feature_select(
-        data_outlier_df, features=["Cells_x", "Cytoplasm_y"], operation="drop_outliers"
+        data_outlier_df, features=["Cells_x", "Cytoplasm_y"], operation="drop_outliers", outlier_cutoff=15
     )
     pd.testing.assert_frame_equal(result, data_outlier_df)

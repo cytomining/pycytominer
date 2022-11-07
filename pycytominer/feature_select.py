@@ -35,7 +35,7 @@ def feature_select(
     compression_options=None,
     float_format=None,
     blocklist_file=None,
-    outlier_cutoff=15,
+    outlier_cutoff=500,
     noise_removal_perturb_groups=None,
     noise_removal_stdev_cutoff=None,
 ):
@@ -84,8 +84,8 @@ def feature_select(
         decimal precision.
     blocklist_file : str, optional
         File location of datafrmame with with features to exclude. Note that if "blocklist" in operation then will remove standard blocklist
-    outlier_cutoff : float, default 15
-        The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied (and therefore the default is uitable) for after normalization.
+    outlier_cutoff : float, default 500
+        The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
         Perturbation groups corresponding to rows in profiles or the the name of the metadata column containing this information.
     noise_removal_stdev_cutoff: float,optional

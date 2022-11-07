@@ -142,7 +142,7 @@ def count_na_features(population_df, features):
 
 
 def drop_outlier_features(
-    population_df, features="infer", samples="all", outlier_cutoff=15
+    population_df, features="infer", samples="all", outlier_cutoff=500
 ):
     """Exclude a feature if its min or max absolute value is greater than the threshold.
 
@@ -154,7 +154,8 @@ def drop_outlier_features(
         Features present in the population dataframe. If "infer", then assume Cell Painting features are those that start with "Cells_", "Nuclei_", or "Cytoplasm_"
     samples : list of str or str, default "all"
         Samples to perform the operation on
-    outlier_cutoff : int or float, default 15
+    outlier_cutoff : int or float, default 500
+    see https://github.com/cytomining/pycytominer/issues/237 for details.
         Threshold to remove features if absolute values is greater
 
     Returns
