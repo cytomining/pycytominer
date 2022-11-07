@@ -155,6 +155,7 @@ def drop_outlier_features(
     samples : list of str or str, default "all"
         Samples to perform the operation on
     outlier_cutoff : int or float, default 500
+    see https://github.com/cytomining/pycytominer/issues/237 for details.
         Threshold to remove features if absolute values is greater
 
     Returns
