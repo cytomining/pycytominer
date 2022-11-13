@@ -79,7 +79,9 @@ def annotate(
 
     annotated = platemap.merge(
         profiles, left_on=join_on[0], right_on=join_on[1], how="inner"
-    ).drop(join_on[0], axis="columns")
+    )
+    if join_on[0] != join_on[1]:
+        annotated = annotated.drop(join_on[0], axis="columns")
 
     # Add specific Connectivity Map (CMAP) formatting
     if format_broad_cmap:
