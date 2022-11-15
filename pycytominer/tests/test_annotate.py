@@ -115,7 +115,3 @@ def test_annotate_output_compress():
     )
     expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)
-
-
-if __name__ == "__main__":
-    test_annotate_platemap_naming()
