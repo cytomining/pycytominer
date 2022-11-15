@@ -37,16 +37,19 @@ def test_annotate():
 
     # create expected result prior to annotate to distinguish modifications
     # performed by annotate to provided dataframes.
+    platemap_df = PLATEMAP_DF.copy()
+    data_df = DATA_DF.copy()
+    
     expected_result = (
-        PLATEMAP_DF.merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
+        platemap_df.merge(data_df, left_on="well_position", right_on="Metadata_Well")
         .rename(columns={"gene": "Metadata_gene"})
         .drop("well_position", axis="columns")
     )
 
     result = annotate(
-        profiles=DATA_DF,
-        platemap=PLATEMAP_DF,
-        join_on=["well_position", "Metadata_Well"],
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["Metadata_well_position", "Metadata_Well"],
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
@@ -56,37 +59,41 @@ def test_annotate_platemap_naming():
     
     # Test annotate with the same column name in platemap and data.
     
-        # create expected result prior to annotate to distinguish modifications
-    # performed by annotate to provided dataframes.
+    platemap_df = PLATEMAP_DF.copy().rename(columns={"well_position":"well"})
+    data_df = DATA_DF.copy()
+    
     expected_result = (
-        PLATEMAP_DF.copy()
-        .rename(columns={"well_position":"well"})
-        .merge(DATA_DF, left_on="well", right_on="Metadata_Well")
+        platemap_df
+        .merge(data_df, left_on="well", right_on="Metadata_Well")
         .rename(columns={"gene": "Metadata_gene"})
         .drop("well", axis="columns")
     )
 
     result = annotate(
-        profiles=DATA_DF,
-        platemap=PLATEMAP_DF.rename(columns={"well_position":"Well"}),
-        join_on=["Metadata_Well", "Metadata_Well"],
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["Metadata_well", "Metadata_Well"],
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
 
 def test_annotate_output():
+    
+    platemap_df = PLATEMAP_DF.copy()
+    data_df = DATA_DF.copy()
+    
     annotate(
-        profiles=DATA_DF,
-        platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file=OUTPUT_FILE,
     )
 
     result = annotate(
-        profiles=DATA_DF,
-        platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file="none",
     )
@@ -96,20 +103,24 @@ def test_annotate_output():
 
 
 def test_annotate_output_compress():
+    
+    platemap_df = PLATEMAP_DF.copy()
+    data_df = DATA_DF.copy()
+    
     compress_file = pathlib.Path(f"{TMPDIR}/test_annotate_compress.csv.gz")
     annotate(
-        profiles=DATA_DF,
-        platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file=compress_file,
         compression_options={"method": "gzip"},
     )
 
     result = annotate(
-        profiles=DATA_DF,
-        platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        profiles=data_df,
+        platemap=platemap_df,
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file="none",
     )
