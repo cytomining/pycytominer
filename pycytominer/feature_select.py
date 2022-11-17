@@ -62,7 +62,7 @@ def feature_select(
         suffixed with "_normalized_variable_selected.csv".
     na_cutoff : float, default 0.05
         Proportion of missing values in a column to tolerate before removing.
-    corr_threshold : float, default 0.1
+    corr_threshold : float, default 0.9
         Value between (0, 1) to exclude features above if any two features are correlated above this threshold.
     corr_method : str, default "pearson"
         Correlation type to compute. Allowed methods are "spearman", "kendall" and "pearson".
