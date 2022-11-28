@@ -1,10 +1,6 @@
 """
 Select features to use in downstream analysis based on specified selection method
 """
-
-import os
-import pandas as pd
-
 from pycytominer.operations import (
     correlation_threshold,
     variance_threshold,
