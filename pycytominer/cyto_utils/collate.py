@@ -61,7 +61,7 @@ def collate(
         Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists
     add_image_features: bool, optional, default True
         Whether or not to add the image features to the profiles
-    image_feature_categories: list, optional, default ['Number','Intensity','Granularity','Texture','ImageQuality','Count','Threshold']
+    image_feature_categories: list, optional, default ['Granularity','Texture','ImageQuality','Count','Threshold']
         The list of image feature groups to be used by add_image_features during aggregation
     printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
