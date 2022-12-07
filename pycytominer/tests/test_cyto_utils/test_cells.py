@@ -265,7 +265,7 @@ def test_SingleCells_count():
 
 
 def test_load_compartment():
-    loaded_compartment_df = AP.load_compartment(compartment="cells")
+    loaded_compartment_df = AP.load_compartment(compartment="cells",features="infer")
     pd.testing.assert_frame_equal(
         loaded_compartment_df,
         CELLS_DF.reindex(columns=loaded_compartment_df.columns),
@@ -273,7 +273,7 @@ def test_load_compartment():
     )
 
     # Test non-canonical compartment loading
-    loaded_compartment_df = AP_NEW.load_compartment("new")
+    loaded_compartment_df = AP_NEW.load_compartment("new",features="infer")
     pd.testing.assert_frame_equal(
         NEW_COMPARTMENT_DF.reindex(columns=loaded_compartment_df.columns),
         loaded_compartment_df,
@@ -291,7 +291,7 @@ def test_sc_count_sql_table():
 def test_get_sql_table_col_names():
     # Iterate over initialized compartments
     for compartment in AP.compartments:
-        meta_cols, feat_cols = AP.get_sql_table_col_names(table=compartment)
+        meta_cols, feat_cols = AP.split_columns_into_classes(AP.get_sql_table_col_names(table=compartment))
         assert meta_cols == ["ObjectNumber", "ImageNumber", "TableNumber"]
         for i in ["a", "b", "c", "d"]:
             assert f"{compartment.capitalize()}_{i}" in feat_cols

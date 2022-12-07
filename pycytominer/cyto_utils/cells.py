@@ -451,7 +451,7 @@ class SingleCells(object):
         col_names = self.get_sql_table_col_names(compartment)
         if features != "infer": #allow to get only some features
             col_names = [x for x in col_names if x in features]
-        meta_cols, feat_cols = self.get_sql_table_col_names(compartment)
+        meta_cols, feat_cols = self.split_columns_into_classes(col_names)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
         # Use pre-allocated np.array for data
@@ -876,6 +876,7 @@ class SingleCells(object):
                 aggregated = aggregated.merge(
                     self.aggregate_compartment(
                         compartment=compartment,
+                        features=self.features,
                         n_aggregation_memory_strata=n_aggregation_memory_strata,
                     ),
                     on=self.strata,
