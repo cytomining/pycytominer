@@ -420,8 +420,8 @@ class SingleCells(object):
         col_names = [obj[0] for obj in ptr.description]
 
         return col_names
-    
-    def split_columns_into_classes(self,col_names):
+
+    def split_columns_into_classes(self, col_names):
         feat_cols = []
         meta_cols = []
         for col in col_names:
@@ -449,7 +449,7 @@ class SingleCells(object):
         # Get data useful to pre-alloc memory
         num_cells = self.count_sql_table_rows(compartment)
         col_names = self.get_sql_table_col_names(compartment)
-        if features != "infer": #allow to get only some features
+        if features != "infer":  # allow to get only some features
             col_names = [x for x in col_names if x in features]
         meta_cols, feat_cols = self.split_columns_into_classes(col_names)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
@@ -728,7 +728,9 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    sc_df = self.load_compartment(compartment=left_compartment,features=self.features)
+                    sc_df = self.load_compartment(
+                        compartment=left_compartment, features=self.features
+                    )
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -743,7 +745,9 @@ class SingleCells(object):
                         ).reindex(sc_df.columns, axis="columns")
 
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment,features=self.features),
+                        self.load_compartment(
+                            compartment=right_compartment, features=self.features
+                        ),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
@@ -751,7 +755,9 @@ class SingleCells(object):
 
                 else:
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment,features=self.features),
+                        self.load_compartment(
+                            compartment=right_compartment, features=self.features
+                        ),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,

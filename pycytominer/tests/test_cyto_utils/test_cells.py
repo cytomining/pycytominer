@@ -193,9 +193,19 @@ AP_IMAGE_DIFF_NAME = SingleCells(
     sql_file=IMAGE_DIFF_FILE, load_image_data=False, image_feature_categories=["Count"]
 )
 
-SUBSET_FEATURES = ["TableNumber", "ImageNumber","ObjectNumber",
-"Cells_Parent_Nuclei","Cytoplasm_Parent_Cells","Cytoplasm_Parent_Nuclei","Cells_a","Cytoplasm_a","Nuclei_a"]
-AP_SUBSET = SingleCells(sql_file=TMP_SQLITE_FILE,features=SUBSET_FEATURES)
+SUBSET_FEATURES = [
+    "TableNumber",
+    "ImageNumber",
+    "ObjectNumber",
+    "Cells_Parent_Nuclei",
+    "Cytoplasm_Parent_Cells",
+    "Cytoplasm_Parent_Nuclei",
+    "Cells_a",
+    "Cytoplasm_a",
+    "Nuclei_a",
+]
+AP_SUBSET = SingleCells(sql_file=TMP_SQLITE_FILE, features=SUBSET_FEATURES)
+
 
 def test_SingleCells_init():
     """
@@ -268,7 +278,7 @@ def test_SingleCells_count():
 
 
 def test_load_compartment():
-    loaded_compartment_df = AP.load_compartment(compartment="cells",features="infer")
+    loaded_compartment_df = AP.load_compartment(compartment="cells", features="infer")
     pd.testing.assert_frame_equal(
         loaded_compartment_df,
         CELLS_DF.reindex(columns=loaded_compartment_df.columns),
@@ -276,7 +286,7 @@ def test_load_compartment():
     )
 
     # Test non-canonical compartment loading
-    loaded_compartment_df = AP_NEW.load_compartment("new",features="infer")
+    loaded_compartment_df = AP_NEW.load_compartment("new", features="infer")
     pd.testing.assert_frame_equal(
         NEW_COMPARTMENT_DF.reindex(columns=loaded_compartment_df.columns),
         loaded_compartment_df,
@@ -294,7 +304,9 @@ def test_sc_count_sql_table():
 def test_get_sql_table_col_names():
     # Iterate over initialized compartments
     for compartment in AP.compartments:
-        meta_cols, feat_cols = AP.split_columns_into_classes(AP.get_sql_table_col_names(table=compartment))
+        meta_cols, feat_cols = AP.split_columns_into_classes(
+            AP.get_sql_table_col_names(table=compartment)
+        )
         assert meta_cols == ["ObjectNumber", "ImageNumber", "TableNumber"]
         for i in ["a", "b", "c", "d"]:
             assert f"{compartment.capitalize()}_{i}" in feat_cols
@@ -419,11 +431,13 @@ def test_merge_single_cells():
         traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
     )
 
+
 def test_merge_single_cells_subset():
     sc_merged_df = AP_SUBSET.merge_single_cells()
-    assert(sc_merged_df.shape[1]) == 13
-    non_meta_cols = [x for x in sc_merged_df.columns if 'Metadata' not in x]
-    assert (len(non_meta_cols) == len([x for x in non_meta_cols if x in SUBSET_FEATURES]))
+    assert (sc_merged_df.shape[1]) == 13
+    non_meta_cols = [x for x in sc_merged_df.columns if "Metadata" not in x]
+    assert len(non_meta_cols) == len([x for x in non_meta_cols if x in SUBSET_FEATURES])
+
 
 def test_merge_single_cells_subsample():
 
@@ -568,7 +582,7 @@ def test_merge_single_cells_cytominer_database_test_file():
 def test_aggregate_comparment():
     df = IMAGE_DF.merge(CELLS_DF, how="inner", on=["TableNumber", "ImageNumber"])
     result = aggregate(df)
-    ap_result = AP.aggregate_compartment("cells","infer")
+    ap_result = AP.aggregate_compartment("cells", "infer")
 
     expected_result = pd.DataFrame(
         {
