@@ -52,7 +52,7 @@ class SingleCells(object):
     image_feature_categories : list of str, optional
         List of categories of features from the image table to add to the profiles.
     features: str or list of str, default "infer"
-        List of features that should be aggregated.
+        List of features that should be loaded or aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
     image_table_name : str, default "image"
@@ -419,6 +419,9 @@ class SingleCells(object):
         ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
         col_names = [obj[0] for obj in ptr.description]
 
+        return col_names
+    
+    def split_columns_into_classes(self,col_names):
         feat_cols = []
         meta_cols = []
         for col in col_names:
@@ -429,7 +432,7 @@ class SingleCells(object):
 
         return meta_cols, feat_cols
 
-    def load_compartment(self, compartment):
+    def load_compartment(self, compartment, features):
         """Creates the compartment dataframe.
 
         Parameters
@@ -445,6 +448,9 @@ class SingleCells(object):
 
         # Get data useful to pre-alloc memory
         num_cells = self.count_sql_table_rows(compartment)
+        col_names = self.get_sql_table_col_names(compartment)
+        if features != "infer": #allow to get only some features
+            col_names = [x for x in col_names if x in features]
         meta_cols, feat_cols = self.get_sql_table_col_names(compartment)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
@@ -469,6 +475,7 @@ class SingleCells(object):
     def aggregate_compartment(
         self,
         compartment,
+        features,
         compute_subsample=False,
         compute_counts=False,
         add_image_features=False,
@@ -513,6 +520,7 @@ class SingleCells(object):
         object_dfs = []
         for compartment_df in self._compartment_df_generator(
             compartment=compartment,
+            features=features,
             n_aggregation_memory_strata=n_aggregation_memory_strata,
         ):
 
@@ -578,6 +586,7 @@ class SingleCells(object):
     def _compartment_df_generator(
         self,
         compartment,
+        features,
         n_aggregation_memory_strata=1,
     ):
         """A generator function that returns chunks of the entire compartment
@@ -613,7 +622,12 @@ class SingleCells(object):
             sql=f"select {cols} from {compartment} limit 1",
             con=self.conn,
         )
-        typeof_str = ", ".join([f"typeof({x})" for x in compartment_row1.columns])
+        all_columns = compartment_row1.columns
+        if features != "infer":
+            all_columns = [x for x in all_columns if x in features]
+            col = ", ".join(all_columns)
+
+        typeof_str = ", ".join([f"typeof({x})" for x in all_columns])
         compartment_dtypes = pd.read_sql(
             sql=f"select {typeof_str} from {compartment} limit 1",
             con=self.conn,
@@ -714,7 +728,7 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    sc_df = self.load_compartment(compartment=left_compartment)
+                    sc_df = self.load_compartment(compartment=left_compartment,features=self.features)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -729,7 +743,7 @@ class SingleCells(object):
                         ).reindex(sc_df.columns, axis="columns")
 
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
+                        self.load_compartment(compartment=right_compartment,features=self.features),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
@@ -737,7 +751,7 @@ class SingleCells(object):
 
                 else:
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
+                        self.load_compartment(compartment=right_compartment,features=self.features),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
@@ -852,6 +866,7 @@ class SingleCells(object):
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
                     compartment=compartment,
+                    features=self.features,
                     compute_subsample=compute_subsample,
                     compute_counts=True,
                     add_image_features=self.add_image_features,

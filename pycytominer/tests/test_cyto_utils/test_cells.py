@@ -560,7 +560,7 @@ def test_merge_single_cells_cytominer_database_test_file():
 def test_aggregate_comparment():
     df = IMAGE_DF.merge(CELLS_DF, how="inner", on=["TableNumber", "ImageNumber"])
     result = aggregate(df)
-    ap_result = AP.aggregate_compartment("cells")
+    ap_result = AP.aggregate_compartment("cells","infer")
 
     expected_result = pd.DataFrame(
         {
