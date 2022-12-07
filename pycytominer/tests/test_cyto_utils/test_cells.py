@@ -193,6 +193,9 @@ AP_IMAGE_DIFF_NAME = SingleCells(
     sql_file=IMAGE_DIFF_FILE, load_image_data=False, image_feature_categories=["Count"]
 )
 
+SUBSET_FEATURES = ["TableNumber", "ImageNumber","ObjectNumber",
+"Cells_Parent_Nuclei","Cytoplasm_Parent_Cells","Cytoplasm_Parent_Nuclei","Cells_a","Cytoplasm_a","Nuclei_a"]
+AP_SUBSET = SingleCells(sql_file=TMP_SQLITE_FILE,features=SUBSET_FEATURES)
 
 def test_SingleCells_init():
     """
@@ -416,6 +419,11 @@ def test_merge_single_cells():
         traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
     )
 
+def test_merge_single_cells_subset():
+    sc_merged_df = AP_SUBSET.merge_single_cells()
+    assert(sc_merged_df.shape[1]) == 13
+    non_meta_cols = [x for x in sc_merged_df.columns if 'Metadata' not in x]
+    assert (len(non_meta_cols) == len([x for x in non_meta_cols if x in SUBSET_FEATURES]))
 
 def test_merge_single_cells_subsample():
 
