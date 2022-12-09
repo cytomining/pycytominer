@@ -625,7 +625,7 @@ class SingleCells(object):
         all_columns = compartment_row1.columns
         if features != "infer":
             all_columns = [x for x in all_columns if x in features]
-            col = ", ".join(all_columns)
+            cols = ", ".join(all_columns)
 
         typeof_str = ", ".join([f"typeof({x})" for x in all_columns])
         compartment_dtypes = pd.read_sql(
