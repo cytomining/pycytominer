@@ -278,7 +278,7 @@ def test_SingleCells_count():
 
 
 def test_load_compartment():
-    loaded_compartment_df = AP.load_compartment(compartment="cells", features="infer")
+    loaded_compartment_df = AP.load_compartment(compartment="cells")
     pd.testing.assert_frame_equal(
         loaded_compartment_df,
         CELLS_DF.reindex(columns=loaded_compartment_df.columns),
@@ -286,7 +286,7 @@ def test_load_compartment():
     )
 
     # Test non-canonical compartment loading
-    loaded_compartment_df = AP_NEW.load_compartment("new", features="infer")
+    loaded_compartment_df = AP_NEW.load_compartment("new")
     pd.testing.assert_frame_equal(
         NEW_COMPARTMENT_DF.reindex(columns=loaded_compartment_df.columns),
         loaded_compartment_df,
@@ -582,7 +582,7 @@ def test_merge_single_cells_cytominer_database_test_file():
 def test_aggregate_comparment():
     df = IMAGE_DF.merge(CELLS_DF, how="inner", on=["TableNumber", "ImageNumber"])
     result = aggregate(df)
-    ap_result = AP.aggregate_compartment("cells", "infer")
+    ap_result = AP.aggregate_compartment("cells")
 
     expected_result = pd.DataFrame(
         {
