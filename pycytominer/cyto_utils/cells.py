@@ -415,13 +415,14 @@ class SingleCells(object):
         return num_rows
 
     def get_sql_table_col_names(self, table):
-        """Get feature and metadata columns lists."""
+        """Get column names from the database."""
         ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
         col_names = [obj[0] for obj in ptr.description]
 
         return col_names
 
     def split_columns_into_classes(self, col_names):
+        """Split a list of column names into feature and metadata columns lists."""
         feat_cols = []
         meta_cols = []
         for col in col_names:
@@ -620,7 +621,7 @@ class SingleCells(object):
             con=self.conn,
         )
         all_columns = compartment_row1.columns
-        if self.features != "infer":
+        if self.features != "infer": # allow to get only some features
             all_columns = [x for x in all_columns if x in self.features]
 
         typeof_str = ", ".join([f"typeof({x})" for x in all_columns])
