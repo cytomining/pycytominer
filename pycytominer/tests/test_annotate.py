@@ -52,11 +52,32 @@ def test_annotate():
     pd.testing.assert_frame_equal(result, expected_result)
 
 
+def test_annotate_platemap_naming():
+
+    # Test annotate with the same column name in platemap and data.
+    platemap_modified_df = PLATEMAP_DF.copy().rename(
+        columns={"well_position": "Metadata_Well"}
+    )
+
+    expected_result = platemap_modified_df.merge(
+        DATA_DF, left_on="Metadata_Well", right_on="Metadata_Well"
+    ).rename(columns={"gene": "Metadata_gene"})
+
+    result = annotate(
+        profiles=DATA_DF,
+        platemap=platemap_modified_df,
+        join_on=["Metadata_Well", "Metadata_Well"],
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
 def test_annotate_output():
+
     annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file=OUTPUT_FILE,
     )
@@ -64,7 +85,7 @@ def test_annotate_output():
     result = annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file="none",
     )
@@ -74,11 +95,12 @@ def test_annotate_output():
 
 
 def test_annotate_output_compress():
+
     compress_file = pathlib.Path(f"{TMPDIR}/test_annotate_compress.csv.gz")
     annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file=compress_file,
         compression_options={"method": "gzip"},
@@ -87,7 +109,7 @@ def test_annotate_output_compress():
     result = annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,
-        join_on=["Metadata_well_position", "Metadata_Well"],
+        join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
         output_file="none",
     )

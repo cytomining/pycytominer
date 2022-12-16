@@ -74,6 +74,9 @@ def load_platemap(platemap, add_metadata_id=True):
             platemap = pd.read_csv(platemap, sep=delim)
         except FileNotFoundError:
             raise FileNotFoundError(f"{platemap} platemap file not found")
+    else:
+        # Setting platemap to a copy to prevent column name changes from back-propagating
+        platemap = platemap.copy()
 
     if add_metadata_id:
         platemap.columns = [

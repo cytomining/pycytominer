@@ -79,7 +79,9 @@ def annotate(
 
     annotated = platemap.merge(
         profiles, left_on=join_on[0], right_on=join_on[1], how="inner"
-    ).drop(join_on[0], axis="columns")
+    )
+    if join_on[0] != join_on[1]:
+        annotated = annotated.drop(join_on[0], axis="columns")
 
     # Add specific Connectivity Map (CMAP) formatting
     if format_broad_cmap:
@@ -95,6 +97,9 @@ def annotate(
             ), "external metadata at {} does not exist".format(external_metadata)
 
             external_metadata = pd.read_csv(external_metadata)
+    else:
+        # Make a copy of the external metadata to avoid modifying the original column names
+        external_metadata = external_metadata.copy()
 
     if isinstance(external_metadata, pd.DataFrame):
         external_metadata.columns = [
