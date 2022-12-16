@@ -421,7 +421,7 @@ class SingleCells(object):
 
         return col_names
 
-    def split_columns_into_classes(self, col_names):
+    def split_column_categories(self, col_names):
         """Split a list of column names into feature and metadata columns lists."""
         feat_cols = []
         meta_cols = []
@@ -452,7 +452,7 @@ class SingleCells(object):
         col_names = self.get_sql_table_col_names(compartment)
         if self.features != "infer":  # allow to get only some features
             col_names = [x for x in col_names if x in self.features]
-        meta_cols, feat_cols = self.split_columns_into_classes(col_names)
+        meta_cols, feat_cols = self.split_column_categories(col_names)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
         # Use pre-allocated np.array for data

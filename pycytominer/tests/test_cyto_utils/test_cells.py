@@ -304,12 +304,17 @@ def test_sc_count_sql_table():
 def test_get_sql_table_col_names():
     # Iterate over initialized compartments
     for compartment in AP.compartments:
-        meta_cols, feat_cols = AP.split_columns_into_classes(
-            AP.get_sql_table_col_names(table=compartment)
+        expected_meta_cols = ["ObjectNumber", "ImageNumber", "TableNumber"]
+        expected_feat_cols = [f"{compartment.capitalize()}_{i}" for i in ["a", "b", "c", "d"]]
+        if compartment == 'cytoplasm':
+            expected_feat_cols += ["Cytoplasm_Parent_Cells","Cytoplasm_Parent_Nuclei"]
+        col_name_result = AP.get_sql_table_col_names(table=compartment)
+        assert sorted(col_name_result) == sorted(expected_feat_cols+expected_meta_cols)
+        meta_cols, feat_cols = AP.split_column_categories(
+            col_name_result
         )
-        assert meta_cols == ["ObjectNumber", "ImageNumber", "TableNumber"]
-        for i in ["a", "b", "c", "d"]:
-            assert f"{compartment.capitalize()}_{i}" in feat_cols
+        assert meta_cols == expected_meta_cols
+        assert feat_cols == expected_feat_cols
 
 
 def test_merge_single_cells():
