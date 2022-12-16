@@ -37,7 +37,6 @@ def test_annotate():
 
     # create expected result prior to annotate to distinguish modifications
     # performed by annotate to provided dataframes.
-
     expected_result = (
         PLATEMAP_DF.merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
         .rename(columns={"gene": "Metadata_gene"})
@@ -56,7 +55,6 @@ def test_annotate():
 def test_annotate_platemap_naming():
 
     # Test annotate with the same column name in platemap and data.
-
     platemap_df = PLATEMAP_DF.copy().rename(columns={"well_position": "Metadata_Well"})
 
     expected_result = platemap_df.merge(
