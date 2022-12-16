@@ -429,13 +429,17 @@ class SingleCells(object):
 
         return meta_cols, feat_cols
 
-    def load_compartment(self, compartment):
+    def load_compartment(self, compartment, float_datatype: type = np.float64):
         """Creates the compartment dataframe.
 
         Parameters
         ----------
         compartment : str
             The compartment to process.
+        float_datatype: type, default np.float64
+            Numpy floating point datatype to use for load_compartment and resulting
+            dataframes. Please note: using any besides np.float64 are experimentally
+            unverified.
 
         Returns
         -------
@@ -448,8 +452,8 @@ class SingleCells(object):
         meta_cols, feat_cols = self.get_sql_table_col_names(compartment)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
-        # Use pre-allocated np.array for data
-        feats = np.empty(shape=(num_cells, num_feats), dtype=np.float64)
+        # Use pre-allocated np.array for feature data
+        feats = np.empty(shape=(num_cells, num_feats), dtype=float_datatype)
         # Use pre-allocated pd.DataFrame for metadata
         metas = pd.DataFrame(columns=meta_cols, index=range(num_cells))
 
@@ -661,6 +665,7 @@ class SingleCells(object):
         single_cell_normalize: bool = False,
         normalize_args: Optional[Dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
+        float_datatype: type = np.float64,
         **kwargs,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
@@ -681,6 +686,10 @@ class SingleCells(object):
             Additional arguments passed as input to pycytominer.normalize().
         platemap: str or pd.DataFrame, default None
             optional platemap filepath str or pd.DataFrame to be used with results via annotate
+        float_datatype: type, default np.float64
+            Numpy floating point datatype to use for load_compartment and resulting
+            dataframes. Please note: using any besides np.float64 are experimentally
+            unverified.
 
         Returns
         -------
@@ -714,7 +723,9 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    sc_df = self.load_compartment(compartment=left_compartment)
+                    sc_df = self.load_compartment(
+                        compartment=left_compartment, float_datatype=float_datatype
+                    )
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -729,7 +740,9 @@ class SingleCells(object):
                         ).reindex(sc_df.columns, axis="columns")
 
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
+                        self.load_compartment(
+                            compartment=right_compartment, float_datatype=float_datatype
+                        ),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
@@ -737,7 +750,9 @@ class SingleCells(object):
 
                 else:
                     sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
+                        self.load_compartment(
+                            compartment=right_compartment, float_datatype=float_datatype
+                        ),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,

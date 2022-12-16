@@ -3,6 +3,7 @@ import pathlib
 import random
 import tempfile
 
+import numpy as np
 import pandas as pd
 import pytest
 from pycytominer import aggregate, annotate, normalize
@@ -280,6 +281,23 @@ def test_load_compartment():
         check_dtype=False,
     )
 
+    # test using non-default float_datatype
+    loaded_compartment_df = AP.load_compartment(
+        compartment="cells", float_datatype=np.float32
+    )
+    pd.testing.assert_frame_equal(
+        loaded_compartment_df,
+        CELLS_DF.astype(
+            # cast any float type columns to float32 for expected comparison
+            {
+                colname: np.float32
+                for colname in CELLS_DF.columns
+                if pd.api.types.is_float(CELLS_DF[colname].dtype)
+            }
+        ).reindex(columns=loaded_compartment_df.columns),
+        check_dtype=False,
+    )
+
 
 def test_sc_count_sql_table():
     # Iterate over initialized compartments
@@ -414,6 +432,48 @@ def test_merge_single_cells():
     pd.testing.assert_frame_equal(
         norm_new_method_df.loc[:, new_compartment_cols].abs().describe(),
         traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
+    )
+
+    # use non-default float_datatype
+    sc_merged_df = AP.merge_single_cells(float_datatype=np.float32)
+
+    # ensure metadata have same types for comparisons
+    meta_types = {
+        colname: "int64"
+        for colname in [
+            "Metadata_ObjectNumber",
+            "Metadata_ObjectNumber_cells",
+            "Metadata_Cytoplasm_Parent_Nuclei",
+            "Metadata_Cytoplasm_Parent_Cells",
+            "Metadata_ObjectNumber_cytoplasm",
+            "Metadata_Site",
+        ]
+    }
+    # apply type changes as per meta_types
+    manual_merge = manual_merge.astype(meta_types)
+    sc_merged_df = sc_merged_df.astype(meta_types)
+
+    # similar to the assert above, we test non-default float dtype specification
+    pd.testing.assert_frame_equal(
+        left=manual_merge.astype(
+            # cast any float type columns to float32 for expected comparisons
+            {
+                colname: np.float32
+                for colname in manual_merge.columns
+                if pd.api.types.is_float(manual_merge[colname].dtype)
+                # note: pd.api.types.is_integer sometimes is unable to detect int64
+                or manual_merge[colname].dtype == "int64"
+                and colname not in meta_types.keys()
+            }
+        )
+        .sort_values(by=manual_merge.columns.tolist(), ascending=True)
+        .reset_index(drop=True),
+        # use manual_merge's column order for sc_merged_df
+        right=sc_merged_df[manual_merge.columns]
+        # use manual_merge's column order for sorting values
+        .sort_values(by=manual_merge.columns.tolist(), ascending=True).reset_index(
+            drop=True
+        ),
     )
 
 
