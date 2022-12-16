@@ -75,7 +75,7 @@ def load_platemap(platemap, add_metadata_id=True):
         except FileNotFoundError:
             raise FileNotFoundError(f"{platemap} platemap file not found")
     else:
-        # Setting platemap to a copy to prevent column name changes from back-propogating
+        # Setting platemap to a copy to prevent column name changes from back-propagating
         platemap = platemap.copy()
 
     if add_metadata_id:

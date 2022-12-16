@@ -55,15 +55,17 @@ def test_annotate():
 def test_annotate_platemap_naming():
 
     # Test annotate with the same column name in platemap and data.
-    platemap_df = PLATEMAP_DF.copy().rename(columns={"well_position": "Metadata_Well"})
+    platemap_modified_df = PLATEMAP_DF.copy().rename(
+        columns={"well_position": "Metadata_Well"}
+    )
 
-    expected_result = platemap_df.merge(
+    expected_result = platemap_modified_df.merge(
         DATA_DF, left_on="Metadata_Well", right_on="Metadata_Well"
     ).rename(columns={"gene": "Metadata_gene"})
 
     result = annotate(
         profiles=DATA_DF,
-        platemap=platemap_df,
+        platemap=platemap_modified_df,
         join_on=["Metadata_Well", "Metadata_Well"],
     )
 
