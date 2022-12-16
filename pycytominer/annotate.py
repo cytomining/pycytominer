@@ -97,6 +97,9 @@ def annotate(
             ), "external metadata at {} does not exist".format(external_metadata)
 
             external_metadata = pd.read_csv(external_metadata)
+    else:
+        # Make a copy of the external metadata to avoid modifying the original column names
+        external_metadata = external_metadata.copy()
 
     if isinstance(external_metadata, pd.DataFrame):
         external_metadata.columns = [
