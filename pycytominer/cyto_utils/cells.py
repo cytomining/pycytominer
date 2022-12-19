@@ -52,7 +52,7 @@ class SingleCells(object):
     image_feature_categories : list of str, optional
         List of categories of features from the image table to add to the profiles.
     features: str or list of str, default "infer"
-        List of features that should be aggregated.
+        List of features that should be loaded or aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
     image_table_name : str, default "image"
@@ -425,10 +425,14 @@ class SingleCells(object):
         return num_rows
 
     def get_sql_table_col_names(self, table):
-        """Get feature and metadata columns lists."""
+        """Get column names from the database."""
         ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
         col_names = [obj[0] for obj in ptr.description]
 
+        return col_names
+
+    def split_column_categories(self, col_names):
+        """Split a list of column names into feature and metadata columns lists."""
         feat_cols = []
         meta_cols = []
         for col in col_names:
@@ -458,7 +462,10 @@ class SingleCells(object):
 
         # Get data useful to pre-alloc memory
         num_cells = self.count_sql_table_rows(compartment)
-        meta_cols, feat_cols = self.get_sql_table_col_names(compartment)
+        col_names = self.get_sql_table_col_names(compartment)
+        if self.features != "infer":  # allow to get only some features
+            col_names = [x for x in col_names if x in self.features]
+        meta_cols, feat_cols = self.split_column_categories(col_names)
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
         # Use pre-allocated np.array for feature data
@@ -628,7 +635,11 @@ class SingleCells(object):
             sql=f"select {cols} from {compartment} limit 1",
             con=self.conn,
         )
-        typeof_str = ", ".join([f"typeof({x})" for x in compartment_row1.columns])
+        all_columns = compartment_row1.columns
+        if self.features != "infer": # allow to get only some features
+            all_columns = [x for x in all_columns if x in self.features]
+
+        typeof_str = ", ".join([f"typeof({x})" for x in all_columns])
         compartment_dtypes = pd.read_sql(
             sql=f"select {typeof_str} from {compartment} limit 1",
             con=self.conn,
