@@ -69,6 +69,14 @@ class SingleCells(object):
         Name of the fields of view feature.
     object_feature : str, default "Metadata_ObjectNumber"
         Object number feature.
+    default_datatype_float: type
+        Numpy floating point datatype to use for load_compartment and resulting
+        dataframes. This parameter may be used to assist with performance-related
+        issues by reducing the memory required for floating-point data. 
+        For example, using np.float32 instead of np.float64 for this parameter 
+        will reduce memory consumed by float columns by roughly 50%.
+        Please note: using any besides np.float64 are experimentally
+        unverified.
 
     Notes
     -----
@@ -105,6 +113,7 @@ class SingleCells(object):
         fields_of_view="all",
         fields_of_view_feature="Metadata_Site",
         object_feature="Metadata_ObjectNumber",
+        default_datatype_float=np.float64,
     ):
         """Constructor method"""
         # Check compartments specified
@@ -139,6 +148,7 @@ class SingleCells(object):
         self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
+        self.default_datatype_float = default_datatype_float
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
@@ -429,17 +439,16 @@ class SingleCells(object):
 
         return meta_cols, feat_cols
 
-    def load_compartment(self, compartment, float_datatype: type = np.float64):
+    def load_compartment(self, compartment):
         """Creates the compartment dataframe.
+
+        Note: makes use of default_datatype_float attribute
+        for setting a default floating point datatype.
 
         Parameters
         ----------
         compartment : str
             The compartment to process.
-        float_datatype: type, default np.float64
-            Numpy floating point datatype to use for load_compartment and resulting
-            dataframes. Please note: using any besides np.float64 are experimentally
-            unverified.
 
         Returns
         -------
@@ -453,7 +462,9 @@ class SingleCells(object):
         num_meta, num_feats = len(meta_cols), len(feat_cols)
 
         # Use pre-allocated np.array for feature data
-        feats = np.empty(shape=(num_cells, num_feats), dtype=float_datatype)
+        feats = np.empty(
+            shape=(num_cells, num_feats), dtype=self.default_datatype_float
+        )
         # Use pre-allocated pd.DataFrame for metadata
         metas = pd.DataFrame(columns=meta_cols, index=range(num_cells))
 
@@ -665,7 +676,6 @@ class SingleCells(object):
         single_cell_normalize: bool = False,
         normalize_args: Optional[Dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
-        float_datatype: type = np.float64,
         **kwargs,
     ):
         """Given the linking columns, merge single cell data. Normalization is also supported.
@@ -686,10 +696,6 @@ class SingleCells(object):
             Additional arguments passed as input to pycytominer.normalize().
         platemap: str or pd.DataFrame, default None
             optional platemap filepath str or pd.DataFrame to be used with results via annotate
-        float_datatype: type, default np.float64
-            Numpy floating point datatype to use for load_compartment and resulting
-            dataframes. Please note: using any besides np.float64 are experimentally
-            unverified.
 
         Returns
         -------
@@ -723,9 +729,7 @@ class SingleCells(object):
                 ]
 
                 if isinstance(sc_df, str):
-                    sc_df = self.load_compartment(
-                        compartment=left_compartment, float_datatype=float_datatype
-                    )
+                    sc_df = self.load_compartment(compartment=left_compartment)
 
                     if compute_subsample:
                         # Sample cells proportionally by self.strata
@@ -740,9 +744,7 @@ class SingleCells(object):
                         ).reindex(sc_df.columns, axis="columns")
 
                     sc_df = sc_df.merge(
-                        self.load_compartment(
-                            compartment=right_compartment, float_datatype=float_datatype
-                        ),
+                        self.load_compartment(compartment=right_compartment),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
                         suffixes=merge_suffix,
