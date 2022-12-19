@@ -753,7 +753,7 @@ class SingleCells(object):
                 else:
                     sc_df = sc_df.merge(
                         self.load_compartment(
-                            compartment=right_compartment, float_datatype=float_datatype
+                            compartment=right_compartment
                         ),
                         left_on=self.merge_cols + [left_link_col],
                         right_on=self.merge_cols + [right_link_col],
