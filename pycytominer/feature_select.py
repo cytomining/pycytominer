@@ -1,10 +1,6 @@
 """
 Select features to use in downstream analysis based on specified selection method
 """
-
-import os
-import pandas as pd
-
 from pycytominer.operations import (
     correlation_threshold,
     variance_threshold,
@@ -176,6 +172,7 @@ def feature_select(
                 noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
             )
         excluded_features += exclude
+        features = [feat for feat in features if feat not in excluded_features]
 
     excluded_features = list(set(excluded_features))
 

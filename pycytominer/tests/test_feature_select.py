@@ -326,7 +326,7 @@ def test_feature_select_correlation_threshold():
         features=data_cor_thresh_na_df.columns.tolist(),
         operation=["drop_na_columns", "correlation_threshold"],
     )
-    expected_result = data_df.drop(["z", "x"], axis="columns")
+    expected_result = data_df.drop(["z", "y"], axis="columns")
     pd.testing.assert_frame_equal(result, expected_result)
 
 
