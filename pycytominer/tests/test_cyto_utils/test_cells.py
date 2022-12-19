@@ -281,21 +281,40 @@ def test_load_compartment():
         check_dtype=False,
     )
 
-    # test using non-default float_datatype
-    loaded_compartment_df = AP.load_compartment(
-        compartment="cells", float_datatype=np.float32
-    )
+    # test load_compartment with non-default default_datatype_float
+    # create new SingleCells based on AP
+    float32_loaded_compartment_df = SingleCells(
+        sql_file=TMP_SQLITE_FILE, default_datatype_float=np.float32
+    ).load_compartment(compartment="cells")
+
+    # for uniformly handling metadata types for both dataframes
+    metadata_types = {"ObjectNumber": "int64"}
+
+    # create deep copy of CELLS_DF with manually re-typed float columns as float32
+    cells_df_for_compare = CELLS_DF.copy(deep=True).astype(
+        # cast any float type columns to float32 for expected comparison
+        {
+            colname: np.float32
+            for colname in CELLS_DF.columns
+            # check for only columns which are of float type
+            if pd.api.types.is_float(CELLS_DF[colname].dtype)
+            # check for columns which are of 'int64' type
+            # note: pd.api.types.is_integer sometimes is unable to detect int64
+            or CELLS_DF[colname].dtype == "int64"
+            # avoid recasting the metadata_types
+            and colname not in metadata_types.keys()
+        }
+        # use float32_loaded_compartment_df column order for comparison below
+    )[float32_loaded_compartment_df.columns]
+
+    # cast metadata types in the same way for comparisons
+    float32_loaded_compartment_df = float32_loaded_compartment_df.astype(metadata_types)
+    cells_df_for_compare = cells_df_for_compare.astype(metadata_types)
+
+    # perform comparison of dataframes
     pd.testing.assert_frame_equal(
-        loaded_compartment_df,
-        CELLS_DF.astype(
-            # cast any float type columns to float32 for expected comparison
-            {
-                colname: np.float32
-                for colname in CELLS_DF.columns
-                if pd.api.types.is_float(CELLS_DF[colname].dtype)
-            }
-        ).reindex(columns=loaded_compartment_df.columns),
-        check_dtype=False,
+        float32_loaded_compartment_df,
+        cells_df_for_compare,
     )
 
 
@@ -433,49 +452,6 @@ def test_merge_single_cells():
         norm_new_method_df.loc[:, new_compartment_cols].abs().describe(),
         traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
     )
-
-    # use non-default float_datatype
-    sc_merged_df = AP.merge_single_cells(float_datatype=np.float32)
-
-    # ensure metadata have same types for comparisons
-    meta_types = {
-        colname: "int64"
-        for colname in [
-            "Metadata_ObjectNumber",
-            "Metadata_ObjectNumber_cells",
-            "Metadata_Cytoplasm_Parent_Nuclei",
-            "Metadata_Cytoplasm_Parent_Cells",
-            "Metadata_ObjectNumber_cytoplasm",
-            "Metadata_Site",
-        ]
-    }
-    # apply type changes as per meta_types
-    manual_merge = manual_merge.astype(meta_types)
-    sc_merged_df = sc_merged_df.astype(meta_types)
-
-    # similar to the assert above, we test non-default float dtype specification
-    pd.testing.assert_frame_equal(
-        left=manual_merge.astype(
-            # cast any float type columns to float32 for expected comparisons
-            {
-                colname: np.float32
-                for colname in manual_merge.columns
-                if pd.api.types.is_float(manual_merge[colname].dtype)
-                # note: pd.api.types.is_integer sometimes is unable to detect int64
-                or manual_merge[colname].dtype == "int64"
-                and colname not in meta_types.keys()
-            }
-        )
-        .sort_values(by=manual_merge.columns.tolist(), ascending=True)
-        .reset_index(drop=True),
-        # use manual_merge's column order for sc_merged_df
-        right=sc_merged_df[manual_merge.columns]
-        # use manual_merge's column order for sorting values
-        .sort_values(by=manual_merge.columns.tolist(), ascending=True).reset_index(
-            drop=True
-        ),
-    )
-
 
 def test_merge_single_cells_subsample():
 
@@ -1083,3 +1059,12 @@ def test_load_non_canonical_image_table():
         result.sort_index(axis="columns").drop("Metadata_Site_Count", axis="columns"),
         sc_aggregated_df,
     )
+
+def test_singlecells_default_datatype():
+    """
+    Testing various use of SingleCells class attribute
+    default_datatype_float with non-default options.
+    """
+
+
+
