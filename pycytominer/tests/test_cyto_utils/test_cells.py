@@ -1080,11 +1080,3 @@ def test_load_non_canonical_image_table():
         sc_aggregated_df,
     )
 
-def test_singlecells_default_datatype():
-    """
-    Testing various use of SingleCells class attribute
-    default_datatype_float with non-default options.
-    """
-
-
-
