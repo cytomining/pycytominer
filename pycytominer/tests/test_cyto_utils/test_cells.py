@@ -303,22 +303,25 @@ def test_load_compartment():
     # for uniformly handling metadata types for both dataframes
     metadata_types = {"ObjectNumber": "int64"}
 
+    # updated column datatypes for manual comparisons with CELLS_DF
+    cells_df_comparison_types = {
+        colname: np.float32
+        for colname in CELLS_DF.columns
+        # check for only columns which are of float type
+        if pd.api.types.is_float(CELLS_DF[colname].dtype)
+        # check for columns which are of 'int64' type
+        # note: pd.api.types.is_integer sometimes is unable to detect int64
+        or CELLS_DF[colname].dtype == "int64"
+        # avoid recasting the metadata_types
+        and colname not in metadata_types.keys()
+    }
+
     # create deep copy of CELLS_DF with manually re-typed float columns as float32
-    cells_df_for_compare = CELLS_DF.copy(deep=True).astype(
-        # cast any float type columns to float32 for expected comparison
-        {
-            colname: np.float32
-            for colname in CELLS_DF.columns
-            # check for only columns which are of float type
-            if pd.api.types.is_float(CELLS_DF[colname].dtype)
-            # check for columns which are of 'int64' type
-            # note: pd.api.types.is_integer sometimes is unable to detect int64
-            or CELLS_DF[colname].dtype == "int64"
-            # avoid recasting the metadata_types
-            and colname not in metadata_types.keys()
-        }
-        # use float32_loaded_compartment_df column order for comparison below
-    )[float32_loaded_compartment_df.columns]
+    # and cast any float type columns to float32 for expected comparison
+    cells_df_for_compare = CELLS_DF.copy(deep=True).astype(cells_df_comparison_types)[
+        # use float32_loaded_compartment_df column order for comparison
+        float32_loaded_compartment_df.columns
+    ]
 
     # cast metadata types in the same way for comparisons
     float32_loaded_compartment_df = float32_loaded_compartment_df.astype(metadata_types)
