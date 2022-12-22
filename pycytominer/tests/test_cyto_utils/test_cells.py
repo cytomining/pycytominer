@@ -3,6 +3,7 @@ import pathlib
 import random
 import tempfile
 
+import numpy as np
 import pandas as pd
 import pytest
 from pycytominer import aggregate, annotate, normalize
@@ -293,6 +294,45 @@ def test_load_compartment():
         check_dtype=False,
     )
 
+    # test load_compartment with non-default default_datatype_float
+    # create new SingleCells based on AP
+    float32_loaded_compartment_df = SingleCells(
+        sql_file=TMP_SQLITE_FILE, default_datatype_float=np.float32
+    ).load_compartment(compartment="cells")
+
+    # for uniformly handling metadata types for both dataframes
+    metadata_types = {"ObjectNumber": "int64"}
+
+    # updated column datatypes for manual comparisons with CELLS_DF
+    cells_df_comparison_types = {
+        colname: np.float32
+        for colname in CELLS_DF.columns
+        # check for only columns which are of float type
+        if pd.api.types.is_float(CELLS_DF[colname].dtype)
+        # check for columns which are of 'int64' type
+        # note: pd.api.types.is_integer sometimes is unable to detect int64
+        or CELLS_DF[colname].dtype == "int64"
+        # avoid recasting the metadata_types
+        and colname not in metadata_types.keys()
+    }
+
+    # create deep copy of CELLS_DF with manually re-typed float columns as float32
+    # and cast any float type columns to float32 for expected comparison
+    cells_df_for_compare = CELLS_DF.copy(deep=True).astype(cells_df_comparison_types)[
+        # use float32_loaded_compartment_df column order for comparison
+        float32_loaded_compartment_df.columns
+    ]
+
+    # cast metadata types in the same way for comparisons
+    float32_loaded_compartment_df = float32_loaded_compartment_df.astype(metadata_types)
+    cells_df_for_compare = cells_df_for_compare.astype(metadata_types)
+
+    # perform comparison of dataframes
+    pd.testing.assert_frame_equal(
+        float32_loaded_compartment_df,
+        cells_df_for_compare,
+    )
+
 
 def test_sc_count_sql_table():
     # Iterate over initialized compartments
@@ -435,14 +475,6 @@ def test_merge_single_cells():
         norm_new_method_df.loc[:, new_compartment_cols].abs().describe(),
         traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
     )
-
-
-def test_merge_single_cells_subset():
-    sc_merged_df = AP_SUBSET.merge_single_cells()
-    assert (sc_merged_df.shape[1]) == 13
-    non_meta_cols = [x for x in sc_merged_df.columns if "Metadata" not in x]
-    assert len(non_meta_cols) == len([x for x in non_meta_cols if x in SUBSET_FEATURES])
-
 
 def test_merge_single_cells_subsample():
 
@@ -1050,3 +1082,4 @@ def test_load_non_canonical_image_table():
         result.sort_index(axis="columns").drop("Metadata_Site_Count", axis="columns"),
         sc_aggregated_df,
     )
+
