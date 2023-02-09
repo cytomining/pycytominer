@@ -1,0 +1,9 @@
+image: gitpod/workspace-python-3.9
+tasks:
+  - name: Install dependencies
+    command: |
+      bash .devcontainer/postCreateCommand.sh
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.vscode-pylance

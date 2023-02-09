@@ -13,15 +13,18 @@ If you are stuck, please feel free to ask any questions or ask for help.
 [Quick links](#quick-links)
 
 [How can I contribute?](#how-can-i-contribute)
-  * [Bug reporting](#bug-reporting)
-  * [Suggesting enhancements](#suggesting-enhancements)
-  * [Your first code contribution](#your-first-code-contribution)
-  * [Pull requests](#pull-requests)
+
+- [Bug reporting](#bug-reporting)
+- [Suggesting enhancements](#suggesting-enhancements)
+- [Dev Environments](#dev-environments)
+- [Your first code contribution](#your-first-code-contribution)
+- [Pull requests](#pull-requests)
 
 [Style guides](#style-guides)
-  * [Git commit messages](#git-commit-messages)
-  * [Python style guide](#python-style-guide)
-  * [Documentation style guide](#documentation-style-guide)
+
+- [Git commit messages](#git-commit-messages)
+- [Python style guide](#python-style-guide)
+- [Documentation style guide](#documentation-style-guide)
 
 ## Code of conduct
 
@@ -31,10 +34,10 @@ Please report unacceptable behavior to cytodata.info@gmail.com.
 
 ## Quick links
 
-* Documentation: https://pycytominer.readthedocs.io/en/latest/
-* Issue tracker: https://github.com/cytomining/pycytominer/issues
-* Code coverage: https://app.codecov.io/gh/cytomining/pycytominer
-* Package requirements: https://github.com/cytomining/pycytominer/blob/master/requirements.txt
+- Documentation: https://pycytominer.readthedocs.io/en/latest/
+- Issue tracker: https://github.com/cytomining/pycytominer/issues
+- Code coverage: https://app.codecov.io/gh/cytomining/pycytominer
+- Package requirements: https://github.com/cytomining/pycytominer/blob/master/requirements.txt
 
 ## How can I contribute?
 
@@ -47,10 +50,10 @@ However, in order for us to fix a bug, you need to tell us exactly what went wro
 When you report a bug, please be prepared to tell us as much pertinent information as possible.
 This information includes:
 
-* The pycytominer version you’re using
-* The format of input data
-* Copy and paste two pieces of information: 1) your command and 2) the specific error message
-* What you’ve tried to overcome the bug
+- The pycytominer version you’re using
+- The format of input data
+- Copy and paste two pieces of information: 1) your command and 2) the specific error message
+- What you’ve tried to overcome the bug
 
 Please provide this information as an issue in the repository: https://github.com/cytomining/pycytominer/issues
 
@@ -71,6 +74,48 @@ If you do find the suggestion, please comment on the existing issue noting that 
 If you do not find the suggestion, please open a new issue and clearly document the specific enhancement and why it would be helpful for your particular use case.
 
 Please provide your enhancement suggestions as an issue in the repository:
+
+### Dev Environments
+
+#### Manual Setup
+
+General guidance for setting up a local development environment in Linux are provided below.
+It is strongly recommended to perform this within a virtual environment such as [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [pyenv](https://akrabat.com/creating-virtual-environments-with-pyenv/):
+
+```bash
+# Checkout the repository
+git clone https://github.com/cytomining/pycytominer.git
+cd pycytominer
+# Install pycytominer in development mode along with associated tools
+bash .devcontainer/postCreateCommand.sh
+```
+
+#### Local DevContainer
+
+Instructions for setting up a local development environment using VSCode DevContainers:
+
+1. Install [VSCode](https://code.visualstudio.com/download)
+2. Install the [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
+3. Open the repository in VSCode
+4. Click on the green "Reopen in Container" button in the lower left corner of the window
+5. Wait for the container to build and install the required dependencies
+
+#### Cloud Environment (Recommended)
+
+Cloud development configurations have been set up with both [Github Codespaces](https://github.com/codespaces) and [GitPod](https://www.gitpod.io/).
+These development environments have been set up with the local copy of the repository installed in development mode along with the tools needed from `requirements-dev.txt`.
+Pre-installed git hooks will ensure that any changed code is properly formatted by required tools prior to commits.
+Using a pre-built cloud development environment is the easiest way to get started contributing to pycytominer and both Gitpod and Codespaces have generous free usage tiers.
+When you are ready to make a pull request, you can use the same cloud environment to run the full test suite and ensure that your changes pass all tests.
+These cloud environments can be launched by clicking on the following links:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://open.vscode.dev/cytomining/pycytominer)
+
+[Beginner's Guide to Codespaces](https://github.blog/2023-02-22-a-beginners-guide-to-learning-to-code-with-github-codespaces/)
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/cytomining/pycytominer)
+
+[Beginner's Guide to Gitpod](https://www.gitpod.io/docs/introduction/getting-started)
 
 ### Your first code contribution
 
@@ -118,7 +163,9 @@ When appropriate, reference issues (via `#` plus number) .
 For python code style, we use [black](https://github.com/psf/black).
 Please use black before committing any code.
 We will not accept code contributions that do not use black.
+If you have set up your development environment using one of the options above, required formatting tools will be installed and run automatically on any modified files before commits using [pre-commit](https://pre-commit.com/).
 
 ### Documentation style guide
 
 We use the [numpy documentation style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
+We also use [prettier](https://prettier.io/) for automatic formatting of markdown, json and yaml files.
