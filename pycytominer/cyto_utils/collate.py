@@ -99,7 +99,7 @@ def collate(
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-            sync_cmd = f'aws s3 sync --exclude "*" --include "*/Cells.csv" --include "*/Nuclei.csv" --include "*/Cytoplasm.csv" --include "*/Image.csv" {remote_input_dir} {input_dir}'
+            sync_cmd = f'aws s3 sync --exclude * --include */Cells.csv --include */Nuclei.csv --include */Cytoplasm.csv --include */Image.csv {remote_input_dir} {input_dir}'
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
