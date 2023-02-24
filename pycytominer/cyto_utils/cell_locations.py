@@ -133,6 +133,9 @@ class CellLocation:
         merged_df[self.cell_x_loc] = merged_df[self.cell_x_loc].astype(float)
         merged_df[self.cell_y_loc] = merged_df[self.cell_y_loc].astype(float)
 
+        # Cast the object column to int
+        merged_df[self.object_column] = merged_df[self.object_column].astype(int)
+
         # Group and nest the X,Y locations of all cells in each image
         merged_df = (
             merged_df.groupby(self.image_index)
@@ -160,7 +163,7 @@ class CellLocation:
         merged_df = pd.merge(
             data_df,
             sqlite_df,
-            on=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+            on=self.image_index,
             how="left",
         )
 
