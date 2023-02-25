@@ -9,13 +9,15 @@ example_project_dir = os.path.join(
     os.path.dirname(__file__), "..", "test_data", "cell_locations_example_data"
 )
 
-parquet_file = os.path.join(example_project_dir, "load_data_with_illum_subset.parquet")
+metadata_file_input = os.path.join(
+    example_project_dir, "load_data_with_illum_subset.parquet"
+)
 
-sqlite_file = os.path.join(example_project_dir, "BR00126114_subset.sqlite")
+single_cell_file = os.path.join(example_project_dir, "BR00126114_subset.sqlite")
 
 cell_loc_obj = CellLocation(
-    parquet_file_input=parquet_file,
-    sqlite_file=sqlite_file,
+    metadata_file_input=metadata_file_input,
+    single_cell_file_input=single_cell_file,
 )
 
 # load the data
