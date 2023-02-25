@@ -32,6 +32,10 @@ cat create_tables.sql
 
 sqlite3 BR00126114_subset.sqlite < create_tables.sql
 
+# Print the list of tables in the SQLite file
+
+sqlite3 BR00126114_subset.sqlite ".tables"
+
 # Print the contents of the `Image` table in the SQLite file
 
 sqlite3 BR00126114_subset.sqlite "SELECT * FROM Image;"
