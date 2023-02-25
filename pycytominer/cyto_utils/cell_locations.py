@@ -37,8 +37,11 @@ class CellLocation:
 
     Attributes
     ----------
-    parquet_file : str
-        Path to the Parquet file
+    parquet_file_input : str
+        Path to the input Parquet file
+
+    parquet_file_output : str
+        Path to the output Parquet file
 
     sqlite_file : str
         Path to the SQLite file
@@ -63,11 +66,15 @@ class CellLocation:
     load_sqlite()
         Load the required columns from the `Image` and `Nuclei` tables in the SQLite file into a Pandas DataFrame
 
+    run()
+        Augment the Parquet file and save it
+
     """
 
     def __init__(
         self,
-        parquet_file: str,
+        parquet_file_input: str,
+        parquet_file_output: str,
         sqlite_file: str,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
@@ -75,7 +82,8 @@ class CellLocation:
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
-        self.parquet_file = parquet_file
+        self.parquet_file_input = parquet_file_input
+        self.parquet_file_output = parquet_file_output
         self.sqlite_file = sqlite_file
         self.image_column = image_column
         self.object_column = object_column
@@ -91,7 +99,7 @@ class CellLocation:
         Pandas DataFrame
             The Parquet file loaded into a Pandas DataFrame
         """
-        df = pd.read_parquet(self.parquet_file)
+        df = pd.read_parquet(self.parquet_file_input)
 
         # verify that the image index columns are present in the Parquet file
 
@@ -168,3 +176,11 @@ class CellLocation:
         )
 
         return merged_df
+
+    def run(self):
+        """Augment the Parquet file and save it"""
+        # Add the cell location
+        merged_df = self.add_cell_location()
+
+        # Save the data
+        merged_df.to_parquet(self.parquet_file_output)

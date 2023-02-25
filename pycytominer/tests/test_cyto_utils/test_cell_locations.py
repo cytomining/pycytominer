@@ -14,12 +14,13 @@ parquet_file = os.path.join(example_project_dir, "load_data_with_illum_subset.pa
 sqlite_file = os.path.join(example_project_dir, "BR00126114_subset.sqlite")
 
 cell_loc_obj = CellLocation(
-    parquet_file=parquet_file,
+    parquet_file_input=parquet_file,
     sqlite_file=sqlite_file,
 )
 
 # load the data
 cell_loc = cell_loc_obj.add_cell_location()
+
 
 # test the data
 def test_shape_and_columns():
