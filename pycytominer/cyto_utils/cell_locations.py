@@ -74,8 +74,8 @@ class CellLocation:
     def __init__(
         self,
         parquet_file_input: str,
-        parquet_file_output: str,
-        sqlite_file: str,
+        sqlite_file: str = str,
+        parquet_file_output: str = None,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
         image_index=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
