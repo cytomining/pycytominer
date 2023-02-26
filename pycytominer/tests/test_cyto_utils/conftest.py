@@ -16,7 +16,9 @@ def fixture_data_dir_cell_locations() -> str:
     Provide a data directory for cell_locations test data
     """
 
-    return f"{pathlib.Path(__file__).parent}/test_data/cell_locations_example_data"
+    return (
+        f"{pathlib.Path(__file__).parent.parent}/test_data/cell_locations_example_data"
+    )
 
 
 @pytest.fixture(name="metadata_input_file")
@@ -32,7 +34,7 @@ def fixture_single_cell_input_file(data_dir_cell_locations: str) -> str:
     """
     Provide a single cell input file for cell_locations test data
     """
-    return os.path.join(data_dir_cell_locations, "BR00126114_subset.parquet")
+    return os.path.join(data_dir_cell_locations, "BR00126114_subset.sqlite")
 
 
 @pytest.fixture(name="metadata_input_file_s3")
