@@ -5,6 +5,8 @@ Utility function to augment a metadata file with X,Y locations of cells in each 
 import os
 import pandas as pd
 import sqlite3
+import boto3
+import tempfile
 
 
 class CellLocation:
@@ -141,6 +143,25 @@ class CellLocation:
 
             if not self.single_cell_input.endswith(".sqlite"):
                 raise ValueError("single_cell file must be a SQLite file")
+
+            # if the single_cell file is an S3 path, download it to a temporary file
+            if self.single_cell_input.startswith("s3://"):
+                s3 = boto3.resource("s3")
+
+                temp_dir = tempfile.mkdtemp()
+
+                # get the bucket name and key from the S3 path
+                bucket_name = self.single_cell_input.split("/")[2]
+                key = "/".join(self.single_cell_input.split("/")[3:])
+
+                # get the file name from the key
+                file_name = key.split("/")[-1]
+
+                # the the full path to the temporary file
+                self.single_cell_input = os.path.join(temp_dir, file_name)
+
+                # save the single_cell file to the temporary directory
+                s3.Bucket(bucket_name).download_file(key, self.single_cell_input)
 
             conn = sqlite3.connect(self.single_cell_input)
         else:
