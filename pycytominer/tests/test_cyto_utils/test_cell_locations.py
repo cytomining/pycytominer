@@ -29,14 +29,6 @@ cell_loc_obj2 = CellLocation(
     single_cell_input=sqlite3.connect(single_cell_input),
 )
 
-# inputs are S3 paths
-
-# don't run this test if running on GitHub Actions
-# because the S3 bucket is not public
-
-if "GITHUB_WORKFLOW" in os.environ:
-    pytest.skip("Skipping S3 test", allow_module_level=True)
-
 
 example_s3_project_dir = "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/{workspace_folder}/2021_08_23_Batch12/BR00126114/"
 
