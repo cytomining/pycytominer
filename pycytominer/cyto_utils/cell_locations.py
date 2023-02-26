@@ -2,6 +2,7 @@
 Utility function to augment a metadata file with X,Y locations of cells in each image
 """
 
+import os
 import pandas as pd
 import sqlite3
 
@@ -136,6 +137,11 @@ class CellLocation:
         """
 
         if isinstance(self.single_cell_input, str):
+            # check if the single_cell file is a SQLite file
+
+            if not self.single_cell_input.endswith(".sqlite"):
+                raise ValueError("single_cell file must be a SQLite file")
+
             conn = sqlite3.connect(self.single_cell_input)
         else:
             conn = self.single_cell_input
