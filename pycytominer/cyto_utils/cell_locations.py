@@ -39,7 +39,7 @@ class CellLocation:
     metadata_input : str or Pandas DataFrame
         Path to the input metadata file or a Pandas DataFrame
 
-    single_cell_file : str or sqlite3.Connection
+    single_cell_input : str or sqlite3.Connection
         Path to the single_cell file or a sqlite3.Connection object
 
     augmented_metadata_output : str
