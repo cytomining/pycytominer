@@ -7,12 +7,12 @@ import sqlite3
 
 
 class CellLocation:
-    """This class holds all the functions augment a metadata files with X,Y locations
-    of cells in each image.
+    """This class holds all the functions augment a metadata file with X,Y
+    locations of cells in each image.
 
     In the metadata file, which is either a CSV or a Parquet file,
     - Each row is single multi-channel image
-    - Each image is indexed by multiple columns, e.g., `Metadata_Plate`,`Metadata_Well`,`Metadata_Site`
+    - Each image is indexed by multiple columns, e.g., `Metadata_Plate`, `Metadata_Well`,`Metadata_Site`
 
     The single_cell SQLite file contains at least two tables
     - `Nuclei`, which has the single-cell-level readouts, including location information
@@ -36,14 +36,14 @@ class CellLocation:
 
     Attributes
     ----------
-    metadata_file_input : str
-        Path to the input metadata file
+    metadata_input : str or Pandas DataFrame
+        Path to the input metadata file or a Pandas DataFrame
 
-    augmented_metadata_file_output : str
-        Path to the output file
+    single_cell_file : str or sqlite3.Connection
+        Path to the single_cell file or a sqlite3.Connection object
 
-    single_cell_file : str
-        Path to the single_cell file
+    augmented_metadata_output : str
+        Path to the output file. If None, the metadata file is not saved to disk
 
     image_column : default = 'ImageNumber'
         Name of the column in the metadata file that links to the single_cell file
@@ -72,18 +72,18 @@ class CellLocation:
 
     def __init__(
         self,
-        metadata_file_input: str,
-        single_cell_file_input: str = str,
-        augmented_metadata_file_output: str = None,
+        metadata_input: str or pd.DataFrame,
+        single_cell_input: str or sqlite3.Connection,
+        augmented_metadata_output: str = None,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
         image_index=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
-        self.metadata_file_input = metadata_file_input
-        self.augmented_metadata_file_output = augmented_metadata_file_output
-        self.single_cell_file_input = single_cell_file_input
+        self.metadata_input = metadata_input
+        self.augmented_metadata_output = augmented_metadata_output
+        self.single_cell_input = single_cell_input
         self.image_column = image_column
         self.object_column = object_column
         self.image_index = image_index
@@ -91,30 +91,33 @@ class CellLocation:
         self.cell_y_loc = cell_y_loc
 
     def load_metadata(self):
-        """Load the metadata file into a Pandas DataFrame
+        """Load the metadata into a Pandas DataFrame
 
         Returns
         -------
         Pandas DataFrame
-            The metadata file loaded into a Pandas DataFrame
+            The metadata loaded into a Pandas DataFrame
         """
 
-        # verify that the metadata file is a CSV or a Parquet file
+        if not isinstance(self.metadata_input, pd.DataFrame):
+            # verify that the metadata file is a CSV or a Parquet file
 
-        if not (
-            self.metadata_file_input.endswith(".csv")
-            or self.metadata_file_input.endswith(".parquet")
-        ):
-            raise ValueError("Metadata file must be a CSV or a Parquet file")
+            if not (
+                self.metadata_input.endswith(".csv")
+                or self.metadata_input.endswith(".parquet")
+            ):
+                raise ValueError("Metadata file must be a CSV or a Parquet file")
 
-        # load the metadata file into a Pandas DataFrame
+            # load the metadata file into a Pandas DataFrame
 
-        if self.metadata_file_input.endswith(".csv"):
-            df = pd.read_csv(self.metadata_file_input)
+            if self.metadata_input.endswith(".csv"):
+                df = pd.read_csv(self.metadata_input)
+            else:
+                df = pd.read_parquet(self.metadata_input)
         else:
-            df = pd.read_parquet(self.metadata_file_input)
+            df = self.metadata_input
 
-        # verify that the image index columns are present in the metadata file
+        # verify that the image index columns are present in the metadata object
 
         if not all(elem in df.columns for elem in self.image_index):
             raise ValueError(
@@ -124,17 +127,20 @@ class CellLocation:
         return df
 
     def load_single_cell(self):
-        """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file into a Pandas DataFrame
+        """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlite3.Connection object into a Pandas DataFrame
 
         Returns
         -------
         Pandas DataFrame
-            The required columns from the `Image` and `Nuclei` tables in the single_cell file loaded into a Pandas DataFrame
+            The required columns from the `Image` and `Nuclei` tables loaded into a Pandas DataFrame
         """
 
-        # Verify that the Image and Nuclei tables are present in the single_cell file
+        if isinstance(self.single_cell_input, str):
+            conn = sqlite3.connect(self.single_cell_input)
+        else:
+            conn = self.single_cell_input
 
-        conn = sqlite3.connect(self.single_cell_file_input)
+        # Verify that the Image and Nuclei tables are present in single_cell
 
         c = conn.cursor()
 
@@ -237,10 +243,10 @@ class CellLocation:
             how="left",
         )
 
-        # If self.augmented_metadata_file_output) is not None, save the data
-        if self.augmented_metadata_file_output is not None:
+        # If self.augmented_metadata_output) is not None, save the data
+        if self.augmented_metadata_output is not None:
             augmented_metadata_df.to_parquet(
-                self.augmented_metadata_file_output, index=False
+                self.augmented_metadata_output, index=False
             )
         else:
             return augmented_metadata_df
