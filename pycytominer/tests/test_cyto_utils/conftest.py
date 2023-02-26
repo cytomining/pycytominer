@@ -68,7 +68,9 @@ def fixture_single_cell_input_connection(
     """
     Provide a single cell input file for cell_locations test data
     """
-    return sqlite3.connect(single_cell_input_file)
+    conn = sqlite3.connect(single_cell_input_file)
+    yield conn
+    conn.close()
 
 
 @pytest.fixture(name="cell_loc_obj1")
