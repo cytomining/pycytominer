@@ -38,7 +38,7 @@ def fixture_single_cell_input_file(data_dir_cell_locations: str) -> str:
 
 
 @pytest.fixture(name="metadata_input_file_s3")
-def fixture_metadata_input_file_s3(data_dir_cell_locations: str) -> str:
+def fixture_metadata_input_file_s3() -> str:
     """
     Provide a metadata input file for cell_locations test data
     """
@@ -46,7 +46,7 @@ def fixture_metadata_input_file_s3(data_dir_cell_locations: str) -> str:
 
 
 @pytest.fixture(name="single_cell_input_file_s3")
-def fixture_single_cell_input_file_s3(data_dir_cell_locations: str) -> str:
+def fixture_single_cell_input_file_s3() -> str:
     """
     Provide a single cell input file for cell_locations test data
     """
