@@ -6,7 +6,7 @@ from pycytominer.cyto_utils.cell_locations import CellLocation
 import pytest
 
 
-@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
+@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 def test_shape_and_columns(cell_loc, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
@@ -18,7 +18,7 @@ def test_shape_and_columns(cell_loc, request):
     assert "Nuclei_Location_Center_Y" in cell_loc.columns
 
 
-@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
+@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 def test_shape_and_columns(cell_loc, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
@@ -30,7 +30,7 @@ def test_shape_and_columns(cell_loc, request):
     assert "Nuclei_Location_Center_Y" in cell_loc.columns
 
 
-@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
+@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 def test_values(cell_loc, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
