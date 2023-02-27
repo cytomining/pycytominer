@@ -8,6 +8,7 @@ import sqlite3
 import boto3
 import tempfile
 import shutil
+import collections
 
 
 class CellLocation:
@@ -130,6 +131,34 @@ class CellLocation:
             )
 
         return df
+
+    def _convert_to_per_row_dict(self, df):
+        output_df_list = collections.defaultdict(list)
+        for (plate, well, site, image_number), cell_df in df.groupby(
+            ["Metadata_Plate", "Metadata_Well", "Metadata_Site", "ImageNumber"]
+        ):
+            output_df_list["Metadata_Plate"].append(plate)
+            output_df_list["Metadata_Well"].append(well)
+            output_df_list["Metadata_Site"].append(site)
+            output_df_list["ImageNumber"].append(image_number)
+
+            cell_dict = cell_df.to_dict(orient="list")
+            row_cell_dicts = []
+            for object_number, location_center_x, location_center_y in zip(
+                cell_dict["ObjectNumber"],
+                cell_dict["Location_Center_X"],
+                cell_dict["Location_Center_Y"],
+            ):
+                row_cell_dicts.append(
+                    {
+                        "ObjectNumber": object_number,
+                        "Location_Center_X": location_center_x,
+                        "Location_Center_Y": location_center_y,
+                    }
+                )
+            output_df_list["CellCenters"].append(row_cell_dicts)
+
+        return pd.DataFrame(output_df_list)
 
     def load_single_cell(self):
         """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlite3.Connection object into a Pandas DataFrame
