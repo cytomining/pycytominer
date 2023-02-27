@@ -113,11 +113,12 @@ class CellLocation:
                 raise ValueError("Metadata file must be a CSV or a Parquet file")
 
             # load the metadata file into a Pandas DataFrame
-
             if self.metadata_input.endswith(".csv"):
-                df = pd.read_csv(self.metadata_input)
+                df = pd.read_csv(self.metadata_input, dtype=str)
             else:
                 df = pd.read_parquet(self.metadata_input)
+                # cast all columns to string
+                df = df.astype(str)
         else:
             df = self.metadata_input
 
@@ -252,6 +253,10 @@ class CellLocation:
 
         # Cast the object column to int
         merged_df[self.object_column] = merged_df[self.object_column].astype(int)
+
+        # Cast the image index columns to str
+        for col in self.image_index:
+            merged_df[col] = merged_df[col].astype(str)
 
         # Group and nest the X,Y locations of all cells in each image
         merged_df = (
