@@ -7,6 +7,7 @@ import pandas as pd
 import sqlite3
 import boto3
 import tempfile
+import shutil
 
 
 class CellLocation:
@@ -146,10 +147,6 @@ class CellLocation:
 
             # if the single_cell file is an S3 path, download it to a temporary file
             if self.single_cell_input.startswith("s3://"):
-                s3 = boto3.resource("s3")
-
-                temp_dir = tempfile.mkdtemp()
-
                 # get the bucket name and key from the S3 path
                 bucket_name = self.single_cell_input.split("/")[2]
                 key = "/".join(self.single_cell_input.split("/")[3:])
@@ -157,13 +154,27 @@ class CellLocation:
                 # get the file name from the key
                 file_name = key.split("/")[-1]
 
-                # the the full path to the temporary file
-                self.single_cell_input = os.path.join(temp_dir, file_name)
+                # create a temporary directory
+                temp_dir = tempfile.mkdtemp()
+
+                # create a temporary file
+                temp_single_cell_input = os.path.join(temp_dir, file_name)
+
+                # create a boto3 session
+                s3_session = boto3.session.Session()
+
+                # create a boto3 client
+                s3_client = s3_session.client("s3")
 
                 # save the single_cell file to the temporary directory
-                s3.Bucket(bucket_name).download_file(key, self.single_cell_input)
+                s3_client.download_file(bucket_name, key, temp_single_cell_input)
 
-            conn = sqlite3.connect(self.single_cell_input)
+                # connect to the single_cell file
+                conn = sqlite3.connect(temp_single_cell_input)
+
+            else:
+                # connect to the single_cell file
+                conn = sqlite3.connect(self.single_cell_input)
         else:
             conn = self.single_cell_input
 
@@ -227,6 +238,10 @@ class CellLocation:
         image_df = pd.read_sql_query(image_query, conn)
 
         conn.close()
+
+        # if the single_cell file was downloaded from S3, delete the temporary directory
+        if "temp_dir" in locals():
+            shutil.rmtree(temp_dir)
 
         # Merge the Image and Nuclei tables
         merged_df = pd.merge(image_df, nuclei_df, on=self.image_column, how="inner")
