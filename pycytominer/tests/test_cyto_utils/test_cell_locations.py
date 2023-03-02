@@ -12,24 +12,14 @@ def test_shape_and_columns(cell_loc, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
     # check the shape of the data
-    assert cell_loc.shape == (2, 28)
+    assert cell_loc.shape == (2, 27)
 
     # verify that the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are present
-    assert "Nuclei_Location_Center_X" in cell_loc.columns
-    assert "Nuclei_Location_Center_Y" in cell_loc.columns
+    # assert "Nuclei_Location_Center_X" in cell_loc.columns
+    # assert "Nuclei_Location_Center_Y" in cell_loc.columns
 
-
-# @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
-@pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
-def test_shape_and_columns(cell_loc, request):
-    cell_loc = request.getfixturevalue(cell_loc)
-
-    # check the shape of the data
-    assert cell_loc.shape == (2, 28)
-
-    # verify that the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are present
-    assert "Nuclei_Location_Center_X" in cell_loc.columns
-    assert "Nuclei_Location_Center_Y" in cell_loc.columns
+    assert "Nuclei_Location_Center_X" in cell_loc["CellCenters"][0][0].keys()
+    assert "Nuclei_Location_Center_Y" in cell_loc["CellCenters"][0][0].keys()
 
 
 # @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
@@ -37,8 +27,11 @@ def test_shape_and_columns(cell_loc, request):
 def test_values(cell_loc, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
-    # verify that the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are correct
-    assert cell_loc["Nuclei_Location_Center_X"].values[0] == [
+    # get the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns
+    observed_x = [x["Nuclei_Location_Center_X"] for x in cell_loc.CellCenters[0]]
+    observed_y = [x["Nuclei_Location_Center_Y"] for x in cell_loc.CellCenters[0]]
+
+    expected_x = [
         943.512129380054,
         65.5980176211454,
         790.798319327731,
@@ -51,7 +44,7 @@ def test_values(cell_loc, request):
         325.727799227799,
     ]
 
-    assert cell_loc["Nuclei_Location_Center_Y"].values[0] == [
+    expected_y = [
         182.789757412399,
         294.24449339207,
         338.886554621849,
@@ -63,3 +56,7 @@ def test_values(cell_loc, request):
         474.240161453078,
         497.608108108108,
     ]
+
+    # verify that the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are correct
+    assert observed_x == expected_x
+    assert observed_y == expected_y
