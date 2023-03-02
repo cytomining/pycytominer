@@ -132,6 +132,17 @@ class CellLocation:
 
         return df
 
+    def _download_s3(self, uri):
+        """
+        Download a file from S3, save it to a temporary directory, and return the path to the file
+        """
+        s3 = boto3.resource("s3")
+        bucket, key = uri.replace("s3://", "").split("/", 1)
+        tmp_dir = tempfile.mkdtemp()
+        tmp_file = os.path.join(tmp_dir, os.path.basename(key))
+        s3.Bucket(bucket).download_file(key, tmp_file)
+        return tmp_file
+
     def _convert_to_per_row_dict(self, df):
         output_df_list = collections.defaultdict(list)
         for (plate, well, site, image_number), cell_df in df.groupby(
@@ -146,14 +157,14 @@ class CellLocation:
             row_cell_dicts = []
             for object_number, location_center_x, location_center_y in zip(
                 cell_dict["ObjectNumber"],
-                cell_dict["Location_Center_X"],
-                cell_dict["Location_Center_Y"],
+                cell_dict["Nuclei_Location_Center_X"],
+                cell_dict["Nuclei_Location_Center_Y"],
             ):
                 row_cell_dicts.append(
                     {
                         "ObjectNumber": object_number,
-                        "Location_Center_X": location_center_x,
-                        "Location_Center_Y": location_center_y,
+                        "Nuclei_Location_Center_X": location_center_x,
+                        "Nuclei_Location_Center_Y": location_center_y,
                     }
                 )
             output_df_list["CellCenters"].append(row_cell_dicts)
@@ -288,13 +299,15 @@ class CellLocation:
             merged_df[col] = merged_df[col].astype(str)
 
         # Group and nest the X,Y locations of all cells in each image
-        merged_df = (
-            merged_df.groupby(self.image_index)
-            .agg(
-                {self.object_column: list, self.cell_x_loc: list, self.cell_y_loc: list}
-            )
-            .reset_index()
-        )
+        # merged_df = (
+        #     merged_df.groupby(self.image_index)
+        #     .agg(
+        #         {self.object_column: list, self.cell_x_loc: list, self.cell_y_loc: list}
+        #     )
+        #     .reset_index()
+        # )
+
+        merged_df = self._convert_to_per_row_dict(merged_df)
 
         return merged_df
 
