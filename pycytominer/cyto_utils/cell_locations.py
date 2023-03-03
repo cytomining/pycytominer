@@ -188,27 +188,7 @@ class CellLocation:
 
             # if the single_cell file is an S3 path, download it to a temporary file
             if self.single_cell_input.startswith("s3://"):
-                # get the bucket name and key from the S3 path
-                bucket_name = self.single_cell_input.split("/")[2]
-                key = "/".join(self.single_cell_input.split("/")[3:])
-
-                # get the file name from the key
-                file_name = key.split("/")[-1]
-
-                # create a temporary directory
-                temp_dir = tempfile.mkdtemp()
-
-                # create a temporary file
-                temp_single_cell_input = os.path.join(temp_dir, file_name)
-
-                # create a boto3 session
-                s3_session = boto3.session.Session()
-
-                # create a boto3 client
-                s3_client = s3_session.client("s3")
-
-                # save the single_cell file to the temporary directory
-                s3_client.download_file(bucket_name, key, temp_single_cell_input)
+                temp_single_cell_input = self._download_s3(self.single_cell_input)
 
                 # connect to the single_cell file
                 conn = sqlite3.connect(temp_single_cell_input)
@@ -280,9 +260,9 @@ class CellLocation:
 
         conn.close()
 
-        # if the single_cell file was downloaded from S3, delete the temporary directory
-        if "temp_dir" in locals():
-            shutil.rmtree(temp_dir)
+        # if the single_cell file was downloaded from S3, delete the temporary file
+        if "temp_single_cell_input" in locals():
+            os.remove(temp_single_cell_input)
 
         # Merge the Image and Nuclei tables
         merged_df = pd.merge(image_df, nuclei_df, on=self.image_column, how="inner")
