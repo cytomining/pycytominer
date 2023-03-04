@@ -143,70 +143,39 @@ class CellLocation:
         s3.Bucket(bucket).download_file(key, tmp_file)
         return tmp_file
 
-    def _convert_to_per_row_dict_old(self, df):
-        merged_df = (
-            merged_df.groupby(self.image_index)
-            .agg(
-                {self.object_column: list, self.cell_x_loc: list, self.cell_y_loc: list}
-            )
-            .reset_index()
-        )
-
-    def _convert_to_per_row_dict_list(self, df):
-        df = (
-            df.groupby(self.image_index + [self.image_column])
-            .apply(
-                lambda x: pd.Series(
-                    {
-                        "CellCenters": x[
-                            [self.cell_x_loc, self.cell_y_loc, self.object_column]
-                        ]
-                        .values.astype(int)
-                        .tolist()
-                    }
-                )
-            )
-            .reset_index()
-        )
-
     def _convert_to_per_row_dict(self, df):
         # define a dictionary to store the output
         output_df_list = collections.defaultdict(list)
 
         # iterate over each group of cells in the merged DataFrame
-        for (plate, well, site, image_number), cell_df in df.groupby(
-            ["Metadata_Plate", "Metadata_Well", "Metadata_Site", "ImageNumber"]
-        ):
-            # add the image index columns to the output dictionary
-            output_df_list["Metadata_Plate"].append(plate)
-            output_df_list["Metadata_Well"].append(well)
-            output_df_list["Metadata_Site"].append(site)
-            # add the image number to the output dictionary
-            output_df_list["ImageNumber"].append(image_number)
+        group_cols = self.image_index + [self.image_column]
 
-            # convert the cell DataFrame to a dictionary of lists
+        for group_values, cell_df in df.groupby(group_cols):
+            # add the image-level information to the output dictionary
+            for key, value in zip(group_cols, group_values):
+                output_df_list[key].append(value)
+
+            # convert the cell DataFrame to a dictionary
             cell_dict = cell_df.to_dict(orient="list")
 
-            # iterate over each cell in the cell DataFrame and add it to the output dictionary
+            # iterate over each cell in the cell DataFrame
             row_cell_dicts = []
-            for object_number, location_center_x, location_center_y in zip(
-                cell_dict["ObjectNumber"],
-                cell_dict["Nuclei_Location_Center_X"],
-                cell_dict["Nuclei_Location_Center_Y"],
+            for object_column, cell_x_loc, cell_y_loc in zip(
+                cell_dict[self.object_column],
+                cell_dict[self.cell_x_loc],
+                cell_dict[self.cell_y_loc],
             ):
-                # add the cell information to the output dictionary
+                # add the cell information to a dictionary
                 row_cell_dicts.append(
                     {
-                        "ObjectNumber": object_number,
-                        "Nuclei_Location_Center_X": location_center_x,
-                        "Nuclei_Location_Center_Y": location_center_y,
+                        self.object_column: object_column,
+                        self.cell_x_loc: cell_x_loc,
+                        self.cell_y_loc: cell_y_loc,
                     }
                 )
 
+            # add the cell-level information to the output dictionary
             output_df_list["CellCenters"].append(row_cell_dicts)
-
-        # The type of the CellCenters column is as follows:
-        #  ListType(list<item: struct<Nuclei_Location_Center_X: double, Nuclei_Location_Center_Y: double, ObjectNumber: int64>>)]
 
         # convert the output dictionary to a Pandas DataFrame
         return pd.DataFrame(output_df_list)
