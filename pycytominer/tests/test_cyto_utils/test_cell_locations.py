@@ -15,9 +15,6 @@ def test_shape_and_columns(cell_loc, request):
     assert cell_loc.shape == (2, 27)
 
     # verify that the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are present
-    # assert "Nuclei_Location_Center_X" in cell_loc.columns
-    # assert "Nuclei_Location_Center_Y" in cell_loc.columns
-
     assert "Nuclei_Location_Center_X" in cell_loc["CellCenters"][0][0].keys()
     assert "Nuclei_Location_Center_Y" in cell_loc["CellCenters"][0][0].keys()
 
