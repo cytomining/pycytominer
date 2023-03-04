@@ -4,15 +4,19 @@ import os
 import pandas as pd
 from pycytominer.cyto_utils.cell_locations import CellLocation
 import pytest
+import sqlite3
 
 
 # @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
-def test_shape_and_columns(cell_loc, request):
+def test_shape_and_columns(cell_loc, metadata_input_dataframe, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
     # check the shape of the data
-    assert cell_loc.shape == (2, 27)
+    assert cell_loc.shape == (
+        metadata_input_dataframe.shape[0],
+        metadata_input_dataframe.shape[1] + 2,
+    )
 
     # verify that the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are present
     assert "Nuclei_Location_Center_X" in cell_loc["CellCenters"][0][0].keys()
@@ -21,38 +25,42 @@ def test_shape_and_columns(cell_loc, request):
 
 # @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
-def test_values(cell_loc, request):
+def test_values(cell_loc, metadata_input_dataframe, single_cell_input_file, request):
     cell_loc = request.getfixturevalue(cell_loc)
 
+    # if we restrict the columns of cell_loc to the ones in metadata_input_dataframe, we should get the same dataframe
+    assert (
+        cell_loc[metadata_input_dataframe.columns]
+        .reset_index(drop=True)
+        .equals(metadata_input_dataframe.reset_index(drop=True))
+    )
+
+    nuclei_query = f"SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei;"
+
+    conn = sqlite3.connect(single_cell_input_file)
+
+    nuclei_df = pd.read_sql_query(nuclei_query, conn)
+
+    conn.close()
+
     # get the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns
+    # for the rows in cell_loc that have ImageNumber == 1
+
+    cell_loc_row1 = cell_loc[cell_loc["ImageNumber"] == "1"]
+
+    # get the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns
+    # for the rows in nuclei_df that have ImageNumber == 1
+
+    nuclei_df_row1 = nuclei_df[nuclei_df["ImageNumber"] == "1"]
+
     observed_x = [x["Nuclei_Location_Center_X"] for x in cell_loc.CellCenters[0]]
     observed_y = [x["Nuclei_Location_Center_Y"] for x in cell_loc.CellCenters[0]]
 
-    expected_x = [
-        943.512129380054,
-        65.5980176211454,
-        790.798319327731,
-        798.1744,
-        657.246344206974,
-        778.97604035309,
-        322.763649425287,
-        718.11819235226,
-        109.785065590313,
-        325.727799227799,
-    ]
+    expected_x = nuclei_df_row1["Nuclei_Location_Center_X"].tolist()
+    expected_x = [float(x) for x in expected_x]
 
-    expected_y = [
-        182.789757412399,
-        294.24449339207,
-        338.886554621849,
-        387.1376,
-        402.2272215973,
-        406.378310214376,
-        413.334051724138,
-        469.506373117034,
-        474.240161453078,
-        497.608108108108,
-    ]
+    expected_y = nuclei_df_row1["Nuclei_Location_Center_Y"].tolist()
+    expected_y = [float(x) for x in expected_y]
 
     # verify that the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are correct
     assert observed_x == expected_x
