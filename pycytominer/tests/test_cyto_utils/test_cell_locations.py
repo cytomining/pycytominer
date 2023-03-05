@@ -44,11 +44,6 @@ def test_values(cell_loc, metadata_input_dataframe, single_cell_input_file, requ
     conn.close()
 
     # get the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns
-    # for the rows in cell_loc that have ImageNumber == 1
-
-    cell_loc_row1 = cell_loc[cell_loc["ImageNumber"] == "1"]
-
-    # get the values in the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns
     # for the rows in nuclei_df that have ImageNumber == 1
 
     nuclei_df_row1 = nuclei_df[nuclei_df["ImageNumber"] == "1"]
