@@ -6,8 +6,8 @@ import os
 import pandas as pd
 import sqlite3
 import boto3
+import botocore
 import tempfile
-import shutil
 import collections
 
 
@@ -64,12 +64,6 @@ class CellLocation:
 
     Methods
     -------
-    load_metadata()
-        Load the metadata file into a Pandas DataFrame
-
-    load_single_cell()
-        Load the required columns from the `Image` and `Nuclei` tables in the single_cell file into a Pandas DataFrame
-
     add_cell_location()
         Augment the metadata file and optionally save it to a file
 
@@ -80,22 +74,98 @@ class CellLocation:
         metadata_input: str or pd.DataFrame,
         single_cell_input: str or sqlite3.Connection,
         augmented_metadata_output: str = None,
+        overwrite: bool = False,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
         image_index=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
-        self.metadata_input = metadata_input
-        self.augmented_metadata_output = augmented_metadata_output
-        self.single_cell_input = single_cell_input
+        self.metadata_input = self._expanduser(metadata_input)
+        self.augmented_metadata_output = self._expanduser(augmented_metadata_output)
+        self.single_cell_input = self._expanduser(single_cell_input)
+        self.overwrite = overwrite
         self.image_column = image_column
         self.object_column = object_column
         self.image_index = image_index
         self.cell_x_loc = cell_x_loc
         self.cell_y_loc = cell_y_loc
 
-    def load_metadata(self):
+    def _expanduser(self, obj):
+        """Expand the user home directory in a path"""
+        if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
+            return os.path.expanduser(obj)
+        else:
+            return obj
+
+    def _parse_s3_path(self, s3_path):
+        """Parse an S3 path into a bucket and key
+
+        Parameters
+        ----------
+        s3_path : str
+            The S3 path
+
+        Returns
+        -------
+        str
+            The bucket
+        str
+            The key
+        """
+
+        s3_path = s3_path.replace("s3://", "")
+
+        bucket = s3_path.split("/")[0]
+
+        key = "/".join(s3_path.split("/")[1:])
+
+        return bucket, key
+
+    def _s3_file_exists(self, s3_path):
+        """Check if a file exists on S3
+
+        Parameters
+        ----------
+        s3_path : str
+            The path to the file on S3
+
+        Returns
+        -------
+        bool
+            True if the file exists on S3, False otherwise
+        """
+
+        s3 = boto3.resource("s3")
+
+        bucket, key = self._parse_s3_path(s3_path)
+
+        try:
+            s3.Object(bucket, key).load()
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                return False
+            else:
+                raise
+        else:
+            return True
+
+    def _download_s3(self, uri):
+        """
+        Download a file from S3, save it to a temporary directory, and return the path to the file
+        """
+        s3 = boto3.resource("s3")
+
+        bucket, key = self._parse_s3_path(uri)
+
+        tmp_dir = tempfile.mkdtemp()
+        tmp_file = os.path.join(tmp_dir, os.path.basename(key))
+
+        s3.Bucket(bucket).download_file(key, tmp_file)
+
+        return tmp_file
+
+    def _load_metadata(self):
         """Load the metadata into a Pandas DataFrame
 
         Returns
@@ -131,17 +201,6 @@ class CellLocation:
             )
 
         return df
-
-    def _download_s3(self, uri):
-        """
-        Download a file from S3, save it to a temporary directory, and return the path to the file
-        """
-        s3 = boto3.resource("s3")
-        bucket, key = uri.replace("s3://", "").split("/", 1)
-        tmp_dir = tempfile.mkdtemp()
-        tmp_file = os.path.join(tmp_dir, os.path.basename(key))
-        s3.Bucket(bucket).download_file(key, tmp_file)
-        return tmp_file
 
     def _convert_to_per_row_dict(self, df):
         # define a dictionary to store the output
@@ -180,7 +239,7 @@ class CellLocation:
         # convert the output dictionary to a Pandas DataFrame
         return pd.DataFrame(output_df_list)
 
-    def load_single_cell(self):
+    def _load_single_cell(self):
         """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlite3.Connection object into a Pandas DataFrame
 
         Returns
@@ -298,11 +357,30 @@ class CellLocation:
         Returns
         -------
         Pandas DataFrame
-            The Parquet file with the X,Y locations of all cells packed into a single column
+            Either a data frame or the path to a Parquet file with the X,Y locations of all cells packed into a single column
         """
+
+        # If self.augmented_metadata_output is not None and it is a str and the file already exists, there is nothing to do
+        if (
+            self.augmented_metadata_output is not None
+            and isinstance(self.augmented_metadata_output, str)
+            and self.overwrite is False
+            and (
+                (
+                    self.augmented_metadata_output.startswith("s3://")
+                    and self._s3_file_exists(self.augmented_metadata_output)
+                )
+                or (
+                    not self.augmented_metadata_output.startswith("s3://")
+                    and os.path.exists(self.augmented_metadata_output)
+                )
+            )
+        ):
+            return self.augmented_metadata_output
+
         # Load the data
-        metadata_df = self.load_metadata()
-        single_cell_df = self.load_single_cell()
+        metadata_df = self._load_metadata()
+        single_cell_df = self._load_single_cell()
 
         # Merge the data and single_cell tables
         augmented_metadata_df = pd.merge(
@@ -312,10 +390,11 @@ class CellLocation:
             how="left",
         )
 
-        # If self.augmented_metadata_output) is not None, save the data
+        # If self.augmented_metadata_output is not None, save the data
         if self.augmented_metadata_output is not None:
             augmented_metadata_df.to_parquet(
                 self.augmented_metadata_output, index=False
             )
+            return self.augmented_metadata_output
         else:
             return augmented_metadata_df
