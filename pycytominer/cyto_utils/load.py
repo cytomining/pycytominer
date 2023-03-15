@@ -1,8 +1,67 @@
 import csv
 import gzip
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
+# NOTE under dev
+
+def infer_profile_file_type(file):
+    """Infers file type. 
+
+    This is done by reading the header of the given file to identify 
+    the file type.
+
+    Currently this function only identifies sqlite and parquet 
+    headers
+
+    Parameters
+    ----------
+    file : str
+        file name
+
+    Return
+    -------
+    str
+        returns file type name
+    
+    Raises:
+    -------
+    TypeError
+        Raised if a file is not provided
+    ValueError
+        Rased if the file is either corrupt/empty or it is unable to infer 
+        the file
+    """
+
+    # Type checking
+    if isinstance(file, str):
+        file = Path(file)
+    if not file.exists():
+        raise FileNotFoundError("Provided file path does not exist")
+    if not file.is_file():
+        raise TypeError("A file must be provided")
+
+    # check if the file is not empty
+    # -- 100 bytes are selected because it contains the file header info
+    # -- header info contains the file type name
+    buffer_size = 100
+    if file.stat().st_size < buffer_size:
+        raise ValueError("File is either empty or corrupt")
+
+    # header and identify file type
+    with open(file, mode="rb") as stream:
+        header = stream.read(buffer_size)
+
+    # Identifying file type name
+    try:
+        if "SQLite format" in header[:13].decode("utf-8"):
+            return "sqlite"
+    except UnicodeDecodeError:
+        if "PAR1" in header[:4].decode("utf-8"):
+            return "parquet"
+        else:
+            raise ValueError("Unable to infer file type")
 
 def infer_delim(file):
     """
@@ -43,18 +102,26 @@ def load_profiles(profiles):
     pandas DataFrame of profiles
     """
     if not isinstance(profiles, pd.DataFrame):
+        # check if it is a either parquet
+        try:
+            file_type = infer_profile_file_type(profiles)
+            if file_type == "parquet":
+                profiles = pd.read_parquet(profiles)
+                return profiles
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"{profiles} profile file not found") from e
+
         try:
             delim = infer_delim(profiles)
             profiles = pd.read_csv(profiles, sep=delim)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"{profiles} profile file not found")
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"{profiles} profile file not found") from e
+
     return profiles
 
 
 def load_platemap(platemap, add_metadata_id=True):
     """
-    Unless a dataframe is provided, load the given platemap dataframe from path or string
-
     Parameters
     ----------
     platemap : pandas dataframe
