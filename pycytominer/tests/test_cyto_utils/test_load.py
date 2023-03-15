@@ -10,7 +10,8 @@ from pycytominer.cyto_utils import (
     load_npz_features,
     load_npz_locations,
 )
-from pycytominer.cyto_utils.load import infer_delim
+from pycytominer.cyto_utils.load import (infer_delim,
+                                         infer_profile_file_type)
 
 random.seed(123)
 
@@ -196,3 +197,21 @@ def test_load_npz():
         load_npz_locations(
             example_npz_file_locations, location_x_col_index=0, location_y_col_index=2
         )
+
+def test_infer_plate_files():
+
+    # inferring parquet files
+    parquet_file = "../test_data/cytominer_database_example_data/test_SQ00014613.parquet"
+    expected_file_type_1 = "parquet"
+    test_file_type_infer_1 = infer_profile_file_type(parquet_file)
+    assert(expected_file_type_1 == test_file_type_infer_1)
+
+    # inferring sqlite files
+    sqlite_file = "../test_data/cytominer_database_example_data/test_SQ00014613.sqlite"
+    expected_file_type_2 = "sqlite"
+    test_file_type_infer_2 = infer_profile_file_type(sqlite_file)
+    assert(expected_file_type_2== test_file_type_infer_2)
+
+    # loading parquet file
+
+

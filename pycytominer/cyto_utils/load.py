@@ -7,13 +7,13 @@ import pandas as pd
 # NOTE under dev
 
 def infer_profile_file_type(file):
-    """Infers file type. 
+    """Infers profile file type.
 
-    This is done by reading the header of the given file to identify 
+    This is done by reading the header of the given file to identify
     the file type.
 
-    Currently this function only identifies sqlite and parquet 
-    headers
+    Currently this function only identifies sqlite and parquet
+    headers.
 
     Parameters
     ----------
@@ -24,13 +24,15 @@ def infer_profile_file_type(file):
     -------
     str
         returns file type name
-    
+
     Raises:
     -------
+    FileNotFoundError
+        Raised if the given file does not exist
     TypeError
         Raised if a file is not provided
     ValueError
-        Rased if the file is either corrupt/empty or it is unable to infer 
+        Rased if the file is either corrupt/empty or it is unable to infer
         the file
     """
 
@@ -54,14 +56,13 @@ def infer_profile_file_type(file):
         header = stream.read(buffer_size)
 
     # Identifying file type name
-    try:
-        if "SQLite format" in header[:13].decode("utf-8"):
-            return "sqlite"
-    except UnicodeDecodeError:
-        if "PAR1" in header[:4].decode("utf-8"):
-            return "parquet"
-        else:
-            raise ValueError("Unable to infer file type")
+    # -- errors set to ignore to ignore UnicodeError Exceptions
+    if "SQLite format" == header[:13].decode("utf-8", errors="ignore"):
+        return "sqlite"
+    elif "PAR" == header[:3].decode("utf-8", errors="ignore"):
+        return "parquet"
+    else:
+        raise ValueError("Unable to infer file type")
 
 def infer_delim(file):
     """
@@ -102,7 +103,6 @@ def load_profiles(profiles):
     pandas DataFrame of profiles
     """
     if not isinstance(profiles, pd.DataFrame):
-        # check if it is a either parquet
         try:
             file_type = infer_profile_file_type(profiles)
             if file_type == "parquet":
