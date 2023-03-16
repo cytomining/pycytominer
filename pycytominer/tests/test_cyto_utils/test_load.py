@@ -210,8 +210,11 @@ def test_infer_plate_files():
     sqlite_file = "../test_data/cytominer_database_example_data/test_SQ00014613.sqlite"
     expected_file_type_2 = "sqlite"
     test_file_type_infer_2 = infer_profile_file_type(sqlite_file)
-    assert(expected_file_type_2== test_file_type_infer_2)
+    assert(expected_file_type_2 == test_file_type_infer_2)
 
     # loading parquet file
+    parquet_df = pd.read_parquet(parquet_file)
+    profile = load_profiles(parquet_file)
+    pd.testing.assert_frame_equal(profile, parquet_df)
 
 

@@ -101,21 +101,28 @@ def load_profiles(profiles):
     Return
     ------
     pandas DataFrame of profiles
+    
+    Raises
+    ------
+    FileNotFoundError
+        Raised if the provided
     """
     if not isinstance(profiles, pd.DataFrame):
-        try:
-            file_type = infer_profile_file_type(profiles)
-            if file_type == "parquet":
-                profiles = pd.read_parquet(profiles)
-                return profiles
-        except FileNotFoundError as e:
-            raise FileNotFoundError(f"{profiles} profile file not found") from e
+
+        # check if the file exists
+        check = Path(profiles).exists()
+        if check is False:
+            raise FileNotFoundError(f"{profiles} profile file not found") 
 
         try:
+            file_type = infer_profile_file_type(profiles)
+            if file_type != "parquet":
+                raise TypeError("unable to infer file type") from e
+            profiles = pd.read_parquet(profiles)
+            return profiles
+        except ValueError:
             delim = infer_delim(profiles)
             profiles = pd.read_csv(profiles, sep=delim)
-        except FileNotFoundError as e:
-            raise FileNotFoundError(f"{profiles} profile file not found") from e
 
     return profiles
 
