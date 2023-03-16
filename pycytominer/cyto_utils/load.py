@@ -4,8 +4,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# NOTE under dev
-
 def infer_profile_file_type(file):
     """Infers profile file type.
 
@@ -101,7 +99,7 @@ def load_profiles(profiles):
     Return
     ------
     pandas DataFrame of profiles
-    
+
     Raises
     ------
     FileNotFoundError
@@ -112,7 +110,7 @@ def load_profiles(profiles):
         # check if the file exists
         check = Path(profiles).exists()
         if check is False:
-            raise FileNotFoundError(f"{profiles} profile file not found") 
+            raise FileNotFoundError(f"{profiles} profile file not found")
 
         try:
             file_type = infer_profile_file_type(profiles)
