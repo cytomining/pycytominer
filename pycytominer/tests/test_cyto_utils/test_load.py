@@ -214,7 +214,7 @@ def test_infer_plate_files():
 
     # loading parquet file
     parquet_df = pd.read_parquet(parquet_file)
-    profile = load_profiles(parquet_file)
-    pd.testing.assert_frame_equal(profile, parquet_df)
+    parquet_profile = load_profiles(parquet_file)
+    pd.testing.assert_frame_equal(parquet_profile, parquet_df)
 
 
