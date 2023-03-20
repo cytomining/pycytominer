@@ -21,6 +21,7 @@ tmpdir = tempfile.gettempdir()
 # Set file paths for data-to-be-loaded
 output_data_file = os.path.join(tmpdir, "test_data.csv")
 output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
+output_data_parquet = os.path.join(tmpdir, "test_parquet.parquet")
 output_data_gzip_file = "{}.gz".format(output_data_file)
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
@@ -79,6 +80,8 @@ npz_feats = data_df.drop("Metadata_Well", axis="columns").values
 data_df.to_csv(output_data_file, sep="\t", index=False)
 data_df.to_csv(output_data_comma_file, sep=",", index=False)
 data_df.to_csv(output_data_gzip_file, sep="\t", index=False, compression="gzip")
+data_df.to_parquet(output_data_parquet, engine="pyarrow")
+
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
 platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
@@ -201,25 +204,20 @@ def test_load_npz():
 
 def test_is_path_a_parquet_file():
 
-    # file paths
-    test_data_dir = "tests/test_data/cytominer_database_example_data"
-    csv_file = f"{test_data_dir}/test_SQ00014613.csv.gz"
-    parquet_file = f"{test_data_dir}/test_SQ00014613.parquet"
-
     # checking parquet file
-    check_pass = is_path_a_parquet_file(parquet_file)
-    check_fail = is_path_a_parquet_file(csv_file)
+    check_pass = is_path_a_parquet_file(output_data_parquet)
+    check_fail = is_path_a_parquet_file(output_data_file)
 
     # checking if the correct booleans are returned
     assert(check_pass, True)
     assert(check_fail, False)
 
     # loading in pandas dataframe from parquet file
-    parquet_df = pd.read_parquet(parquet_file)
-    parquet_profile_test = load_profiles(parquet_file)
+    parquet_df = pd.read_parquet(output_data_parquet)
+    parquet_profile_test = load_profiles(output_data_parquet)
     pd.testing.assert_frame_equal(parquet_profile_test, parquet_df)
 
     # loading csv file with new load_profile()
-    csv_df = pd.read_csv(csv_file)
-    csv_profile_test = load_profiles(csv_file)
+    csv_df = pd.read_csv(output_data_comma_file)
+    csv_profile_test = load_profiles(output_data_comma_file)
     pd.testing.assert_frame_equal(csv_profile_test, csv_df)
