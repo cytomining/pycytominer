@@ -198,7 +198,7 @@ def test_load_npz():
             example_npz_file_locations, location_x_col_index=0, location_y_col_index=2
         )
 
-def test_infer_plate_files():
+def test_is_path_a_parquet_file():
 
     # file paths
     csv_file = "../test_data/cytominer_database_example_data/test_SQ00014613.csv.gz"
