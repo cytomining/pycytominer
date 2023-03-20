@@ -4,11 +4,12 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+
 def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
     """Checks if the provided file path is a parquet file.
 
-    Identify parquet files by inspecting the file extensions. 
-    If the file does not end with `parquet`, this will return False, else True. 
+    Identify parquet files by inspecting the file extensions.
+    If the file does not end with `parquet`, this will return False, else True.
 
     Parameters
     ----------
@@ -26,13 +27,13 @@ def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
     TypeError
         Raised if a non str object is passed in the `file` parameter
     FileNotFoundError
-        Raised if the provided path in the `file` does not exist 
+        Raised if the provided path in the `file` does not exist
     """
     # type checking
     accepted_type = (str, pathlib.Path)
     if not isinstance(file, accepted_type):
         raise TypeError(f"file must be a str not {type(file)}")
-    
+
     # convert str to pathlib.Path object
     if isinstance(file, str):
         file = pathlib.Path(file).absolute()
@@ -44,7 +45,7 @@ def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
     # checking if file path is a parquet file
     if not file.suffix.lower() == ".parquet":
         return False
-    return  True
+    return True
 
 
 def infer_delim(file):
@@ -92,10 +93,9 @@ def load_profiles(profiles):
 
     """
     if not isinstance(profiles, pd.DataFrame):
-
         if is_path_a_parquet_file(profiles):
             return pd.read_parquet(profiles, engine="pyarrow")
-        
+
         try:
             delim = infer_delim(profiles)
             profiles = pd.read_csv(profiles, sep=delim)
@@ -176,9 +176,12 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     # Load metadata
     if "metadata" in files:
         metadata = npz["metadata"].item()
-        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]), dtype=str)
+        metadata_df = pd.DataFrame(
+            metadata, index=range(0, df.shape[0]), dtype=str
+        )
         metadata_df.columns = [
-            f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x
+            for x in metadata_df
         ]
 
         # Determine the appropriate metadata prefix
@@ -197,12 +200,16 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
 
     # Append metadata with features
     if "metadata" in files:
-        df = metadata_df.merge(df, how="outer", left_index=True, right_index=True)
+        df = metadata_df.merge(
+            df, how="outer", left_index=True, right_index=True
+        )
 
     return df
 
 
-def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1):
+def load_npz_locations(
+    npz_file, location_x_col_index=0, location_y_col_index=1
+):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
