@@ -201,8 +201,9 @@ def test_load_npz():
 def test_is_path_a_parquet_file():
 
     # file paths
-    csv_file = "../test_data/cytominer_database_example_data/test_SQ00014613.csv.gz"
-    parquet_file = "../test_data/cytominer_database_example_data/test_SQ00014613.parquet"
+    test_data_dir = "../test_data/cytominer_database_example_data"
+    csv_file = f"{test_data_dir}/test_SQ00014613.csv.gz"
+    parquet_file = f"{test_data_dir}/test_SQ00014613.parquet"
 
     # checking parquet file
     check_pass = is_path_a_parquet_file(parquet_file)
@@ -216,3 +217,8 @@ def test_is_path_a_parquet_file():
     parquet_df = pd.read_parquet(parquet_file)
     parquet_profile_test = load_profiles(parquet_file)
     pd.testing.assert_frame_equal(parquet_profile_test, parquet_df)
+
+    # loading csv file with new load_profile()
+    csv_df = pd.read_csv(csv_file)
+    csv_profile_test = load_profiles(csv_file)
+    pd.testing.assert_frame_equal(csv_profile_test, csv_df)
