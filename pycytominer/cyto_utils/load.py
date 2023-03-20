@@ -1,10 +1,10 @@
 import csv
 import gzip
-from pathlib import Path
+import pathlib
 import numpy as np
 import pandas as pd
 
-def is_path_a_parquet_file(file: str) -> bool:
+def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
     """Checks if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions. 
@@ -12,7 +12,7 @@ def is_path_a_parquet_file(file: str) -> bool:
 
     Parameters
     ----------
-    file : str
+    file : str | pathlib.Path
         path to parquet file
 
     Returns
@@ -29,12 +29,15 @@ def is_path_a_parquet_file(file: str) -> bool:
         Raised if the provided path in the `file` does not exist 
     """
     # type checking
-    if not isinstance(file, str):
+    accepted_type = (str, pathlib.Path)
+    if not isinstance(file, accepted_type):
         raise TypeError(f"file must be a str not {type(file)}")
+    
+    # convert str to pathlib.Path object
+    if isinstance(file, str):
+        file = pathlib.Path(file).absolute()
 
-    # converting str object to Path Object
-    # -- checking if it exists
-    file = Path(file)
+    # checking if the file exists
     if not file.exists():
         raise FileNotFoundError(f"{str(file.absolute())} does not exists")
 
@@ -82,18 +85,22 @@ def load_profiles(profiles):
     ------
     pandas DataFrame of profiles
 
-    Raises
-    ------
+    Raises:
+    -------
     FileNotFoundError
-        Raised if the provided
+        Raised if the provided profile does not exists
+
     """
     if not isinstance(profiles, pd.DataFrame):
 
         if is_path_a_parquet_file(profiles):
             return pd.read_parquet(profiles, engine="pyarrow")
         
-        delim = infer_delim(profiles)
-        profiles = pd.read_csv(profiles, sep=delim)
+        try:
+            delim = infer_delim(profiles)
+            profiles = pd.read_csv(profiles, sep=delim)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"{profiles} profile file not found")
 
     return profiles
 
