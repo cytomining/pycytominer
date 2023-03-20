@@ -7,7 +7,7 @@ import pandas as pd
 def is_path_a_parquet_file(file: str) -> bool:
     """Checks if the provided file path is a parquet file.
 
-    Identification of parquet files are done by inspecting the file extensions. 
+    Identify parquet files by inspecting the file extensions. 
     If the file does not end with `parquet`, this will return False, else True. 
 
     Parameters
