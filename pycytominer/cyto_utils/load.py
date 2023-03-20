@@ -4,63 +4,45 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-def infer_profile_file_type(file):
-    """Infers profile file type.
+def is_path_a_parquet_file(file: str) -> bool:
+    """Checks if the provided file path is a parquet file.
 
-    This is done by reading the header of the given file to identify
-    the file type.
-
-    Currently this function only identifies sqlite and parquet
-    headers.
+    Identification of parquet files are done by inspecting the file extensions. 
+    If the file does not end with `parquet`, this will return False, else True. 
 
     Parameters
     ----------
     file : str
-        file name
+        path to parquet file
 
-    Return
+    Returns
     -------
-    str
-        returns file type name
+    bool
+        Returns True if the file path contains `.parquet`, else it will return
+        False
 
-    Raises:
-    -------
-    FileNotFoundError
-        Raised if the given file does not exist
+    Raises
+    ------
     TypeError
-        Raised if a file is not provided
-    ValueError
-        Rased if the file is either corrupt/empty or it is unable to infer
-        the file
+        Raised if a non str object is passed in the `file` parameter
+    FileNotFoundError
+        Raised if the provided path in the `file` does not exist 
     """
+    # type checking
+    if not isinstance(file, str):
+        raise TypeError(f"file must be a str not {type(file)}")
 
-    # Type checking
-    if isinstance(file, str):
-        file = Path(file)
+    # converting str object to Path Object
+    # -- checking if it exists
+    file = Path(file)
     if not file.exists():
-        raise FileNotFoundError("Provided file path does not exist")
-    if not file.is_file():
-        raise TypeError("A file must be provided")
+        raise FileNotFoundError(f"{str(file.absolute())} does not exists")
 
-    # check if the file is not empty
-    # -- 100 bytes are selected because it contains the file header info
-    # -- header info contains the file type name
-    buffer_size = 100
-    if file.stat().st_size < buffer_size:
-        raise ValueError("File is either empty or corrupt")
+    # checking if file path is a parquet file
+    if not file.suffix.lower() == ".parquet":
+        return False
+    return  True
 
-    # header and identify file type
-    with open(file, mode="rb") as stream:
-        header = stream.read(buffer_size)
-
-    # Identifying file type name
-    # -- errors set to ignore to ignore UnicodeError Exceptions
-    if "SQLite format" == header[:13].decode("utf-8", errors="ignore"):
-        return "sqlite"
-    elif "PAR" == header[:3].decode("utf-8", errors="ignore"):
-        return "parquet"
-    else:
-        raise ValueError("Unable to infer file type")
 
 def infer_delim(file):
     """
@@ -107,20 +89,11 @@ def load_profiles(profiles):
     """
     if not isinstance(profiles, pd.DataFrame):
 
-        # check if the file exists
-        check = Path(profiles).exists()
-        if check is False:
-            raise FileNotFoundError(f"{profiles} profile file not found")
-
-        try:
-            file_type = infer_profile_file_type(profiles)
-            if file_type != "parquet":
-                raise TypeError("unable to infer file type") from e
-            profiles = pd.read_parquet(profiles)
-            return profiles
-        except ValueError:
-            delim = infer_delim(profiles)
-            profiles = pd.read_csv(profiles, sep=delim)
+        if is_path_a_parquet_file(profiles):
+            return pd.read_parquet(profiles, engine="pyarrow")
+        
+        delim = infer_delim(profiles)
+        profiles = pd.read_csv(profiles, sep=delim)
 
     return profiles
 

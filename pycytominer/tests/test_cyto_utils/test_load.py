@@ -11,7 +11,7 @@ from pycytominer.cyto_utils import (
     load_npz_locations,
 )
 from pycytominer.cyto_utils.load import (infer_delim,
-                                         infer_profile_file_type)
+                                         is_path_a_parquet_file)
 
 random.seed(123)
 
@@ -200,21 +200,19 @@ def test_load_npz():
 
 def test_infer_plate_files():
 
-    # inferring parquet files
+    # file paths
+    csv_file = "../test_data/cytominer_database_example_data/test_SQ00014613.csv.gz"
     parquet_file = "../test_data/cytominer_database_example_data/test_SQ00014613.parquet"
-    expected_file_type_1 = "parquet"
-    test_file_type_infer_1 = infer_profile_file_type(parquet_file)
-    assert(expected_file_type_1 == test_file_type_infer_1)
 
-    # inferring sqlite files
-    sqlite_file = "../test_data/cytominer_database_example_data/test_SQ00014613.sqlite"
-    expected_file_type_2 = "sqlite"
-    test_file_type_infer_2 = infer_profile_file_type(sqlite_file)
-    assert(expected_file_type_2 == test_file_type_infer_2)
+    # checking parquet file
+    check_pass = is_path_a_parquet_file(parquet_file)
+    check_fail = is_path_a_parquet_file(csv_file)
 
-    # loading parquet file
+    # checking if the correct booleans are returned
+    assert(check_pass, True)
+    assert(check_fail, False)
+
+    # loading in pandas dataframe from parquet file
     parquet_df = pd.read_parquet(parquet_file)
-    parquet_profile = load_profiles(parquet_file)
-    pd.testing.assert_frame_equal(parquet_profile, parquet_df)
-
-
+    parquet_profile_test = load_profiles(parquet_file)
+    pd.testing.assert_frame_equal(parquet_profile_test, parquet_df)
