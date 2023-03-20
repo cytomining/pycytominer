@@ -29,6 +29,7 @@ output_npz_file = os.path.join(tmpdir, "test_npz.npz")
 output_npz_with_model_file = os.path.join(tmpdir, "test_npz_withmodel.npz")
 output_npz_without_metadata_file = os.path.join(tmpdir, "test_npz_withoutmetadata.npz")
 
+
 # Example .npz file with real data
 example_npz_file = os.path.join(
     os.path.dirname(__file__),
@@ -201,7 +202,7 @@ def test_load_npz():
 def test_is_path_a_parquet_file():
 
     # file paths
-    test_data_dir = "../test_data/cytominer_database_example_data"
+    test_data_dir = "tests/test_data/cytominer_database_example_data"
     csv_file = f"{test_data_dir}/test_SQ00014613.csv.gz"
     parquet_file = f"{test_data_dir}/test_SQ00014613.parquet"
 
