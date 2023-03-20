@@ -3,9 +3,9 @@ import gzip
 import pathlib
 import numpy as np
 import pandas as pd
+from typing import Union
 
-
-def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
+def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """Checks if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions.
@@ -13,7 +13,7 @@ def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
 
     Parameters
     ----------
-    file : str | pathlib.Path
+    file : Union[str, pathlib.Path]
         path to parquet file
 
     Returns
@@ -48,7 +48,7 @@ def is_path_a_parquet_file(file: str | pathlib.Path) -> bool:
     return True
 
 
-def infer_delim(file):
+def infer_delim(file: str):
     """
     Sniff the delimiter in the given file
 
