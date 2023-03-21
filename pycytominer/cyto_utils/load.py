@@ -30,8 +30,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
         Raised if the provided path in the `file` does not exist
     """
     # type checking
-    accepted_type = (str, pathlib.Path)
-    if not isinstance(file, accepted_type):
+    if not isinstance(file, (str, pathlib.Path)):
         raise TypeError(f"file must be a str not {type(file)}")
 
     # convert str to pathlib.Path object
