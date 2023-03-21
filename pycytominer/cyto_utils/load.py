@@ -110,6 +110,8 @@ def load_profiles(profiles):
 
 def load_platemap(platemap, add_metadata_id=True):
     """
+    Unless a dataframe is provided, load the given platemap dataframe from path or string
+
     Parameters
     ----------
     platemap : pandas dataframe
