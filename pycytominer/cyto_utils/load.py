@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import Union
 
+
 def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """Checks if the provided file path is a parquet file.
 
