@@ -247,3 +247,6 @@ def test_is_path_a_parquet_file():
     csv_df = pd.read_csv(output_data_comma_file)
     csv_profile_test = load_profiles(output_data_comma_file)
     pd.testing.assert_frame_equal(csv_profile_test, csv_df)
+
+    # checking same df is porduced from parquet and csv files
+    pd.testing.assert_frame_equal(parquet_profile_test, csv_profile_test)
