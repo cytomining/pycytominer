@@ -46,10 +46,11 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     # checking if the file exists
     if not file.exists():
         raise FileNotFoundError(f"{str(file)} does not exist")
-    # checking if file path is a parquet file
-    if not file.suffix.lower() == ".parquet":
-        return False
-    return True
+    # Check if file path is a parquet file
+    if file.suffix.lower() == ".parquet":
+        return True
+    
+    return False
 
 
 def infer_delim(file: str):
