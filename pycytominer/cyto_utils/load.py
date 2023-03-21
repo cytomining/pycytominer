@@ -26,7 +26,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     Raises
     ------
     TypeError
-        Raised if a non str object is passed in the `file` parameter
+        Raised if a non str or non-path object is passed in the `file` parameter
     FileNotFoundError
         Raised if the provided path in the `file` does not exist
     """
