@@ -34,12 +34,11 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     if not isinstance(file, (str, pathlib.Path)):
         raise TypeError(f"file must be a str not {type(file)}")
 
-    # convert str to pathlib.Path object
+    # Convert str to pathlib.Path object
     if isinstance(file, str):
-        file = pathlib.Path(file).absolute()
+        file = pathlib.Path(file)
 
-    # if a pathlib.Path object is passed check if it is an absolute path
-    # -- if not, get absolute path
+    # Convert to absolute path if necessary
     if not file.is_absolute():
         file = file.absolute()
 
