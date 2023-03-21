@@ -39,7 +39,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
 
     # checking if the file exists
     if not file.exists():
-        raise FileNotFoundError(f"{str(file.absolute())} does not exists")
+        raise FileNotFoundError(f"{str(file.absolute())} does not exist")
 
     # checking if file path is a parquet file
     if not file.suffix.lower() == ".parquet":
