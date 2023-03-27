@@ -77,7 +77,7 @@ class CellLocation:
         overwrite: bool = False,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
-        image_index=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+        image_index: List = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
