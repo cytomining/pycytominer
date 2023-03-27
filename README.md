@@ -45,11 +45,12 @@ Since the project is actively being developed, with new features added regularly
 # Example:
 pip install git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470
 ```
+
 ### CSV collation
 
 If running your images on a cluster, unless you have a MySQL or similar large database set up then you will likely end up with lots of different folders from the different cluster runs (often one per well or one per site), each one containing an `Image.csv`, `Nuclei.csv`, etc.
 In order to look at full plates, therefore, we first need to collate all of these CSVs into a single file (currently SQLite) per plate.
-We currently do this with a library called [cytominer-database](https://github.com/cytomining/cytominer-database). 
+We currently do this with a library called [cytominer-database](https://github.com/cytomining/cytominer-database).
 
 If you want to perform this data collation inside pycytominer using the `cyto_utils` function `collate` (and/or you want to be able to run the tests and have them all pass!), you will need `cytominer-database==0.3.4`; this will change your installation commands slightly:
 
@@ -61,6 +62,21 @@ pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@
 ```
 
 If using `pycytominer` in a conda environment, in order to run `collate.py`, you will also want to make sure to add `cytominer-database=0.3.4` to your list of dependencies.
+
+## Creating a cell locations lookup table
+
+The `CellLocation` class, designed for use with pycytominer, offers a convenient way to augment a [LoadData](https://cellprofiler-manual.s3.amazonaws.com/CPmanual/LoadData.html) file with X,Y locations of cells in each image.
+The locations information is obtained from a single cell SQLite file, which contains `Nuclei` and `Image` tables with cell and image-level readouts, respectively.
+Each row of a LoadData file represents a single image, indexed by multiple columns (e.g., `Metadata_Plate`, `Metadata_Well`, `Metadata_Site`).
+The `CellLocation` class uses the `Image` table to identify the image-level metadata for each image in the LoadData file, and then uses the `Nuclei` table to identify the X,Y locations of cells in each image.
+The X,Y locations are then added to the LoadData file as new columns, and the resulting augmented LoadData file is saved to disk.
+
+To use this functionality, you will need to modify your installation command, similar to above:
+
+```bash
+# Example for general case commit:
+pip install "pycytominer[cell_locations] @ git+git://github.com/cytomining/pycytominer"
+```
 
 ## Usage
 
