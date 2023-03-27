@@ -2,7 +2,7 @@
 Utility function to augment a metadata file with X,Y locations of cells in each image
 """
 
-import os
+import pathlib
 import pandas as pd
 import sqlite3
 import boto3
@@ -77,7 +77,7 @@ class CellLocation:
         overwrite: bool = False,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
-        image_index: List = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+        image_index: list = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
@@ -94,7 +94,8 @@ class CellLocation:
     def _expanduser(self, obj):
         """Expand the user home directory in a path"""
         if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
-            return os.path.expanduser(obj)
+            return pathlib.Path(obj).expanduser().as_posix()
+
         else:
             return obj
 
@@ -159,7 +160,7 @@ class CellLocation:
         bucket, key = self._parse_s3_path(uri)
 
         tmp_dir = tempfile.mkdtemp()
-        tmp_file = os.path.join(tmp_dir, os.path.basename(key))
+        tmp_file = pathlib.Path(tmp_dir) / pathlib.Path(key).name
 
         s3.Bucket(bucket).download_file(key, tmp_file)
 
@@ -330,7 +331,7 @@ class CellLocation:
 
         # if the single_cell file was downloaded from S3, delete the temporary file
         if "temp_single_cell_input" in locals():
-            os.remove(temp_single_cell_input)
+            pathlib.Path(temp_single_cell_input).unlink()
 
         # Merge the Image and Nuclei tables
         merged_df = pd.merge(image_df, nuclei_df, on=self.image_column, how="inner")
@@ -372,7 +373,7 @@ class CellLocation:
                 )
                 or (
                     not self.augmented_metadata_output.startswith("s3://")
-                    and os.path.exists(self.augmented_metadata_output)
+                    and pathlib.Path(self.augmented_metadata_output).exists()
                 )
             )
         ):
@@ -392,6 +393,8 @@ class CellLocation:
 
         # If self.augmented_metadata_output is not None, save the data
         if self.augmented_metadata_output is not None:
+            # switch to https://github.com/cytomining/pycytominer/blob/master/pycytominer/cyto_utils/output.py
+            # if we want to support more file types
             augmented_metadata_df.to_parquet(
                 self.augmented_metadata_output, index=False
             )
