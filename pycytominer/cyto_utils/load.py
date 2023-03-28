@@ -1,10 +1,52 @@
 import csv
 import gzip
+import pathlib
 import numpy as np
 import pandas as pd
+from typing import Union
 
 
-def infer_delim(file):
+def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
+    """Checks if the provided file path is a parquet file.
+
+    Identify parquet files by inspecting the file extensions.
+    If the file does not end with `parquet`, this will return False, else True.
+
+    Parameters
+    ----------
+    file : Union[str, pathlib.Path]
+        path to parquet file
+
+    Returns
+    -------
+    bool
+        Returns True if the file path contains `.parquet`, else it will return
+        False
+
+    Raises
+    ------
+    TypeError
+        Raised if a non str or non-path object is passed in the `file` parameter
+    FileNotFoundError
+        Raised if the provided path in the `file` does not exist
+    """
+    # type checking
+    if not isinstance(file, (str, pathlib.Path)):
+        raise TypeError(f"file must be a str or pathlib.Path not {type(file)}")
+
+    # Convert str to pathlib.Path object and absolute path
+    # check if the file also exists while converting to absolute path
+    if isinstance(file, str):
+        file = pathlib.Path(file).resolve(strict=True)
+
+    # Check if file path is a parquet file
+    if file.suffix.lower() == ".parquet":
+        return True
+
+    return False
+
+
+def infer_delim(file: str):
     """
     Sniff the delimiter in the given file
 
@@ -41,13 +83,23 @@ def load_profiles(profiles):
     Return
     ------
     pandas DataFrame of profiles
+
+    Raises:
+    -------
+    FileNotFoundError
+        Raised if the provided profile does not exists
+
     """
     if not isinstance(profiles, pd.DataFrame):
+        if is_path_a_parquet_file(profiles):
+            return pd.read_parquet(profiles, engine="pyarrow")
+
         try:
             delim = infer_delim(profiles)
             profiles = pd.read_csv(profiles, sep=delim)
         except FileNotFoundError:
             raise FileNotFoundError(f"{profiles} profile file not found")
+
     return profiles
 
 
@@ -124,9 +176,12 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     # Load metadata
     if "metadata" in files:
         metadata = npz["metadata"].item()
-        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]), dtype=str)
+        metadata_df = pd.DataFrame(
+            metadata, index=range(0, df.shape[0]), dtype=str
+        )
         metadata_df.columns = [
-            f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x
+            for x in metadata_df
         ]
 
         # Determine the appropriate metadata prefix
@@ -145,12 +200,16 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
 
     # Append metadata with features
     if "metadata" in files:
-        df = metadata_df.merge(df, how="outer", left_index=True, right_index=True)
+        df = metadata_df.merge(
+            df, how="outer", left_index=True, right_index=True
+        )
 
     return df
 
 
-def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1):
+def load_npz_locations(
+    npz_file, location_x_col_index=0, location_y_col_index=1
+):
     """
     Load an npz file storing locations and, sometimes, metadata.
 
