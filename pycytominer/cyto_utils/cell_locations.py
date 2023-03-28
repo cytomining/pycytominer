@@ -315,26 +315,24 @@ class CellLocation:
                 f"Required columns are not present in the Image table in the SQLite file"
             )
 
-        # Load the required columns from the single_cell file
-
-        nuclei_query = f"SELECT {self.image_column},{self.object_column},{self.cell_x_loc},{self.cell_y_loc} FROM Nuclei;"
-
         image_index_str = ", ".join(self.image_index)
 
-        image_query = f"SELECT  {self.image_column},{image_index_str} FROM Image;"
+        # merge the Image and Nuclei tables in SQL
 
-        nuclei_df = pd.read_sql_query(nuclei_query, conn)
+        merge_query = f"""
+        SELECT Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
+        FROM Nuclei
+        INNER JOIN Image
+        ON Nuclei.{self.image_column} = Image.{self.image_column};
+        """
 
-        image_df = pd.read_sql_query(image_query, conn)
+        merged_df = pd.read_sql_query(merge_query, conn)
 
         conn.close()
 
         # if the single_cell file was downloaded from S3, delete the temporary file
         if "temp_single_cell_input" in locals():
             pathlib.Path(temp_single_cell_input).unlink()
-
-        # Merge the Image and Nuclei tables
-        merged_df = pd.merge(image_df, nuclei_df, on=self.image_column, how="inner")
 
         # Cast the cell location columns to float
         merged_df[self.cell_x_loc] = merged_df[self.cell_x_loc].astype(float)
