@@ -65,17 +65,29 @@ If using `pycytominer` in a conda environment, in order to run `collate.py`, you
 
 ## Creating a cell locations lookup table
 
-The `CellLocation` class, designed for use with pycytominer, offers a convenient way to augment a [LoadData](https://cellprofiler-manual.s3.amazonaws.com/CPmanual/LoadData.html) file with X,Y locations of cells in each image.
-The locations information is obtained from a single cell SQLite file, which contains `Nuclei` and `Image` tables with cell and image-level readouts, respectively.
-Each row of a LoadData file represents a single image, indexed by multiple columns (e.g., `Metadata_Plate`, `Metadata_Well`, `Metadata_Site`).
-The `CellLocation` class uses the `Image` table to identify the image-level metadata for each image in the LoadData file, and then uses the `Nuclei` table to identify the X,Y locations of cells in each image.
-The X,Y locations are then added to the LoadData file as new columns, and the resulting augmented LoadData file is saved to disk.
+The `CellLocation` class offers a convenient way to augment a [LoadData](https://cellprofiler-manual.s3.amazonaws.com/CPmanual/LoadData.html) file with X,Y locations of cells in each image.
+The locations information is obtained from a single cell SQLite file.
 
 To use this functionality, you will need to modify your installation command, similar to above:
 
 ```bash
 # Example for general case commit:
 pip install "pycytominer[cell_locations] @ git+git://github.com/cytomining/pycytominer"
+```
+
+Use it like this
+
+```bash
+metadata_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum_subset.parquet"
+single_single_cell_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/BR00126114_subset.sqlite"
+augmented_metadata_output="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum_and_cell_location_subset.parquet"
+
+python \
+    pycytominer/cyto_utils/cell_locations_cmd.py \
+    --metadata_input ${metadata_input} \
+    --single_cell_input ${single_single_cell_input}   \
+    --augmented_metadata_output ${augmented_metadata_output} \
+    add_cell_location
 ```
 
 ## Usage

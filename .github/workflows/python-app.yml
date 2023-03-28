@@ -31,7 +31,7 @@ jobs:
           pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install .[collate]
-          pip install .[cell_location]
+          pip install .[cell_locations]
       - name: Test with pytest
         run: |
           pytest
