@@ -75,7 +75,7 @@ To use this functionality, you will need to modify your installation command, si
 pip install "pycytominer[cell_locations] @ git+git://github.com/cytomining/pycytominer"
 ```
 
-Use it like this
+Example using this functionality:
 
 ```bash
 metadata_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum_subset.parquet"
