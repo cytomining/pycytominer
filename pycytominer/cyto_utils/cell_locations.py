@@ -298,7 +298,7 @@ class CellLocation:
             and self.cell_y_loc in nuclei_columns
         ):
             raise ValueError(
-                f"Required columns are not present in the Nuclei table in the SQLite file"
+                "Required columns are not present in the Nuclei table in the SQLite file"
             )
 
         c.execute("PRAGMA table_info(Image);")
