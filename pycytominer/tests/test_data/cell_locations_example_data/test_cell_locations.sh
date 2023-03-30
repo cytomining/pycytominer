@@ -4,7 +4,7 @@ aws s3 cp s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/backend/2021
 # Download LoadData CSV file
 aws s3 cp s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum.parquet .
 
-# Write a SQL query tp select rows of the `Image` table in the SQLite file where `ImageNumber` is 1 or 2.
+# Write a SQL query to select rows of the `Image` table in the SQLite file where `ImageNumber` is 1 or 2.
 # Only select the columns: `Metadata_Plate`, `Metadata_Well`, `Metadata_Site`, `ImageNumber`
 
 sqlite3 -header -csv BR00126114.sqlite "SELECT Metadata_Plate, Metadata_Well, Metadata_Site, ImageNumber FROM Image WHERE ImageNumber = 1 OR ImageNumber = 2;" > image_query.csv
