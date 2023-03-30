@@ -10,7 +10,7 @@ aws s3 cp s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/load_data_cs
 sqlite3 -header -csv BR00126114.sqlite "SELECT Metadata_Plate, Metadata_Well, Metadata_Site, ImageNumber FROM Image WHERE ImageNumber = 1 OR ImageNumber = 2;" > image_query.csv
 
 
-# Write a SQL query tp select rows of the `Nuclei` table in the SQLite file where `ImageNumber` is 1 or 2.
+# Write a SQL query to select rows of the `Nuclei` table in the SQLite file where `ImageNumber` is 1 or 2.
 # Only select the columns: `ImageNumber`, `ObjectNumber`, `Nuclei_Location_Center_X`, `Nuclei_Location_Center_Y`
 
 sqlite3 -header -csv BR00126114.sqlite "SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei WHERE ImageNumber = 1 LIMIT 10;" > nuclei_query_1.csv
