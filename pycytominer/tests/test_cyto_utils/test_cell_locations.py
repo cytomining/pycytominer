@@ -7,7 +7,6 @@ import pytest
 import sqlite3
 
 
-# @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2"])
 def test_shape_and_columns(cell_loc, metadata_input_dataframe, request):
     cell_loc = request.getfixturevalue(cell_loc)
