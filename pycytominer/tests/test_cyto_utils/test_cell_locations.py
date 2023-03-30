@@ -35,7 +35,7 @@ def test_values(cell_loc, metadata_input_dataframe, single_cell_input_file, requ
         .equals(metadata_input_dataframe.reset_index(drop=True))
     )
 
-    nuclei_query = f"SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei;"
+    nuclei_query = "SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei;"
 
     conn = sqlite3.connect(single_cell_input_file)
 
