@@ -312,7 +312,7 @@ class CellLocation:
             and all(elem in image_columns for elem in self.image_index)
         ):
             raise ValueError(
-                f"Required columns are not present in the Image table in the SQLite file"
+                "Required columns are not present in the Image table in the SQLite file"
             )
 
         image_index_str = ", ".join(self.image_index)
