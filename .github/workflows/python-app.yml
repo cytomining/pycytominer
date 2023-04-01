@@ -18,6 +18,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     env:
       OS: ${{ matrix.os }}
+      SQLALCHEMY_SILENCE_UBER_WARNING: "1"
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
