@@ -54,6 +54,9 @@ class CellLocation:
     image_column : default = 'ImageNumber'
         Name of the column in the metadata file that links to the single_cell file
 
+    image_key: default = ['Metadata_Plate', 'Metadata_Well', 'Metadata_Site']
+        Names of the columns in the metadata file that uniquely identify each image
+
     object_column : default = 'ObjectNumber'
         Name of the column in the single_cell file that identifies each cell
 
@@ -136,7 +139,9 @@ class CellLocation:
             True if the file exists on S3, False otherwise
         """
 
-        s3 = boto3.resource("s3")
+        s3 = boto3.client(
+            "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
+        )
 
         bucket, key = self._parse_s3_path(s3_path)
 
@@ -154,7 +159,10 @@ class CellLocation:
         """
         Download a file from S3 to a temporary file and return the temporary path
         """
-        s3 = boto3.resource("s3")
+
+        s3 = boto3.client(
+            "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
+        )
 
         bucket, key = self._parse_s3_path(uri)
 
@@ -162,7 +170,7 @@ class CellLocation:
             delete=False, suffix=pathlib.Path(key).name
         )
 
-        s3.Bucket(bucket).download_file(key, tmp_file.name)
+        s3.download_file(bucket, key, tmp_file.name)
 
         return tmp_file.name
 
@@ -362,6 +370,7 @@ class CellLocation:
             and isinstance(self.augmented_metadata_output, str)
             and self.overwrite is False
             and (
+                # Check if the file exists on S3 or locally
                 (
                     self.augmented_metadata_output.startswith("s3://")
                     and self._s3_file_exists(self.augmented_metadata_output)
@@ -372,6 +381,9 @@ class CellLocation:
                 )
             )
         ):
+            # TODO: Consider doing a quick difference check should the file already exist.
+            # For example, if the file already exists and it's different than what could be possibly incoming, should the user know?
+            # This will involve performing all the steps below and then doing a check to see if the file is different, so this is a bit of a pain.
             return self.augmented_metadata_output
 
         # Load the data
@@ -388,8 +400,7 @@ class CellLocation:
 
         # If self.augmented_metadata_output is not None, save the data
         if self.augmented_metadata_output is not None:
-            # switch to https://github.com/cytomining/pycytominer/blob/master/pycytominer/cyto_utils/output.py
-            # if we want to support more file types
+            # TODO: switch to https://github.com/cytomining/pycytominer/blob/master/pycytominer/cyto_utils/output.py if we want to support more file types
             augmented_metadata_df.to_parquet(
                 self.augmented_metadata_output, index=False
             )
