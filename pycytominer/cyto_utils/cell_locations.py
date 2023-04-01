@@ -4,11 +4,11 @@ Utility function to augment a metadata file with X,Y locations of cells in each 
 
 import pathlib
 import pandas as pd
-import sqlite3
 import boto3
 import botocore
 import tempfile
 import collections
+import sqlalchemy
 from typing import Union
 
 
@@ -45,8 +45,8 @@ class CellLocation:
     metadata_input : str or Pandas DataFrame
         Path to the input metadata file or a Pandas DataFrame
 
-    single_cell_input : str or sqlite3.Connection
-        Path to the single_cell file or a sqlite3.Connection object
+    single_cell_input : str or sqlalchemy.engine.Engine
+        Path to the single_cell file or a sqlalchemy.engine.Engine object
 
     augmented_metadata_output : str
         Path to the output file. If None, the metadata file is not saved to disk
@@ -73,7 +73,7 @@ class CellLocation:
     def __init__(
         self,
         metadata_input: Union[str, pd.DataFrame],
-        single_cell_input: Union[str, sqlite3.Connection],
+        single_cell_input: Union[str, sqlalchemy.engine.Engine],
         augmented_metadata_output: str = None,
         overwrite: bool = False,
         image_column: str = "ImageNumber",
@@ -272,36 +272,27 @@ class CellLocation:
                 temp_single_cell_input = self._download_s3(self.single_cell_input)
 
                 # connect to the single_cell file
-                conn = sqlite3.connect(temp_single_cell_input)
-
+                engine = sqlalchemy.create_engine(f"sqlite:///{temp_single_cell_input}")
             else:
                 # connect to the single_cell file
-                conn = sqlite3.connect(self.single_cell_input)
+                engine = sqlalchemy.create_engine(f"sqlite:///{self.single_cell_input}")
         else:
-            conn = self.single_cell_input
+            engine = self.single_cell_input
 
         # Verify that the Image and Nuclei tables are present in single_cell
 
-        c = conn.cursor()
+        inspector = sqlalchemy.inspect(engine)
 
-        c.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        table_names = inspector.get_table_names()
 
-        tables = c.fetchall()
-
-        tables = [x[0] for x in tables]
-
-        if not ("Image" in tables and "Nuclei" in tables):
+        if not ("Image" in table_names and "Nuclei" in table_names):
             raise ValueError(
                 "Image and Nuclei tables are not present in the single_cell file"
             )
 
         # Verify that the required columns are present in the single_cell file
 
-        c.execute("PRAGMA table_info(Nuclei);")
-
-        nuclei_columns = c.fetchall()
-
-        nuclei_columns = [x[1] for x in nuclei_columns]
+        nuclei_columns = [column["name"] for column in inspector.get_columns("Nuclei")]
 
         if not (
             self.image_column in nuclei_columns
@@ -313,11 +304,7 @@ class CellLocation:
                 "Required columns are not present in the Nuclei table in the SQLite file"
             )
 
-        c.execute("PRAGMA table_info(Image);")
-
-        image_columns = c.fetchall()
-
-        image_columns = [x[1] for x in image_columns]
+        image_columns = [column["name"] for column in inspector.get_columns("Image")]
 
         if not (
             self.image_column in image_columns
@@ -338,9 +325,7 @@ class CellLocation:
         ON Nuclei.{self.image_column} = Image.{self.image_column};
         """
 
-        joined_df = pd.read_sql_query(join_query, conn)
-
-        conn.close()
+        joined_df = pd.read_sql_query(join_query, engine)
 
         # if the single_cell file was downloaded from S3, delete the temporary file
         if "temp_single_cell_input" in locals():

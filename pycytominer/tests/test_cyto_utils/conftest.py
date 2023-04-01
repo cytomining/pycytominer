@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import pathlib
 import pytest
-import sqlite3
+import sqlalchemy
 from pycytominer.cyto_utils.cell_locations import CellLocation
 
 
@@ -61,16 +61,14 @@ def fixture_metadata_input_dataframe(metadata_input_file: str) -> pd.DataFrame:
     return pd.read_parquet(metadata_input_file)
 
 
-@pytest.fixture(name="single_cell_input_connection")
-def fixture_single_cell_input_connection(
+@pytest.fixture(name="single_cell_input_engine")
+def fixture_single_cell_input_engine(
     single_cell_input_file: str,
-) -> sqlite3.Connection:
+) -> sqlalchemy.engine.Engine:
     """
     Provide a single cell input file for cell_locations test data
     """
-    conn = sqlite3.connect(single_cell_input_file)
-    yield conn
-    conn.close()
+    return sqlalchemy.create_engine(f"sqlite:///{single_cell_input_file}")
 
 
 @pytest.fixture(name="cell_loc_obj1")
@@ -90,14 +88,14 @@ def fixture_cell_loc_obj1(
 @pytest.fixture(name="cell_loc_obj2")
 def fixture_cell_loc_obj2(
     metadata_input_dataframe: pd.DataFrame,
-    single_cell_input_connection: sqlite3.Connection,
+    single_cell_input_engine: sqlalchemy.engine.Engine,
 ) -> CellLocation:
     """
     Provide a CellLocation object with in-memory inputs
     """
     return CellLocation(
         metadata_input=metadata_input_dataframe,
-        single_cell_input=single_cell_input_connection,
+        single_cell_input=single_cell_input_engine,
     )
 
 
