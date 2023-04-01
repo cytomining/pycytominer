@@ -9,6 +9,7 @@ import boto3
 import botocore
 import tempfile
 import collections
+from typing import Union
 
 
 class CellLocation:
@@ -71,13 +72,13 @@ class CellLocation:
 
     def __init__(
         self,
-        metadata_input: str or pd.DataFrame,
-        single_cell_input: str or sqlite3.Connection,
+        metadata_input: Union[str, pd.DataFrame],
+        single_cell_input: Union[str, sqlite3.Connection],
         augmented_metadata_output: str = None,
         overwrite: bool = False,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
-        image_index: list = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+        image_key: list = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
@@ -87,7 +88,7 @@ class CellLocation:
         self.overwrite = overwrite
         self.image_column = image_column
         self.object_column = object_column
-        self.image_index = image_index
+        self.image_key = image_key
         self.cell_x_loc = cell_x_loc
         self.cell_y_loc = cell_y_loc
 
@@ -95,9 +96,7 @@ class CellLocation:
         """Expand the user home directory in a path"""
         if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
             return pathlib.Path(obj).expanduser().as_posix()
-
-        else:
-            return obj
+        return obj
 
     def _parse_s3_path(self, s3_path):
         """Parse an S3 path into a bucket and key
@@ -153,18 +152,19 @@ class CellLocation:
 
     def _download_s3(self, uri):
         """
-        Download a file from S3, save it to a temporary directory, and return the path to the file
+        Download a file from S3 to a temporary file and return the temporary path
         """
         s3 = boto3.resource("s3")
 
         bucket, key = self._parse_s3_path(uri)
 
-        tmp_dir = tempfile.mkdtemp()
-        tmp_file = pathlib.Path(tmp_dir) / pathlib.Path(key).name
+        tmp_file = tempfile.NamedTemporaryFile(
+            delete=False, suffix=pathlib.Path(key).name
+        )
 
-        s3.Bucket(bucket).download_file(key, tmp_file)
+        s3.Bucket(bucket).download_file(key, tmp_file.name)
 
-        return tmp_file
+        return tmp_file.name
 
     def _load_metadata(self):
         """Load the metadata into a Pandas DataFrame
@@ -196,19 +196,31 @@ class CellLocation:
 
         # verify that the image index columns are present in the metadata object
 
-        if not all(elem in df.columns for elem in self.image_index):
+        if not all(elem in df.columns for elem in self.image_key):
             raise ValueError(
-                f"Image index columns {self.image_index} are not present in the metadata file"
+                f"Image index columns {self.image_key} are not present in the metadata file"
             )
 
         return df
 
-    def _convert_to_per_row_dict(self, df):
+    def _create_nested_df(self, df):
+        """Create a new column `CellCenters` by nesting the X and Y locations of cell from an image into the row of the image
+
+        Parameters
+        ----------
+        df : Pandas DataFrame
+            The DataFrame to convert
+
+        Returns
+        -------
+        Pandas DataFrame
+        """
+
         # define a dictionary to store the output
         output_df_list = collections.defaultdict(list)
 
         # iterate over each group of cells in the merged DataFrame
-        group_cols = self.image_index + [self.image_column]
+        group_cols = self.image_key + [self.image_column]
 
         for group_values, cell_df in df.groupby(group_cols):
             # add the image-level information to the output dictionary
@@ -309,24 +321,24 @@ class CellLocation:
 
         if not (
             self.image_column in image_columns
-            and all(elem in image_columns for elem in self.image_index)
+            and all(elem in image_columns for elem in self.image_key)
         ):
             raise ValueError(
                 "Required columns are not present in the Image table in the SQLite file"
             )
 
-        image_index_str = ", ".join(self.image_index)
+        image_index_str = ", ".join(self.image_key)
 
         # merge the Image and Nuclei tables in SQL
 
-        merge_query = f"""
+        join_query = f"""
         SELECT Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
         FROM Nuclei
         INNER JOIN Image
         ON Nuclei.{self.image_column} = Image.{self.image_column};
         """
 
-        merged_df = pd.read_sql_query(merge_query, conn)
+        joined_df = pd.read_sql_query(join_query, conn)
 
         conn.close()
 
@@ -335,19 +347,19 @@ class CellLocation:
             pathlib.Path(temp_single_cell_input).unlink()
 
         # Cast the cell location columns to float
-        merged_df[self.cell_x_loc] = merged_df[self.cell_x_loc].astype(float)
-        merged_df[self.cell_y_loc] = merged_df[self.cell_y_loc].astype(float)
+        joined_df[self.cell_x_loc] = joined_df[self.cell_x_loc].astype(float)
+        joined_df[self.cell_y_loc] = joined_df[self.cell_y_loc].astype(float)
 
         # Cast the object column to int
-        merged_df[self.object_column] = merged_df[self.object_column].astype(int)
+        joined_df[self.object_column] = joined_df[self.object_column].astype(int)
 
         # Cast the image index columns to str
-        for col in self.image_index:
-            merged_df[col] = merged_df[col].astype(str)
+        for col in self.image_key:
+            joined_df[col] = joined_df[col].astype(str)
 
-        merged_df = self._convert_to_per_row_dict(merged_df)
+        joined_df = self._create_nested_df(joined_df)
 
-        return merged_df
+        return joined_df
 
     def add_cell_location(self):
         """Add the X,Y locations of all cells to the metadata file in the corresponding row, packed into a single column.
@@ -385,7 +397,7 @@ class CellLocation:
         augmented_metadata_df = pd.merge(
             metadata_df,
             single_cell_df,
-            on=self.image_index,
+            on=self.image_key,
             how="left",
         )
 
