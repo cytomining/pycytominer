@@ -3,13 +3,13 @@
 import pandas as pd
 import pytest
 import sqlalchemy
-from typing import Literal, Type
+from typing import Type
 from _pytest.fixtures import FixtureRequest
 
 
 @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 def test_output_shape_and_required_columns(
-    cell_loc: Literal["cell_loc1", "cell_loc2", "cell_loc3"],
+    cell_loc: str,
     metadata_input_dataframe: pd.DataFrame,
     request: Type[FixtureRequest],
 ):
@@ -32,7 +32,7 @@ def test_output_shape_and_required_columns(
 
 @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
 def test_output_value_correctness(
-    cell_loc: Literal["cell_loc1", "cell_loc2", "cell_loc3"],
+    cell_loc: str,
     metadata_input_dataframe: pd.DataFrame,
     single_cell_input_file: str,
     request: Type[FixtureRequest],
