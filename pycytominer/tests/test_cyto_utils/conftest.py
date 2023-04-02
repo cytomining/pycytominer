@@ -26,7 +26,9 @@ def fixture_metadata_input_file(data_dir_cell_locations: str) -> str:
     """
     Provide a metadata input file for cell_locations test data
     """
-    return os.path.join(data_dir_cell_locations, "load_data_with_illum_subset.parquet")
+    return os.path.join(
+        data_dir_cell_locations, "test_BR00126114_load_data_with_illum.parquet"
+    )
 
 
 @pytest.fixture(name="single_cell_input_file")
@@ -34,7 +36,7 @@ def fixture_single_cell_input_file(data_dir_cell_locations: str) -> str:
     """
     Provide a single cell input file for cell_locations test data
     """
-    return os.path.join(data_dir_cell_locations, "BR00126114_subset.sqlite")
+    return os.path.join(data_dir_cell_locations, "test_BR00126114.sqlite")
 
 
 @pytest.fixture(name="metadata_input_file_s3")
@@ -42,7 +44,7 @@ def fixture_metadata_input_file_s3() -> str:
     """
     Provide a metadata input file for cell_locations test data
     """
-    return "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum_subset.parquet"
+    return "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/test_BR00126114_load_data_with_illum.parquet"
 
 
 @pytest.fixture(name="single_cell_input_file_s3")
@@ -50,7 +52,7 @@ def fixture_single_cell_input_file_s3() -> str:
     """
     Provide a single cell input file for cell_locations test data
     """
-    return "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/BR00126114_subset.sqlite"
+    return "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/test_BR00126114.sqlite"
 
 
 @pytest.fixture(name="metadata_input_dataframe")

@@ -1,3 +1,14 @@
+#!/bin/bash
+
+# Create SQLite and LoadData CSV files for testing cell locations
+#
+# Steps:
+# 1. Download SQLite file from S3
+# 2. Download LoadData CSV file from S3
+# 3. Query SQLite to select specific columns of all rows of the `Image` and `Nuclei` table in the SQLite file where `ImageNumber` is 1 or 2.
+# 4. Create the SQLite file fixture using the output of the SQL queries
+# 5. Create a new LoadData CSV fixture file with only the rows corresponding to the rows in SQLite file fixture
+
 # Download SQLite file
 aws s3 cp s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/BR00126114.sqlite .
 
@@ -30,19 +41,19 @@ cat create_tables.sql
 
 # run the SQL commands in the text file to create the SQLite file
 
-sqlite3 BR00126114_subset.sqlite < create_tables.sql
+sqlite3 test_BR00126114.sqlite < create_tables.sql
 
 # Print the list of tables in the SQLite file
 
-sqlite3 BR00126114_subset.sqlite ".tables"
+sqlite3 test_BR00126114.sqlite ".tables"
 
 # Print the contents of the `Image` table in the SQLite file
 
-sqlite3 BR00126114_subset.sqlite "SELECT * FROM Image;"
+sqlite3 test_BR00126114.sqlite "SELECT * FROM Image;"
 
 # Print the contents of the `Nuclei` table in the SQLite file
 
-sqlite3 BR00126114_subset.sqlite "SELECT * FROM Nuclei;"
+sqlite3 test_BR00126114.sqlite "SELECT * FROM Nuclei;"
 
 cat << EOF > create_parquet.py
 import pandas as pd
