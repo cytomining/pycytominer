@@ -269,18 +269,13 @@ class CellLocation:
         # convert the output dictionary to a Pandas DataFrame
         return pd.DataFrame(output_df_list)
 
-    def _load_single_cell(self):
-        """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlite3.Connection object into a Pandas DataFrame
-
-        Returns
-        -------
-        Pandas DataFrame
-            The required columns from the `Image` and `Nuclei` tables loaded into a Pandas DataFrame
+    def _get_single_cell_engine(self):
+        """
+        Get the sqlalchemy.engine.Engine object for the single_cell file
         """
 
         if isinstance(self.single_cell_input, str):
             # check if the single_cell file is a SQLite file
-
             if not self.single_cell_input.endswith(".sqlite"):
                 raise ValueError("single_cell file must be a SQLite file")
 
@@ -293,10 +288,18 @@ class CellLocation:
             else:
                 # connect to the single_cell file
                 engine = sqlalchemy.create_engine(f"sqlite:///{self.single_cell_input}")
+                temp_single_cell_input = None
+
         else:
             engine = self.single_cell_input
+            temp_single_cell_input = None
 
-        # Verify that the Image and Nuclei tables are present in single_cell
+        return temp_single_cell_input, engine
+
+    def _check_single_cell_correctness(self, engine: sqlalchemy.engine.Engine):
+        """
+        Check that the single_cell file has the required tables and columns
+        """
 
         inspector = sqlalchemy.inspect(engine)
 
@@ -331,6 +334,16 @@ class CellLocation:
                 "Required columns are not present in the Image table in the SQLite file"
             )
 
+    def _get_joined_image_nuclei_tables(self):
+        """
+        Merge the Image and Nuclei tables in SQL
+        """
+        # get the sqlalchemy.engine.Engine object for the single_cell file
+        temp_single_cell_input, engine = self._get_single_cell_engine()
+
+        # check that the single_cell file has the required tables and columns
+        self._check_single_cell_correctness(engine)
+
         image_index_str = ", ".join(self.image_key)
 
         # merge the Image and Nuclei tables in SQL
@@ -345,8 +358,21 @@ class CellLocation:
         joined_df = pd.read_sql_query(join_query, engine)
 
         # if the single_cell file was downloaded from S3, delete the temporary file
-        if "temp_single_cell_input" in locals():
+        if temp_single_cell_input is not None:
             pathlib.Path(temp_single_cell_input).unlink()
+
+        return joined_df
+
+    def _load_single_cell(self):
+        """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlalchemy.engine.Engine object into a Pandas DataFrame
+
+        Returns
+        -------
+        Pandas DataFrame
+            The required columns from the `Image` and `Nuclei` tables loaded into a Pandas DataFrame
+        """
+
+        joined_df = self._get_joined_image_nuclei_tables()
 
         # Cast the cell location columns to float
         joined_df[self.cell_x_loc] = joined_df[self.cell_x_loc].astype(float)
