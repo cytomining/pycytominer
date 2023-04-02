@@ -192,13 +192,22 @@ class CellLocation:
             ):
                 raise ValueError("Metadata file must be a CSV or a Parquet file")
 
+            storage_options = (
+                {"anon": True} if self.metadata_input.startswith("s3://") else None
+            )
+
             # load the metadata file into a Pandas DataFrame
             if self.metadata_input.endswith(".csv"):
-                df = pd.read_csv(self.metadata_input, dtype=str)
+                df = pd.read_csv(
+                    self.metadata_input, dtype=str, storage_options=storage_options
+                )
             else:
-                df = pd.read_parquet(self.metadata_input)
-                # cast all columns to string
-                df = df.astype(str)
+                df = pd.read_parquet(
+                    self.metadata_input, storage_options=storage_options
+                )
+
+            # cast all columns to string
+            df = df.astype(str)
         else:
             df = self.metadata_input
 
