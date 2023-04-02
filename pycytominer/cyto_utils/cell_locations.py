@@ -95,13 +95,13 @@ class CellLocation:
         self.cell_x_loc = cell_x_loc
         self.cell_y_loc = cell_y_loc
 
-    def _expanduser(self, obj):
+    def _expanduser(self, obj: Union[str, None]):
         """Expand the user home directory in a path"""
         if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
             return pathlib.Path(obj).expanduser().as_posix()
         return obj
 
-    def _parse_s3_path(self, s3_path):
+    def _parse_s3_path(self, s3_path: str):
         """Parse an S3 path into a bucket and key
 
         Parameters
@@ -125,7 +125,7 @@ class CellLocation:
 
         return bucket, key
 
-    def _s3_file_exists(self, s3_path):
+    def _s3_file_exists(self, s3_path: str):
         """Check if a file exists on S3
 
         Parameters
@@ -155,7 +155,7 @@ class CellLocation:
         else:
             return True
 
-    def _download_s3(self, uri):
+    def _download_s3(self, uri: str):
         """
         Download a file from S3 to a temporary file and return the temporary path
         """
@@ -220,7 +220,7 @@ class CellLocation:
 
         return df
 
-    def _create_nested_df(self, df):
+    def _create_nested_df(self, df: pd.DataFrame):
         """Create a new column `CellCenters` by nesting the X and Y locations of cell from an image into the row of the image
 
         Parameters
