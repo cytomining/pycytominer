@@ -78,7 +78,7 @@ pip install "pycytominer[cell_locations] @ git+git://github.com/cytomining/pycyt
 Example using this functionality:
 
 ```bash
-metadata_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum_subset.parquet"
+metadata_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/test_BR00126114_load_data_with_illum.parquet"
 single_single_cell_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/BR00126114_subset.sqlite"
 augmented_metadata_output="~/Desktop/load_data_with_illum_and_cell_location_subset.parquet"
 
