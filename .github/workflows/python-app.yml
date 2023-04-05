@@ -18,6 +18,9 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     env:
       OS: ${{ matrix.os }}
+      # This is needed to avoid a warning from SQLAlchemy
+      # https://sqlalche.me/e/b8d9
+      # We can remove this once we upgrade to SQLAlchemy >= 2.0
       SQLALCHEMY_SILENCE_UBER_WARNING: "1"
     steps:
       - uses: actions/checkout@v2
