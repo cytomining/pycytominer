@@ -79,7 +79,7 @@ Example using this functionality:
 
 ```bash
 metadata_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/test_BR00126114_load_data_with_illum.parquet"
-single_single_cell_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/BR00126114_subset.sqlite"
+single_single_cell_input="s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/test_BR00126114.sqlite"
 augmented_metadata_output="~/Desktop/load_data_with_illum_and_cell_location_subset.parquet"
 
 python \
@@ -88,6 +88,16 @@ python \
     --single_cell_input ${single_single_cell_input}   \
     --augmented_metadata_output ${augmented_metadata_output} \
     add_cell_location
+
+# Check the output
+
+python -c "import pandas as pd; print(pd.read_parquet('${augmented_metadata_output}').head())"
+
+# It should look something like this (depends on the width of your terminal):
+
+#   Metadata_Plate Metadata_Well Metadata_Site  ...                                   PathName_OrigRNA ImageNumber                                        CellCenters
+# 0     BR00126114           A01             1  ...  s3://cellpainting-gallery/cpg0016-jump/source_...           1  [{'Nuclei_Location_Center_X': 943.512129380054...
+# 1     BR00126114           A01             2  ...  s3://cellpainting-gallery/cpg0016-jump/source_...           2  [{'Nuclei_Location_Center_X': 29.9516027655562...
 ```
 
 ## Usage
