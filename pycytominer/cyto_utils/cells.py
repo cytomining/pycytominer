@@ -752,20 +752,12 @@ class SingleCells(object):
                             sc_df, how="left", on=subset_logic_df.columns.tolist()
                         ).reindex(sc_df.columns, axis="columns")
 
-                    sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
-                        left_on=self.merge_cols + [left_link_col],
-                        right_on=self.merge_cols + [right_link_col],
-                        suffixes=merge_suffix,
-                    )
-
-                else:
-                    sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
-                        left_on=self.merge_cols + [left_link_col],
-                        right_on=self.merge_cols + [right_link_col],
-                        suffixes=merge_suffix,
-                    )
+                sc_df = sc_df.merge(
+                    self.load_compartment(compartment=right_compartment),
+                    left_on=self.merge_cols + [left_link_col],
+                    right_on=self.merge_cols + [right_link_col],
+                    suffixes=merge_suffix,
+                )
 
                 linking_check_cols.append(linking_check)
 
