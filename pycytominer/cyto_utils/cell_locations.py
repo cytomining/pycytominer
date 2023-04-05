@@ -94,6 +94,11 @@ class CellLocation:
         self.image_key = image_key
         self.cell_x_loc = cell_x_loc
         self.cell_y_loc = cell_y_loc
+        # Does this mean we are constrained to only anonymous access for S3 resources?
+        # What would happen with non-anonymous access needs - is this something we should think about?
+        self.s3 = boto3.client(
+            "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
+        )
 
     def _expanduser(self, obj: Union[str, None]):
         """Expand the user home directory in a path"""
@@ -139,14 +144,10 @@ class CellLocation:
             True if the file exists on S3, False otherwise
         """
 
-        s3 = boto3.client(
-            "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
-        )
-
         bucket, key = self._parse_s3_path(s3_path)
 
         try:
-            s3.Object(bucket, key).load()
+            self.s3.Object(bucket, key).load()
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 return False
@@ -160,17 +161,13 @@ class CellLocation:
         Download a file from S3 to a temporary file and return the temporary path
         """
 
-        s3 = boto3.client(
-            "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
-        )
-
         bucket, key = self._parse_s3_path(uri)
 
         tmp_file = tempfile.NamedTemporaryFile(
             delete=False, suffix=pathlib.Path(key).name
         )
 
-        s3.download_file(bucket, key, tmp_file.name)
+        self.s3.download_file(bucket, key, tmp_file.name)
 
         return tmp_file.name
 
