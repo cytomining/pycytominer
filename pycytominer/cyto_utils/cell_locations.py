@@ -94,8 +94,8 @@ class CellLocation:
         self.image_key = image_key
         self.cell_x_loc = cell_x_loc
         self.cell_y_loc = cell_y_loc
-        # Does this mean we are constrained to only anonymous access for S3 resources?
-        # What would happen with non-anonymous access needs - is this something we should think about?
+        # Currently constrained to only anonymous access for S3 resources
+        # https://github.com/cytomining/pycytominer/issues/268
         self.s3 = boto3.client(
             "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
         )
