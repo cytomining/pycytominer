@@ -300,9 +300,10 @@ class CellLocation:
 
         inspector = sqlalchemy.inspect(engine)
 
-        table_names = inspector.get_table_names()
-
-        if not ("Image" in table_names and "Nuclei" in table_names):
+        if not all(
+            table_name in inspector.get_table_names()
+            for table_name in ["Image", "Nuclei"]
+        ):
             raise ValueError(
                 "Image and Nuclei tables are not present in the single_cell file"
             )
@@ -311,11 +312,14 @@ class CellLocation:
 
         nuclei_columns = [column["name"] for column in inspector.get_columns("Nuclei")]
 
-        if not (
-            self.image_column in nuclei_columns
-            and self.object_column in nuclei_columns
-            and self.cell_x_loc in nuclei_columns
-            and self.cell_y_loc in nuclei_columns
+        if not all(
+            column_name in nuclei_columns
+            for column_name in [
+                self.image_column,
+                self.object_column,
+                self.cell_x_loc,
+                self.cell_y_loc,
+            ]
         ):
             raise ValueError(
                 "Required columns are not present in the Nuclei table in the SQLite file"
