@@ -356,7 +356,17 @@ class CellLocation:
         ON Nuclei.{self.image_column} = Image.{self.image_column};
         """
 
-        joined_df = pd.read_sql_query(join_query, engine)
+        column_types = {
+            self.image_column: "int64",
+            self.object_column: "int64",
+            self.cell_x_loc: "float",
+            self.cell_y_loc: "float",
+        }
+
+        for image_key in self.image_key:
+            column_types[image_key] = "str"
+
+        joined_df = pd.read_sql_query(join_query, engine, dtype=column_types)
 
         # if the single_cell file was downloaded from S3, delete the temporary file
         if temp_single_cell_input is not None:
@@ -373,22 +383,7 @@ class CellLocation:
             The required columns from the `Image` and `Nuclei` tables loaded into a Pandas DataFrame
         """
 
-        joined_df = self._get_joined_image_nuclei_tables()
-
-        # Cast the cell location columns to float
-        joined_df[self.cell_x_loc] = joined_df[self.cell_x_loc].astype(float)
-        joined_df[self.cell_y_loc] = joined_df[self.cell_y_loc].astype(float)
-
-        # Cast the object column to int
-        joined_df[self.object_column] = joined_df[self.object_column].astype(int)
-
-        # Cast the image index columns to str
-        for col in self.image_key:
-            joined_df[col] = joined_df[col].astype(str)
-
-        joined_df = self._create_nested_df(joined_df)
-
-        return joined_df
+        return self._create_nested_df(self._get_joined_image_nuclei_tables())
 
     def add_cell_location(self):
         """Add the X,Y locations of all cells to the metadata file in the corresponding row, packed into a single column.
