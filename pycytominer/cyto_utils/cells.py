@@ -72,8 +72,8 @@ class SingleCells(object):
     default_datatype_float: type
         Numpy floating point datatype to use for load_compartment and resulting
         dataframes. This parameter may be used to assist with performance-related
-        issues by reducing the memory required for floating-point data. 
-        For example, using np.float32 instead of np.float64 for this parameter 
+        issues by reducing the memory required for floating-point data.
+        For example, using np.float32 instead of np.float64 for this parameter
         will reduce memory consumed by float columns by roughly 50%.
         Please note: using any besides np.float64 are experimentally
         unverified.
@@ -365,7 +365,6 @@ class SingleCells(object):
             self.set_subsample_random_state(random_state)
 
         if self.subsample_frac == 1:
-
             output_df = pd.DataFrame.sample(
                 df,
                 n=self.subsample_n,
@@ -537,7 +536,6 @@ class SingleCells(object):
             compartment=compartment,
             n_aggregation_memory_strata=n_aggregation_memory_strata,
         ):
-
             population_df = self.image_df.merge(
                 compartment_df,
                 how="inner",
@@ -636,7 +634,7 @@ class SingleCells(object):
             con=self.conn,
         )
         all_columns = compartment_row1.columns
-        if self.features != "infer": # allow to get only some features
+        if self.features != "infer":  # allow to get only some features
             all_columns = [x for x in all_columns if x in self.features]
 
         typeof_str = ", ".join([f"typeof({x})" for x in all_columns])
@@ -754,22 +752,12 @@ class SingleCells(object):
                             sc_df, how="left", on=subset_logic_df.columns.tolist()
                         ).reindex(sc_df.columns, axis="columns")
 
-                    sc_df = sc_df.merge(
-                        self.load_compartment(compartment=right_compartment),
-                        left_on=self.merge_cols + [left_link_col],
-                        right_on=self.merge_cols + [right_link_col],
-                        suffixes=merge_suffix,
-                    )
-
-                else:
-                    sc_df = sc_df.merge(
-                        self.load_compartment(
-                            compartment=right_compartment
-                        ),
-                        left_on=self.merge_cols + [left_link_col],
-                        right_on=self.merge_cols + [right_link_col],
-                        suffixes=merge_suffix,
-                    )
+                sc_df = sc_df.merge(
+                    self.load_compartment(compartment=right_compartment),
+                    left_on=self.merge_cols + [left_link_col],
+                    right_on=self.merge_cols + [right_link_col],
+                    suffixes=merge_suffix,
+                )
 
                 linking_check_cols.append(linking_check)
 

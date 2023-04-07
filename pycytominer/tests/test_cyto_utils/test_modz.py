@@ -1,5 +1,6 @@
 import os
 import random
+import pytest
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils import modz
@@ -143,7 +144,11 @@ def test_modz_multiple_columns_one_metadata_column():
     consensus_df = modz(
         data_replicate_multi_df, replicate_columns, min_weight=1, precision=precision
     )
-    expected_result = data_replicate_multi_df.groupby(replicate_columns).mean().round(4)
+    expected_result = (
+        data_replicate_multi_df.groupby(replicate_columns)
+        .mean(numeric_only=True)
+        .round(4)
+    )
     expected_result.index.name = replicate_columns
     pd.testing.assert_frame_equal(
         expected_result.reset_index(), consensus_df, check_exact=False, atol=1e-3

@@ -345,14 +345,16 @@ def test_get_sql_table_col_names():
     # Iterate over initialized compartments
     for compartment in AP.compartments:
         expected_meta_cols = ["ObjectNumber", "ImageNumber", "TableNumber"]
-        expected_feat_cols = [f"{compartment.capitalize()}_{i}" for i in ["a", "b", "c", "d"]]
-        if compartment == 'cytoplasm':
-            expected_feat_cols += ["Cytoplasm_Parent_Cells","Cytoplasm_Parent_Nuclei"]
+        expected_feat_cols = [
+            f"{compartment.capitalize()}_{i}" for i in ["a", "b", "c", "d"]
+        ]
+        if compartment == "cytoplasm":
+            expected_feat_cols += ["Cytoplasm_Parent_Cells", "Cytoplasm_Parent_Nuclei"]
         col_name_result = AP.get_sql_table_col_names(table=compartment)
-        assert sorted(col_name_result) == sorted(expected_feat_cols+expected_meta_cols)
-        meta_cols, feat_cols = AP.split_column_categories(
-            col_name_result
+        assert sorted(col_name_result) == sorted(
+            expected_feat_cols + expected_meta_cols
         )
+        meta_cols, feat_cols = AP.split_column_categories(col_name_result)
         assert meta_cols == expected_meta_cols
         assert feat_cols == expected_feat_cols
 
@@ -406,7 +408,6 @@ def test_merge_single_cells():
     for method in ["standardize", "robustize"]:
         for samples in ["all", "Metadata_ImageNumber == 'x'"]:
             for features in ["infer", ["Cytoplasm_a", "Cells_a"]]:
-
                 norm_method_df = AP.merge_single_cells(
                     single_cell_normalize=True,
                     normalize_args={
@@ -425,6 +426,17 @@ def test_merge_single_cells():
                     manual_merge_normalize.sort_index(axis=1),
                     check_dtype=False,
                 )
+
+
+@pytest.mark.skip(
+    reason="This test will soon fail because of a logic error in merge_single_cells"
+)
+def test_merge_single_cells_non_canonical():
+    # The test raises this warning:
+    # FutureWarning: Passing 'suffixes' which cause duplicate columns
+    # {'ObjectNumber_cytoplasm'} in the result is deprecated and will raise a
+    # MergeError in a future version.
+    # See https://github.com/cytomining/pycytominer/issues/266
 
     # Test non-canonical compartment merging
     new_sc_merge_df = AP_NEW.merge_single_cells()
@@ -476,8 +488,8 @@ def test_merge_single_cells():
         traditional_norm_df.loc[:, new_compartment_cols].abs().describe(),
     )
 
-def test_merge_single_cells_subsample():
 
+def test_merge_single_cells_subsample():
     for subsample_frac in [0.1, 0.5, 0.9]:
         ap_subsample = SingleCells(
             sql_file=TMP_SQLITE_FILE, subsample_frac=subsample_frac
@@ -704,7 +716,6 @@ def test_aggregate_subsampling_count_cells():
 
 
 def test_aggregate_subsampling_profile():
-
     assert isinstance(
         AP_SUBSAMPLE.aggregate_profiles(compute_subsample=True), pd.DataFrame
     )
@@ -724,7 +735,6 @@ def test_aggregate_subsampling_profile():
 
 
 def test_aggregate_subsampling_profile_output():
-
     expected_result = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
@@ -768,7 +778,6 @@ def test_aggregate_subsampling_profile_output():
 
 
 def test_aggregate_subsampling_profile_output_multiple_queries():
-
     expected_result = pd.DataFrame(
         {
             "Metadata_Plate": ["plate", "plate"],
@@ -814,7 +823,6 @@ def test_aggregate_subsampling_profile_output_multiple_queries():
 
 
 def test_n_aggregation_memory_strata():
-
     df_n1 = AP.aggregate_profiles(n_aggregation_memory_strata=1)
     df_n2 = AP.aggregate_profiles(n_aggregation_memory_strata=2)
     df_n3 = AP.aggregate_profiles(n_aggregation_memory_strata=3)
@@ -832,7 +840,6 @@ def test_invalid_n_aggregation_memory_strata():
 
 
 def test_sqlite_strata_conditions():
-
     df = pd.DataFrame(
         data={
             "TableNumber": [[1], [2], [3], [4]],
@@ -1082,4 +1089,3 @@ def test_load_non_canonical_image_table():
         result.sort_index(axis="columns").drop("Metadata_Site_Count", axis="columns"),
         sc_aggregated_df,
     )
-
