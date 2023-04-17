@@ -149,7 +149,7 @@ class CellLocation:
         try:
             self.s3.head_object(Bucket=bucket, Key=key)
         except botocore.exceptions.ClientError as e:
-            if e.response["Error"]["Code"] == "404":
+            if e.response["Error"]["Code"] in ["404", "400", "403"]:
                 return False
             else:
                 raise
