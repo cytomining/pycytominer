@@ -68,6 +68,12 @@ def collate(
         The list of image feature groups to be used by add_image_features during aggregation
     printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
+    no_nuclei: bool, optional, default True
+        Whether or not the nuclei object is available. Set to False if there is no nuclei object.
+    no_cells: bool, optional, default True
+        Whether or not the cells object is available. Set to False if there is no cells object.
+    no_cytoplasm: bool, optional, default True
+        Whether or not the cytoplasm object is available. Set to False if there is no cytoplasm object.
     """
 
     from pycytominer.cyto_utils.cells import SingleCells

@@ -25,7 +25,7 @@ def get_default_linking_cols():
     return linking_cols
 
 def get_non_default_linking_cols(compartments):
-    """Define the standard experiment linking columns between tables for different combinations of compartments or single compartment:
+    """Define the standard experiment linking columns between tables for object-object combination of compartments or single compartment:
     
     nuclei-cells, nuclei-cytoplasm, cells-cytoplasm, or only one of the three compartments
 
@@ -35,7 +35,7 @@ def get_non_default_linking_cols(compartments):
         A dictionary mapping columns that links together canonical CellProfiler objects but in different combinations or for a single object
 
     .. note::
-        every dictionary pair has a 1 to 1 correspondence (e.g. cytoplasm-cells and cells-cytoplasm both must exist)
+        every dictionary pair has a 1 to 1 correspondence if two objects are given. If only one object is given, only Object_Number column defines the linking.
     """
     compartment_linking_cols_cells_nuclei={ 
     "cells": {
@@ -106,7 +106,7 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
             assert y in compartments, "{com} {err}".format(com=y, err=comp_err)
             linking_check.append("-".join(sorted([x, y])))
    
-    # Make sure that each combination has been specified exactly twice
+    # Make sure that each combination has been specified exactly twice. Don't check if only one object is given
     if not len(compartments) == 1:
         linking_counter = Counter(linking_check)
         for combo in linking_counter:
