@@ -77,6 +77,27 @@ if __name__ == "__main__":
         default=True,
         help="Whether to print status updates",
     )
+    parser.add_argument(
+        "--no-nuclei",
+        dest="no_nuclei",
+        action="store_false",
+        default=True,
+        help="Whether or not to use nuclei objects",
+    )
+    parser.add_argument(
+        "--no-cells",
+        dest="no_cells",
+        action="store_false",
+        default=True,
+        help="Whether or not to use cells objects",
+    )
+    parser.add_argument(
+        "--no-cytoplasm",
+        dest="no_cytoplasm",
+        action="store_false",
+        default=True,
+        help="Whether or not to use cytoplasm objects",
+    )
 
     args = parser.parse_args()
 
@@ -95,4 +116,7 @@ if __name__ == "__main__":
         add_image_features=args.add_image_features,
         image_feature_categories=args.image_feature_categories,
         printtoscreen=args.printtoscreen,
+        no_nuclei=args.no_nuclei,
+        no_cells=args.no_cells,
+        no_cytoplasm=args.no_cytoplasm
     )
