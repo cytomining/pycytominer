@@ -24,6 +24,51 @@ def get_default_linking_cols():
 
     return linking_cols
 
+def get_non_default_linking_cols(compartments):
+    """Define the standard experiment linking columns between tables for different combinations of compartments or single compartment:
+    
+    nuclei-cells, nuclei-cytoplasm, cells-cytoplasm, or only one of the three compartments
+
+    Returns
+    -------
+    linking_cols, dict
+        A dictionary mapping columns that links together canonical CellProfiler objects but in different combinations or for a single object
+
+    .. note::
+        every dictionary pair has a 1 to 1 correspondence (e.g. cytoplasm-cells and cells-cytoplasm both must exist)
+    """
+    compartment_linking_cols_cells_nuclei={ 
+    "cells": {
+        "nuclei": "Cells_Parent_Nuclei"
+    },
+        "nuclei": {"cells": "ObjectNumber"},
+    }
+    compartment_linking_cols_cyto_nuclei={ 
+        "cytoplasm": {
+            "nuclei": "Cytoplasm_Parent_Nuclei"
+        },
+        "nuclei": {"cytoplasm": "ObjectNumber"},
+        }
+    compartment_linking_cols_cyto_cells={
+        "cytoplasm": {
+            "cells": "Cytoplasm_Parent_Cells"
+        },
+        "cells": {"cytoplasm": "ObjectNumber"},
+        }
+    
+    linking_cols = dict()
+    if len(compartments) == 2:
+        if "cells" and "nuclei" in compartments:
+            linking_cols = compartment_linking_cols_cells_nuclei
+        elif "cytoplasm" and "nuclei" in compartments:
+            linking_cols = compartment_linking_cols_cyto_nuclei
+        elif "cytoplasm" and "cells" in compartments:
+            linking_cols = compartment_linking_cols_cyto_cells
+    elif len(compartments) == 1:
+        linking_cols[compartments[0]] = {compartments[0]:"ObjectNumber"}
+
+    return linking_cols
+
 
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
     """Confirm that the linking cols and compartments are compatible
@@ -60,13 +105,14 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
             unique_linking_cols.append(y)
             assert y in compartments, "{com} {err}".format(com=y, err=comp_err)
             linking_check.append("-".join(sorted([x, y])))
-
+   
     # Make sure that each combination has been specified exactly twice
-    linking_counter = Counter(linking_check)
-    for combo in linking_counter:
-        assert (
-            linking_counter[combo] == 2
-        ), "Missing column identifier between {combo}".format(combo=combo)
+    if not len(compartments) == 1:
+        linking_counter = Counter(linking_check)
+        for combo in linking_counter:
+            assert (
+                linking_counter[combo] == 2
+            ), "Missing column identifier between {combo}".format(combo=combo)
 
     # Confirm that every compartment has been specified in the linking_cols
     unique_linking_cols = sorted(list(set(unique_linking_cols)))
