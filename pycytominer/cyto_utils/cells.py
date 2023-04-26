@@ -153,7 +153,7 @@ class SingleCells(object):
         if get_default_compartments() in self.compartments:
             self.compartment_linking_cols = compartment_linking_cols
         else:
-            self.compartment_linking_cols=get_non_default_linking_cols(compartments)
+            self.compartment_linking_cols = get_non_default_linking_cols(compartments)
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
