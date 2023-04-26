@@ -14,6 +14,7 @@ from pycytominer.cyto_utils import (
     extract_image_features,
     get_default_compartments,
     get_default_linking_cols,
+    get_non_default_linking_cols,
     infer_cp_features,
     output,
     provide_linking_cols_feature_name_update,
@@ -145,10 +146,14 @@ class SingleCells(object):
         self.is_aggregated = False
         self.is_subset_computed = False
         self.compartments = compartments
-        self.compartment_linking_cols = compartment_linking_cols
         self.fields_of_view_feature = fields_of_view_feature
         self.object_feature = object_feature
         self.default_datatype_float = default_datatype_float
+
+        if get_default_compartments() in self.compartments:
+            self.compartment_linking_cols = compartment_linking_cols
+        else:
+            self.compartment_linking_cols=get_non_default_linking_cols(compartments)
 
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
