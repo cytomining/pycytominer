@@ -36,14 +36,14 @@ Each processing function has unique arguments, see our [documentation](https://p
 Pycytominer is still in beta, and can only be installed from GitHub:
 
 ```bash
-pip install git+git://github.com/cytomining/pycytominer
+pip install git+https://github.com/cytomining/pycytominer
 ```
 
 Since the project is actively being developed, with new features added regularly, we recommend installation using a hash:
 
 ```bash
 # Example:
-pip install git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470
+pip install git+https://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470
 ```
 
 ### CSV collation
@@ -56,9 +56,9 @@ If you want to perform this data collation inside pycytominer using the `cyto_ut
 
 ```bash
 # Example for general case commit:
-pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer"
+pip install "pycytominer[collate] @ git+https://github.com/cytomining/pycytominer"
 # Example for specific commit:
-pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
+pip install "pycytominer[collate] @ git+https://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
 ```
 
 If using `pycytominer` in a conda environment, in order to run `collate.py`, you will also want to make sure to add `cytominer-database=0.3.4` to your list of dependencies.
@@ -72,7 +72,7 @@ To use this functionality, you will need to modify your installation command, si
 
 ```bash
 # Example for general case commit:
-pip install "pycytominer[cell_locations] @ git+git://github.com/cytomining/pycytominer"
+pip install "pycytominer[cell_locations] @ git+https://github.com/cytomining/pycytominer"
 ```
 
 Example using this functionality:
