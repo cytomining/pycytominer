@@ -6,7 +6,7 @@ This document contains guidelines on how to most effectively contribute to the p
 
 If you are stuck, please feel free to ask any questions or ask for help.
 
-## Table Of contents
+## Table of contents
 
 [Code of conduct](#code-of-conduct)
 
@@ -16,9 +16,9 @@ If you are stuck, please feel free to ask any questions or ask for help.
 
 - [Bug reporting](#bug-reporting)
 - [Suggesting enhancements](#suggesting-enhancements)
-- [Dev Environments](#dev-environments)
 - [Your first code contribution](#your-first-code-contribution)
 - [Pull requests](#pull-requests)
+- [Dev environments](#dev-environments)
 
 [Style guides](#style-guides)
 
@@ -75,48 +75,6 @@ If you do not find the suggestion, please open a new issue and clearly document 
 
 Please provide your enhancement suggestions as an issue in the repository:
 
-### Dev Environments
-
-#### Manual Setup
-
-General guidance for setting up a local development environment in Linux are provided below.
-It is strongly recommended to perform this within a virtual environment such as [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [pyenv](https://akrabat.com/creating-virtual-environments-with-pyenv/):
-
-```bash
-# Checkout the repository
-git clone https://github.com/cytomining/pycytominer.git
-cd pycytominer
-# Install pycytominer in development mode along with associated tools
-bash .devcontainer/postCreateCommand.sh
-```
-
-#### Local DevContainer
-
-Instructions for setting up a local development environment using VSCode DevContainers:
-
-1. Install [VSCode](https://code.visualstudio.com/download)
-2. Install the [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
-3. Open the repository in VSCode
-4. Click on the green "Reopen in Container" button in the lower left corner of the window
-5. Wait for the container to build and install the required dependencies
-
-#### Cloud Environment (Recommended)
-
-Cloud development configurations have been set up with both [Github Codespaces](https://github.com/codespaces) and [GitPod](https://www.gitpod.io/).
-These development environments have been set up with the local copy of the repository installed in development mode along with the tools needed from `requirements-dev.txt`.
-Pre-installed git hooks will ensure that any changed code is properly formatted by required tools prior to commits.
-Using a pre-built cloud development environment is the easiest way to get started contributing to pycytominer and both Gitpod and Codespaces have generous free usage tiers.
-When you are ready to make a pull request, you can use the same cloud environment to run the full test suite and ensure that your changes pass all tests.
-These cloud environments can be launched by clicking on the following links:
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://open.vscode.dev/cytomining/pycytominer)
-
-[Beginner's Guide to Codespaces](https://github.blog/2023-02-22-a-beginners-guide-to-learning-to-code-with-github-codespaces/)
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/cytomining/pycytominer)
-
-[Beginner's Guide to Gitpod](https://www.gitpod.io/docs/introduction/getting-started)
-
 ### Your first code contribution
 
 Contributing code for the first time can be a daunting task.
@@ -148,6 +106,49 @@ We will do our best to review the code addition in a timely fashion.
 Ensuring that you follow all steps above will increase our speed and ability to review.
 We will check for accuracy, style, code coverage, and scope.
 
+### Dev environments
+
+#### Local devcontainer
+
+Instructions for setting up a local development environment using VSCode DevContainers:
+
+1. Install [VSCode](https://code.visualstudio.com/download)
+2. Install the [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
+3. Open the repository in VSCode
+4. Click on the green "Reopen in Container" button in the lower left corner of the window
+5. Wait for the container to build and install the required dependencies
+
+#### Cloud environment
+
+We've set up cloud development configurations with both [Github Codespaces](https://github.com/codespaces) and [GitPod](https://www.gitpod.io/).
+These development environments include the local copy of the repository installed in development mode along with the tools specified in `requirements-dev.txt`.
+Prior to commit, pre-installed git hooks auto-format any changed code.
+Using a pre-built cloud development environment is an easy way to get started contributing to pycytominer, and both Gitpod and Codespaces have generous free usage tiers.
+When you are ready to make a pull request, please use the same cloud environment to run the full test suite and ensure that your changes pass all tests.
+You can launch these cloud environments by clicking on the following links:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://open.vscode.dev/cytomining/pycytominer)
+
+[Beginner's Guide to Codespaces](https://github.blog/2023-02-22-a-beginners-guide-to-learning-to-code-with-github-codespaces/)
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/cytomining/pycytominer)
+
+[Beginner's Guide to Gitpod](https://www.gitpod.io/docs/introduction/getting-started)
+
+#### Manual setup
+
+We recommend using either the local devcontainer or cloud dev environment approaches above.
+However, we also provide general guidance for setting up a local development environment in Linux here.
+We strongly recommend performing this within a virtual environment such as [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [pyenv](https://akrabat.com/creating-virtual-environments-with-pyenv/):
+
+```bash
+# Checkout the repository
+git clone https://github.com/cytomining/pycytominer.git
+cd pycytominer
+# Install pycytominer in development mode along with associated tools
+bash .devcontainer/postCreateCommand.sh
+```
+
 ## Style guides
 
 Please follow all style guides to the best of your abilities.
@@ -163,7 +164,7 @@ When appropriate, reference issues (via `#` plus number) .
 For python code style, we use [black](https://github.com/psf/black).
 Please use black before committing any code.
 We will not accept code contributions that do not use black.
-If you have set up your development environment using one of the options above, required formatting tools will be installed and run automatically on any modified files before commits using [pre-commit](https://pre-commit.com/).
+If you have set up your development environment using one of the dev container options specified above, the containers will install all required formatting tools, which will run automatically on any modified files before commits (using a tool called [pre-commit](https://pre-commit.com/)).
 
 ### Documentation style guide
 
