@@ -7,10 +7,10 @@ jobs:
     name: Run pre-commit checks on changed files
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2 
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - run: git fetch --depth=1 origin +${{github.base_ref}} 
+      - run: git fetch --depth=1 origin +${{github.base_ref}}
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
