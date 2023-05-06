@@ -13,6 +13,9 @@ with open(pathlib.Path("pycytominer/__about__.py")) as fp:
 with open("requirements.txt") as f:
     REQUIRED_PKGS = f.read().splitlines()
 
+with open("requirements-dev.txt") as f:
+    DEV_PKGS = f.read().splitlines()
+
 setup(
     name="pycytominer",
     version=ABOUT["__version__"],
@@ -31,6 +34,7 @@ setup(
             "boto3>=1.26.79",
             "fire>=0.5.0",
         ],
+        "dev": DEV_PKGS,
     },
     python_requires=">=3.4",
     include_package_data=True,
