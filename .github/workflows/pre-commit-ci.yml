@@ -1,19 +1,33 @@
 name: pre-commit-ci
 on:
+  push:
+    branches:
+      - master
   pull_request:
-    branches: [master]
+    branches:
+      - master
 jobs:
   pre-commit-ci:
     name: Run pre-commit checks on changed files
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout directly pushed commit
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/checkout@v3
+      - name: "Get pull request fetch depth"
+        if: ${{ github.event.pull_request }}
+        run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
+      - name: "Checkout PR branch"
+        uses: actions/checkout@v3
+        if: ${{ github.event.pull_request }}
         with:
-          fetch-depth: 0
-      - run: git fetch --depth=1 origin +${{github.base_ref}}
-      - uses: actions/setup-python@v2
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: ${{ env.PR_FETCH_DEPTH }}
+      - name: "Setup Python"
+        uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - uses: pre-commit/action@v2.0.0
+      - name: "Run pre-commit on changed files"
+        uses: pre-commit/action@v3.0.0
         with:
           extra_args: --from-ref origin/${{github.base_ref}} --to-ref HEAD
