@@ -1,6 +1,6 @@
 import os
 import random
-import pytest
+import pathlib
 import tempfile
 import numpy as np
 import pandas as pd
@@ -138,6 +138,19 @@ def test_load_profiles():
 
     profiles_from_frame = load_profiles(data_df)
     pd.testing.assert_frame_equal(data_df, profiles_from_frame)
+
+
+def test_load_profiles_type_check():
+    data_file_os = os.path.join(tmpdir, "test_data.csv")
+    data_file_path = pathlib.Path(tmpdir, "test_data.csv")
+    data_file_purepath = pathlib.PurePath(tmpdir, "test_data.csv")
+
+    profiles_os = load_profiles(data_file_os)
+    profiles_path = load_profiles(data_file_path)
+    profiles_purepath = load_profiles(data_file_purepath)
+
+    pd.testing.assert_frame_equal(profiles_os, profiles_path)
+    pd.testing.assert_frame_equal(profiles_purepath, profiles_path)
 
 
 def test_load_platemap():
