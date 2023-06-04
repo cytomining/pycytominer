@@ -142,6 +142,10 @@ def test_load_profiles():
 
 
 def test_load_profiles_type_check():
+    """
+    The `load_profiles()` function will work with only certain input types.
+    This test confirms that different input types work as expected.
+    """
     data_file_os: str = os.path.join(tmpdir, "test_data.csv")
     data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_data.csv")
     data_file_purepath: pathlib.PurePath = pathlib.PurePath(tmpdir, "test_data.csv")
