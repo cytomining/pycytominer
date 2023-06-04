@@ -142,9 +142,9 @@ def test_load_profiles():
 
 
 def test_load_profiles_type_check():
-    data_file_os = os.path.join(tmpdir, "test_data.csv")
-    data_file_path = pathlib.Path(tmpdir, "test_data.csv")
-    data_file_purepath = pathlib.PurePath(tmpdir, "test_data.csv")
+    data_file_os: str = os.path.join(tmpdir, "test_data.csv")
+    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_data.csv")
+    data_file_purepath: pathlib.PurePath = pathlib.PurePath(tmpdir, "test_data.csv")
 
     profiles_os = load_profiles(data_file_os)
     profiles_path = load_profiles(data_file_path)
