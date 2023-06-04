@@ -6,7 +6,7 @@ import pandas as pd
 from typing import Union
 
 
-def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
+def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
     """Checks if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions.
