@@ -28,9 +28,7 @@ output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
 output_platemap_file_gzip = "{}.gz".format(output_platemap_file)
 output_npz_file = os.path.join(tmpdir, "test_npz.npz")
 output_npz_with_model_file = os.path.join(tmpdir, "test_npz_withmodel.npz")
-output_npz_without_metadata_file = os.path.join(
-    tmpdir, "test_npz_withoutmetadata.npz"
-)
+output_npz_without_metadata_file = os.path.join(tmpdir, "test_npz_withoutmetadata.npz")
 
 
 # Example .npz file with real data
@@ -89,23 +87,17 @@ npz_feats = data_df.drop("Metadata_Well", axis="columns").values
 # Write to temp files
 data_df.to_csv(output_data_file, sep="\t", index=False)
 data_df.to_csv(output_data_comma_file, sep=",", index=False)
-data_df.to_csv(
-    output_data_gzip_file, sep="\t", index=False, compression="gzip"
-)
+data_df.to_csv(output_data_gzip_file, sep="\t", index=False, compression="gzip")
 data_df.to_parquet(output_data_parquet, engine="pyarrow")
 
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
-platemap_df.to_csv(
-    output_platemap_file_gzip, sep="\t", index=False, compression="gzip"
-)
+platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
 
 # Write npz temp files
 key_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()}
 npz_metadata_dict.update(npz_model_key)
-key_with_model_values = {
-    k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()
-}
+key_with_model_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()}
 
 np.savez_compressed(output_npz_file, features=npz_feats, metadata=key_values)
 np.savez_compressed(
@@ -134,28 +126,11 @@ def test_load_profiles():
     profiles_gzip = load_profiles(output_data_gzip_file)
     pd.testing.assert_frame_equal(data_df, profiles_gzip)
 
-    platemap = load_platemap(output_data_comma_file, add_metadata_id=False)
-    pd.testing.assert_frame_equal(data_df, profiles)
-
     profiles_from_frame = load_profiles(data_df)
     pd.testing.assert_frame_equal(data_df, profiles_from_frame)
 
-
-def test_load_profiles_type_check():
-    """
-    The `load_profiles()` function will work with only certain input types.
-    This test confirms that different input types work as expected.
-    """
-    data_file_os: str = os.path.join(tmpdir, "test_data.csv")
-    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_data.csv")
-    data_file_purepath: pathlib.PurePath = pathlib.PurePath(tmpdir, "test_data.csv")
-
-    profiles_os = load_profiles(data_file_os)
-    profiles_path = load_profiles(data_file_path)
-    profiles_purepath = load_profiles(data_file_purepath)
-
-    pd.testing.assert_frame_equal(profiles_os, profiles_path)
-    pd.testing.assert_frame_equal(profiles_purepath, profiles_path)
+    profiles_from_parquet = load_profiles(output_data_parquet)
+    pd.testing.assert_frame_equal(data_df, profiles_from_parquet)
 
 
 def test_load_platemap():
@@ -168,9 +143,7 @@ def test_load_platemap():
     platemap = load_platemap(output_platemap_file_gzip, add_metadata_id=False)
     pd.testing.assert_frame_equal(platemap, platemap_df)
 
-    platemap_with_annotation = load_platemap(
-        output_platemap_file, add_metadata_id=True
-    )
+    platemap_with_annotation = load_platemap(output_platemap_file, add_metadata_id=True)
     platemap_df.columns = [f"Metadata_{x}" for x in platemap_df.columns]
     pd.testing.assert_frame_equal(platemap_with_annotation, platemap_df)
 
@@ -212,9 +185,7 @@ def test_load_npz():
 
     # Check real data
     assert real_data_df.shape == (206, 54)
-    assert all(
-        [x in real_data_df.columns for x in core_cols + ["Metadata_Model"]]
-    )
+    assert all([x in real_data_df.columns for x in core_cols + ["Metadata_Model"]])
     assert len(real_data_df.Metadata_Model.unique()) == 1
     assert real_data_df.Metadata_Model.unique()[0] == "cnn"
     assert real_data_df.drop(
@@ -268,3 +239,26 @@ def test_is_path_a_parquet_file():
 
     # checking if the same df is produced from parquet and csv files
     pd.testing.assert_frame_equal(parquet_profile_test, csv_profile_test)
+
+
+def test_load_profiles_file_path_input():
+    """
+    The `load_profiles()` function will work input file arguments that resolve.
+    This test confirms that different input file types work as expected.
+    """
+    # All paths should resolve and result in the same data being loaded
+    data_file_os: str = os.path.join(tmpdir, "test_data.csv")
+    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_data.csv")
+    data_file_purepath: pathlib.PurePath = pathlib.PurePath(tmpdir, "test_data.csv")
+
+    profiles_os = load_profiles(data_file_os)
+    profiles_path = load_profiles(data_file_path)
+    profiles_purepath = load_profiles(data_file_purepath)
+
+    pd.testing.assert_frame_equal(profiles_os, profiles_path)
+    pd.testing.assert_frame_equal(profiles_purepath, profiles_path)
+
+    # Testing non-existing file paths should result in expected behavior
+    data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
+    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+        load_profiles(data_file_not_exist)
