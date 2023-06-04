@@ -96,7 +96,7 @@ def load_profiles(profiles):
             delim = infer_delim(profiles)
             return pd.read_csv(profiles, sep=delim)
 
-    return profiles 
+    return profiles
 
 
 def load_platemap(platemap, add_metadata_id=True):
