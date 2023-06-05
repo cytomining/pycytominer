@@ -14,7 +14,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Parameters
     ----------
-    file : Union[str, pathlib.Path]
+    file : Union[str, pathlib.PurePath]
         path to parquet file
 
     Returns
@@ -33,7 +33,8 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     file = pathlib.PurePath(file)
     try:
-        pathlib.Path(file).resolve(strict=True)
+        # strict=true tests if path exists
+        file = pathlib.Path(file).resolve(strict=True)
     except FileNotFoundError as e:
         print("load_profiles() didn't find the path.", e, sep="\n")
 
@@ -86,9 +87,9 @@ def load_profiles(profiles):
     -------
     FileNotFoundError
         Raised if the provided profile does not exists
-
     """
     if not isinstance(profiles, pd.DataFrame):
+        # Check if path exists and load depending on file type
         if is_path_a_parquet_file(profiles):
             return pd.read_parquet(profiles, engine="pyarrow")
 
