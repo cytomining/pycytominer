@@ -27,7 +27,7 @@ def feature_select(
     corr_threshold=0.9,
     corr_method="pearson",
     freq_cut=0.05,
-    unique_cut=0.1,
+    unique_cut=0.01,
     compression_options=None,
     float_format=None,
     blocklist_file=None,
