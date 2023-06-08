@@ -1,6 +1,6 @@
 <img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/master/logo/with-text-for-light-bg.png?raw=true">
 
-# Pycytominer: Data processing functions for profiling perturbations
+# Pycytominer: Data processing functions for image-based profiling
 
 [![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=master)](https://travis-ci.org/cytomining/pycytominer)
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/master/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=master)
@@ -12,41 +12,96 @@ The tool is most often used for processing data through the following pipeline:
 
 ![pipeline](/media/pipeline.png)
 
-Image data flow from the microscope to segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
+Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
-For CellProfiler, we use [cytominer-database](https://github.com/cytomining/cytominer-database) or [cytominer-transport](https://github.com/cytomining/cytominer-transport).
+For CellProfiler, we use [cytominer-database](https://github.com/cytomining/cytominer-database) or [CytoTable](https://github.com/cytomining/CytoTable).
 For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
 
-From the single cell output, we perform five steps using a simple API (described below), before passing along our data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
+From the single cell output, pycytominer performs five steps using a simple API (described below), before passing along  data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
 
 ## API
 
 The API is consistent for the five major processing functions:
 
-1. Aggregate
-2. Annotate
-3. Normalize
-4. Feature select
-5. Consensus
+1. Aggregate - Average single-cell profiles based on metadata information (most often "well").
+2. Annotate - Append metadata (most often from the platemap file) to the feature profile 
+3. Normalize - Transform input feature data into consistent distributions
+4. Feature select - Exclude non-informative or redundant features
+5. Consensus - Average aggregated profiles by replicates to form a "consensus signature"
 
 Each processing function has unique arguments, see our [documentation](https://pycytominer.readthedocs.io/) for more details.
 
 ## Installation
 
-Pycytominer is still in beta, and can only be installed from GitHub:
+You can install pycytominer via pip:
 
 ```bash
-pip install git+git://github.com/cytomining/pycytominer
+pip install pycytominer
 ```
 
-Since the project is actively being developed, with new features added regularly, we recommend installation using a hash:
+or conda:
 
 ```bash
-# Example:
-pip install git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470
+conda install pycytominer
 ```
 
-### CSV collation
+Since the project is actively being developed, you can also install using the most up to date (or an older) github hash
+
+```bash
+# With ssh keys enabled
+pip install git+git://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
+
+# Without ssh keys
+pip install git+https://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
+```
+
+## Usage
+
+The default way to use pycytominer is within python scripts, and using pycytominer is simple and fun.
+
+```python
+# Real world example
+import pandas as pd
+import pycytominer
+
+commit = "da8ae6a3bc103346095d61b4ee02f08fc85a5d98"
+url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-painting/{commit}/profiles/2016_04_01_a549_48hr_batch1/SQ00014812/SQ00014812_augmented.csv.gz"
+
+df = pd.read_csv(url)
+
+normalized_df = pycytominer.normalize(
+    profiles=df,
+    method="standardize",
+    samples="Metadata_broad_sample == 'DMSO'"
+)
+```
+
+### Pipeline orchestration
+
+Pycytominer is a collection of different functions with no explicit link between steps.
+However, some options exist to use pycytominer within a pipeline framework.
+
+| Project | Format | Environment | pycytominer usage |
+| :------ | :---------- | :---------------- |
+| [Profiling-recipe](https://github.com/cytomining/profiling-recipe) | yaml | agnostic | full pipeline support |
+| [CellProfiler-on-Terra](https://github.com/broadinstitute/cellprofiler-on-Terra) | WDL | google cloud / Terra | single-cell aggregation |
+| [CytoSnake](https://github.com/WayScience/CytoSnake) | snakemake | agnostic | full pipeline support |
+
+A separate project called [AuSPICES](https://github.com/broadinstitute/AuSPICEs) offers pipeline support up to image feature extraction.
+
+## Other functionality
+
+Pycytominer was written with a goal of processing any high-throughput image-based profiling data.
+However, the initial use case was developed for processing image-based profiling experiments specifically.
+And, more specifically than that, image-based profiling readouts from [CellProfiler](https://github.com/CellProfiler) measurements from [Cell Painting](https://www.nature.com/articles/nprot.2016.105) data.
+
+Therefore, we have included some custom tools in `pycytominer/cyto_utils` that provides other functionality:
+
+- [CellProfiler CSV collation](#CellProfiler-CSV-collation)
+- [Cell locations lookup table generation](#Creating-a-cell-locations-lookup-table)
+- [Generating gct files for Morpheus visualization](#Generating-a-GCT-file-for-morpheus)
+
+### CellProfiler CSV collation
 
 If running your images on a cluster, unless you have a MySQL or similar large database set up then you will likely end up with lots of different folders from the different cluster runs (often one per well or one per site), each one containing an `Image.csv`, `Nuclei.csv`, etc.
 In order to look at full plates, therefore, we first need to collate all of these CSVs into a single file (currently SQLite) per plate.
@@ -57,13 +112,14 @@ If you want to perform this data collation inside pycytominer using the `cyto_ut
 ```bash
 # Example for general case commit:
 pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer"
+
 # Example for specific commit:
 pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
 ```
 
 If using `pycytominer` in a conda environment, in order to run `collate.py`, you will also want to make sure to add `cytominer-database=0.3.4` to your list of dependencies.
 
-## Creating a cell locations lookup table
+### Creating a cell locations lookup table
 
 The `CellLocation` class offers a convenient way to augment a [LoadData](https://cellprofiler-manual.s3.amazonaws.com/CPmanual/LoadData.html) file with X,Y locations of cells in each image.
 The locations information is obtained from a single cell SQLite file.
@@ -100,9 +156,10 @@ python -c "import pandas as pd; print(pd.read_parquet('${augmented_metadata_outp
 # 1     BR00126114           A01             2  ...  s3://cellpainting-gallery/cpg0016-jump/source_...           2  [{'Nuclei_Location_Center_X': 29.9516027655562...
 ```
 
-## Usage
+### Generating a GCT file for morpheus
 
-Using pycytominer is simple and fun.
+The software [morpheus](https://software.broadinstitute.org/morpheus/) enables profile visualization in the form of interactive heatmaps.
+Pycytominer can convert profiles into a `.gct` file for drag-and-drop input into morpheus.
 
 ```python
 # Real world example
@@ -110,21 +167,14 @@ import pandas as pd
 import pycytominer
 
 commit = "da8ae6a3bc103346095d61b4ee02f08fc85a5d98"
-url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-painting/{commit}/profiles/2016_04_01_a549_48hr_batch1/SQ00014812/SQ00014812_augmented.csv.gz"
+plate = "SQ00014812"
+url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-painting/{commit}/profiles/2016_04_01_a549_48hr_batch1/{plate}/{plate}_normalized_feature_select.csv.gz"
 
 df = pd.read_csv(url)
+output_file = f"{plate}.gct"
 
-normalized_df = pycytominer.normalize(
+pycytominer.cyto_utils.write_gct(
     profiles=df,
-    method="standardize",
-    samples="Metadata_broad_sample == 'DMSO'"
+    output_file=output_file
 )
 ```
-
-### Customized usage
-
-Pycytominer was written with a goal of processing any high-throughput profiling data.
-However, the initial use case was developed for processing image-based profiling experiments specifically.
-And, more specifically than that, image-based profiling readouts from [CellProfiler](https://github.com/CellProfiler) measurements from [Cell Painting](https://www.nature.com/articles/nprot.2016.105) data.
-
-Therefore, we have included some custom tools in `pycytominer/cyto_utils`.
