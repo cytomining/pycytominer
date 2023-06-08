@@ -17,17 +17,32 @@ From here, additional single cell processing tools curate the single cell readou
 For CellProfiler, we use [cytominer-database](https://github.com/cytomining/cytominer-database) or [CytoTable](https://github.com/cytomining/CytoTable).
 For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
 
-From the single cell output, pycytominer performs five steps using a simple API (described below), before passing along  data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
+From the single cell output, pycytominer performs five steps using a simple API (described below), before passing along data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
 
 ## API
 
-The API is consistent for the five major processing functions:
+Pycytominer has five major processing functions:
 
 1. Aggregate - Average single-cell profiles based on metadata information (most often "well").
 2. Annotate - Append metadata (most often from the platemap file) to the feature profile 
 3. Normalize - Transform input feature data into consistent distributions
 4. Feature select - Exclude non-informative or redundant features
 5. Consensus - Average aggregated profiles by replicates to form a "consensus signature"
+
+The API is consistent for each of these functions:
+
+```python
+# Each function takes as input a pandas DataFrame or file path
+# and transforms the input data based on the provided options and methods
+df = function(
+    profiles_or_path,
+    features,
+    samples,
+    method,
+    output_file,
+    additional_options...
+)
+```
 
 Each processing function has unique arguments, see our [documentation](https://pycytominer.readthedocs.io/) for more details.
 
@@ -82,7 +97,7 @@ Pycytominer is a collection of different functions with no explicit link between
 However, some options exist to use pycytominer within a pipeline framework.
 
 | Project | Format | Environment | pycytominer usage |
-| :------ | :---------- | :---------------- |
+| :------ | :----- | :---------- | :---------------- |
 | [Profiling-recipe](https://github.com/cytomining/profiling-recipe) | yaml | agnostic | full pipeline support |
 | [CellProfiler-on-Terra](https://github.com/broadinstitute/cellprofiler-on-Terra) | WDL | google cloud / Terra | single-cell aggregation |
 | [CytoSnake](https://github.com/WayScience/CytoSnake) | snakemake | agnostic | full pipeline support |
