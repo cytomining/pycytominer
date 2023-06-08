@@ -9,7 +9,7 @@ from pycytominer.cyto_utils import infer_cp_features
 
 
 def variance_threshold(
-    population_df, features="infer", samples="all", freq_cut=0.05, unique_cut=0.1
+    population_df, features="infer", samples="all", freq_cut=0.05, unique_cut=0.01
 ):
     """Exclude features that have low variance (low information content)
 
