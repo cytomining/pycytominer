@@ -19,6 +19,36 @@ For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_u
 
 From the single cell output, pycytominer performs five steps using a simple API (described below), before passing along data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
 
+## Installation
+
+You can install pycytominer via pip:
+
+```bash
+pip install pycytominer
+```
+
+or conda:
+
+```bash
+conda install pycytominer
+```
+
+Since the project is actively being developed, you can also install using the most up to date (or an older) github hash
+
+```bash
+# With ssh keys enabled
+pip install git+git://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
+
+# Without ssh keys
+pip install git+https://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
+```
+
+## Frameworks
+
+Pycytominer is primarily built on top of [pandas](https://pandas.pydata.org/docs/index.html), also using aspects of SQLAlchemy, sklearn, and pyarrow.
+
+Pycytominer currently supports [parquet](https://parquet.apache.org/) and compressed text file (e.g. `.csv.gz`) i/o.
+
 ## API
 
 Pycytominer has five major processing functions:
@@ -45,30 +75,6 @@ df = function(
 ```
 
 Each processing function has unique arguments, see our [documentation](https://pycytominer.readthedocs.io/) for more details.
-
-## Installation
-
-You can install pycytominer via pip:
-
-```bash
-pip install pycytominer
-```
-
-or conda:
-
-```bash
-conda install pycytominer
-```
-
-Since the project is actively being developed, you can also install using the most up to date (or an older) github hash
-
-```bash
-# With ssh keys enabled
-pip install git+git://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
-
-# Without ssh keys
-pip install git+https://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
-```
 
 ## Usage
 
