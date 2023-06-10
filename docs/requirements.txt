@@ -2,6 +2,7 @@ sphinx
 sphinx-autobuild
 sphinx-autoapi
 groundwork-sphinx-theme
+sphinx_copybutton
 
 mock
 autodoc
