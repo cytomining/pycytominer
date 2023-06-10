@@ -1,6 +1,6 @@
 <img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/master/logo/with-text-for-light-bg.png?raw=true">
 
-# Pycytominer: Data processing functions for profiling perturbations
+# Data processing functions for profiling perturbations
 
 [![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=master)](https://travis-ci.org/cytomining/pycytominer)
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/master/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=master)
@@ -10,7 +10,7 @@
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
 
-![pipeline](/media/pipeline.png)
+<img height="200" src="https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png?raw=true">
 
 Image data flow from the microscope to segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
