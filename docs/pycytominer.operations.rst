@@ -20,14 +20,6 @@ pycytominer.operations.get\_na\_columns module
    :undoc-members:
    :show-inheritance:
 
-pycytominer.operations.sparse\_random\_projection module
---------------------------------------------------------
-
-.. automodule:: pycytominer.operations.sparse_random_projection
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pycytominer.operations.transform module
 ---------------------------------------
 
