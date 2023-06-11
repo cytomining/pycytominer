@@ -271,8 +271,9 @@ def test_extract_image_features():
 
 
 def _assert_pairwise_corr_helper(data_df, expected_result):
-    '''Assert `get_pairwise_correlation` and `pd.DataFrame.corr` get the same
-    output. It also checks if the first correlation value match the `expected_result`.'''
+    """Assert `get_pairwise_correlation` and `pd.DataFrame.corr` get the same
+    output. It also checks if the first correlation value match the `expected_result`.
+    """
     cor_df, pair_df = get_pairwise_correlation(data_df, method="pearson")
 
     pd.testing.assert_frame_equal(cor_df, data_df.corr(method="pearson"))
