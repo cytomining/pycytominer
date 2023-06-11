@@ -30,17 +30,7 @@ pip install pycytominer
 or conda:
 
 ```bash
-conda install pycytominer
-```
-
-Since the project is actively being developed, you can also install using the most up to date (or an older) github hash
-
-```bash
-# With ssh keys enabled
-pip install git+git://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
-
-# Without ssh keys
-pip install git+https://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab
+conda install -c conda-forge pycytominer
 ```
 
 ## Frameworks
@@ -54,7 +44,7 @@ Pycytominer currently supports [parquet](https://parquet.apache.org/) and compre
 Pycytominer has five major processing functions:
 
 1. Aggregate - Average single-cell profiles based on metadata information (most often "well").
-2. Annotate - Append metadata (most often from the platemap file) to the feature profile 
+2. Annotate - Append metadata (most often from the platemap file) to the feature profile
 3. Normalize - Transform input feature data into consistent distributions
 4. Feature select - Exclude non-informative or redundant features
 5. Consensus - Average aggregated profiles by replicates to form a "consensus signature"
@@ -102,11 +92,11 @@ normalized_df = pycytominer.normalize(
 Pycytominer is a collection of different functions with no explicit link between steps.
 However, some options exist to use pycytominer within a pipeline framework.
 
-| Project | Format | Environment | pycytominer usage |
-| :------ | :----- | :---------- | :---------------- |
-| [Profiling-recipe](https://github.com/cytomining/profiling-recipe) | yaml | agnostic | full pipeline support |
-| [CellProfiler-on-Terra](https://github.com/broadinstitute/cellprofiler-on-Terra) | WDL | google cloud / Terra | single-cell aggregation |
-| [CytoSnake](https://github.com/WayScience/CytoSnake) | snakemake | agnostic | full pipeline support |
+| Project                                                                          | Format    | Environment          | pycytominer usage       |
+| :------------------------------------------------------------------------------- | :-------- | :------------------- | :---------------------- |
+| [Profiling-recipe](https://github.com/cytomining/profiling-recipe)               | yaml      | agnostic             | full pipeline support   |
+| [CellProfiler-on-Terra](https://github.com/broadinstitute/cellprofiler-on-Terra) | WDL       | google cloud / Terra | single-cell aggregation |
+| [CytoSnake](https://github.com/WayScience/CytoSnake)                             | snakemake | agnostic             | full pipeline support   |
 
 A separate project called [AuSPICES](https://github.com/broadinstitute/AuSPICEs) offers pipeline support up to image feature extraction.
 
@@ -132,7 +122,7 @@ If you want to perform this data collation inside pycytominer using the `cyto_ut
 
 ```bash
 # Example for general case commit:
-pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer"
+pip install "pycytominer[collate]"
 
 # Example for specific commit:
 pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
@@ -149,7 +139,7 @@ To use this functionality, you will need to modify your installation command, si
 
 ```bash
 # Example for general case commit:
-pip install "pycytominer[cell_locations] @ git+git://github.com/cytomining/pycytominer"
+pip install "pycytominer[cell_locations]"
 ```
 
 Example using this functionality:
