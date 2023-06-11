@@ -51,8 +51,11 @@ exclude_patterns = ["**tests**"]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-pycytominer_hex = "#c24dd6"
+pycytominer_hex = "#88239A"
+# Furo theme options specified here: https://pradyunsg.me/furo/
 html_theme = "furo"
+# Furo theme option colors specified here:
+# https://github.com/pradyunsg/furo/blob/main/src/furo/assets/styles/variables/_colors.scss
 html_theme_options = {
     "light_css_variables": {
         "color-brand-primary": pycytominer_hex,
@@ -71,5 +74,5 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 html_logo = "../logo/just-icon-150px.svg"
