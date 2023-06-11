@@ -125,7 +125,7 @@ If you want to perform this data collation inside pycytominer using the `cyto_ut
 pip install "pycytominer[collate]"
 
 # Example for specific commit:
-pip install "pycytominer[collate] @ git+git://github.com/cytomining/pycytominer@2aa8638d7e505ab510f1d5282098dd59bb2cb470"
+pip install "pycytominer[collate] @ git+https://github.com/cytomining/pycytominer@77d93a3a551a438799a97ba57d49b19de0a293ab"
 ```
 
 If using `pycytominer` in a conda environment, in order to run `collate.py`, you will also want to make sure to add `cytominer-database=0.3.4` to your list of dependencies.
