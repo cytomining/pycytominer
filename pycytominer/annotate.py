@@ -19,13 +19,13 @@ def annotate(
     profiles,
     platemap,
     join_on=["Metadata_well_position", "Metadata_Well"],
-    output_file="none",
+    output_file=None,
     add_metadata_id_to_platemap=True,
     format_broad_cmap=False,
     clean_cellprofiler=True,
-    external_metadata="none",
-    external_join_left="none",
-    external_join_right="none",
+    external_metadata=None,
+    external_join_left=None,
+    external_join_right=None,
     compression_options=None,
     float_format=None,
     cmap_args={},
@@ -78,7 +78,11 @@ def annotate(
     platemap = load_platemap(platemap, add_metadata_id_to_platemap)
 
     annotated = platemap.merge(
-        profiles, left_on=join_on[0], right_on=join_on[1], how="inner"
+        profiles,
+        left_on=join_on[0],
+        right_on=join_on[1],
+        how="inner",
+        suffixes=["_platemap", None],
     )
     if join_on[0] != join_on[1]:
         annotated = annotated.drop(join_on[0], axis="columns")
@@ -91,7 +95,7 @@ def annotate(
         annotated = cp_clean(annotated)
 
     if not isinstance(external_metadata, pd.DataFrame):
-        if external_metadata != "none":
+        if external_metadata != None:
             assert os.path.exists(
                 external_metadata
             ), "external metadata at {} does not exist".format(external_metadata)
@@ -113,6 +117,7 @@ def annotate(
                 left_on=external_join_left,
                 right_on=external_join_right,
                 how="left",
+                suffixes=[None, "_external"],
             )
             .reset_index(drop=True)
             .drop_duplicates()
@@ -124,7 +129,7 @@ def annotate(
 
     annotated = annotated.loc[:, meta_cols + other_cols]
 
-    if output_file != "none":
+    if output_file != None:
         output(
             df=annotated,
             output_filename=output_file,

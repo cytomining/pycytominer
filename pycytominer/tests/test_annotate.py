@@ -34,7 +34,6 @@ PLATEMAP_DF = pd.DataFrame(
 
 
 def test_annotate():
-
     # create expected result prior to annotate to distinguish modifications
     # performed by annotate to provided dataframes.
     expected_result = (
@@ -53,7 +52,6 @@ def test_annotate():
 
 
 def test_annotate_platemap_naming():
-
     # Test annotate with the same column name in platemap and data.
     platemap_modified_df = PLATEMAP_DF.copy().rename(
         columns={"well_position": "Metadata_Well"}
@@ -72,8 +70,33 @@ def test_annotate_platemap_naming():
     pd.testing.assert_frame_equal(result, expected_result)
 
 
-def test_annotate_output():
+def test_annotate_merge():
+    # Test to ensure that the "_platemap" merge suffix is applied to the platemap columns when there is a name collision
+    platemap_modified_df = PLATEMAP_DF.copy(deep=True)
+    platemap_modified_df["x"] = [1, 2, 3, 4, 5, 6]
 
+    expected_result = platemap_modified_df.merge(
+        DATA_DF,
+        left_on="well_position",
+        right_on="Metadata_Well",
+        suffixes=("_platemap", None),
+    ).drop("well_position", axis="columns")
+    # Reorder with Metadtata column first
+    meta_cols = ["Metadata_Well"]
+    other_cols = expected_result.drop(meta_cols, axis="columns").columns.tolist()
+    expected_result = expected_result.loc[:, meta_cols + other_cols]
+
+    result = annotate(
+        profiles=DATA_DF,
+        platemap=platemap_modified_df,
+        join_on=["well_position", "Metadata_Well"],
+        add_metadata_id_to_platemap=False,
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_annotate_output():
     annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,
@@ -87,7 +110,7 @@ def test_annotate_output():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none",
+        output_file=None,
     )
     expected_result = pd.read_csv(OUTPUT_FILE)
 
@@ -95,7 +118,6 @@ def test_annotate_output():
 
 
 def test_annotate_output_compress():
-
     compress_file = pathlib.Path(f"{TMPDIR}/test_annotate_compress.csv.gz")
     annotate(
         profiles=DATA_DF,
@@ -111,7 +133,7 @@ def test_annotate_output_compress():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none",
+        output_file=None,
     )
     expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)
