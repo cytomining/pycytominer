@@ -134,7 +134,7 @@ class AggregateDeepProfiler:
         dict that holds the file names and metadata.
         Is used to load in the npz files in the correct order and grouping.
     output_file : str
-        If provided, will write annotated profiles to folder. Defaults to "none".
+        If provided, will write annotated profiles to folder. Defaults to None.
 
     Methods
     -------
@@ -160,7 +160,7 @@ class AggregateDeepProfiler:
         deep_data: DeepProfilerData,
         aggregate_operation="median",
         aggregate_on="well",
-        output_file="none",
+        output_file=None,
     ):
         """
         __init__ function for this class.
@@ -280,7 +280,7 @@ class AggregateDeepProfiler:
             df = pd.concat([df, meta_df], axis=1)
 
             # save metalevel file
-            if self.output_file != "none":
+            if self.output_file != None:
                 if not os.path.exists(self.output_file):
                     os.mkdir(self.output_file)
                 file_path = os.path.join(
@@ -325,7 +325,7 @@ class SingleCellDeepProfiler:
         dict that holds the file names and metadata.
         Is used to load in the npz files in the correct order and grouping.
     output_file : str
-        If provided, will write annotated profiles to folder. Defaults to "none".
+        If provided, will write annotated profiles to folder. Defaults to None.
 
     Methods
     -------
@@ -360,7 +360,9 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-    def get_single_cells(self, output=False, location_x_col_index = 0, location_y_col_index = 1):
+    def get_single_cells(
+        self, output=False, location_x_col_index=0, location_y_col_index=1
+    ):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -388,7 +390,9 @@ class SingleCellDeepProfiler:
                     f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
                 )
                 continue
-            locations = load_npz_locations(features_path, location_x_col_index, location_y_col_index)
+            locations = load_npz_locations(
+                features_path, location_x_col_index, location_y_col_index
+            )
             detailed_df = pd.concat([locations, features], axis=1)
 
             total_df.append(detailed_df)
@@ -401,13 +405,13 @@ class SingleCellDeepProfiler:
 
     def normalize_deep_single_cells(
         self,
-        location_x_col_index = 0, 
-        location_y_col_index = 1,
+        location_x_col_index=0,
+        location_y_col_index=1,
         image_features=False,  # not implemented with DeepProfiler
         meta_features="infer",
         samples="all",
         method="standardize",
-        output_file="none",
+        output_file=None,
         compression_options=None,
         float_format=None,
         mad_robustize_epsilon=1e-18,
@@ -415,7 +419,6 @@ class SingleCellDeepProfiler:
         spherize_method="ZCA-cor",
         spherize_epsilon=1e-6,
     ):
-
         """
         Normalizes all cells into a pandas dataframe.
 
@@ -432,7 +435,11 @@ class SingleCellDeepProfiler:
         print("getting single cells")
         # setup single_cells attribute
         if not hasattr(self, "single_cells"):
-            self.get_single_cells(output=False, location_x_col_index=location_x_col_index, location_y_col_index=location_y_col_index)
+            self.get_single_cells(
+                output=False,
+                location_x_col_index=location_x_col_index,
+                location_y_col_index=location_y_col_index,
+            )
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(self.single_cells, metadata=True)
@@ -451,7 +458,7 @@ class SingleCellDeepProfiler:
             meta_features=meta_features,
             samples=samples,
             method=method,
-            output_file="none",
+            output_file=None,
             compression_options=compression_options,
             float_format=float_format,
             mad_robustize_epsilon=mad_robustize_epsilon,
@@ -467,7 +474,7 @@ class SingleCellDeepProfiler:
         normalized.insert(1, "Location_Center_Y", y_locations)
 
         # separate code because normalize() will not return if it has an output file specified
-        if output_file != "none":
+        if output_file != None:
             output(
                 df=normalized,
                 output_filename=output_file,

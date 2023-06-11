@@ -22,7 +22,7 @@ def feature_select(
     image_features=False,
     samples="all",
     operation="variance_threshold",
-    output_file="none",
+    output_file=None,
     na_cutoff=0.05,
     corr_threshold=0.9,
     corr_method="pearson",
@@ -90,7 +90,7 @@ def feature_select(
     Returns
     -------
     selected_df : pandas.core.frame.DataFrame, optional
-        The feature selected profile DataFrame. If output_file="none", then return the
+        The feature selected profile DataFrame. If output_file=None, then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
 
@@ -178,7 +178,7 @@ def feature_select(
 
     selected_df = profiles.drop(excluded_features, axis="columns")
 
-    if output_file != "none":
+    if output_file != None:
         output(
             df=selected_df,
             output_filename=output_file,

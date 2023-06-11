@@ -34,7 +34,6 @@ PLATEMAP_DF = pd.DataFrame(
 
 
 def test_annotate():
-
     # create expected result prior to annotate to distinguish modifications
     # performed by annotate to provided dataframes.
     expected_result = (
@@ -53,7 +52,6 @@ def test_annotate():
 
 
 def test_annotate_platemap_naming():
-
     # Test annotate with the same column name in platemap and data.
     platemap_modified_df = PLATEMAP_DF.copy().rename(
         columns={"well_position": "Metadata_Well"}
@@ -73,7 +71,6 @@ def test_annotate_platemap_naming():
 
 
 def test_annotate_output():
-
     annotate(
         profiles=DATA_DF,
         platemap=PLATEMAP_DF,
@@ -87,7 +84,7 @@ def test_annotate_output():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none",
+        output_file=None,
     )
     expected_result = pd.read_csv(OUTPUT_FILE)
 
@@ -95,7 +92,6 @@ def test_annotate_output():
 
 
 def test_annotate_output_compress():
-
     compress_file = pathlib.Path(f"{TMPDIR}/test_annotate_compress.csv.gz")
     annotate(
         profiles=DATA_DF,
@@ -111,7 +107,7 @@ def test_annotate_output_compress():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none",
+        output_file=None,
     )
     expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)

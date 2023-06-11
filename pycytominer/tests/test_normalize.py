@@ -76,7 +76,7 @@ def test_normalize_standardize_allsamples():
     """
     Testing normalize pycytominer function
     method = "standardize"
-    meta_features = "none"
+    meta_features = None
     samples="all"
     """
     normalize_result = normalize(
@@ -114,7 +114,7 @@ def test_normalize_standardize_ctrlsamples():
     """
     Testing normalize pycytominer function
     method = "standardize"
-    meta_features = "none"
+    meta_features = None
     samples="Metadata_treatment == 'control'"
     """
     normalize_result = normalize(
@@ -152,7 +152,7 @@ def test_normalize_robustize_allsamples():
     """
     Testing normalize pycytominer function
     method = "robustize"
-    meta_features = "none"
+    meta_features = None
     samples="all"
     """
     normalize_result = normalize(
@@ -190,7 +190,7 @@ def test_normalize_robustize_ctrlsamples():
     """
     Testing normalize pycytominer function
     method = "robustize"
-    meta_features = "none"
+    meta_features = None
     samples="Metadata_treatment == 'control'"
     """
     normalize_result = normalize(
@@ -228,7 +228,7 @@ def test_normalize_robustize_mad_allsamples():
     """
     Testing normalize pycytominer function
     method = "mad_robustize"
-    meta_features = "none"
+    meta_features = None
     samples="all"
     """
     normalize_result = normalize(
@@ -266,7 +266,7 @@ def test_normalize_robustize_mad_allsamples_novar():
     """
     Testing normalize pycytominer function
     method = "mad_robustize"
-    meta_features = "none"
+    meta_features = None
     samples="all"
     """
     features = ["x", "y", "z", "zz", "yy"]
@@ -312,7 +312,7 @@ def test_normalize_standardize_allsamples_fromfile():
     Testing normalize pycytominer function
     data_file provided
     method = "standardize"
-    meta_features = "none"
+    meta_features = None
     samples="all"
     """
     normalize_result = normalize(
@@ -362,7 +362,7 @@ def test_normalize_standardize_allsamples_output():
     Testing normalize pycytominer function
     data_file provided
     method = "standardize"
-    meta_features = "none"
+    meta_features = None
     samples="all"
     """
     out_normalize_file = os.path.join(tmpdir, "test_normalize_output.csv")
