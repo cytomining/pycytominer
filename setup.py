@@ -36,6 +36,6 @@ setup(
         ],
         "dev": DEV_PKGS,
     },
-    python_requires=">=3.4",
+    python_requires=">=3.8",
     include_package_data=True,
 )
