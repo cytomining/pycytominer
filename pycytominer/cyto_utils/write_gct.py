@@ -18,7 +18,7 @@ def write_gct(
     output_file,
     features="infer",
     meta_features="infer",
-    feature_metadata="none",
+    feature_metadata=None,
     version="#1.3",
 ):
     """Convert profiles to a .gct file
@@ -38,7 +38,7 @@ def write_gct(
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
         If "infer", then assume metadata features are those prefixed with "Metadata"
-    feature_metadata : pandas.core.frame.DataFrame, default "none"
+    feature_metadata : pandas.core.frame.DataFrame, default None
     version : str, default "#1.3"
         Important for gct loading into Morpheus
 

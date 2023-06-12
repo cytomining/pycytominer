@@ -134,7 +134,7 @@ class AggregateDeepProfiler:
         dict that holds the file names and metadata.
         Is used to load in the npz files in the correct order and grouping.
     output_file : str
-        If provided, will write annotated profiles to folder. Defaults to "none".
+        If provided, will write annotated profiles to folder. Defaults to None.
 
     Methods
     -------
@@ -160,7 +160,7 @@ class AggregateDeepProfiler:
         deep_data: DeepProfilerData,
         aggregate_operation="median",
         aggregate_on="well",
-        output_file="none",
+        output_file=None,
     ):
         """
         __init__ function for this class.
@@ -280,7 +280,7 @@ class AggregateDeepProfiler:
             df = pd.concat([df, meta_df], axis=1)
 
             # save metalevel file
-            if self.output_file != "none":
+            if self.output_file != None:
                 if not os.path.exists(self.output_file):
                     os.mkdir(self.output_file)
                 file_path = os.path.join(
@@ -325,7 +325,7 @@ class SingleCellDeepProfiler:
         dict that holds the file names and metadata.
         Is used to load in the npz files in the correct order and grouping.
     output_file : str
-        If provided, will write annotated profiles to folder. Defaults to "none".
+        If provided, will write annotated profiles to folder. Defaults to None.
 
     Methods
     -------
@@ -411,7 +411,7 @@ class SingleCellDeepProfiler:
         meta_features="infer",
         samples="all",
         method="standardize",
-        output_file="none",
+        output_file=None,
         compression_options=None,
         float_format=None,
         mad_robustize_epsilon=1e-18,
@@ -458,7 +458,7 @@ class SingleCellDeepProfiler:
             meta_features=meta_features,
             samples=samples,
             method=method,
-            output_file="none",
+            output_file=None,
             compression_options=compression_options,
             float_format=float_format,
             mad_robustize_epsilon=mad_robustize_epsilon,
@@ -474,7 +474,7 @@ class SingleCellDeepProfiler:
         normalized.insert(1, "Location_Center_Y", y_locations)
 
         # separate code because normalize() will not return if it has an output file specified
-        if output_file != "none":
+        if output_file != None:
             output(
                 df=normalized,
                 output_filename=output_file,

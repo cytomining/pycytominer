@@ -16,10 +16,10 @@ def aggregate(
     strata=["Metadata_Plate", "Metadata_Well"],
     features="infer",
     operation="median",
-    output_file="none",
+    output_file=None,
     compute_object_count=False,
     object_feature="Metadata_ObjectNumber",
-    subset_data_df="none",
+    subset_data_df=None,
     compression_options=None,
     float_format=None,
 ):
@@ -55,7 +55,7 @@ def aggregate(
     Returns
     -------
     population_df : pandas.core.frame.DataFrame, optional
-        DataFrame of aggregated features. If output_file="none", then return the
+        DataFrame of aggregated features. If output_file=None, then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
 
@@ -113,7 +113,7 @@ def aggregate(
         if col in population_df.columns:
             population_df = population_df.drop([col], axis="columns")
 
-    if output_file != "none":
+    if output_file != None:
         output(
             df=population_df,
             output_filename=output_file,
