@@ -44,7 +44,6 @@ TEST_COMPRESSION_OPTIONS = {"method": "gzip"}
 
 
 def test_output_default():
-
     output_filename = pathlib.Path(f"{TMPDIR}/test_compress.csv.gz")
 
     output_result = output(
@@ -127,7 +126,6 @@ def test_output_exception():
 
 
 def test_check_set_compression():
-
     check_compression_method(compression="gzip")
 
     with pytest.raises(AssertionError) as e:

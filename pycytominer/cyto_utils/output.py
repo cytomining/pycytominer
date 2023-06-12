@@ -80,7 +80,6 @@ def output(
     """
 
     if output_type == "csv":
-
         compression_options = set_compression_method(compression=compression_options)
 
         df.to_csv(
@@ -92,7 +91,6 @@ def output(
         )
 
     elif output_type == "parquet":
-
         # note: compression options will be validated against pd.DataFrame.to_parquet options
         # raising errors and tested through Pandas, PyArrow, etc. as necessary.
         df.to_parquet(path=output_filename, compression="snappy")

@@ -2,7 +2,6 @@ import argparse
 from pycytominer.cyto_utils.collate import collate
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Collate CSVs")
     parser.add_argument("batch", help="Batch name to process")
     parser.add_argument("config", help="Config file to pass to cytominer-database")
