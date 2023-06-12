@@ -83,7 +83,7 @@ def test_robust_mad():
     assert int(result) == expected_result
 
     # Check a median absolute deviation equal to the number of columns
-    result = median_abs_deviation(transform_df, scale=1/1.4826).sum()
+    result = median_abs_deviation(transform_df, scale=1 / 1.4826).sum()
     expected_result = data_df.shape[1]
 
     assert int(result) == expected_result

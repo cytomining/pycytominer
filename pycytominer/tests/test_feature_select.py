@@ -435,6 +435,9 @@ def test_feature_select_drop_outlier():
     pd.testing.assert_frame_equal(result, expected_result)
 
     result = feature_select(
-        data_outlier_df, features=["Cells_x", "Cytoplasm_y"], operation="drop_outliers", outlier_cutoff=15
+        data_outlier_df,
+        features=["Cells_x", "Cytoplasm_y"],
+        operation="drop_outliers",
+        outlier_cutoff=15,
     )
     pd.testing.assert_frame_equal(result, data_outlier_df)

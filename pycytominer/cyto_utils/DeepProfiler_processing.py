@@ -360,7 +360,9 @@ class SingleCellDeepProfiler:
 
         self.deep_data = deep_data
 
-    def get_single_cells(self, output=False, location_x_col_index = 0, location_y_col_index = 1):
+    def get_single_cells(
+        self, output=False, location_x_col_index=0, location_y_col_index=1
+    ):
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -388,7 +390,9 @@ class SingleCellDeepProfiler:
                     f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
                 )
                 continue
-            locations = load_npz_locations(features_path, location_x_col_index, location_y_col_index)
+            locations = load_npz_locations(
+                features_path, location_x_col_index, location_y_col_index
+            )
             detailed_df = pd.concat([locations, features], axis=1)
 
             total_df.append(detailed_df)
@@ -401,8 +405,8 @@ class SingleCellDeepProfiler:
 
     def normalize_deep_single_cells(
         self,
-        location_x_col_index = 0, 
-        location_y_col_index = 1,
+        location_x_col_index=0,
+        location_y_col_index=1,
         image_features=False,  # not implemented with DeepProfiler
         meta_features="infer",
         samples="all",
@@ -415,7 +419,6 @@ class SingleCellDeepProfiler:
         spherize_method="ZCA-cor",
         spherize_epsilon=1e-6,
     ):
-
         """
         Normalizes all cells into a pandas dataframe.
 
@@ -432,7 +435,11 @@ class SingleCellDeepProfiler:
         print("getting single cells")
         # setup single_cells attribute
         if not hasattr(self, "single_cells"):
-            self.get_single_cells(output=False, location_x_col_index=location_x_col_index, location_y_col_index=location_y_col_index)
+            self.get_single_cells(
+                output=False,
+                location_x_col_index=location_x_col_index,
+                location_y_col_index=location_y_col_index,
+            )
 
         # extract metadata prior to normalization
         metadata_cols = infer_cp_features(self.single_cells, metadata=True)
