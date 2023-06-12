@@ -92,7 +92,6 @@ def collate(
                 os.makedirs(eachdir, exist_ok=True)
 
         if aws_remote:
-
             remote_input_dir = f"{aws_remote}/analysis/{batch}/{plate}/{csv_dir}"
 
             remote_backend_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.sqlite"
@@ -158,7 +157,6 @@ def collate(
         run_check_errors(index_cmd_metadata)
 
         if aws_remote:
-
             if printtoscreen:
                 print(f"Uploading {cache_backend_file} to {remote_backend_file}")
             cp_cmd = ["aws", "s3", "cp", cache_backend_file, remote_backend_file]

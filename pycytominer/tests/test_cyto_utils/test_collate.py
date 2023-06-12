@@ -48,7 +48,6 @@ def validate(test_file, master_file, should_be_equal=True):
 
 
 def test_base_case():
-
     cleanup()
 
     collate(
@@ -68,7 +67,6 @@ def test_base_case():
 
 
 def test_base_case_with_image_features():
-
     cleanup()
 
     collate(
@@ -95,7 +93,6 @@ def test_base_case_with_image_features():
 
 
 def test_overwrite():
-
     cleanup()
 
     collate(
@@ -139,7 +136,6 @@ cleanup()
 
 
 def test_aggregate_only():
-
     cleanup()
 
     with pytest.raises(SystemExit) as exitcode:
