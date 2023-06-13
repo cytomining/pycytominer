@@ -1,18 +1,5 @@
-pycytominer package
-===================
-
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   pycytominer.cyto_utils
-   pycytominer.operations
-   pycytominer.tests
-
-Submodules
-----------
+Core functions
+==============
 
 pycytominer.aggregate module
 ----------------------------
@@ -30,10 +17,10 @@ pycytominer.annotate module
    :undoc-members:
    :show-inheritance:
 
-pycytominer.consensus module
+pycytominer.normalize module
 ----------------------------
 
-.. automodule:: pycytominer.consensus
+.. automodule:: pycytominer.normalize
    :members:
    :undoc-members:
    :show-inheritance:
@@ -46,13 +33,22 @@ pycytominer.feature\_select module
    :undoc-members:
    :show-inheritance:
 
-pycytominer.normalize module
+pycytominer.consensus module
 ----------------------------
 
-.. automodule:: pycytominer.normalize
+.. automodule:: pycytominer.consensus
    :members:
    :undoc-members:
    :show-inheritance:
+
+Helper functions
+----------------
+
+.. toctree::
+   :maxdepth: 4
+
+   pycytominer.cyto_utils
+   pycytominer.operations
 
 Module contents
 ---------------
