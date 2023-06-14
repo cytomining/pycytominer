@@ -10,8 +10,9 @@
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
 
-<img height="500" src="https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png?raw=true">
-[Click here for high resolution image](https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png)
+<img height="325" src="https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png?raw=true">
+
+[Click here for high resolution pipeline image](https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png)
 
 Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
