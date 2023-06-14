@@ -1,0 +1,21 @@
+name: General Questions
+description: Provide general questions or feedback regarding PyCytominer.
+title: "Question: "
+labels: [question]
+
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: >
+            I can confirm that this question/issue does not fall within the other three issue types already available
+  - type: textarea
+    id: question
+    attributes:
+      label: General question or description
+      description: >
+        Please provide the question or description of an issue.
+    validations:
+      required: true
