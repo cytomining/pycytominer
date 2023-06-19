@@ -9,7 +9,7 @@ body:
     attributes:
       label: File location of the documentation
       description: >
-        Please provide the location of the documentation that this issue is referencing.
+        Please provide the source of the documentation that this issue is referencing.
       placeholder: Example - https://github.com/cytomining/pycytominer/edit/master/docs/index.rst
     validations:
       require: true
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Documentation issue
       description: >
-        Please provide a description regarding what documentation is missing or needs to be fixed/updated.
+        Please provide a description of the missing or outdated documentation that needs to be fixed or updated.
     validations:
       required: true
   - type: textarea
@@ -26,6 +26,6 @@ body:
     attributes:
       label: Suggested solution
       description: >
-        Please provide your suggestion for what to change in the documentation. If the suggestion involves changing already exisiting documentation, please explain the suggested change is better.
+        Please provide your suggestion for what changes should be made in the documentation. If your suggestion involves modifying existing documentation, please explain why the suggested change is an improvement.
     validations:
       required: true

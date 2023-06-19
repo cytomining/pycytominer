@@ -8,7 +8,7 @@ body:
     id: checks
     attributes:
       label: Feature type
-      description: Please check the feature type you would like to propose.
+      description: Please select the type of feature you would like to propose.
       options:
         - label: >
             Add new functionality
@@ -19,7 +19,7 @@ body:
     attributes:
       label: General description of the proposed functionality
       description: >
-        Please *concisely* describe what the proposed functionality is, if it is due to an existing issue, and how it will improve PyCytominer.
+        Please provide a brief description of the proposed functionality, including whether it addresses an existing issue, and explain how it will enhance PyCytominer.
     validations:
       required: true
   - type: textarea
@@ -27,7 +27,7 @@ body:
     attributes:
       label: Feature example
       description: >
-        Please provide an example of this functionality (e.g., psuedocode).
+        Please provide an example of the proposed functionality (e.g., psuedocode).
     validations:
       required: true
   - type: textarea
@@ -35,10 +35,10 @@ body:
     attributes:
       label: Alternative Solutions
       description: >
-        If applicable, please provide any alternative solutions/ideas for this functionality.
+        If applicable, please suggest any alternative solutions/ideas for this functionality.
   - type: textarea
     id: additional-info
     attributes:
       label: Additional information
       description: >
-        Provide any further information or context.
+        Provide additional information or context.

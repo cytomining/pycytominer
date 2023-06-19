@@ -9,7 +9,7 @@ body:
     attributes:
       label: Example code with output
       description: >
-        Please provide the code snippet that is producing the unexpected behavior along with the output.
+        Please provide the code snippet that is causing the unexpected behavior, along with the corresponding output (if available).
     validations:
       required: true
   - type: textarea
@@ -17,7 +17,7 @@ body:
     attributes:
       label: Issue description
       description: >
-        Please provide a written description of the issue as shown in the above code example.
+        Please provide a written description of the issue as shown in the provided code example.
     validations:
       required: true
   - type: textarea
@@ -26,7 +26,7 @@ body:
       label: Expected behavior
       description: >
         Please describe and/or show a code example of the expected behavior.
-        You can also provide an example solution here if you have one.
+        You can also provide an example solution here if available.
     validations:
       required: true
   - type: textarea
@@ -34,7 +34,7 @@ body:
     attributes:
       label: Additional information
       description: >
-        Provide any further information that will help with understanding how to fix this bug.
+        Please provide any other relevant information to help us understand and fix the bug.
       placeholder: >
         Examples of other information:
           - Screenshots

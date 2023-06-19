@@ -10,12 +10,12 @@ body:
       label: Confirmation
       options:
         - label: >
-            I can confirm that this question/issue does not fall within the other three issue types already available
+            I can confirm that this question/issue does not fall under any of the existing three issue types currently available.
   - type: textarea
     id: question
     attributes:
       label: General question or description
       description: >
-        Please provide the question or description of an issue.
+        Please provide the question or a description of the issue.
     validations:
       required: true
