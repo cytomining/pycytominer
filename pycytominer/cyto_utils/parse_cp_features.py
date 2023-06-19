@@ -35,7 +35,15 @@ def parse_cp_features(feature):
     channel = "None"  # default value
 
     if compartment != "Unknown":
-        if feature_group in ["AreaShape", "Neighbors", "Children", "Parent", "Number"]:
+        if feature_group in [
+            "AreaShape",
+            "Neighbors",
+            "Children",
+            "Parent",
+            "Number",
+            "Threshold",
+            "ObjectSkeleton",
+        ]:
             # Examples:
             # Cells,AreaShape,Zernike_2_0
             # Cells,AreaShape,BoundingBoxArea
@@ -43,6 +51,8 @@ def parse_cp_features(feature):
             # Nuclei,Children,Cytoplasm_Count
             # Nuclei,Parent,NucleiIncludingEdges
             # Nuclei,Number,ObjectNumber
+            # Image,Threshold,SumOfEntropies_NucleiIncludingEdges
+            # Nuclei,ObjectSkeleton,NumberTrunks_mito_skel
 
             feature_type = parts[2]
 
@@ -65,9 +75,10 @@ def parse_cp_features(feature):
             # Cells,Granularity,15_ER
             channel = parts[3]
 
-        elif feature_group == "Intensity":
+        elif feature_group in ["Intensity", "ImageQuality"]:
             # Examples:
             # Cells,Intensity,MeanIntensity_DNA
+            # Image,ImageQuality,MaxIntensity_OrigAGP
             feature_type = parts[2]
             channel = parts[3]
 
@@ -90,6 +101,8 @@ def parse_cp_features(feature):
             feature_type = "Unknown"
             channel = "Unknown"
 
+    # strip out `Orig` from channel names
+    channel = channel.replace("Orig", "")
     channel = channel.upper()
 
     return {
