@@ -1,32 +1,40 @@
 def parse_cp_features(feature):
-    """
-    Parse a feature string into a dictionary with the compartment, feature group, feature type, and channel.
+    """Parses a CellProfiler feature string into its semantic components.
 
-    Args:
-        feature (str): The CellProfiler feature string to parse.
+    This function will take a feature string and return a dictionary containing its semantic components,
+    specifically: the compartment, feature group, feature type, and channel.
+    If the feature string is not in a recognized format, the function will assign 'Unknown' to the non-comprehensible components.
+    Channel information will be returned as 'None' where it's not applicable.
 
-    Returns:
-        dict: A dictionary with the compartment, feature group, feature type, and channel.
+    Parameters
+    ----------
+    feature : str
+        The CellProfiler feature string to parse.
 
-    Raises:
-        ValueError: If the input is not a string.
+    Returns
+    -------
+    dict
+        A dictionary with the following keys: 'feature', 'compartment', 'feature_group', 'feature_type', 'channel'.
+        Each key maps to the respective component of the feature string.
+
+    Raises
+    ------
+    ValueError
+        Raised if the input is not a string.
     """
 
     if not isinstance(feature, str):
         raise ValueError(f"Expected a string, got {type(feature).__name__}")
 
     parts = feature.split("_")
-    compartment = parts[0]
+    compartment = (
+        parts[0] if parts[0] in ["Cells", "Cytoplasm", "Nuclei", "Image"] else "Unknown"
+    )
     feature_group = parts[1]
+    feature_type = "None"  # default value
+    channel = "None"  # default value
 
-    # Default values for unrecognized types
-    feature_type = "Unknown"
-    channel = "Unknown"
-
-    if compartment not in ["Cells", "Cytoplasm", "Nuclei", "Image"]:
-        compartment = "Unknown"
-        feature_group = "Unknown"
-    else:
+    if compartment != "Unknown":
         if feature_group in ["AreaShape", "Neighbors", "Children", "Parent", "Number"]:
             # Examples:
             # Cells,AreaShape,Zernike_2_0
@@ -37,7 +45,6 @@ def parse_cp_features(feature):
             # Nuclei,Number,ObjectNumber
 
             feature_type = parts[2]
-            channel = "None"
 
         elif feature_group == "Location":
             # Examples:
@@ -45,21 +52,17 @@ def parse_cp_features(feature):
             # Cells,Location_Center_X
 
             feature_type = parts[2]
-            if feature_type == "Center":
-                channel = "None"
-            else:
+            if feature_type != "Center":
                 channel = parts[4]
 
         elif feature_group == "Count":
             # Examples:
             # Cells,Count,Cells
-            feature_type = "None"
-            channel = "None"
+            pass
 
         elif feature_group == "Granularity":
             # Examples:
             # Cells,Granularity,15_ER
-            feature_type = "None"
             channel = parts[3]
 
         elif feature_group == "Intensity":
@@ -82,6 +85,10 @@ def parse_cp_features(feature):
             # Cells,RadialDistribution,FracAtD_mito_tubeness_2of16
             feature_type = parts[2]
             channel = parts[3]
+
+        else:
+            feature_type = "Unknown"
+            channel = "Unknown"
 
     channel = channel.upper()
 
