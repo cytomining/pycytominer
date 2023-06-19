@@ -1,4 +1,4 @@
-def parse_feature(feature):
+def parse_cp_features(feature):
     """
     Parse a feature string into a dictionary with the compartment, feature group, feature type, and channel.
 
@@ -27,20 +27,16 @@ def parse_feature(feature):
         compartment = "Unknown"
         feature_group = "Unknown"
     else:
-        if feature_group in [
-            "AreaShape",
-            "Neighbors",
-            "Children",
-            "Parent",
-            "Number",
-            "Location",
-        ]:
+        if feature_group in ["AreaShape", "Neighbors", "Children", "Parent", "Number"]:
             feature_type = parts[2]
-            channel = (
-                "None"
-                if feature_group == "Location" and feature_type == "Center"
-                else parts[4]
-            )
+            channel = "None"
+
+        elif feature_group == "Location":
+            feature_type = parts[2]
+            if feature_type == "Center":
+                channel = "None"
+            else:
+                channel = parts[4]
 
         elif feature_group == "Count":
             feature_type = "None"
