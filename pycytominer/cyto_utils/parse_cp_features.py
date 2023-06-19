@@ -28,13 +28,15 @@ def parse_cp_features(feature):
 
     parts = feature.split("_")
     compartment = (
-        parts[0] if parts[0] in ["Cells", "Cytoplasm", "Nuclei", "Image"] else "Unknown"
+        parts[0]
+        if parts[0] in ["Cells", "Cytoplasm", "Nuclei", "Image"]
+        else "XUnknown"
     )
     feature_group = parts[1]
-    feature_type = "None"  # default value
-    channel = "None"  # default value
+    feature_type = "XNone"  # default value
+    channel = "XNone"  # default value
 
-    if compartment != "Unknown":
+    if compartment != "XUnknown":
         if feature_group in [
             "AreaShape",
             "Neighbors",
@@ -98,8 +100,8 @@ def parse_cp_features(feature):
             channel = parts[3]
 
         else:
-            feature_type = "Unknown"
-            channel = "Unknown"
+            feature_type = "XUnknown"
+            channel = "XUnknown"
 
     # strip out `Orig` from channel names
     channel = channel.replace("Orig", "")
