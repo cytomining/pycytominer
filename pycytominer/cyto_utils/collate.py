@@ -32,6 +32,9 @@ def collate(
     add_image_features=True,
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
     printtoscreen=True,
+    no_nuclei=True,
+    no_cells=True,
+    no_cytoplasm=True
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -68,6 +71,12 @@ def collate(
     """
 
     from pycytominer.cyto_utils.cells import SingleCells
+    
+
+    # Set up comparments based on the flags. If all True, all compartments will be used
+    filter_compartments = [no_nuclei, no_cells, no_cytoplasm]
+    to_filter = ["Nuclei", "Cells", "Cytoplasm"]
+    compartments = [to_filter[i] for i in [j for j in range(len(filter_compartments)) if filter_compartments[j]]]
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
     input_dir = pathlib.Path(f"{base_directory}/analysis/{batch}/{plate}/{csv_dir}")
@@ -97,8 +106,13 @@ def collate(
             remote_backend_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.sqlite"
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
+            
+            include_list = []
+            for eachcompartment in compartments:
+                include = "--include */" + eachcompartment + ".csv"
+                include_list.append(include)
+            sync_cmd = f"aws s3 sync --exclude * {(' '.join(include_list))} --include */Image.csv {remote_input_dir} {input_dir}"
 
-            sync_cmd = f"aws s3 sync --exclude * --include */Cells.csv --include */Nuclei.csv --include */Cytoplasm.csv --include */Image.csv {remote_input_dir} {input_dir}"
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
@@ -142,7 +156,7 @@ def collate(
             "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);",
         ]
         run_check_errors(index_cmd_img)
-        for eachcompartment in ["Cells", "Cytoplasm", "Nuclei"]:
+        for eachcompartment in compartments:
             index_cmd_compartment = [
                 "sqlite3",
                 cache_backend_file,
@@ -202,6 +216,7 @@ def collate(
         aggregation_operation="mean",
         add_image_features=add_image_features,
         image_feature_categories=image_feature_categories,
+        compartments=[cmp.lower() for cmp in compartments]
     )
     database.aggregate_profiles(output_file=aggregated_file)
 
