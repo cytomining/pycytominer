@@ -115,7 +115,7 @@ Therefore, we have included some custom tools in `pycytominer/cyto_utils` that p
 - [Generating gct files for Morpheus visualization](#Generating-a-GCT-file-for-morpheus)
 
 Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single cell SQLite files, which are output from CellProfiler.
-The single-cell processing speed of SQLite files depends on SQLite file size and amount of memory (RAM) available the computational environment machine.
+Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
 
 ### CellProfiler CSV collation
 
