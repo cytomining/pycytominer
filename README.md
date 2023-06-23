@@ -114,7 +114,7 @@ Therefore, we have included some custom tools in `pycytominer/cyto_utils` that p
 - [Cell locations lookup table generation](#Creating-a-cell-locations-lookup-table)
 - [Generating gct files for Morpheus visualization](#Generating-a-GCT-file-for-morpheus)
 
-Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single cell SQLite files, which are output from CellProfiler.
+Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
 Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
 
 ### CellProfiler CSV collation
