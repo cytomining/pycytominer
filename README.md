@@ -114,6 +114,9 @@ Therefore, we have included some custom tools in `pycytominer/cyto_utils` that p
 - [Cell locations lookup table generation](#Creating-a-cell-locations-lookup-table)
 - [Generating gct files for Morpheus visualization](#Generating-a-GCT-file-for-morpheus)
 
+Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single cell SQLite files, which are output from CellProfiler.
+The single-cell processing speed of SQLite files depends on SQLite file size and amount of memory (RAM) available the computational environment machine.
+
 ### CellProfiler CSV collation
 
 If running your images on a cluster, unless you have a MySQL or similar large database set up then you will likely end up with lots of different folders from the different cluster runs (often one per well or one per site), each one containing an `Image.csv`, `Nuclei.csv`, etc.
