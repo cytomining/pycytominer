@@ -42,7 +42,7 @@ class SingleCells(object):
     compartments : list of str, default ["cells", "cytoplasm", "nuclei"]
         List of compartments to process.
     compartment_linking_cols : dict, default noted below
-        Dictionary identifying how to merge columns across tables.
+        Dictionary identifying how to merge columns across tables. For examples see note below.
     merge_cols : list of str, default ["TableNumber", "ImageNumber"]
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
@@ -89,7 +89,14 @@ class SingleCells(object):
             },
             "cells": {"cytoplasm": "ObjectNumber"},
             "nuclei": {"cytoplasm": "ObjectNumber"},
-        }
+        }.
+        
+        The compartment_linking_cols dictionary template is: {
+            "child": 
+                {"parent":"child_Parent_parent"},
+            "parent": 
+                {"child":"ObjectNumber"}
+            }
     """
 
     def __init__(
