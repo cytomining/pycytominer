@@ -11,4 +11,4 @@ build
 pycytominer/tests/test_data/collate/backend/**/*.csv
 !pycytominer/tests/test_data/collate/backend/**/*master.csv
 !pycytominer/tests/test_data/cell_locations_example_data/*.sqlite
-
+docs/html/

@@ -12,6 +12,7 @@
    install
    tutorial
    modules
+   tutorials/test
 
 Indices and tables
 ==================
