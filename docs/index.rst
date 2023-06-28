@@ -10,9 +10,9 @@
    :caption: Contents:
 
    install
+   walkthrough
    tutorial
    modules
-   tutorials/test
 
 Indices and tables
 ==================
