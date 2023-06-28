@@ -1,6 +1,6 @@
 name: Feature Request
-description: Suggest an idea to enhance the current functionality of PyCytominer.
-title: "FeatRequest: "
+description: Suggest an idea to enhance the current functionality of pycytominer.
+title: "FeatureRequest: "
 labels: [enhancement]
 
 body:
@@ -19,7 +19,7 @@ body:
     attributes:
       label: General description of the proposed functionality
       description: >
-        Please provide a brief description of the proposed functionality, including whether it addresses an existing issue, and explain how it will enhance PyCytominer.
+        Please provide a brief description of the proposed functionality, including whether it addresses an existing issue, and explain how it will enhance pycytominer.
     validations:
       required: true
   - type: textarea
