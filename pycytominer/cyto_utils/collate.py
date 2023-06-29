@@ -35,7 +35,7 @@ def collate(
     append_metadata=False,
     overwrite_metadata=False,
     download_flags=[],
-    upload_flags=[],    
+    upload_flags=[],
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -74,9 +74,9 @@ def collate(
     overwrite_metadata: bool, optional, default False
         TODO
     download_flags: list, optional, default []
-        TODO 
+        TODO
     upload_flags: list, optional, default []
-        TODO   
+        TODO
     """
 
     from pycytominer.cyto_utils.cells import SingleCells
@@ -110,15 +110,29 @@ def collate(
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-            sync_cmd = ["aws", "s3", "sync", "--exclude", "*", "--include", "*/Cells.csv", "--include", 
-                        "*/Nuclei.csv", "--include", "*/Cytoplasm.csv", "--include", "*/Image.csv", remote_input_dir, 
-                        input_dir] + download_flags
+            sync_cmd = [
+                "aws",
+                "s3",
+                "sync",
+                "--exclude",
+                "*",
+                "--include",
+                "*/Cells.csv",
+                "--include",
+                "*/Nuclei.csv",
+                "--include",
+                "*/Cytoplasm.csv",
+                "--include",
+                "*/Image.csv",
+                remote_input_dir,
+                input_dir,
+            ] + download_flags
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
 
-        if (overwrite_metadata or append_metadata):
-            find_and_fix_metadata(input_dir,overwrite=overwrite_metadata)
+        if overwrite_metadata or append_metadata:
+            find_and_fix_metadata(input_dir, overwrite=overwrite_metadata)
 
         ingest_cmd = [
             "cytominer-database",
@@ -176,7 +190,13 @@ def collate(
         if aws_remote:
             if printtoscreen:
                 print(f"Uploading {cache_backend_file} to {remote_backend_file}")
-            cp_cmd = ["aws", "s3", "cp", cache_backend_file, remote_backend_file] + upload_flags
+            cp_cmd = [
+                "aws",
+                "s3",
+                "cp",
+                cache_backend_file,
+                remote_backend_file,
+            ] + upload_flags
             run_check_errors(cp_cmd)
 
             if printtoscreen:
@@ -225,7 +245,13 @@ def collate(
     if aws_remote:
         if printtoscreen:
             print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
-        csv_cp_cmd = ["aws", "s3", "cp", aggregated_file, remote_aggregated_file] + upload_flags
+        csv_cp_cmd = [
+            "aws",
+            "s3",
+            "cp",
+            aggregated_file,
+            remote_aggregated_file,
+        ] + upload_flags
         run_check_errors(csv_cp_cmd)
 
         if printtoscreen:
@@ -234,34 +260,40 @@ def collate(
 
         shutil.rmtree(backend_dir)
 
-def find_and_fix_metadata(path_to_plate_folder,overwrite=False):
+
+def find_and_fix_metadata(path_to_plate_folder, overwrite=False):
     site_list = os.listdir(path_to_plate_folder)
     for eachsite in site_list:
-        image_csv = os.path.join(path_to_plate_folder,eachsite,"Image.csv")
+        image_csv = os.path.join(path_to_plate_folder, eachsite, "Image.csv")
         if os.path.exists(image_csv):
-            append_metadata(image_csv,overwrite)
+            append_metadata(image_csv, overwrite)
 
 
-def append_metadata(path_to_csv,overwrite=False):
+def append_metadata(path_to_csv, overwrite=False):
     import pandas as pd
+
     all_meta = path_to_csv.split("/")[-2]
     plate = "-".join(all_meta.split("-")[:-2])
     well = all_meta.split("-")[-2]
     site = all_meta.split("-")[-1]
     df = pd.read_csv(path_to_csv)
-    edited=False
+    edited = False
     if overwrite:
-        df.drop(columns=["Metadata_Plate","Metadata_Well","Metadata_Site"],inplace=True,errors="ignore")
-        edited=True
-    insertion_index=list(df.columns).index("ModuleError_01LoadData")
+        df.drop(
+            columns=["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+            inplace=True,
+            errors="ignore",
+        )
+        edited = True
+    insertion_index = list(df.columns).index("ModuleError_01LoadData")
     if "Metadata_Plate" not in list(df.columns):
-        df.insert(insertion_index,"Metadata_Plate",plate)
-        edited=True
+        df.insert(insertion_index, "Metadata_Plate", plate)
+        edited = True
     if "Metadata_Well" not in list(df.columns):
-        df.insert(insertion_index,"Metadata_Well",well)
-        edited=True
+        df.insert(insertion_index, "Metadata_Well", well)
+        edited = True
     if "Metadata_Site" not in list(df.columns):
-        df.insert(insertion_index,"Metadata_Site",site)
-        edited=True
+        df.insert(insertion_index, "Metadata_Site", site)
+        edited = True
     if edited:
-        df.to_csv(path_to_csv,index=False)
+        df.to_csv(path_to_csv, index=False)

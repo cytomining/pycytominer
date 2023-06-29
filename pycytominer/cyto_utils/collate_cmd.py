@@ -129,5 +129,5 @@ if __name__ == "__main__":
         append_metadata=args.append_metadata,
         overwrite_metadata=args.overwrite_metadata,
         download_flags=args.download_flags,
-        upload_flags=args.upload_flags
+        upload_flags=args.upload_flags,
     )
