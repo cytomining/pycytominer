@@ -32,6 +32,10 @@ def collate(
     add_image_features=True,
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
     printtoscreen=True,
+    append_metadata=False,
+    overwrite_metadata=False,
+    download_flags=[],
+    upload_flags=[],    
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -49,22 +53,30 @@ def collate(
         An existing column to be explicitly copied to a new column called Metadata_Plate if no Metadata_Plate column already explicitly exists
     munge : bool, default False
         Whether munge should be passed to cytominer-database, if True cytominer-database will expect a single all-object CSV; it will split each object into its own table
-    csv_dir : str, default 'analysis'
+    csv_dir : str, default "analysis"
         The directory under the base directory where the analysis CSVs will be found. If running the analysis pipeline, this should nearly always be "analysis"
     aws_remote : str, optional, default None
         A remote AWS prefix, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run
     aggregate_only : bool, default False
         Whether to perform only the aggregation of existent SQLite files and bypass previous collation steps
-    tmp_dir: str, default '/tmp'
+    tmp_dir: str, default "/tmp"
         The temporary directory to be used by cytominer-databases for output
     overwrite: bool, optional, default False
         Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists
     add_image_features: bool, optional, default True
         Whether or not to add the image features to the profiles
-    image_feature_categories: list, optional, default ['Granularity','Texture','ImageQuality','Count','Threshold']
+    image_feature_categories: list, optional, default ["Granularity","Texture","ImageQuality","Count","Threshold"]
         The list of image feature groups to be used by add_image_features during aggregation
     printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
+    append_metadata: bool, optional, default False
+        TODO
+    overwrite_metadata: bool, optional, default False
+        TODO
+    download_flags: list, optional, default []
+        TODO 
+    upload_flags: list, optional, default []
+        TODO   
     """
 
     from pycytominer.cyto_utils.cells import SingleCells
@@ -98,10 +110,15 @@ def collate(
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-            sync_cmd = f"aws s3 sync --exclude * --include */Cells.csv --include */Nuclei.csv --include */Cytoplasm.csv --include */Image.csv {remote_input_dir} {input_dir}"
+            sync_cmd = ["aws", "s3", "sync", "--exclude", "*", "--include", "*/Cells.csv", "--include", 
+                        "*/Nuclei.csv", "--include", "*/Cytoplasm.csv", "--include", "*/Image.csv", remote_input_dir, 
+                        input_dir] + download_flags
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
+
+        if (overwrite_metadata or append_metadata):
+            find_and_fix_metadata(input_dir,overwrite=overwrite_metadata)
 
         ingest_cmd = [
             "cytominer-database",
@@ -159,7 +176,7 @@ def collate(
         if aws_remote:
             if printtoscreen:
                 print(f"Uploading {cache_backend_file} to {remote_backend_file}")
-            cp_cmd = ["aws", "s3", "cp", cache_backend_file, remote_backend_file]
+            cp_cmd = ["aws", "s3", "cp", cache_backend_file, remote_backend_file] + upload_flags
             run_check_errors(cp_cmd)
 
             if printtoscreen:
@@ -182,7 +199,7 @@ def collate(
 
         remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-        cp_cmd = ["aws", "s3", "cp", remote_backend_file, backend_file]
+        cp_cmd = ["aws", "s3", "cp", remote_backend_file, backend_file] + download_flags
         if printtoscreen:
             print(
                 f"Downloading SQLite files from {remote_backend_file} to {backend_file}"
@@ -208,7 +225,7 @@ def collate(
     if aws_remote:
         if printtoscreen:
             print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
-        csv_cp_cmd = ["aws", "s3", "cp", aggregated_file, remote_aggregated_file]
+        csv_cp_cmd = ["aws", "s3", "cp", aggregated_file, remote_aggregated_file] + upload_flags
         run_check_errors(csv_cp_cmd)
 
         if printtoscreen:
@@ -216,3 +233,35 @@ def collate(
         import shutil
 
         shutil.rmtree(backend_dir)
+
+def find_and_fix_metadata(path_to_plate_folder,overwrite=False):
+    site_list = os.listdir(path_to_plate_folder)
+    for eachsite in site_list:
+        image_csv = os.path.join(path_to_plate_folder,eachsite,"Image.csv")
+        if os.path.exists(image_csv):
+            append_metadata(image_csv,overwrite)
+
+
+def append_metadata(path_to_csv,overwrite=False):
+    import pandas as pd
+    all_meta = path_to_csv.split("/")[-2]
+    plate = "-".join(all_meta.split("-")[:-2])
+    well = all_meta.split("-")[-2]
+    site = all_meta.split("-")[-1]
+    df = pd.read_csv(path_to_csv)
+    edited=False
+    if overwrite:
+        df.drop(columns=["Metadata_Plate","Metadata_Well","Metadata_Site"],inplace=True,errors="ignore")
+        edited=True
+    insertion_index=list(df.columns).index("ModuleError_01LoadData")
+    if "Metadata_Plate" not in list(df.columns):
+        df.insert(insertion_index,"Metadata_Plate",plate)
+        edited=True
+    if "Metadata_Well" not in list(df.columns):
+        df.insert(insertion_index,"Metadata_Well",well)
+        edited=True
+    if "Metadata_Site" not in list(df.columns):
+        df.insert(insertion_index,"Metadata_Site",site)
+        edited=True
+    if edited:
+        df.to_csv(path_to_csv,index=False)

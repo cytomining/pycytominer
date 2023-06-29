@@ -77,6 +77,38 @@ if __name__ == "__main__":
         help="Whether to print status updates",
     )
 
+    parser.add_argument(
+        "--append-metadata",
+        dest="append_metadata",
+        action="store_true",
+        default=False,
+        help="Whether or not to add imputed plate, well, and/or site metadata if it's missing",
+    )
+
+    parser.add_argument(
+        "--overwrite-metadata",
+        dest="overwrite_metadata",
+        action="store_true",
+        default=False,
+        help="Whether or not to add imputed plate, well, and/or site metadata, overwriting what's already there",
+    )
+
+    parser.add_argument(
+        "--download-flags",
+        dest="download_flags",
+        type=lambda s: [] if "," not in s else [item for item in s.split(",")],
+        default="",
+        help="Extra flags to pass to aws download commands. Multiple values can be passed in if comma separated with no spaces between them",
+    )
+
+    parser.add_argument(
+        "--upload-flags",
+        dest="upload_flags",
+        type=lambda s: [] if "," not in s else [item for item in s.split(",")],
+        default="",
+        help="Extra flags to pass to aws upload commands. Multiple values can be passed in if comma separated with no spaces between them",
+    )
+
     args = parser.parse_args()
 
     collate(
@@ -94,4 +126,8 @@ if __name__ == "__main__":
         add_image_features=args.add_image_features,
         image_feature_categories=args.image_feature_categories,
         printtoscreen=args.printtoscreen,
+        append_metadata=args.append_metadata,
+        overwrite_metadata=args.overwrite_metadata,
+        download_flags=args.download_flags,
+        upload_flags=args.upload_flags
     )
