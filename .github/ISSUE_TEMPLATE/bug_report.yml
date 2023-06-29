@@ -1,0 +1,42 @@
+name: Bug Report
+description: Report any errors or incorrect behaviors to help improve pycytominer.
+title: "Bug: "
+labels: [bug]
+
+body:
+  - type: textarea
+    id: example
+    attributes:
+      label: Example code with output
+      description: >
+        Please provide the code snippet that is causing the unexpected behavior, along with the corresponding output (if available).
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Issue description
+      description: >
+        Please provide a written description of the issue as shown in the provided code example.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: >
+        Please describe and/or show a code example of the expected behavior.
+        You can also provide an example solution here if available.
+    validations:
+      required: true
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional information
+      description: >
+        Please provide any other relevant information to help us understand and fix the bug.
+      placeholder: >
+        Examples of other information:
+          - Screenshots
+          - Operating system
+          - pycytominer version
