@@ -1,8 +1,7 @@
-pycytominer.cyto\_utils package
-===============================
+Cyto utilities
+==============
 
-Submodules
-----------
+Functions enabling smooth interaction with CellProfiler and DeepProfiler output formats.
 
 pycytominer.cyto\_utils.cells module
 ------------------------------------

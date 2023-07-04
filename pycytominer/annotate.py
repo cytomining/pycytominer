@@ -19,13 +19,13 @@ def annotate(
     profiles,
     platemap,
     join_on=["Metadata_well_position", "Metadata_Well"],
-    output_file="none",
+    output_file=None,
     add_metadata_id_to_platemap=True,
     format_broad_cmap=False,
     clean_cellprofiler=True,
-    external_metadata="none",
-    external_join_left="none",
-    external_join_right="none",
+    external_metadata=None,
+    external_join_left=None,
+    external_join_right=None,
     compression_options=None,
     float_format=None,
     cmap_args={},
@@ -68,7 +68,7 @@ def annotate(
     Returns
     -------
     annotated : pandas.core.frame.DataFrame, optional
-        DataFrame of annotated features. If output_file="none", then return the
+        DataFrame of annotated features. If output_file=None, then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
     """
@@ -95,7 +95,7 @@ def annotate(
         annotated = cp_clean(annotated)
 
     if not isinstance(external_metadata, pd.DataFrame):
-        if external_metadata != "none":
+        if external_metadata != None:
             assert os.path.exists(
                 external_metadata
             ), "external metadata at {} does not exist".format(external_metadata)
@@ -129,7 +129,7 @@ def annotate(
 
     annotated = annotated.loc[:, meta_cols + other_cols]
 
-    if output_file != "none":
+    if output_file != None:
         output(
             df=annotated,
             output_filename=output_file,
