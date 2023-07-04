@@ -18,6 +18,7 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Suggesting enhancements](#suggesting-enhancements)
 - [Your first code contribution](#your-first-code-contribution)
 - [Pull requests](#pull-requests)
+- [Documentation](#documentation)
 - [Dev environments](#dev-environments)
 
 [Style guides](#style-guides)
@@ -105,6 +106,19 @@ All pull requests must be reviewed and approved by at least one project maintain
 We will do our best to review the code addition in a timely fashion.
 Ensuring that you follow all steps above will increase our speed and ability to review.
 We will check for accuracy, style, code coverage, and scope.
+
+### Documentation
+
+We use [sphinx](https://www.sphinx-doc.org/en/master/index.html) for autodocumentation of docstrings, using the [napoleon extenstion](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) to parse [NumPy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html), implemented with a [furo](https://pradyunsg.me/furo/) theme.
+We host our documentation on [readthedocs.org](https://readthedocs.org/) at [https://pycytominer.readthedocs.io/en/latest/](https://pycytominer.readthedocs.io/en/latest/).
+
+To build and test changes to the docs locally, run the following command:
+
+```bash
+sphinx-build -b html docs build
+```
+
+See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
 
 ### Dev environments
 

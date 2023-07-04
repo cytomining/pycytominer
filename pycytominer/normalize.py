@@ -20,7 +20,7 @@ def normalize(
     meta_features="infer",
     samples="all",
     method="standardize",
-    output_file="none",
+    output_file=None,
     compression_options=None,
     float_format=None,
     mad_robustize_epsilon=1e-18,
@@ -82,7 +82,7 @@ def normalize(
     Returns
     -------
     normalized : pandas.core.frame.DataFrame, optional
-        The normalized profile DataFrame. If output_file="none", then return the
+        The normalized profile DataFrame. If output_file=None, then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
 
@@ -166,7 +166,7 @@ def normalize(
 
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
-    if output_file != "none":
+    if output_file != None:
         output(
             df=normalized,
             output_filename=output_file,

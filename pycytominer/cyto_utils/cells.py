@@ -37,7 +37,7 @@ class SingleCells(object):
         The columns to groupby and aggregate single cells.
     aggregation_operation : str, default "median"
         Operation to perform single cell aggregation.
-    output_file : str, default "none"
+    output_file : str, default None
         If specified, the location to write the file.
     compartments : list of str, default ["cells", "cytoplasm", "nuclei"]
         List of compartments to process.
@@ -61,7 +61,7 @@ class SingleCells(object):
         The percentage of single cells to select (0 < subsample_frac <= 1).
     subsample_n : str or int, default "all"
         How many samples to subsample - do not specify both subsample_frac and subsample_n.
-    subsampling_random_state : str or int, default "none"
+    subsampling_random_state : str or int, default None
         The random state to init subsample.
     fields_of_view : list of int, str, default "all"
         List of fields of view to aggregate.
@@ -97,7 +97,7 @@ class SingleCells(object):
         sql_file,
         strata=["Metadata_Plate", "Metadata_Well"],
         aggregation_operation="median",
-        output_file="none",
+        output_file=None,
         compartments=default_compartments,
         compartment_linking_cols=default_linking_cols,
         merge_cols=["TableNumber", "ImageNumber"],
@@ -109,7 +109,7 @@ class SingleCells(object):
         image_table_name="image",
         subsample_frac=1,
         subsample_n="all",
-        subsampling_random_state="none",
+        subsampling_random_state=None,
         fields_of_view="all",
         fields_of_view_feature="Metadata_Site",
         object_feature="Metadata_ObjectNumber",
@@ -140,7 +140,7 @@ class SingleCells(object):
         self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
-        self.subset_data_df = "none"
+        self.subset_data_df = None
         self.subsampling_random_state = subsampling_random_state
         self.is_aggregated = False
         self.is_subset_computed = False
@@ -360,7 +360,7 @@ class SingleCells(object):
             A subsampled pandas dataframe of single cell profiles.
         """
 
-        if self.subsampling_random_state == "none":
+        if self.subsampling_random_state == None:
             random_state = np.random.randint(0, 10000, size=1)[0]
             self.set_subsample_random_state(random_state)
 
@@ -679,7 +679,7 @@ class SingleCells(object):
     def merge_single_cells(
         self,
         compute_subsample: bool = False,
-        sc_output_file: str = "none",
+        sc_output_file: str = None,
         compression_options: Optional[str] = None,
         float_format: Optional[str] = None,
         single_cell_normalize: bool = False,
@@ -709,7 +709,7 @@ class SingleCells(object):
         Returns
         -------
         pandas.core.frame.DataFrame or str
-            if output_file="none" returns a Pandas dataframe
+            if output_file=None returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
 
@@ -812,11 +812,11 @@ class SingleCells(object):
         # In case platemap metadata is provided, use pycytominer.annotate for metadata
         if platemap is not None:
             sc_df = annotate(
-                profiles=sc_df, platemap=platemap, output_file="none", **kwargs
+                profiles=sc_df, platemap=platemap, output_file=None, **kwargs
             )
 
         # if output argument is provided, call it using df_merged_sc and kwargs
-        if sc_output_file != "none":
+        if sc_output_file != None:
             return output(
                 df=sc_df,
                 output_filename=sc_output_file,
@@ -830,7 +830,7 @@ class SingleCells(object):
     def aggregate_profiles(
         self,
         compute_subsample=False,
-        output_file="none",
+        output_file=None,
         compression_options=None,
         float_format=None,
         n_aggregation_memory_strata=1,
@@ -856,11 +856,11 @@ class SingleCells(object):
         Returns
         -------
         pandas.core.frame.DataFrame or str
-            if output_file="none") returns a Pandas dataframe
+            if output_file=None) returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
 
-        if output_file != "none":
+        if output_file != None:
             self.set_output_file(output_file)
 
         compartment_idx = 0
@@ -886,7 +886,7 @@ class SingleCells(object):
 
         self.is_aggregated = True
 
-        if self.output_file != "none":
+        if self.output_file != None:
             return output(
                 df=aggregated,
                 output_filename=self.output_file,

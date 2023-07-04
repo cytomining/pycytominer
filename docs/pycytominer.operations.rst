@@ -1,8 +1,8 @@
-pycytominer.operations package
-==============================
+Operations
+==========
 
-Submodules
-----------
+We do not recommend interacting with these functions directly.
+The core pycytominer API uses these operations internally.
 
 pycytominer.operations.correlation\_threshold module
 ----------------------------------------------------
@@ -16,14 +16,6 @@ pycytominer.operations.get\_na\_columns module
 ----------------------------------------------
 
 .. automodule:: pycytominer.operations.get_na_columns
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.operations.sparse\_random\_projection module
---------------------------------------------------------
-
-.. automodule:: pycytominer.operations.sparse_random_projection
    :members:
    :undoc-members:
    :show-inheritance:

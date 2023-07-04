@@ -134,7 +134,7 @@ def test_annotate_output():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none",
+        output_file=None,
     )
     expected_result = pd.read_csv(OUTPUT_FILE)
 
@@ -157,7 +157,7 @@ def test_annotate_output_compress():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file="none",
+        output_file=None,
     )
     expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)
