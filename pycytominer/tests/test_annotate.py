@@ -84,11 +84,9 @@ def test_annotate_merge():
         left_on="well_position",
         right_on="Metadata_Well",
         suffixes=("_platemap", None),
-    ).drop("well_position", axis="columns")
-    # Reorder with Metadtata column first
-    meta_cols = ["Metadata_Well"]
-    other_cols = expected_result.drop(meta_cols, axis="columns").columns.tolist()
-    expected_result = expected_result.loc[:, meta_cols + other_cols]
+    ).drop("well_position", axis="columns")[
+        ["Metadata_Well", "gene", "x_platemap", "x", "y"]
+    ]
 
     result = annotate(
         profiles=DATA_DF,
@@ -103,10 +101,26 @@ def test_annotate_merge():
 def test_annotate_external():
     # Test that the external_metadata
     expected_result = (
-        PLATEMAP_DF.merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
-        .rename(columns={"gene": "Metadata_gene"})
-        .merge(EXTERNAL_METADATA_DF, left_on="Metadata_gene", right_on="gene")
-        .drop("well_position", axis="columns")
+        DATA_DF.merge(
+            PLATEMAP_DF, left_on="Metadata_Well", right_on="well_position", how="left"
+        )
+        .merge(EXTERNAL_METADATA_DF, left_on="gene", right_on="gene", how="left")
+        .rename(
+            columns={
+                "gene": "Metadata_gene",
+                "pathway": "Metadata_pathway",
+                "time_h": "Metadata_time_h",
+            }
+        )[
+            [
+                "Metadata_gene",
+                "Metadata_Well",
+                "Metadata_pathway",
+                "Metadata_time_h",
+                "x",
+                "y",
+            ]
+        ]
     )
 
     result = annotate(
@@ -114,8 +128,13 @@ def test_annotate_external():
         platemap=PLATEMAP_DF,
         external_metadata=EXTERNAL_METADATA_DF,
         join_on=["Metadata_well_position", "Metadata_Well"],
+        external_join_left=["Metadata_gene"],
+        external_join_right=["Metadata_gene"],
         add_metadata_id_to_platemap=True,
     )
+
+    print(expected_result)
+    print(result)
 
     pd.testing.assert_frame_equal(result, expected_result)
 
