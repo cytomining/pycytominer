@@ -32,6 +32,10 @@ PLATEMAP_DF = pd.DataFrame(
     }
 ).reset_index(drop=True)
 
+EXTERNAL_METADATA_DF = pd.DataFrame(
+    {"gene": ["x", "y", "z"], "pathway": ["a", "b", "c"], "time_h": [48] * 3}
+).reset_index(drop=True)
+
 
 def test_annotate():
     # create expected result prior to annotate to distinguish modifications
@@ -91,6 +95,26 @@ def test_annotate_merge():
         platemap=platemap_modified_df,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_annotate_external():
+    # Test that the external_metadata
+    expected_result = (
+        PLATEMAP_DF.merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
+        .rename(columns={"gene": "Metadata_gene"})
+        .merge(EXTERNAL_METADATA_DF, left_on="Metadata_gene", right_on="gene")
+        .drop("well_position", axis="columns")
+    )
+
+    result = annotate(
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
+        external_metadata=EXTERNAL_METADATA_DF,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        add_metadata_id_to_platemap=True,
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
