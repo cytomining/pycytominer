@@ -78,7 +78,11 @@ def annotate(
     platemap = load_platemap(platemap, add_metadata_id_to_platemap)
 
     annotated = platemap.merge(
-        profiles, left_on=join_on[0], right_on=join_on[1], how="inner"
+        profiles,
+        left_on=join_on[0],
+        right_on=join_on[1],
+        how="inner",
+        suffixes=["_platemap", None],
     )
     if join_on[0] != join_on[1]:
         annotated = annotated.drop(join_on[0], axis="columns")
@@ -113,6 +117,7 @@ def annotate(
                 left_on=external_join_left,
                 right_on=external_join_right,
                 how="left",
+                suffixes=[None, "_external"],
             )
             .reset_index(drop=True)
             .drop_duplicates()
