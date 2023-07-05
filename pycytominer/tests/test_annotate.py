@@ -133,7 +133,6 @@ def test_annotate_external():
         add_metadata_id_to_platemap=True,
     )
 
-
     pd.testing.assert_frame_equal(result, expected_result)
 
 
