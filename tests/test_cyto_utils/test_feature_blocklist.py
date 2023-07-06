@@ -3,12 +3,13 @@ import random
 import pytest
 import tempfile
 import warnings
+import pathlib
 import pandas as pd
 from pycytominer.cyto_utils.features import get_blocklist_features
 
-blocklist_file = os.path.join(
-    os.path.dirname(__file__), "..", "..", "data", "blocklist_features.txt"
-)
+root_dir = pathlib.Path(__file__).parents[2]
+
+blocklist_file = root_dir / "pycytominer" / "data" / "blocklist_features.txt"
 
 blocklist = pd.read_csv(blocklist_file).blocklist.tolist()
 

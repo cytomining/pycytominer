@@ -9,22 +9,31 @@ batch = "2021_04_20_Target2"
 
 plate = "BR00121431"
 
-test_config_location = pathlib.Path(
-    f"{os.path.dirname(__file__)}/../../cyto_utils/database_config/ingest_config.ini"
+test_dir = pathlib.Path(__file__).parents[1].absolute()
+root_dir = test_dir.parent.absolute()
+
+test_config_location = root_dir.joinpath(
+    "pycytominer", "cyto_utils", "database_config", "ingest_config.ini"
 )
 
-test_data_location = pathlib.Path(f"{os.path.dirname(__file__)}/../test_data/collate")
+test_data_location = test_dir / "test_data" / "collate"
 
-test_backend_location = pathlib.Path(
-    f"{os.path.dirname(__file__)}/../test_data/collate/backend/{batch}/{plate}/{plate}.sqlite"
+test_backend_location = (
+    test_dir / "test_data" / "collate" / "backend" / batch / plate / f"{plate}.sqlite"
 )
 
-test_csv_location = pathlib.Path(
-    f"{os.path.dirname(__file__)}/../test_data/collate/backend/{batch}/{plate}/{plate}.csv"
+test_csv_location = (
+    test_dir / "test_data" / "collate" / "backend" / batch / plate / f"{plate}.csv"
 )
 
-master_csv_location = pathlib.Path(
-    f"{os.path.dirname(__file__)}/../test_data/collate/backend/{batch}/{plate}/{plate}_master.csv"
+master_csv_location = (
+    test_dir
+    / "test_data"
+    / "collate"
+    / "backend"
+    / batch
+    / plate
+    / f"{plate}_master.csv"
 )
 
 
