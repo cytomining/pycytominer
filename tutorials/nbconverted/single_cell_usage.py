@@ -218,7 +218,7 @@ features_df.to_csv(feat_profile_path)
 features_df.head()
 
 
-# Congratulations! You have successfully completed our walkthrough. We hope that this tutorial has provided you with a basic understanding of how to analyze cell morphology features using `pycytominer`.
+# Congratulations! You have successfully completed our walkthrough. We hope that it has provided you with a basic understanding of how to analyze cell morphology features using `pycytominer`.
 # 
 # By following the steps outlined in this walkthrough, you have gained valuable insights into processing high-dimensional single-cell morphology data with ease using `pycytominer`. However, please keep in mind that `pycytominer` offers a wide range of functionalities beyond what we covered here. We encourage you to explore the documentation to discover more advanced features and techniques.
 # 
