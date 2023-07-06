@@ -1,5 +1,7 @@
-Walkthrough
-===========
+Walkthroughs
+============
 
 .. toctree::
-    tutorials/test
+   :maxdepth: 1
+
+   tutorials/general_usage.ipynb
