@@ -135,7 +135,7 @@ sc_profile.head()
 
 # Now that we have created our merged single-cell profile, let's move on to the next step: loading our `platemaps`. 
 # 
-# Platemaps provide us with additional information that is crucial for our analysis. They contain details such as well positions, genotypes, gene names, perturbation types, and more. In other words, platemaps serve as a valuable source of supplementary information for our single-cell morphology profile.
+# Platemaps provide us with additional information that is crucial for our analysis. They contain details such as well positions, genotypes, gene names, perturbation types, and more. In other words, platemaps serve as a valuable source of metadata for our single-cell morphology profile.
 
 # In[21]:
 
