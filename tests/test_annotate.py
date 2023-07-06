@@ -32,6 +32,10 @@ PLATEMAP_DF = pd.DataFrame(
     }
 ).reset_index(drop=True)
 
+EXTERNAL_METADATA_DF = pd.DataFrame(
+    {"gene": ["x", "y", "z"], "pathway": ["a", "b", "c"], "time_h": [48] * 3}
+).reset_index(drop=True)
+
 
 def test_annotate():
     # create expected result prior to annotate to distinguish modifications
@@ -65,6 +69,68 @@ def test_annotate_platemap_naming():
         profiles=DATA_DF,
         platemap=platemap_modified_df,
         join_on=["Metadata_Well", "Metadata_Well"],
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_annotate_merge():
+    # Test to ensure that the "_platemap" merge suffix is applied to the platemap columns when there is a name collision
+    platemap_modified_df = PLATEMAP_DF.copy(deep=True)
+    platemap_modified_df["x"] = [1, 2, 3, 4, 5, 6]
+
+    expected_result = platemap_modified_df.merge(
+        DATA_DF,
+        left_on="well_position",
+        right_on="Metadata_Well",
+        suffixes=("_platemap", None),
+    ).drop("well_position", axis="columns")[
+        ["Metadata_Well", "gene", "x_platemap", "x", "y"]
+    ]
+
+    result = annotate(
+        profiles=DATA_DF,
+        platemap=platemap_modified_df,
+        join_on=["well_position", "Metadata_Well"],
+        add_metadata_id_to_platemap=False,
+    )
+
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_annotate_external():
+    # Test that the external_metadata
+    expected_result = (
+        DATA_DF.merge(
+            PLATEMAP_DF, left_on="Metadata_Well", right_on="well_position", how="left"
+        )
+        .merge(EXTERNAL_METADATA_DF, left_on="gene", right_on="gene", how="left")
+        .rename(
+            columns={
+                "gene": "Metadata_gene",
+                "pathway": "Metadata_pathway",
+                "time_h": "Metadata_time_h",
+            }
+        )[
+            [
+                "Metadata_gene",
+                "Metadata_Well",
+                "Metadata_pathway",
+                "Metadata_time_h",
+                "x",
+                "y",
+            ]
+        ]
+    )
+
+    result = annotate(
+        profiles=DATA_DF,
+        platemap=PLATEMAP_DF,
+        external_metadata=EXTERNAL_METADATA_DF,
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        external_join_left=["Metadata_gene"],
+        external_join_right=["Metadata_gene"],
+        add_metadata_id_to_platemap=True,
     )
 
     pd.testing.assert_frame_equal(result, expected_result)
