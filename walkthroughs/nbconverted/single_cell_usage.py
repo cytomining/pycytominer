@@ -6,9 +6,9 @@
 # Welcome to this walkthrough where we will guide you through the process of extracting single cell morphology features using the [`pycytominer`](https://github.com/cytomining/pycytominer) API.
 # 
 # For this walkthrough, we will be working with the NF1-Schwann cell morphology dataset. 
-# If you would like the more information about this dataset, you can refer to this [repository](https://github.com/WayScience/Benchmarking_NF1_data)
+# If you would like the more information about this dataset, you can refer to this [repository](https://github.com/WayScience/nf1_cellpainting_data)
 # 
-# From the mentioned repo, we specifically used this [dataset](https://github.com/WayScience/Benchmarking_NF1_data/tree/main/4_processing_features/data/Plate2/CellProfiler) and the associated [metadata](https://github.com/WayScience/Benchmarking_NF1_data/tree/main/3_extracting_features/metadata) to generate the walkthrough. 
+# From the mentioned repo, we specifically used this [dataset](https://github.com/WayScience/nf1_cellpainting_data/tree/main/2.cellprofiler_analysis/analysis_output) and the associated [metadata](https://github.com/WayScience/Benchmarking_NF1_data/tree/main/3_extracting_features/metadata) to generate the walkthrough. 
 # 
 # 
 # Let's get started with the walkthrough below!
@@ -24,9 +24,8 @@ import pandas as pd
 from pycytominer.cyto_utils.cells import SingleCells
 from pycytominer import annotate, normalize, feature_select
 
-# ignore warnings
+# ignore mix type warnings from pandas
 import warnings
-
 warnings.filterwarnings("ignore")
 
 
@@ -37,16 +36,19 @@ warnings.filterwarnings("ignore")
 # 
 # For this workflow, we have two main inputs:
 # 
-# - **plate_data**: This contains the quantified single-cell morphology features that we'll be working with.
-# - **plate_map**: This contains additional information related to the cells, providing valuable context of our single-cell morphology dataset.
+# - **plate_data** (SQLite file): This contains the quantified single-cell morphology features that we'll be working with.
+# - **plate_map** (CSV file): This contains additional information related to the cells, providing valuable context of our single-cell morphology dataset.
 # 
 # Now, let's explore the outputs generated in this workflow. In this walkthrough, we will be generating four profiles:
 # 
 # - **sc_profile_path***: This refers to the single-cell morphology profile that will be generated.
-# - **anno_profile_path**: This corresponds to the annotated single-cell morphology profile.
+# - **anno_profile_path**: This corresponds to the annotated single-cell morphology profile, meaning the information from the **plate_map** is added to each single-cell
 # - **norm_profile_path**: This represents the normalized single-cell morphology profile.
 # - **feat_profile_path**: Lastly, this refers to the selected features from the single-cell morphology profile.
 # 
+# **Note**: All profiles are outputted as `.csv` files, however, users can output these files as `parquet` or other file file formats. 
+# For more information about output formats, please refer the documentation [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.cyto_utils.html#pycytominer.cyto_utils.output.output) 
+#
 # These profiles will serve as important outputs that will help us analyze and interpret the single-cell morphology data effectively. Now that we have a clear understanding of the inputs and outputs, let's proceed further in our walkthrough.
 
 # In[18]:
@@ -65,7 +67,7 @@ plate_map = (metadata_dir / "platemap_NF1_CP.csv").resolve(strict=True)
 # setting output paths
 sc_profile_path = out_dir / "nf1_single_cell_profile.csv.gz"
 anno_profile_path = out_dir / "nf1_annotated_profile.csv.gz"
-norm_profile_path = out_dir / "nf1_noramlzied_profile.csv.gz"
+norm_profile_path = out_dir / "nf1_normalized_profile.csv.gz"
 feat_profile_path = out_dir / "nf1_features_profile.csv.gz"
 
 
@@ -101,7 +103,7 @@ linking_cols = {
 }
 
 
-# Now that we have stored the updated the parameters, we can use them as inputs for SingleCells class to proceed with the merging of all the NF1 sqlite tables into a single consolidated dataset.
+# Now that we have stored the updated parameters, we can use them as inputs for SingleCells class to merge all the NF1 sqlite tables into a single consolidated dataset.
 
 # In[20]:
 
@@ -121,9 +123,9 @@ single_cell_profile = SingleCells(
     load_image_data=True,
 )
 
-# mering all sqlite table into a single tabular dataset (csv)
+# merging all sqlite table into a single tabular dataset (csv)
 sc_profile = single_cell_profile.merge_single_cells(
-    sc_output_files=sc_profile_path, compression_options="gzip"
+    sc_output_file=sc_profile_path, compression_options="gzip"
 )
 
 # saving single-cell morphology dataset
@@ -171,7 +173,7 @@ annotated_df.to_csv(anno_profile_path, compression="gzip")
 annotated_df.head()
 
 
-# ## Noramlization Step
+# ## Normalization Step
 # 
 # The next step is to normalize our dataset using the `normalize` function provided by `pycytominer`.
 # More information regards `pycytominer`'s `normalize` function can be found [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#module-pycytominer.normalize)
@@ -222,6 +224,6 @@ features_df.head()
 # 
 # By following the steps outlined in this walkthrough, you have gained valuable insights into processing high-dimensional single-cell morphology data with ease using `pycytominer`. However, please keep in mind that `pycytominer` offers a wide range of functionalities beyond what we covered here. We encourage you to explore the documentation to discover more advanced features and techniques.
 # 
-# If you have any questions or need further assistance, don't hesitate to visit the `pycytominer` repository and post your question in the issues section. The community is there to support you and provide guidance.
+# If you have any questions or need further assistance, don't hesitate to visit the `pycytominer` repository and post your question in the [issues](https://github.com/cytomining/pycytominer/issues) section. The community is there to support you and provide guidance.
 # 
 # Now that you have the knowledge and tools to analyze cell morphology features, have fun exploring and mining your data!
