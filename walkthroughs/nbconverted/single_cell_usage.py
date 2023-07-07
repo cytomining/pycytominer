@@ -8,7 +8,7 @@
 # For this walkthrough, we will be working with the NF1-Schwann cell morphology dataset.
 # If you would like the more information about this dataset, you can refer to this [repository](https://github.com/WayScience/nf1_cellpainting_data)
 #
-# From the mentioned repo, we specifically used this [dataset](https://github.com/WayScience/nf1_cellpainting_data/tree/main/2.cellprofiler_analysis/analysis_output) and the associated [metadata](https://github.com/WayScience/Benchmarking_NF1_data/tree/main/3_extracting_features/metadata) to generate the walkthrough.
+# From the mentioned repo, we specifically used this [dataset](https://github.com/WayScience/nf1_cellpainting_data/tree/main/2.cellprofiler_analysis/analysis_output) and the associated [metadata](https://github.com/WayScience/nf1_cellpainting_data/tree/main/0.download_data/metadata) to generate the walkthrough.
 #
 #
 # Let's get started with the walkthrough below!
