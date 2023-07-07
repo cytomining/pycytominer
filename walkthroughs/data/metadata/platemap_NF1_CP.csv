@@ -1,0 +1,9 @@
+WellRow,WellCol,well_position,gene_name,genotype
+C,6,C6,NF1,WT
+C,7,C7,NF1,Null
+D,6,D6,NF1,WT
+D,7,D7,NF1,Null
+E,6,E6,NF1,WT
+E,7,E7,NF1,Null
+F,6,F6,NF1,WT
+F,7,F7,NF1,Null
