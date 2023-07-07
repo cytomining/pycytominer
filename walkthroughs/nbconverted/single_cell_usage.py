@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Pycytominer General Usage Walkthrough!
+# # Pycytominer Single-cell Profiling Walkthrough
 # 
 # Welcome to this walkthrough where we will guide you through the process of extracting single cell morphology features using the [`pycytominer`](https://github.com/cytomining/pycytominer) API.
 # 
@@ -13,7 +13,7 @@
 # 
 # Let's get started with the walkthrough below!
 
-# In[17]:
+# In[1]:
 
 
 import pathlib
@@ -23,15 +23,17 @@ import pandas as pd
 # pycytominer imports
 from pycytominer.cyto_utils.cells import SingleCells
 from pycytominer import annotate, normalize, feature_select
+from pycytominer.cyto_utils.load import load_profiles
 
 # ignore mix type warnings from pandas
 import warnings
+
 warnings.filterwarnings("ignore")
 
 
 # ## About the inputs
 # 
-
+# 
 # In this section, we will set up the expected input and output paths that will be generated throughout this walkthrough. Let's take a look at the explanation of these inputs and outputs.
 # 
 # For this workflow, we have two main inputs:
@@ -41,17 +43,17 @@ warnings.filterwarnings("ignore")
 # 
 # Now, let's explore the outputs generated in this workflow. In this walkthrough, we will be generating four profiles:
 # 
-# - **sc_profile_path***: This refers to the single-cell morphology profile that will be generated.
-# - **anno_profile_path**: This corresponds to the annotated single-cell morphology profile, meaning the information from the **plate_map** is added to each single-cell
-# - **norm_profile_path**: This represents the normalized single-cell morphology profile.
-# - **feat_profile_path**: Lastly, this refers to the selected features from the single-cell morphology profile.
+# - **sc_profiles_path***: This refers to the single-cell morphology profile that will be generated.
+# - **anno_profiles_path**: This corresponds to the annotated single-cell morphology profile, meaning the information from the **plate_map** is added to each single-cell
+# - **norm_profiles_path**: This represents the normalized single-cell morphology profile.
+# - **feat_profiles_path**: Lastly, this refers to the selected features from the single-cell morphology profile.
 # 
 # **Note**: All profiles are outputted as `.csv` files, however, users can output these files as `parquet` or other file file formats. 
 # For more information about output formats, please refer the documentation [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.cyto_utils.html#pycytominer.cyto_utils.output.output) 
-#
+# 
 # These profiles will serve as important outputs that will help us analyze and interpret the single-cell morphology data effectively. Now that we have a clear understanding of the inputs and outputs, let's proceed further in our walkthrough.
 
-# In[18]:
+# In[2]:
 
 
 # Setting file paths
@@ -65,10 +67,10 @@ plate_data = pathlib.Path("./data/nf1_data.sqlite").resolve(strict=True)
 plate_map = (metadata_dir / "platemap_NF1_CP.csv").resolve(strict=True)
 
 # setting output paths
-sc_profile_path = out_dir / "nf1_single_cell_profile.csv.gz"
-anno_profile_path = out_dir / "nf1_annotated_profile.csv.gz"
-norm_profile_path = out_dir / "nf1_normalized_profile.csv.gz"
-feat_profile_path = out_dir / "nf1_features_profile.csv.gz"
+sc_profiles_path = out_dir / "nf1_single_cell_profile.csv.gz"
+anno_profiles_path = out_dir / "nf1_annotated_profile.csv.gz"
+norm_profiles_path = out_dir / "nf1_normalized_profile.csv.gz"
+feat_profiles_path = out_dir / "nf1_features_profile.csv.gz"
 
 
 # ## Generating Merged Single-cell Morphology Dataset
@@ -79,13 +81,13 @@ feat_profile_path = out_dir / "nf1_features_profile.csv.gz"
 # To achieve this, we will utilize the SingleCells class, which offers a range of functionalities specifically designed for single-cell analysis. You can find detailed documentation on these functionalities [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.cyto_utils.html#pycytominer.cyto_utils.cells.SingleCells).
 # 
 # However, for our purpose in this walkthrough, we will focus on using the SingleCells class to merge all the tables within the NF1 sqlite file into a merged single-cell morphology dataset.
-
+# 
 # ### Updating defaults
 # Before we proceed further, it is important to update the default parameters in the `SingleCells`class to accommodate the table name changes in our NF1 dataset.
 # 
 # Since the table names in our NF1 dataset differ from the default table names recognized by the `SingleCells` class, we need to make adjustments to ensure proper recognition of these table name changes.
 
-# In[19]:
+# In[3]:
 
 
 # update compartment names and strata
@@ -103,9 +105,11 @@ linking_cols = {
 }
 
 
-# Now that we have stored the updated parameters, we can use them as inputs for SingleCells class to merge all the NF1 sqlite tables into a single consolidated dataset.
+# Now that we have stored the updated parameters, we can use them as inputs for `SingleCells` class to merge all the NF1 sqlite tables into a single consolidated dataset.
+# 
+# This is done through the `merge_single_cells` method. For more infromation about `merge_single_cells` please refer to the documentation [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.cyto_utils.html#pycytominer.cyto_utils.cells.SingleCells.merge_single_cells)
 
-# In[20]:
+# In[4]:
 
 
 # setting up sqlite address
@@ -123,28 +127,26 @@ single_cell_profile = SingleCells(
     load_image_data=True,
 )
 
-# merging all sqlite table into a single tabular dataset (csv)
+# merging all sqlite table into a single tabular dataset (csv) and save as
+# compressed csv file
 sc_profile = single_cell_profile.merge_single_cells(
-    sc_output_file=sc_profile_path, compression_options="gzip"
+    sc_output_file=sc_profiles_path, compression_options="gzip"
 )
-
-# saving single-cell morphology dataset
-sc_profile.to_csv(sc_profile_path, compression="gzip")
-
-# displaying dataset
-sc_profile.head()
 
 
 # Now that we have created our merged single-cell profile, let's move on to the next step: loading our `platemaps`. 
 # 
-# Platemaps provide us with additional information that is crucial for our analysis. They contain details such as well positions, genotypes, gene names, perturbation types, and more. In other words, platemaps serve as a valuable source of supplementary information for our single-cell morphology profile.
+# Platemaps provide us with additional information that is crucial for our analysis. They contain details such as well positions, genotypes, gene names, perturbation types, and more. In other words, platemaps serve as a valuable source of metadata for our single-cell morphology profile.
+# 
 
-# In[21]:
+# In[5]:
 
 
 # loading plate map and display it
 platemap_df = pd.read_csv(plate_map)
-platemap_df.head(8)
+
+# displaying platemap
+print(platemap_df.columns.tolist())
 
 
 # ## Annotation
@@ -156,21 +158,20 @@ platemap_df.head(8)
 # More information about the `annotation` function can be found [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#module-pycytominer.annotate)
 # 
 
-# In[22]:
+# In[6]:
 
 
 # annotating merged single-cell profile with metadata
-annotated_df = annotate(
+annotate(
     profiles=sc_profile,
     platemap=platemap_df,
     join_on=["Metadata_well_position", "Image_Metadata_Well"],
+    output_file=anno_profiles_path,
+    compression_options="gzip",
 )
 
-# save annotated profile
-annotated_df.to_csv(anno_profile_path, compression="gzip")
-
-# displaying annotated profile
-annotated_df.head()
+# save message display
+print(f"Annotated profile saved in: {anno_profiles_path}")
 
 
 # ## Normalization Step
@@ -182,45 +183,63 @@ annotated_df.head()
 # 
 # Additionally, normalization plays a crucial role in determining feature importance (which is crucial for our last step). By bringing all features to a comparable scale, it enables the identification of important features without biases caused by outliers or widely-scaled values.
 # 
-# To normalize our annotated single-cell morphology profile, we will utilize the normalize function from pycytominer. This function is specifically designed to handle the normalization process for cytometry data. 
+# To normalize our annotated single-cell morphology profile, we will utilize the `normalize` function from `pycytominer`. This function is specifically designed to handle the normalization process for cytometry data. 
 
-# In[23]:
+# In[7]:
 
+
+# load annotated profile
+annotated_df = load_profiles(anno_profiles_path)
 
 # normalize dataset
-normalized_df = normalize(annotated_df)
+normalize(
+    profiles=annotated_df,
+    features="infer",
+    image_features=False,
+    meta_features="infer",
+    samples="all",
+    method="standardize",
+    output_file=norm_profiles_path,
+    compression_options="gzip",
+)
 
-# save normalized dataset 
-normalized_df.to_csv(norm_profile_path, compression="gzip")
-
-# display normalized dataset
-normalized_df.head()
+# save message display
+print(f"Normalized profile saved in: {anno_profiles_path}")
 
 
 # ## Feature Selection
 # 
-
+# 
 # In the final section of our walkthrough, we will utilize the normalized dataset to extract important morphological features and generate a selected features profile.
 # 
 # To accomplish this, we will make use of the `feature_select` function provided by `pycytominer`. 
 # Using `pycytominer`'s `feature_select` function to our dataset, we can identify the most informative morphological features that contribute significantly to the variations observed in our data. These selected features will be utilized to create our feature profile.
 # 
 # For more detailed information about the `feature_select` function, its parameters, and its capabilities, please refer to the documentation available [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#module-pycytominer.feature_select).
+# 
 
-# In[24]:
-
-
-# creating selected features profile 
-features_df = feature_select(profiles=normalized_df)
-
-# saving selected features profile 
-features_df.to_csv(feat_profile_path)
-
-# display selected features 
-features_df.head()
+# In[8]:
 
 
-# Congratulations! You have successfully completed our walkthrough. We hope that this tutorial has provided you with a basic understanding of how to analyze cell morphology features using `pycytominer`.
+# loading normalized profile
+normalized_df = load_profiles(norm_profiles_path)
+
+# creating selected features profile
+feature_select(
+    profiles=normalized_df,
+    features="infer",
+    image_features=False,
+    samples="all",
+    operation="variance_threshold",
+    output_file=feat_profiles_path,
+    compression_options="gzip",
+)
+
+# save message display
+print(f"Selected features profile saved in: {feat_profiles_path}")
+
+
+# Congratulations! You have successfully completed our walkthrough. We hope that it has provided you with a basic understanding of how to analyze cell morphology features using `pycytominer`.
 # 
 # By following the steps outlined in this walkthrough, you have gained valuable insights into processing high-dimensional single-cell morphology data with ease using `pycytominer`. However, please keep in mind that `pycytominer` offers a wide range of functionalities beyond what we covered here. We encourage you to explore the documentation to discover more advanced features and techniques.
 # 
