@@ -17,6 +17,7 @@ def aggregate(
     features="infer",
     operation="median",
     output_file=None,
+    output_type="csv",
     compute_object_count=False,
     object_feature="Metadata_ObjectNumber",
     subset_data_df=None,
@@ -38,6 +39,9 @@ def aggregate(
     output_file : str or file handle, optional
         If provided, will write aggregated profiles to file. If not specified, will return the aggregated profiles.
         We recommend naming the file based on the plate name.
+    output_type : str, optional
+        If provided, will write aggregated profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compute_object_count : bool, default False
         Whether or not to compute object counts.
     object_feature : str, default "Metadata_ObjectNumber"
@@ -117,6 +121,7 @@ def aggregate(
         output(
             df=population_df,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )
