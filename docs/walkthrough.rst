@@ -4,4 +4,4 @@ Walkthroughs
 .. toctree::
    :maxdepth: 1
 
-   tutorials/single_cell_usage.ipynb
+   walkthroughs/single_cell_usage.ipynb
