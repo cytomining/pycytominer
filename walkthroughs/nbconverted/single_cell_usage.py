@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Pycytominer Single-cell Profiling Walkthrough
+# # Single-cell Profiling Walkthrough
 #
 # Welcome to this walkthrough where we will guide you through the process of extracting single cell morphology features using the [pycytominer](https://github.com/cytomining/pycytominer) API.
 #
@@ -13,7 +13,7 @@
 #
 # Let's get started with the walkthrough below!
 
-# In[9]:
+# In[1]:
 
 
 import pathlib
@@ -23,7 +23,6 @@ import pandas as pd
 # pycytominer imports
 from pycytominer.cyto_utils.cells import SingleCells
 from pycytominer import annotate, normalize, feature_select
-from pycytominer.cyto_utils.load import load_profiles
 
 # ignore mix type warnings from pandas
 import warnings
@@ -53,7 +52,7 @@ warnings.filterwarnings("ignore")
 #
 # These profiles will serve as important outputs that will help us analyze and interpret the single-cell morphology data effectively. Now that we have a clear understanding of the inputs and outputs, let's proceed further in our walkthrough.
 
-# In[10]:
+# In[2]:
 
 
 # Setting file paths
@@ -87,7 +86,7 @@ feat_profiles_path = out_dir / "nf1_features_profile.csv.gz"
 #
 # Since the table names in our NF1 dataset differ from the default table names recognized by the `SingleCells` class, we need to make adjustments to ensure proper recognition of these table name changes.
 
-# In[11]:
+# In[3]:
 
 
 # update compartment names and strata
@@ -109,7 +108,7 @@ linking_cols = {
 #
 # This is done through the `merge_single_cells` method. For more infromation about `merge_single_cells` please refer to the documentation [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.cyto_utils.html#pycytominer.cyto_utils.cells.SingleCells.merge_single_cells)
 
-# In[12]:
+# In[4]:
 
 
 # setting up sqlite address
@@ -139,7 +138,7 @@ single_cell_profile.merge_single_cells(
 # Platemaps provide us with additional information that is crucial for our analysis. They contain details such as well positions, genotypes, gene names, perturbation types, and more. In other words, platemaps serve as a valuable source of metadata for our single-cell morphology profile.
 #
 
-# In[13]:
+# In[5]:
 
 
 # loading plate map and display it
@@ -158,7 +157,7 @@ print(platemap_df.columns.tolist())
 # More information about the `annotation` function can be found [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#module-pycytominer.annotate)
 #
 
-# In[14]:
+# In[6]:
 
 
 # annotating merged single-cell profile with metadata
@@ -185,7 +184,7 @@ print(f"Annotated profile saved in: {anno_profiles_path}")
 #
 # To normalize our annotated single-cell morphology profile, we will utilize the `normalize` function from `pycytominer`. This function is specifically designed to handle the normalization process for cytometry data.
 
-# In[15]:
+# In[7]:
 
 
 # normalize dataset
@@ -215,7 +214,7 @@ print(f"Normalized profile saved in: {norm_profiles_path}")
 # For more detailed information about the `feature_select` function, its parameters, and its capabilities, please refer to the documentation available [here](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#module-pycytominer.feature_select).
 #
 
-# In[16]:
+# In[8]:
 
 
 # creating selected features profile
