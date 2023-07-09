@@ -7,9 +7,9 @@ import pathlib
 import pandas as pd
 from pycytominer.cyto_utils.features import get_blocklist_features
 
-root_dir = pathlib.Path(__file__).parents[2]
+ROOT_DIR = pathlib.Path(__file__).parents[2]
 
-blocklist_file = root_dir / "pycytominer" / "data" / "blocklist_features.txt"
+blocklist_file = ROOT_DIR / "pycytominer" / "data" / "blocklist_features.txt"
 
 blocklist = pd.read_csv(blocklist_file).blocklist.tolist()
 

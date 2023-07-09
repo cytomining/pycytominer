@@ -20,13 +20,15 @@ from pycytominer.cyto_utils.DeepProfiler_processing import (
 from pycytominer import normalize
 from pycytominer.cyto_utils import infer_cp_features
 
+ROOT_DIR = pathlib.Path(__file__).parents[2]
+
 
 def test_DeepProfiler():
     tmpdir = tempfile.gettempdir()
     random.seed(42)
     # setting the file locations
-    root_dir = pathlib.Path(__file__).parents[2]
-    example_project_dir = root_dir / "tests" / "test_data" / "DeepProfiler_example_data"
+
+    example_project_dir = ROOT_DIR / "tests" / "test_data" / "DeepProfiler_example_data"
 
     profile_dir = example_project_dir / "outputs" / "results" / "features"
 

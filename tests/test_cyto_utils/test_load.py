@@ -30,11 +30,11 @@ output_npz_file = os.path.join(tmpdir, "test_npz.npz")
 output_npz_with_model_file = os.path.join(tmpdir, "test_npz_withmodel.npz")
 output_npz_without_metadata_file = os.path.join(tmpdir, "test_npz_withoutmetadata.npz")
 
-root_dir = pathlib.Path(__file__).parents[2]
+ROOT_DIR = pathlib.Path(__file__).parents[2]
 
 # Example .npz file with real data
 example_npz_file = (
-    root_dir
+    ROOT_DIR
     / "pycytominer"
     / "data"
     / "DeepProfiler_example_data"
