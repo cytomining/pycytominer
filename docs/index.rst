@@ -10,6 +10,7 @@
    :caption: Contents:
 
    install
+   walkthrough
    tutorial
    modules
 
