@@ -10,7 +10,7 @@ body:
       label: File location of the documentation
       description: >
         Please provide the source of the documentation that this issue is referencing.
-      placeholder: Example - https://github.com/cytomining/pycytominer/edit/master/docs/index.rst
+      placeholder: Example - https://github.com/cytomining/pycytominer/edit/main/docs/index.rst
     validations:
       require: true
   - type: textarea

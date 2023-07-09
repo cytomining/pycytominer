@@ -1,18 +1,18 @@
-<img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/master/logo/with-text-for-light-bg.png?raw=true">
+<img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/main/logo/with-text-for-light-bg.png?raw=true">
 
 # Data processing for image-based profiling
 
-[![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=master)](https://travis-ci.org/cytomining/pycytominer)
-[![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/master/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=master)
+[![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=main)](https://travis-ci.org/cytomining/pycytominer)
+[![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/main/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
 
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
 
-<img height="325" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png?raw=true">
+<img height="325" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png?raw=true">
 
-[Click here for high resolution pipeline image](https://github.com/cytomining/pycytominer/blob/master/media/pipeline.png)
+[Click here for high resolution pipeline image](https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png)
 
 Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.

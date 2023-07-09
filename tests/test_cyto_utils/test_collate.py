@@ -26,14 +26,8 @@ test_csv_location = (
     TEST_DIR / "test_data" / "collate" / "backend" / batch / plate / f"{plate}.csv"
 )
 
-master_csv_location = (
-    TEST_DIR
-    / "test_data"
-    / "collate"
-    / "backend"
-    / batch
-    / plate
-    / f"{plate}_master.csv"
+main_csv_location = (
+    TEST_DIR / "test_data" / "collate" / "backend" / batch / plate / f"{plate}_main.csv"
 )
 
 
@@ -45,15 +39,15 @@ def cleanup():
         os.remove(test_csv_location)
 
 
-def validate(test_file, master_file, should_be_equal=True):
+def validate(test_file, main_file, should_be_equal=True):
     test = pd.read_csv(test_file)
-    master = pd.read_csv(master_file)
+    main = pd.read_csv(main_file)
     if should_be_equal:
-        pd.testing.assert_frame_equal(test, master)
+        pd.testing.assert_frame_equal(test, main)
     else:
         with pytest.raises(AssertionError):
-            pd.testing.assert_frame_equal(test, master)
-    return test, master
+            pd.testing.assert_frame_equal(test, main)
+    return test, main
 
 
 def test_base_case():
@@ -70,7 +64,7 @@ def test_base_case():
     )
     assert os.path.exists(test_backend_location)
 
-    validate(test_csv_location, master_csv_location)
+    validate(test_csv_location, main_csv_location)
 
     cleanup()
 
@@ -90,13 +84,11 @@ def test_base_case_with_image_features():
     )
     assert os.path.exists(test_backend_location)
 
-    test, master = validate(
-        test_csv_location, master_csv_location, should_be_equal=False
-    )
+    test, main = validate(test_csv_location, main_csv_location, should_be_equal=False)
 
     test = test.drop(columns=[x for x in test.columns if "Image_Granularity" in x])
 
-    pd.testing.assert_frame_equal(test, master)
+    pd.testing.assert_frame_equal(test, main)
 
     cleanup()
 
@@ -115,7 +107,7 @@ def test_overwrite():
     )
     assert os.path.exists(test_backend_location)
 
-    validate(test_csv_location, master_csv_location)
+    validate(test_csv_location, main_csv_location)
 
     collate(
         "2021_04_20_Target2",
@@ -185,6 +177,6 @@ def test_aggregate_only():
         printtoscreen=False,
     )
 
-    validate(test_csv_location, master_csv_location)
+    validate(test_csv_location, main_csv_location)
 
     cleanup()

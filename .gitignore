@@ -1,7 +1,7 @@
 # Pycytominer specific Test/Demo Data
 *.sqlite
 tests/test_data/collate/backend/**/*.csv
-!tests/test_data/collate/backend/**/*master.csv
+!tests/test_data/collate/backend/**/*main.csv
 !tests/test_data/cell_locations_example_data/*.sqlite
 walkthroughs/results/*
 
