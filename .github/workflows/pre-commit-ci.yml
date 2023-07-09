@@ -3,6 +3,8 @@ on:
   pull_request:
     branches:
       - main
+      # Temporary inclusion of master branch during default branch name transition
+      - master
 jobs:
   pre-commit-ci:
     name: Run pre-commit checks on changed files

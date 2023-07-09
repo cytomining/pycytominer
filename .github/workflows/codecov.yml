@@ -2,9 +2,15 @@ name: Code coverage
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      # Temporary inclusion of master branch during default branch name transition
+      - master
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      # Temporary inclusion of master branch during default branch name transition
+      - master
 
 jobs:
   run:
