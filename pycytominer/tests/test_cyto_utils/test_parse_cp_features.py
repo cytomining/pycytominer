@@ -7,6 +7,7 @@ import pandas as pd
 
 def test_parse_feature():
     feature_strings = [
+        "Cells_RadialDistribution_RadialCV_mito_tubeness_Overflow",
         "Cells_Texture_SumVariance_RNA_5",
         "Nuclei_Intensity_MaxIntensityEdge_DNA",
         "Cytoplasm_Correlation_Correlation_DNA_RNA",

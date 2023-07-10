@@ -1,4 +1,6 @@
-def parse_cp_features(feature):
+def parse_cp_features(
+    feature: str, channels: list = ["DNA", "RNA", "AGP", "Mito", "ER", "mito_tubeness"]
+):
     """Parses a CellProfiler feature string into its semantic components.
 
     This function will take a feature string and return a dictionary containing its semantic components,
@@ -10,6 +12,9 @@ def parse_cp_features(feature):
     ----------
     feature : str
         The CellProfiler feature string to parse.
+
+    channels : list, optional
+        A list of channel names to use when parsing the feature string. The default is ['DNA', 'RNA', 'AGP', 'Mito', 'ER'].
 
     Returns
     -------
@@ -26,11 +31,20 @@ def parse_cp_features(feature):
     if not isinstance(feature, str):
         raise ValueError(f"Expected a string, got {type(feature).__name__}")
 
+    if not isinstance(channels, list):
+        raise ValueError(f"Expected a list, got {type(channels).__name__}")
+
     def channel_standardizer(channel):
         channel = channel.replace("Orig", "")
-        return channel.upper() if channel.upper() != "MITO" else "Mito"
+        return channel
 
-    parts = feature.split("_")
+    unique_token = "XUNIQUEX"
+    tokenized_feature = feature
+    for channel in channels:
+        tokenized_channel = channel.replace("_", unique_token)
+        tokenized_feature = tokenized_feature.replace(channel, tokenized_channel)
+
+    parts = tokenized_feature.split("_")
 
     feature_group = parts[1]
     if parts[0] not in ["Cells", "Cytoplasm", "Nuclei", "Image"]:
@@ -111,6 +125,8 @@ def parse_cp_features(feature):
             channel = "XUNKNOWN"
 
     channel = "_".join(list(map(channel_standardizer, channel.split("_"))))
+
+    channel = channel.replace(unique_token, "_")
 
     return {
         "feature": feature,
