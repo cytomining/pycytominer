@@ -26,6 +26,10 @@ def parse_cp_features(feature):
     if not isinstance(feature, str):
         raise ValueError(f"Expected a string, got {type(feature).__name__}")
 
+    def channel_standardizer(channel):
+        channel = channel.replace("Orig", "")
+        return channel.upper() if channel.upper() != "MITO" else "Mito"
+
     parts = feature.split("_")
 
     feature_group = parts[1]
@@ -106,9 +110,7 @@ def parse_cp_features(feature):
             feature_type = "XUNKNOWN"
             channel = "XUNKNOWN"
 
-    # strip out `Orig` from channel names
-    channel = channel.replace("Orig", "")
-    channel = channel.upper()
+    channel = "_".join(list(map(channel_standardizer, channel.split("_"))))
 
     return {
         "feature": feature,
