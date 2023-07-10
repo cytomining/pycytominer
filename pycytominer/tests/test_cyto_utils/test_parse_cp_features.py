@@ -2,6 +2,7 @@
 
 from pycytominer.cyto_utils.parse_cp_features import parse_cp_features
 import pathlib
+import pandas as pd
 
 
 def test_parse_feature():
@@ -34,3 +35,14 @@ def test_parse_feature_with_file():
             assert result["feature_group"] is not None
             assert result["feature_type"] is not None
             assert result["channel"] is not None
+
+        parsed_features_df = pd.DataFrame(
+            [parse_cp_features(feature.strip()) for feature in features]
+        )
+
+        pd.testing.assert_frame_equal(
+            parsed_features_df,
+            pd.read_csv(
+                f"{pathlib.Path(__file__).parent.parent}/test_data/parse_cp_features_example_data/parsed_features.csv"
+            ),
+        )

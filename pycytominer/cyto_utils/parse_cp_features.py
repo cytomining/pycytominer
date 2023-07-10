@@ -27,16 +27,19 @@ def parse_cp_features(feature):
         raise ValueError(f"Expected a string, got {type(feature).__name__}")
 
     parts = feature.split("_")
-    compartment = (
-        parts[0]
-        if parts[0] in ["Cells", "Cytoplasm", "Nuclei", "Image"]
-        else "XUnknown"
-    )
-    feature_group = parts[1]
-    feature_type = "XNone"  # default value
-    channel = "XNone"  # default value
 
-    if compartment != "XUnknown":
+    feature_group = parts[1]
+    if parts[0] not in ["Cells", "Cytoplasm", "Nuclei", "Image"]:
+        compartment = "XUNKNOWN"
+        feature_group = "XUNKNOWN"
+        feature_type = "XUNKNOWN"
+        channel = "XUNKNOWN"
+    else:
+        compartment = parts[0]
+        feature_group = parts[1]
+        feature_type = "XNONE"  # default value
+        channel = "XNONE"  # default value
+
         if feature_group in [
             "AreaShape",
             "Neighbors",
@@ -100,8 +103,8 @@ def parse_cp_features(feature):
             channel = parts[3]
 
         else:
-            feature_type = "XUnknown"
-            channel = "XUnknown"
+            feature_type = "XUNKNOWN"
+            channel = "XUNKNOWN"
 
     # strip out `Orig` from channel names
     channel = channel.replace("Orig", "")
