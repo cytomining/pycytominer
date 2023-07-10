@@ -10,8 +10,8 @@ from pycytominer.cyto_utils import infer_cp_features
 tmpdir = tempfile.gettempdir()
 
 # Setup a testing file
-test_output_file1 = os.path.join(tmpdir, "test.csv")
-test_output_file2 = os.path.join(tmpdir, "test.parquet")
+test_output_file_csv = os.path.join(tmpdir, "test.csv")
+test_output_file_parquet = os.path.join(tmpdir, "test.parquet")
 
 # Build data to use in tests
 data_df = pd.concat(
@@ -74,10 +74,10 @@ def test_aggregate_median_allvar():
         strata=["g"],
         features="infer",
         operation="median",
-        output_file=test_output_file1,
+        output_file=test_output_file_csv,
     )
 
-    test_df = pd.read_csv(test_output_file1)
+    test_df = pd.read_csv(test_output_file_csv)
     pd.testing.assert_frame_equal(test_df, expected_result)
 
 
@@ -220,10 +220,10 @@ def test_aggregate_compute_object_count():
         features="infer",
         operation="median",
         compute_object_count=True,
-        output_file=test_output_file1,
+        output_file=test_output_file_csv,
     )
 
-    test_df = pd.read_csv(test_output_file1)
+    test_df = pd.read_csv(test_output_file_csv)
     pd.testing.assert_frame_equal(test_df, expected_result)
 
 
@@ -315,7 +315,7 @@ def test_output_type():
     Testing aggregate pycytominer function
     """
     # dictionary with the output name associated with the file type
-    output_dict = {"csv": test_output_file1, "parquet": test_output_file2}
+    output_dict = {"csv": test_output_file_csv, "parquet": test_output_file_parquet}
 
     # test both output types available with output function
     for _type, outname in output_dict.items():
@@ -331,9 +331,12 @@ def test_output_type():
         )
 
     # read files in with pandas
-    csv_df = pd.read_csv(test_output_file1)
-    parquet_df = pd.read_parquet(test_output_file2)
+    csv_df = pd.read_csv(test_output_file_csv)
+    parquet_df = pd.read_parquet(test_output_file_parquet)
 
     # check to make sure the files were read in corrrectly as a pd.Dataframe
     assert type(csv_df) == pd.DataFrame
     assert type(parquet_df) == pd.DataFrame
+
+    # check to make sure both dataframes are the same regardless of the output_type
+    pd.testing.assert_frame_equal(csv_df, parquet_df)
