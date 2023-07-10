@@ -1,6 +1,7 @@
 sphinx
 sphinx-autobuild
 sphinx-autoapi
+ipython
 groundwork-sphinx-theme
 sphinx_copybutton
 nbsphinx
