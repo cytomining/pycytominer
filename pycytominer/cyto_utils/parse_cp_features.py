@@ -14,7 +14,7 @@ def parse_cp_features(
         The CellProfiler feature string to parse.
 
     channels : list, optional
-        A list of channel names to use when parsing the feature string. The default is ['DNA', 'RNA', 'AGP', 'Mito', 'ER'].
+        A list of channel names to use when parsing the feature string. The default is ['DNA', 'RNA', 'AGP', 'Mito', 'ER', "mito_tubeness"].
 
     Returns
     -------
