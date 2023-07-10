@@ -20,6 +20,7 @@ def annotate(
     platemap,
     join_on=["Metadata_well_position", "Metadata_Well"],
     output_file=None,
+    output_type="csv",
     add_metadata_id_to_platemap=True,
     format_broad_cmap=False,
     clean_cellprofiler=True,
@@ -42,7 +43,10 @@ def annotate(
     join_on : list or str, default: ["Metadata_well_position", "Metadata_Well"]
         Which variables to merge profiles and plate. The first element indicates variable(s) in platemap and the second element indicates variable(s) in profiles to merge using. Note the setting of `add_metadata_id_to_platemap`
     output_file : str, optional
-       If not specified, will return the annotated profiles. We recommend that this output file be suffixed with "_augmented.csv".
+        If not specified, will return the annotated profiles. We recommend that this output file be suffixed with "_augmented.csv".
+    output_type : str, optional
+        If provided, will write annotated profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     add_metadata_id_to_platemap : bool, default True
         Whether the plate map variables possibly need "Metadata" pre-pended
     format_broad_cmap : bool, default False
@@ -133,6 +137,7 @@ def annotate(
         output(
             df=annotated,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )
