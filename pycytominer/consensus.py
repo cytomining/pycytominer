@@ -20,6 +20,7 @@ def consensus(
     operation="median",
     features="infer",
     output_file=None,
+    output_type="csv",
     compression_options=None,
     float_format=None,
     modz_args={"method": "spearman"},
@@ -42,6 +43,9 @@ def consensus(
     output_file : str, optional
         If provided, will write consensus profiles to file. If not specified, will
         return the normalized profiles as output.
+    output_type : str, optional
+        If provided, will write consensus profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compression_options : str or dict, optional
         Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
@@ -120,6 +124,7 @@ def consensus(
         output(
             df=consensus_df,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )
