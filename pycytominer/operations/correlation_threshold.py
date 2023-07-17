@@ -26,7 +26,10 @@ def correlation_threshold(
          if "infer", then assume cell painting features are those that start with
          "Cells_", "Nuclei_", or "Cytoplasm_".
     samples : list or str, default "all"
-        List of samples to perform operation on. If "all", use all samples to calculate.
+        List of samples to perform operation on. The function uses a pd.query()
+        function, so you should  structure samples in this fashion. An example is
+        "Metadata_treatment == 'control'" (include all quotes).
+        If "all", use all samples to calculate.
     threshold - float, default 0.9
         Must be between (0, 1) to exclude features
     method - str, default "pearson"
@@ -45,7 +48,7 @@ def correlation_threshold(
 
     # Subset dataframe and calculate correlation matrix across subset features
     if samples != "all":
-        population_df = population_df.loc[samples, :]
+        population_df = population_df.query(samples)
 
     if features == "infer":
         features = infer_cp_features(population_df)

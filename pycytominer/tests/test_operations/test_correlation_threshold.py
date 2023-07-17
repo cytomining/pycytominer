@@ -12,7 +12,6 @@ data_df = pd.DataFrame(
     }
 ).reset_index(drop=True)
 
-
 data_uncorrelated_df = pd.DataFrame(
     {
         "x": [2, 2, 2, 5, 2, 1],
@@ -62,14 +61,17 @@ def test_correlation_threshold_uncorrelated():
 
 
 def test_correlation_threshold_samples():
+    # Add metadata_sample column
+    data_sample_id_df = data_df.assign(
+        Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
+    )
     correlation_threshold_result = correlation_threshold(
-        population_df=data_df,
+        population_df=data_sample_id_df,
         features=data_df.columns.tolist(),
-        samples=[0, 1, 3, 4, 5],
+        samples="Metadata_sample != 'sample_2'",
         threshold=0.9,
         method="pearson",
     )
-
     expected_result = ["y"]
 
     assert correlation_threshold_result == expected_result
