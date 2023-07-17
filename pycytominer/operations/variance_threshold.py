@@ -45,7 +45,7 @@ def variance_threshold(
 
     # Subset dataframe
     if samples != "all":
-        population_df = population_df.loc[samples, :]
+        population_df = population_df.query(samples)
 
     if features == "infer":
         features = infer_cp_features(population_df)
