@@ -22,7 +22,10 @@ def variance_threshold(
          if "infer", then assume cell painting features are those that start with
          "Cells_", "Nuclei_", or "Cytoplasm_".
     samples : list or str, default "all"
-        List of samples to perform operation on. If "all", use all samples to calculate.
+        List of samples to perform operation on. The function uses a pd.query()
+        function, so you should  structure samples in this fashion. An example is
+        "Metadata_treatment == 'control'" (include all quotes).
+        If "all", use all samples to calculate.
     freq_cut : float, default 0.05
         Ratio (2nd most common feature val / most common). Must range between 0 and 1.
         Remove features lower than freq_cut. A low freq_cut will remove features
