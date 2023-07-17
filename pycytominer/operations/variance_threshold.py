@@ -21,7 +21,7 @@ def variance_threshold(
          List of features present in the population dataframe [default: "infer"]
          if "infer", then assume cell painting features are those that start with
          "Cells_", "Nuclei_", or "Cytoplasm_".
-    samples : list or str, default "all"
+    samples : str, default "all"
         List of samples to perform operation on. The function uses a pd.query()
         function, so you should  structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes).
