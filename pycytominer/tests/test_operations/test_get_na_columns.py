@@ -45,17 +45,21 @@ def test_get_na_columns_sample():
     """
     Testing get_na_columns pycyominer function with samples option
     """
+    data_sample_id_df = data_df.assign(
+        Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
+    )
     get_na_columns_result = get_na_columns(
-        population_df=data_df,
-        samples=[1, 2, 3, 4, 5],
+        population_df=data_sample_id_df,
+        samples="Metadata_sample != 'sample_0'",
         features=["x", "y", "zz"],
         cutoff=0.4,
     )
+
     assert len(get_na_columns_result) == 0
 
     get_na_columns_result = get_na_columns(
-        population_df=data_df,
-        samples=[1, 2, 3, 4, 5],
+        population_df=data_sample_id_df,
+        samples="Metadata_sample != 'sample_0'",
         features=["x", "y", "zz"],
         cutoff=0.1,
     )
