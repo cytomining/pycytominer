@@ -44,7 +44,7 @@ def noise_removal(
     """
     # Subset dataframe
     if samples != "all":
-        population_df = population_df.query(samples)
+        population_df.query(samples, inplace=True)
 
     if features == "infer":
         features = infer_cp_features(population_df)
