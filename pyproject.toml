@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pycytominer"
-version = "1.0.0"
+version = "0.3.0"
 description = "Python package for processing image-based profiling data"
 authors = [
     "Gregory Way <gregory.way@gmail.com>",
