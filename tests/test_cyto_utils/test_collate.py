@@ -5,38 +5,28 @@ import pytest
 import pandas as pd
 from pycytominer.cyto_utils.collate import collate
 
-batch = "2021_04_20_Target2"
-
-plate = "BR00121431"
-
+# Set constants
+BATCH = "2021_04_20_Target2"
+PLATE = "BR00121431"
 TEST_DIR = pathlib.Path(__file__).parents[1].absolute()
 ROOT_DIR = TEST_DIR.parent.absolute()
-
-test_config_location = ROOT_DIR.joinpath(
+TEST_CONFIG_LOCATION = ROOT_DIR.joinpath(
     "pycytominer", "cyto_utils", "database_config", "ingest_config.ini"
 )
-
-test_data_location = TEST_DIR / "test_data" / "collate"
-
-test_backend_location = (
-    TEST_DIR / "test_data" / "collate" / "backend" / batch / plate / f"{plate}.sqlite"
+TEST_DATA_LOCATION = TEST_DIR / "test_data" / "collate"
+TEST_BACKEND_LOCATION = (
+    TEST_DATA_LOCATION / "backend" / BATCH / PLATE / f"{PLATE}.sqlite"
 )
-
-test_csv_location = (
-    TEST_DIR / "test_data" / "collate" / "backend" / batch / plate / f"{plate}.csv"
-)
-
-main_csv_location = (
-    TEST_DIR / "test_data" / "collate" / "backend" / batch / plate / f"{plate}_main.csv"
-)
+TEST_CSV_LOCATION = TEST_DATA_LOCATION / "backend" / BATCH / PLATE / f"{PLATE}.csv"
+MAIN_CSV_LOCATION = TEST_DATA_LOCATION / "backend" / BATCH / PLATE / f"{PLATE}_main.csv"
 
 
 def cleanup():
-    if os.path.exists(test_backend_location):
-        os.remove(test_backend_location)
+    if os.path.exists(TEST_BACKEND_LOCATION):
+        os.remove(TEST_BACKEND_LOCATION)
 
-    if os.path.exists(test_csv_location):
-        os.remove(test_csv_location)
+    if os.path.exists(TEST_CSV_LOCATION):
+        os.remove(TEST_CSV_LOCATION)
 
 
 def validate(test_file, main_file, should_be_equal=True):
@@ -55,16 +45,16 @@ def test_base_case():
 
     collate(
         "2021_04_20_Target2",
-        test_config_location,
+        TEST_CONFIG_LOCATION,
         "BR00121431",
-        base_directory=test_data_location,
-        tmp_dir=test_data_location,
+        base_directory=TEST_DATA_LOCATION,
+        tmp_dir=TEST_DATA_LOCATION,
         add_image_features=False,
         printtoscreen=False,
     )
-    assert os.path.exists(test_backend_location)
+    assert os.path.exists(TEST_BACKEND_LOCATION)
 
-    validate(test_csv_location, main_csv_location)
+    validate(TEST_CSV_LOCATION, MAIN_CSV_LOCATION)
 
     cleanup()
 
@@ -74,17 +64,17 @@ def test_base_case_with_image_features():
 
     collate(
         "2021_04_20_Target2",
-        test_config_location,
+        TEST_CONFIG_LOCATION,
         "BR00121431",
-        base_directory=test_data_location,
-        tmp_dir=test_data_location,
+        base_directory=TEST_DATA_LOCATION,
+        tmp_dir=TEST_DATA_LOCATION,
         add_image_features=True,
         image_feature_categories=["Granularity"],
         printtoscreen=False,
     )
-    assert os.path.exists(test_backend_location)
+    assert os.path.exists(TEST_BACKEND_LOCATION)
 
-    test, main = validate(test_csv_location, main_csv_location, should_be_equal=False)
+    test, main = validate(TEST_CSV_LOCATION, MAIN_CSV_LOCATION, should_be_equal=False)
 
     test = test.drop(columns=[x for x in test.columns if "Image_Granularity" in x])
 
@@ -98,23 +88,23 @@ def test_overwrite():
 
     collate(
         "2021_04_20_Target2",
-        test_config_location,
+        TEST_CONFIG_LOCATION,
         "BR00121431",
-        base_directory=test_data_location,
-        tmp_dir=test_data_location,
+        base_directory=TEST_DATA_LOCATION,
+        tmp_dir=TEST_DATA_LOCATION,
         add_image_features=False,
         printtoscreen=False,
     )
-    assert os.path.exists(test_backend_location)
+    assert os.path.exists(TEST_BACKEND_LOCATION)
 
-    validate(test_csv_location, main_csv_location)
+    validate(TEST_CSV_LOCATION, MAIN_CSV_LOCATION)
 
     collate(
         "2021_04_20_Target2",
-        test_config_location,
+        TEST_CONFIG_LOCATION,
         "BR00121431",
-        base_directory=test_data_location,
-        tmp_dir=test_data_location,
+        base_directory=TEST_DATA_LOCATION,
+        tmp_dir=TEST_DATA_LOCATION,
         overwrite=True,
         add_image_features=False,
         printtoscreen=False,
@@ -123,10 +113,10 @@ def test_overwrite():
     with pytest.raises(SystemExit) as exitcode:
         collate(
             "2021_04_20_Target2",
-            test_config_location,
+            TEST_CONFIG_LOCATION,
             "BR00121431",
-            base_directory=test_data_location,
-            tmp_dir=test_data_location,
+            base_directory=TEST_DATA_LOCATION,
+            tmp_dir=TEST_DATA_LOCATION,
             add_image_features=False,
             printtoscreen=False,
         )
@@ -142,10 +132,10 @@ def test_aggregate_only():
     with pytest.raises(SystemExit) as exitcode:
         collate(
             "2021_04_20_Target2",
-            test_config_location,
+            TEST_CONFIG_LOCATION,
             "BR00121431",
-            base_directory=test_data_location,
-            tmp_dir=test_data_location,
+            base_directory=TEST_DATA_LOCATION,
+            tmp_dir=TEST_DATA_LOCATION,
             aggregate_only=True,
             add_image_features=False,
             printtoscreen=False,
@@ -154,29 +144,29 @@ def test_aggregate_only():
 
     collate(
         "2021_04_20_Target2",
-        test_config_location,
+        TEST_CONFIG_LOCATION,
         "BR00121431",
-        base_directory=test_data_location,
-        tmp_dir=test_data_location,
+        base_directory=TEST_DATA_LOCATION,
+        tmp_dir=TEST_DATA_LOCATION,
         add_image_features=False,
         printtoscreen=False,
     )
 
-    assert os.path.exists(test_csv_location)
+    assert os.path.exists(TEST_CSV_LOCATION)
 
-    os.remove(test_csv_location)
+    os.remove(TEST_CSV_LOCATION)
 
     collate(
         "2021_04_20_Target2",
-        test_config_location,
+        TEST_CONFIG_LOCATION,
         "BR00121431",
-        base_directory=test_data_location,
-        tmp_dir=test_data_location,
+        base_directory=TEST_DATA_LOCATION,
+        tmp_dir=TEST_DATA_LOCATION,
         aggregate_only=True,
         add_image_features=False,
         printtoscreen=False,
     )
 
-    validate(test_csv_location, main_csv_location)
+    validate(TEST_CSV_LOCATION, MAIN_CSV_LOCATION)
 
     cleanup()

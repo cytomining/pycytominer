@@ -2,6 +2,7 @@ import os
 import pathlib
 import subprocess
 import sys
+import sqlite3
 
 
 def run_check_errors(cmd):
@@ -118,43 +119,29 @@ def collate(
             print(f"Ingesting {input_dir}")
         run_check_errors(ingest_cmd)
 
+        # Create a sqlite3 connection
+        connection = sqlite3.connect(cache_backend_file, isolation_level=None)
+        cursor = connection.cursor()
+
         if column:
             if print:
                 print(f"Adding a Metadata_Plate column based on column {column}")
-            alter_cmd = [
-                "sqlite3",
-                cache_backend_file,
-                "ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;",
-            ]
-            run_check_errors(alter_cmd)
-            update_cmd = [
-                "sqlite3",
-                cache_backend_file,
-                f"UPDATE image SET Metadata_Plate ={column};",
-            ]
-            run_check_errors(update_cmd)
+            cursor.execute("ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;")
+            cursor.execute(f"UPDATE image SET Metadata_Plate ={column};")
 
         if printtoscreen:
             print(f"Indexing database {cache_backend_file}")
-        index_cmd_img = [
-            "sqlite3",
-            cache_backend_file,
-            "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);",
-        ]
-        run_check_errors(index_cmd_img)
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);"
+        )
         for eachcompartment in ["Cells", "Cytoplasm", "Nuclei"]:
-            index_cmd_compartment = [
-                "sqlite3",
-                cache_backend_file,
-                f"CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);",
-            ]
-            run_check_errors(index_cmd_compartment)
-        index_cmd_metadata = [
-            "sqlite3",
-            cache_backend_file,
-            "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);",
-        ]
-        run_check_errors(index_cmd_metadata)
+            cursor.execute(
+                f"""CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx 
+                            ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);"""
+            )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);"
+        )
 
         if aws_remote:
             if printtoscreen:
