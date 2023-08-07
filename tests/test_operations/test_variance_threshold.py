@@ -121,3 +121,30 @@ def test_variance_threshold_featureinfer():
     expected_result = ["Cells_a"]
 
     assert excluded_features == expected_result
+
+
+def test_variance_threshold_samples():
+    unique_cut = 0.01
+    excluded_features = variance_threshold(
+        population_df=data_unique_test_df,
+        features=data_unique_test_df.columns.tolist(),
+        samples="all",
+        unique_cut=unique_cut,
+    )
+    expected_result = ["a"]
+
+    assert sorted(excluded_features) == sorted(expected_result)
+
+    # Add metadata_sample column
+    data_sample_id_df = data_df.assign(
+        Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
+    )
+
+    excluded_features = variance_threshold(
+        population_df=data_sample_id_df,
+        features=data_sample_id_df.columns.tolist(),
+        samples="Metadata_sample != 'sample_5'",
+        unique_cut=unique_cut,
+    )
+    expected_result = ["a", "b"]
+    assert sorted(excluded_features) == sorted(expected_result)

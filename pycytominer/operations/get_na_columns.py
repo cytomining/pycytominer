@@ -18,8 +18,11 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
          List of features present in the population dataframe [default: "infer"]
          if "infer", then assume cell painting features are those that start with
          "Cells_", "Nuclei_", or "Cytoplasm_".
-    samples : list or str, default "all"
-        List of samples to perform operation on. If "all", use all samples to calculate.
+    samples : str, default "all"
+        List of samples to perform operation on. The function uses a pd.DataFrame.query()
+        function, so you should  structure samples in this fashion. An example is
+        "Metadata_treatment == 'control'" (include all quotes).
+        If "all", use all samples to calculate.
     cutoff : float
         Exclude features that have a certain proportion of missingness
 
@@ -30,7 +33,7 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
     """
 
     if samples != "all":
-        population_df = population_df.loc[samples, :]
+        population_df.query(samples, inplace=True)
 
     if features == "infer":
         features = infer_cp_features(population_df)
