@@ -19,6 +19,7 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Your first code contribution](#your-first-code-contribution)
 - [Pull requests](#pull-requests)
 - [Documentation](#documentation)
+- [Poetry](#poetry)
 - [Dev environments](#dev-environments)
 
 [Style guides](#style-guides)
@@ -120,6 +121,14 @@ sphinx-build -b html docs build
 
 See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
 
+### Poetry
+
+We use [Poetry](https://python-poetry.org/) to manage dependencies and packaging.
+Changes in dependencies are managed by Poetry's `pyproject.toml` file.
+Poetry installs all dependencies in a virtual environment, which is activated automatically when you run `poetry shell`.
+Poetry also provides a `poetry run` command to run commands in the virtual environment without activating it.
+For example, to run the test suite, you can use `poetry run pytest`.
+
 ### Dev environments
 
 #### Local devcontainer
@@ -135,10 +144,10 @@ Instructions for setting up a local development environment using VSCode DevCont
 #### Cloud environment
 
 We've set up cloud development configurations with both [Github Codespaces](https://github.com/codespaces) and [GitPod](https://www.gitpod.io/).
-These development environments include the local copy of the repository installed in development mode along with the tools specified in `requirements-dev.txt`.
+These development environments include the project dependencies pre-installed via [Poetry](https://python-poetry.org/).
 Prior to commit, pre-installed git hooks auto-format any changed code.
 Using a pre-built cloud development environment is an easy way to get started contributing to pycytominer, and both Gitpod and Codespaces have generous free usage tiers.
-When you are ready to make a pull request, please use the same cloud environment to run the full test suite and ensure that your changes pass all tests.
+When you are ready to make a pull request, use the pre-configured test suite in VSCode or run `poetry run pytest` to ensure that your changes pass all tests.
 You can launch these cloud environments by clicking on the following links:
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://open.vscode.dev/cytomining/pycytominer)
@@ -152,14 +161,15 @@ You can launch these cloud environments by clicking on the following links:
 #### Manual setup
 
 We recommend using either the local devcontainer or cloud dev environment approaches above.
-However, we also provide general guidance for setting up a local development environment in Linux here.
-We strongly recommend performing this within a virtual environment such as [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [pyenv](https://akrabat.com/creating-virtual-environments-with-pyenv/):
+However, we also provide general guidance for setting up a dev environment in Linux, MacOS, or Windows (WSL) below.
 
 ```bash
+# Install Poetry (Linux, MacOS, Windows - WSL)
+curl -sSL https://install.python-poetry.org | python3 -
 # Checkout the repository
 git clone https://github.com/cytomining/pycytominer.git
 cd pycytominer
-# Install pycytominer in development mode along with associated tools
+# Install pycytominer using poetry mode along with associated dev tools
 bash .devcontainer/postCreateCommand.sh
 ```
 
