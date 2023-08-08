@@ -224,8 +224,8 @@ def test_is_path_a_parquet_file():
     check_fail = is_path_a_parquet_file(output_data_file)
 
     # checking if the correct booleans are returned
-    assert (check_pass, True)
-    assert (check_fail, False)
+    assert check_pass
+    assert not check_fail
 
     # loading in pandas dataframe from parquet file
     parquet_df = pd.read_parquet(output_data_parquet)
