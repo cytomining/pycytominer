@@ -3,6 +3,8 @@ import pathlib
 import subprocess
 import sys
 import sqlite3
+import cytominer_database.ingest
+import cytominer_database.munge
 
 
 def run_check_errors(cmd):
@@ -104,44 +106,41 @@ def collate(
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
 
-        ingest_cmd = [
-            "cytominer-database",
-            "ingest",
-            input_dir,
-            f"sqlite:///{cache_backend_file}",
-            "-c",
-            config,
-        ]
-        if not munge:
-            # munge is by default True in cytominer-database
-            ingest_cmd.append("--no-munge")
         if printtoscreen:
             print(f"Ingesting {input_dir}")
-        run_check_errors(ingest_cmd)
+        # Run cytominer-database ingest
+        if munge:
+            cytominer_database.munge.munge(config_path=config, source=input_dir)
+
+        cytominer_database.ingest.seed(
+            source=input_dir,
+            target=f"sqlite:///{cache_backend_file}",
+            config_file=config,
+        )
 
         # Create a sqlite3 connection
-        connection = sqlite3.connect(cache_backend_file, isolation_level=None)
-        cursor = connection.cursor()
+        with sqlite3.connect(cache_backend_file, isolation_level=None) as connection:
+            cursor = connection.cursor()
+            if column:
+                if print:
+                    print(f"Adding a Metadata_Plate column based on column {column}")
+                cursor.execute("ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;")
+                cursor.execute(f"UPDATE image SET Metadata_Plate ={column};")
 
-        if column:
-            if print:
-                print(f"Adding a Metadata_Plate column based on column {column}")
-            cursor.execute("ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;")
-            cursor.execute(f"UPDATE image SET Metadata_Plate ={column};")
-
-        if printtoscreen:
-            print(f"Indexing database {cache_backend_file}")
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);"
-        )
-        for eachcompartment in ["Cells", "Cytoplasm", "Nuclei"]:
+            if printtoscreen:
+                print(f"Indexing database {cache_backend_file}")
             cursor.execute(
-                f"""CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx 
-                            ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);"""
+                "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);"
             )
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);"
-        )
+            for eachcompartment in ["Cells", "Cytoplasm", "Nuclei"]:
+                cursor.execute(
+                    f"""CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx 
+                                ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);"""
+                )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);"
+            )
+            cursor.close()
 
         if aws_remote:
             if printtoscreen:
