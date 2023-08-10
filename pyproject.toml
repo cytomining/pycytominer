@@ -4,6 +4,18 @@ version = "0.3.0"
 description = "Python package for processing image-based profiling data"
 authors = [
     "Gregory Way <gregory.way@gmail.com>",
+    "Chandrasekaran, Srinivas Niranj",
+    "Michael Bornhold",
+    "Stephen Fleming",
+    "Hillary Tsang",
+    "Adeniyi Adeboye",
+    "Beth Cimini",
+    "Erin Weisbart",
+    "Pearl Ryder",
+    "David Stirling",
+    "Nasim Jamali",
+    "Anne Carpenter",
+    "Shantanu Singh",
 ]
 maintainers = [
     "Gregory Way <gregory.way@gmail.com>",
