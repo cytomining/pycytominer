@@ -2,6 +2,8 @@ name: pre-commit-ci
 on:
   pull_request:
     branches:
+      - main
+      # Temporary inclusion of master branch during default branch name transition
       - master
 jobs:
   pre-commit-ci:
@@ -9,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo with all branches and tags
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Setup python 3.9
