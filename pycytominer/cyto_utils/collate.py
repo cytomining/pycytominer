@@ -141,6 +141,7 @@ def collate(
                 "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);"
             )
             cursor.close()
+        connection.close()
 
         if aws_remote:
             if printtoscreen:
