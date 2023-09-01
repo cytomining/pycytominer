@@ -49,6 +49,12 @@ codecov = ">=2.1.12"
 pytest-cov = "^4.1.0"
 pre-commit = ">=3.3.2"
 
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "*"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
