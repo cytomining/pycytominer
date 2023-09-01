@@ -9,7 +9,8 @@ random.seed(123)
 
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
-output_test_file = os.path.join(tmpdir, "test.csv")
+output_test_file_csv = os.path.join(tmpdir, "test.csv")
+output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
 input_test_file = os.path.join(tmpdir, "example_input.csv")
 
 # Set example data
@@ -47,10 +48,10 @@ def test_consensus_aggregate():
         data_df,
         replicate_columns="Metadata_treatment",
         operation="mean",
-        output_file=output_test_file,
+        output_file=output_test_file_csv,
     )
 
-    pd.testing.assert_frame_equal(mean_df, pd.read_csv(output_test_file))
+    pd.testing.assert_frame_equal(mean_df, pd.read_csv(output_test_file_csv))
 
     median_df = consensus(
         data_df, replicate_columns="Metadata_treatment", operation="median"
@@ -95,7 +96,34 @@ def test_consensus_modz():
         data_df,
         replicate_columns="Metadata_treatment",
         operation="mean",
-        output_file=output_test_file,
+        output_file=output_test_file_csv,
     )
 
-    pd.testing.assert_frame_equal(modz_df, pd.read_csv(output_test_file))
+    pd.testing.assert_frame_equal(modz_df, pd.read_csv(output_test_file_csv))
+
+
+def test_output_type():
+    # dictionary with the output name associated with the file type
+    output_dict = {"csv": output_test_file_csv, "parquet": output_test_file_parquet}
+
+    # test both output types available with output function
+    for _type, outname in output_dict.items():
+        # Test output
+        consensus(
+            data_df,
+            replicate_columns="Metadata_treatment",
+            operation="mean",
+            output_file=outname,
+            output_type=_type,
+        )
+
+    # read files in with pandas
+    csv_df = pd.read_csv(output_test_file_csv)
+    parquet_df = pd.read_parquet(output_test_file_parquet)
+
+    # check to make sure the files were read in corrrectly as a pd.Dataframe
+    assert type(csv_df) == pd.DataFrame
+    assert type(parquet_df) == pd.DataFrame
+
+    # check to make sure both dataframes are the same regardless of the output_type
+    pd.testing.assert_frame_equal(csv_df, parquet_df)

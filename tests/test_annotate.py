@@ -11,7 +11,8 @@ random.seed(123)
 TMPDIR = tempfile.gettempdir()
 
 # Setup a testing file
-OUTPUT_FILE = pathlib.Path(f"{TMPDIR}/test.csv")
+OUTPUT_FILE_CSV = pathlib.Path(f"{TMPDIR}/test.csv")
+OUTPUT_FILE_PARQUET = pathlib.Path(f"{TMPDIR}/test.parquet")
 
 # Build data to use in tests
 DATA_DF = pd.concat(
@@ -142,7 +143,7 @@ def test_annotate_output():
         platemap=PLATEMAP_DF,
         join_on=["well_position", "Metadata_Well"],
         add_metadata_id_to_platemap=False,
-        output_file=OUTPUT_FILE,
+        output_file=OUTPUT_FILE_CSV,
     )
 
     result = annotate(
@@ -152,7 +153,7 @@ def test_annotate_output():
         add_metadata_id_to_platemap=False,
         output_file=None,
     )
-    expected_result = pd.read_csv(OUTPUT_FILE)
+    expected_result = pd.read_csv(OUTPUT_FILE_CSV)
 
     pd.testing.assert_frame_equal(result, expected_result)
 
@@ -177,3 +178,30 @@ def test_annotate_output_compress():
     )
     expected_result = pd.read_csv(compress_file)
     pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_output_type():
+    # dictionary with the output name associated with the file type
+    output_dict = {"csv": OUTPUT_FILE_CSV, "parquet": OUTPUT_FILE_PARQUET}
+
+    # test both output types available with output function
+    for _type, outname in output_dict.items():
+        # Test output
+        annotate(
+            profiles=DATA_DF,
+            platemap=PLATEMAP_DF,
+            join_on=["Metadata_well_position", "Metadata_Well"],
+            output_file=outname,
+            output_type=_type,
+        )
+
+    # read files in with pandas
+    csv_df = pd.read_csv(OUTPUT_FILE_CSV)
+    parquet_df = pd.read_parquet(OUTPUT_FILE_PARQUET)
+
+    # check to make sure the files were read in corrrectly as a pd.Dataframe
+    assert type(csv_df) == pd.DataFrame
+    assert type(parquet_df) == pd.DataFrame
+
+    # check to make sure both dataframes are the same regardless of the output_type
+    pd.testing.assert_frame_equal(csv_df, parquet_df)

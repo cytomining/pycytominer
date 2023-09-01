@@ -30,15 +30,15 @@ output_npz_file = os.path.join(tmpdir, "test_npz.npz")
 output_npz_with_model_file = os.path.join(tmpdir, "test_npz_withmodel.npz")
 output_npz_without_metadata_file = os.path.join(tmpdir, "test_npz_withoutmetadata.npz")
 
+ROOT_DIR = pathlib.Path(__file__).parents[2]
 
 # Example .npz file with real data
-example_npz_file = os.path.join(
-    os.path.dirname(__file__),
-    "..",
-    "..",
-    "data",
-    "DeepProfiler_example_data",
-    "Week1_22123_B02_s1.npz",
+example_npz_file = (
+    ROOT_DIR
+    / "pycytominer"
+    / "data"
+    / "DeepProfiler_example_data"
+    / "Week1_22123_B02_s1.npz"
 )
 
 example_npz_file_locations = os.path.join(
@@ -224,8 +224,8 @@ def test_is_path_a_parquet_file():
     check_fail = is_path_a_parquet_file(output_data_file)
 
     # checking if the correct booleans are returned
-    assert (check_pass, True)
-    assert (check_fail, False)
+    assert check_pass
+    assert not check_fail
 
     # loading in pandas dataframe from parquet file
     parquet_df = pd.read_parquet(output_data_parquet)

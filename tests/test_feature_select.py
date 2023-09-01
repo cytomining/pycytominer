@@ -11,6 +11,10 @@ random.seed(123)
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
 
+# Setup testing files
+output_test_file_csv = os.path.join(tmpdir, "test.csv")
+output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
+
 data_df = pd.DataFrame(
     {
         "x": [1, 3, 8, 5, 2, 2],
@@ -83,6 +87,7 @@ def test_feature_select_noise_removal():
     result1 = feature_select(
         profiles=data_df,
         features=data_df.columns.tolist(),
+        samples="all",
         operation="noise_removal",
         noise_removal_perturb_groups=data_df_groups,
         noise_removal_stdev_cutoff=2.5,
@@ -101,18 +106,22 @@ def test_feature_select_noise_removal():
         noise_removal_perturb_groups=data_df_groups,
         noise_removal_stdev_cutoff=3.5,
     )
+
     expected_result1 = data_df[["x", "y"]]
     expected_result2 = data_df[[]]
     expected_result3 = data_df[["x", "y", "z", "zz"]]
+
     pd.testing.assert_frame_equal(result1, expected_result1)
     pd.testing.assert_frame_equal(result2, expected_result2)
     pd.testing.assert_frame_equal(result3, expected_result3)
 
     # Test on data_unique_test_df, which has 100 rows
     data_unique_test_df_groups = []
+
     # Create a 100 element list containing 10 replicates of 10 perturbations
     for elem in ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]:
         data_unique_test_df_groups.append([elem] * 10)
+
     # Unstack so it's just a single list
     data_unique_test_df_groups = [
         item for sublist in data_unique_test_df_groups for item in sublist
@@ -132,8 +141,10 @@ def test_feature_select_noise_removal():
         noise_removal_perturb_groups=data_unique_test_df_groups,
         noise_removal_stdev_cutoff=500,
     )
+
     expected_result4 = data_unique_test_df[["a", "b"]]
     expected_result5 = data_unique_test_df[["a", "b", "c", "d"]]
+
     pd.testing.assert_frame_equal(result4, expected_result4)
     pd.testing.assert_frame_equal(result5, expected_result5)
 
@@ -154,13 +165,16 @@ def test_feature_select_noise_removal():
         noise_removal_perturb_groups="perturb_group",
         noise_removal_stdev_cutoff=500,
     )
+
     expected_result4b = data_unique_test_df2[["a", "b", "perturb_group"]]
     expected_result5b = data_unique_test_df2[["a", "b", "c", "d", "perturb_group"]]
+
     pd.testing.assert_frame_equal(result4b, expected_result4b)
     pd.testing.assert_frame_equal(result5b, expected_result5b)
 
     # Test assertion errors for the user inputting the perturbation groupings
     bad_perturb_list = ["a", "a", "b", "b", "a", "a", "b"]
+
     with pytest.raises(
         AssertionError
     ):  # When the inputted perturb list doesn't match the length of the data
@@ -191,6 +205,22 @@ def test_feature_select_noise_removal():
             features=data_df.columns.tolist(),
             operation="noise_removal",
             noise_removal_perturb_groups=12345,
+            noise_removal_stdev_cutoff=2.5,
+        )
+
+    with pytest.raises(
+        AssertionError
+    ):  # When the perturbation group doesn't match b/c samples argument used
+        # Add metadata_sample column
+        data_sample_id_df = data_df.assign(
+            Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
+        )
+        feature_select(
+            profiles=data_sample_id_df,
+            features=data_df.columns.tolist(),
+            samples="Metadata_sample != 'sample_1'",
+            operation="noise_removal",
+            noise_removal_perturb_groups=data_df_groups,
             noise_removal_stdev_cutoff=2.5,
         )
 
@@ -441,3 +471,33 @@ def test_feature_select_drop_outlier():
         outlier_cutoff=15,
     )
     pd.testing.assert_frame_equal(result, data_outlier_df)
+
+
+def test_output_type():
+    """
+    Testing feature_select pycytominer function
+    """
+    # dictionary with the output name associated with the file type
+    output_dict = {"csv": output_test_file_csv, "parquet": output_test_file_parquet}
+
+    # test both output types available with output function
+    for _type, outname in output_dict.items():
+        # Test output
+        feature_select(
+            data_df,
+            features=data_df.columns.tolist(),
+            operation="blocklist",
+            output_file=outname,
+            output_type=_type,
+        )
+
+    # read files in with pandas
+    csv_df = pd.read_csv(output_test_file_csv)
+    parquet_df = pd.read_parquet(output_test_file_parquet)
+
+    # check to make sure the files were read in corrrectly as a pd.Dataframe
+    assert type(csv_df) == pd.DataFrame
+    assert type(parquet_df) == pd.DataFrame
+
+    # check to make sure both dataframes are the same regardless of the output_type
+    pd.testing.assert_frame_equal(csv_df, parquet_df)

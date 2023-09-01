@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "pycytominer"
+version = "0.3.0"
+description = "Python package for processing image-based profiling data"
+authors = [
+    "Gregory Way <gregory.way@gmail.com>",
+    "Chandrasekaran, Srinivas Niranj",
+    "Michael Bornhold",
+    "Stephen Fleming",
+    "Hillary Tsang",
+    "Adeniyi Adeboye",
+    "Beth Cimini",
+    "Erin Weisbart",
+    "Pearl Ryder",
+    "David Stirling",
+    "Nasim Jamali",
+    "Anne Carpenter",
+    "Shantanu Singh",
+]
+maintainers = [
+    "Gregory Way <gregory.way@gmail.com>",
+]
+license = "BSD-3-Clause"
+readme = "README.md"
+homepage = "https://pycytominer.readthedocs.io/"
+repository = "https://github.com/cytomining/pycytominer"
+
+[tool.poetry.dependencies]
+python          = ">=3.8"
+numpy           = ">=1.16.5"
+scipy           = ">=1.5"
+pandas          = ">=1.2.0"
+scikit-learn    = ">=0.21.2"
+sqlalchemy      = ">=1.3.6, <2"
+pyarrow         = ">=8.0.0"
+
+# Extra dependencies for cell_locations 
+fsspec  =   {version = ">=2023.1.0",    extras=["cell_locations"]}
+s3fs    =   {version = ">=0.4.2",       extras=["cell_locations"]}
+boto3   =   {version = ">=1.26.79",     extras=["cell_locations"]}
+fire    =   {version = ">=0.5.0",       extras=["cell_locations"]}
+
+# Extra dependencies for collate
+cytominer-database = {version = "0.3.4", extras=["collate"]}
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=5.0.1"
+codecov = ">=2.1.12"
+pytest-cov = "^4.1.0"
+pre-commit = ">=3.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.pytest.ini_options]
+testpaths = "tests"

@@ -10,6 +10,10 @@ random.seed(123)
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
 
+# Setup testing files
+output_test_file_csv = os.path.join(tmpdir, "test.csv")
+output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
+
 # Build data to use in tests
 data_df = pd.DataFrame(
     {
@@ -525,3 +529,35 @@ def test_spherize_epsilon():
             assert off_diag_sum > 0
         else:
             assert off_diag_sum == 0
+
+
+def test_output_type():
+    """
+    Testing normalize pycytominer function with output
+    """
+    # dictionary with the output name associated with the file type
+    output_dict = {"csv": output_test_file_csv, "parquet": output_test_file_parquet}
+
+    # test both output types available with output function
+    for _type, outname in output_dict.items():
+        # Test output
+        normalize(
+            profiles=data_file,
+            features=["x", "y", "z", "zz"],
+            meta_features="infer",
+            samples="all",
+            method="standardize",
+            output_file=outname,
+            output_type=_type,
+        )
+
+    # read files in with pandas
+    csv_df = pd.read_csv(output_test_file_csv)
+    parquet_df = pd.read_parquet(output_test_file_parquet)
+
+    # check to make sure the files were read in corrrectly as a pd.Dataframe
+    assert type(csv_df) == pd.DataFrame
+    assert type(parquet_df) == pd.DataFrame
+
+    # check to make sure both dataframes are the same regardless of the output_type
+    pd.testing.assert_frame_equal(csv_df, parquet_df)

@@ -20,6 +20,8 @@ data_df = pd.DataFrame(
             "control",
             "control",
         ],
+        "Metadata_test_drop_me": ["no", "no", "no", "no", "yes", "no", "yes", "yes"],
+        "Metadata_test_drop_me_2": ["no", "no", "no", "no", "yes", "yes", "yes", "yes"],
         "Cells_x": [1, 2, -8, 2, 5, 5, 5, -1],
         "Cytoplasm_y": [3, -1, 7, 4, 5, -9, 6, 1],
         "Nuclei_z": [-1, 8, 2, 5, -6, 20, 2, -2],
@@ -41,11 +43,15 @@ def test_outlier_15_cutoff():
 
 
 def test_outlier_samples_15():
-    result = drop_outlier_features(data_df, samples=[0, 1, 2, 3, 5], outlier_cutoff=15)
+    result = drop_outlier_features(
+        data_df, samples="Metadata_test_drop_me == 'no'", outlier_cutoff=15
+    )
     expected_result = ["Cells_zz", "Nuclei_z"]
     assert sorted(result) == sorted(expected_result)
 
-    result = drop_outlier_features(data_df, samples=[0, 1, 2, 3], outlier_cutoff=15)
+    result = drop_outlier_features(
+        data_df, samples="Metadata_test_drop_me_2 == 'no'", outlier_cutoff=15
+    )
     expected_result = ["Cells_zz"]
     assert result == expected_result
 
