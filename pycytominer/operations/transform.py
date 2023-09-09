@@ -11,6 +11,7 @@ import pandas as pd
 from scipy.linalg import eigh
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import StandardScaler
 
 
 class Spherize(BaseEstimator, TransformerMixin):
@@ -54,6 +55,10 @@ class Spherize(BaseEstimator, TransformerMixin):
         ), f"Error {method} not supported. Select one of {avail_methods}"
         self.method = method
 
+        assert (
+            self.method not in ["PCA-cor", "ZCA-cor"] or self.center
+        ), "PCA-cor and ZCA-cor require center=True"
+
     def fit(self, X, y=None):
         """Identify the sphering transform given self.X
 
@@ -67,58 +72,31 @@ class Spherize(BaseEstimator, TransformerMixin):
         self
             With computed weights attribute
         """
-        # Get the mean of the features (columns) and center if specified
-        self.mu = X.mean()
-        if self.center:
-            X = X - self.mu
-
-        # Get the covariance matrix
-        C = (1 / X.shape[0]) * np.dot(X.transpose(), X)
-
-        if self.method in ["PCA", "ZCA"]:
-            # Get the eigenvalues and eigenvectors of the covariance matrix
-            s, U = eigh(C)
-
-            # Fix sign ambiguity of eigenvectors
-            U = pd.DataFrame(U * np.sign(np.diag(U)))
-
-            # Process the eigenvalues into a diagonal matrix and fix rounding errors
-            D = np.diag(1.0 / np.sqrt(s.clip(self.epsilon)))
-
-            # Calculate the sphering matrix
-            self.W = np.dot(D, U.transpose())
-
-            # If ZCA, perform additional rotation
-            if self.method == "ZCA":
-                self.W = np.dot(U, self.W)
+        X = X.values
 
         if self.method in ["PCA-cor", "ZCA-cor"]:
-            # Get the correlation matrix
-            R = np.corrcoef(X.transpose())
-
-            # Get the eigenvalues and eigenvectors of the correlation matrix
-            try:
-                t, G = eigh(R)
-            except ValueError:
-                raise ValueError(
-                    "Divide by zero error, make sure low variance columns are removed"
+            self.standard_scaler = StandardScaler().fit(X)
+            X = self.standard_scaler.transform(X)
+        else:
+            if self.center:
+                self.mean_centerer = StandardScaler(with_mean=True, with_std=False).fit(
+                    X
                 )
+                X = self.mean_centerer.transform(X)
 
-            # Fix sign ambiguity of eigenvectors
-            G = pd.DataFrame(G * np.sign(np.diag(G)))
+        # Get the number of observations
+        N = X.shape[0]
 
-            # Process the eigenvalues into a diagonal matrix and fix rounding errors
-            D = np.diag(1.0 / np.sqrt(t.clip(self.epsilon)))
+        # Get the eigenvalues and eigenvectors of the covariance matrix using SVD
+        _, Sigma, Vt = np.linalg.svd(X, full_matrices=False)
 
-            # process the covariance diagonal matrix and fix rounding errors
-            v = np.diag(1.0 / np.sqrt(np.diag(C).clip(self.epsilon)))
+        Sigma = Sigma + self.epsilon
 
-            # Calculate the sphering matrix
-            self.W = np.dot(np.dot(D, G.transpose()), v)
+        self.W = (Vt / Sigma[:, np.newaxis]).transpose() * np.sqrt(N - 1)
 
-            # If ZCA-cor, perform additional rotation
-            if self.method == "ZCA-cor":
-                self.W = np.dot(G, self.W)
+        # If ZCA, perform additional rotation
+        if self.method in ["ZCA", "ZCA-cor"]:
+            self.W = self.W @ Vt
 
         return self
 
@@ -137,7 +115,21 @@ class Spherize(BaseEstimator, TransformerMixin):
         pandas.core.frame.DataFrame
             Spherized dataframe
         """
-        return np.dot(X - self.mu, self.W.transpose())
+
+        columns = X.columns
+
+        X = X.values
+
+        if self.method in ["PCA-cor", "ZCA-cor"]:
+            X = self.standard_scaler.transform(X)
+        else:
+            if self.center:
+                X = self.mean_centerer.transform(X)
+
+        if self.method in ["PCA", "ZCA"]:
+            columns = ["PC" + str(i) for i in range(1, X.shape[1] + 1)]
+
+        return pd.DataFrame(X @ self.W, columns=columns)
 
 
 class RobustMAD(BaseEstimator, TransformerMixin):
