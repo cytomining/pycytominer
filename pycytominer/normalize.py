@@ -21,7 +21,6 @@ def normalize(
     samples="all",
     method="standardize",
     output_file=None,
-    output_type="csv",
     compression_options=None,
     float_format=None,
     mad_robustize_epsilon=1e-18,
@@ -55,12 +54,9 @@ def normalize(
         How to normalize the dataframe. Defaults to "standardize". Check avail_methods
         for available normalization methods.
     output_file : str, optional
-        If provided, will write normalized profiles to file. If not specified, will
+        If provided, will write annotated profiles to file. If not specified, will
         return the normalized profiles as output. We recommend that this output file be
         suffixed with "_normalized.csv".
-    output_type : str, optional
-        If provided, will write normalized profiles as a specified file type (either CSV or parquet).
-        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compression_options : str or dict, optional
         Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
@@ -163,7 +159,7 @@ def normalize(
 
     # Scale the feature dataframe
     feature_df = pd.DataFrame(
-        fitted_scaler.transform(feature_df),
+        fitted_scaler.transform(feature_df).values,
         columns=feature_df.columns,
         index=feature_df.index,
     )
@@ -174,7 +170,6 @@ def normalize(
         output(
             df=normalized,
             output_filename=output_file,
-            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )
