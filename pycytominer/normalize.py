@@ -162,6 +162,7 @@ def normalize(
         fitted_scaler = scaler.fit(profiles.query(samples).loc[:, features])
 
     # Scale the feature dataframe
+    # See https://github.com/cytomining/pycytominer/issues/319
     feature_df = pd.DataFrame(
         fitted_scaler.transform(feature_df).values,
         columns=feature_df.columns,
