@@ -163,8 +163,11 @@ def normalize(
 
     # Scale the feature dataframe
     # See https://github.com/cytomining/pycytominer/issues/319
+    fitted_scaled = fitted_scaler.transform(feature_df)
+    if type(fitted_scaled) == pd.DataFrame:
+        fitted_scaled = fitted_scaled.values
     feature_df = pd.DataFrame(
-        fitted_scaler.transform(feature_df).values,
+        fitted_scaled,
         columns=feature_df.columns,
         index=feature_df.index,
     )
