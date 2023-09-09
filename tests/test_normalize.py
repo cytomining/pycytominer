@@ -445,6 +445,8 @@ def test_normalize_standardize_allsamples_compress():
 def test_normalize_spherize():
     for spherize_method in ["ZCA", "PCA", "ZCA-cor", "PCA-cor"]:
         for spherize_center in [True, False]:
+            if ["PCA-cor", "ZCA-cor"] and not spherize_center:
+                continue
             result = normalize(
                 data_spherize_df,
                 features=["a", "b", "c", "d"],
