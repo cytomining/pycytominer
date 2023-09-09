@@ -48,7 +48,7 @@ def test_low_variance_spherize():
     spherize_methods = ["PCA-cor", "ZCA-cor"]
     for method in spherize_methods:
         for center in [True, False]:
-            if method in ["PCA-cor", "ZCA-cor"]:
+            if method in ["PCA-cor", "ZCA-cor"] and not center:
                 continue
             scaler = Spherize(method=method, center=center)
             with pytest.raises(ValueError) as errorinfo:
