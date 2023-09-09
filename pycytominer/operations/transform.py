@@ -82,6 +82,10 @@ class Spherize(BaseEstimator, TransformerMixin):
             # data. So, we first standardize the data, then compute the projection
 
             self.standard_scaler = StandardScaler().fit(X)
+            variances = self.standard_scaler.var_
+            if np.any(variances == 0):
+                raise ValueError("Divide by zero error, make sure low variance columns are removed")
+
             X = self.standard_scaler.transform(X)
         else:
             if self.center:
