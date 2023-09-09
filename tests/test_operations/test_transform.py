@@ -41,6 +41,7 @@ def test_spherize():
 
             assert int(result) == expected_result
 
+
 def test_low_variance_spherize():
     err_str = "Divide by zero error, make sure low variance columns are removed"
     data_no_variance = data_df.assign(e=1)

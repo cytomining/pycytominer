@@ -84,7 +84,9 @@ class Spherize(BaseEstimator, TransformerMixin):
             self.standard_scaler = StandardScaler().fit(X)
             variances = self.standard_scaler.var_
             if np.any(variances == 0):
-                raise ValueError("Divide by zero error, make sure low variance columns are removed")
+                raise ValueError(
+                    "Divide by zero error, make sure low variance columns are removed"
+                )
 
             X = self.standard_scaler.transform(X)
         else:
