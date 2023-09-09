@@ -55,6 +55,7 @@ class Spherize(BaseEstimator, TransformerMixin):
         ), f"Error {method} not supported. Select one of {avail_methods}"
         self.method = method
 
+        # PCA-cor and ZCA-cor require center=True
         assert (
             self.method not in ["PCA-cor", "ZCA-cor"] or self.center
         ), "PCA-cor and ZCA-cor require center=True"
@@ -72,9 +73,14 @@ class Spherize(BaseEstimator, TransformerMixin):
         self
             With computed weights attribute
         """
+        # Get Numpy representation of the DataFrame
         X = X.values
 
         if self.method in ["PCA-cor", "ZCA-cor"]:
+            # The projection matrix for PCA-cor and ZCA-cor is the same as the
+            # projection matrix for PCA and ZCA, respectively, on the standardized
+            # data. So, we first standardize the data, then compute the projection
+
             self.standard_scaler = StandardScaler().fit(X)
             X = self.standard_scaler.transform(X)
         else:
@@ -118,6 +124,7 @@ class Spherize(BaseEstimator, TransformerMixin):
 
         columns = X.columns
 
+        # Get Numpy representation of the DataFrame
         X = X.values
 
         if self.method in ["PCA-cor", "ZCA-cor"]:
