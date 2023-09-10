@@ -174,6 +174,13 @@ def normalize(
 
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
+    assert (
+        feature_df.shape == profiles.loc[:, features].shape
+    ), "Feature dataframe shape does not match original dataframe shape"
+    assert (
+        normalized.shape == profiles.shape
+    ), "Normalized dataframe shape does not match original dataframe shape"
+
     if output_file != None:
         output(
             df=normalized,
