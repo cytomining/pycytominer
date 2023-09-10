@@ -177,8 +177,9 @@ def normalize(
     assert (
         feature_df.shape == profiles.loc[:, features].shape
     ), "Feature dataframe shape does not match original dataframe shape"
-    assert (
-        normalized.shape == profiles.shape
+
+    assert (normalized.shape[0] == profiles.shape[0]) and (
+        normalized.shape[1] == len(features) + len(meta_features)
     ), "Normalized dataframe shape does not match original dataframe shape"
 
     if output_file != None:
