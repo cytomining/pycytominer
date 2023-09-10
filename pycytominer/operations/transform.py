@@ -96,19 +96,39 @@ class Spherize(BaseEstimator, TransformerMixin):
                 )
                 X = self.mean_centerer.transform(X)
 
-        # Get the number of observations
-        N = X.shape[0]
+        # Get the number of observations and variables
+        n, d = X.shape
+
+        # compute the rank of the matrix X
+        r = np.linalg.matrix_rank(X)
+
+        assert (r == n - 1) | (r == d), "X is not full rank"
 
         # Get the eigenvalues and eigenvectors of the covariance matrix using SVD
-        _, Sigma, Vt = np.linalg.svd(X, full_matrices=False)
+        _, Sigma, Vt = np.linalg.svd(X, full_matrices=True)
+
+        # if n <= d then Sigma has shape (n,) so it will need to be expanded to
+        # d filled with the value r'th element of Sigma
+        if n <= d:
+            assert Sigma.shape[0] == n, "Unexpected shape of Sigma"
+            assert r == n - 1, "Unexpected rank"
+            Sigma = np.concatenate((Sigma[0:r], np.repeat(Sigma[r - 1], d - r)))
 
         Sigma = Sigma + self.epsilon
 
-        self.W = (Vt / Sigma[:, np.newaxis]).transpose() * np.sqrt(N - 1)
+        self.W = (Vt / Sigma[:, np.newaxis]).transpose() * np.sqrt(n - 1)
 
         # If ZCA, perform additional rotation
         if self.method in ["ZCA", "ZCA-cor"]:
+            # If rank is not d then ZCA is not possible
+            # TODO: Explain this better
+            assert r == d, "ZCA is not possible if rank is not d"
             self.W = self.W @ Vt
+
+        # number of columns of self.W should be equal to that of X
+        assert (
+            self.W.shape[1] == X.shape[1]
+        ), f"Error: W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
 
         return self
 
