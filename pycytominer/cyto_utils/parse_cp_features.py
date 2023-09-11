@@ -121,6 +121,7 @@ def parse_cp_features(
             channel = parts[3]
 
         else:
+            feature_group = "XUNKNOWN"
             feature_type = "XUNKNOWN"
             channel = "XUNKNOWN"
 
