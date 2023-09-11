@@ -152,8 +152,11 @@ def drop_outlier_features(
         DataFrame that includes metadata and observation features.
     features : list of str or str, default "infer"
         Features present in the population dataframe. If "infer", then assume Cell Painting features are those that start with "Cells_", "Nuclei_", or "Cytoplasm_"
-    samples : list of str or str, default "all"
-        Samples to perform the operation on
+    samples : str, default "all"
+        List of samples to perform operation on. The function uses a pd.DataFrame.query()
+        function, so you should  structure samples in this fashion. An example is
+        "Metadata_treatment == 'control'" (include all quotes).
+        If "all", use all samples to calculate.
     outlier_cutoff : int or float, default 500
     see https://github.com/cytomining/pycytominer/issues/237 for details.
         Threshold to remove features if absolute values is greater
@@ -166,7 +169,7 @@ def drop_outlier_features(
 
     # Subset dataframe
     if samples != "all":
-        population_df = population_df.loc[samples, :]
+        population_df.query(samples, inplace=True)
 
     if features == "infer":
         features = infer_cp_features(population_df)

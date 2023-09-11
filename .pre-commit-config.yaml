@@ -4,7 +4,12 @@ repos:
     hooks:
       - id: black
         language_version: python3.9
+        exclude: tutorials/nbconverted/
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: "v2.7.1"
     hooks:
       - id: prettier
+  - repo: https://github.com/python-poetry/poetry
+    rev: "1.5.1"
+    hooks:
+      - id: poetry-check

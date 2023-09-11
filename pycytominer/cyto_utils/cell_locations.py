@@ -431,7 +431,7 @@ class CellLocation:
 
         # If self.augmented_metadata_output is not None, save the data
         if self.augmented_metadata_output is not None:
-            # TODO: switch to https://github.com/cytomining/pycytominer/blob/master/pycytominer/cyto_utils/output.py if we want to support more file types
+            # TODO: switch to https://github.com/cytomining/pycytominer/blob/main/pycytominer/cyto_utils/output.py if we want to support more file types
             augmented_metadata_df.to_parquet(
                 self.augmented_metadata_output, index=False
             )

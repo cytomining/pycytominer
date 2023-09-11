@@ -3,6 +3,7 @@ sphinx-autobuild
 sphinx-autoapi
 groundwork-sphinx-theme
 sphinx_copybutton
+nbsphinx
 m2r2
 furo
 

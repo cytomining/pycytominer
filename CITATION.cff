@@ -38,7 +38,7 @@ authors:
   - family-names: Singh
     given-names: Shantanu
     orcid: https://orcid.org/0000-0003-3150-3025
-title: "Pycytominer: Data processing functions for profiling perturbations"
-version: 0.1
+title: "Pycytominer: Python package for processing image-based profiling data"
+version: "0.3.0"
 license: BSD 3-Clause License
 repository-code: "https://github.com/cytomining/pycytominer"
