@@ -54,6 +54,7 @@ optional = true
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "*"
+sphinx = "~7.1"
 
 [build-system]
 requires = ["poetry-core"]
