@@ -16,10 +16,6 @@ build:
       # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
       - poetry install --with docs
 
-python:
-  install:
-    - requirements: docs/requirements.txt
-
 sphinx:
   builder: html
   configuration: docs/conf.py
