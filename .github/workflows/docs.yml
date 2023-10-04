@@ -1,17 +1,18 @@
 name: readthedocs-preview
 on:
+  # Runs when pull requests are opened that affect the docs or the lock file
   pull_request_target:
     types:
       - opened
     paths:
       - "docs/**"
       - poetry.lock
-      - pyproject.toml
 
 permissions:
   pull-requests: write
 
 jobs:
+  # Adds a link to the preview of the docs on readthedocs to the pull request description
   pull-request-links:
     runs-on: ubuntu-latest
     steps:
