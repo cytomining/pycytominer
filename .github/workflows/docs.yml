@@ -1,6 +1,8 @@
 name: readthedocs-preview
 on:
-  pull_request:
+  pull_request_target:
+    types:
+      - opened
     paths:
       - "docs/**"
       - poetry.lock
