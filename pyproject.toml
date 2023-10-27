@@ -48,6 +48,7 @@ pytest = ">=5.0.1"
 codecov = ">=2.1.12"
 pytest-cov = "^4.1.0"
 pre-commit = ">=3.3.2"
+commitizen = "^3.12.0"
 
 [tool.poetry.group.docs]
 optional = true
@@ -65,6 +66,14 @@ m2r2 = "^0.3.3.post2"
 furo = "^2023.9.10"
 mock = "^5.1.0"
 autodoc = "^0.5.0"
+
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "poetry"
+update_changelog_on_bump = true
 
 [build-system]
 requires = ["poetry-core"]

@@ -179,16 +179,15 @@ Please follow all style guides to the best of your abilities.
 
 ### Git commit messages
 
-For all commit messages, please use a short phrase that describes the specific change.
-For example, “Add feature to check normalization method string” is much preferred to “change code”.
-When appropriate, reference issues (via `#` plus number) .
+Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
+We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the poetry dev dependencies.
 
 ### Python style guide
 
 For python code style, we use [black](https://github.com/psf/black).
 Please use black before committing any code.
 We will not accept code contributions that do not use black.
-If you have set up your development environment using one of the dev container options specified above, the containers will install all required formatting tools, which will run automatically on any modified files before commits (using a tool called [pre-commit](https://pre-commit.com/)).
+Configuring your [dev environment](#dev-environments) as described above will ensure your code is formatted correctly automatically (using a tool called [pre-commit](https://pre-commit.com/)).
 
 ### Documentation style guide
 
