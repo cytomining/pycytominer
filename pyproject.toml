@@ -3,22 +3,36 @@ name = "pycytominer"
 version = "0.3.0"
 description = "Python package for processing image-based profiling data"
 authors = [
-    "Gregory Way <gregory.way@gmail.com>",
-    "Chandrasekaran, Srinivas Niranj",
-    "Michael Bornhold",
+    "Erik Serrano",
+    "Niranj Chandrasekaran",
+    "Dave Bunten",
+    "Kenneth I. Brewer",
+    "Jenna Tomkinson",
+    "Roshan Kern",
+    "Michael Bornholdt",
     "Stephen Fleming",
+    "Ruifan Pei",
+    "John Arevalo",
     "Hillary Tsang",
-    "Adeniyi Adeboye",
-    "Beth Cimini",
+    "Vincent Rubinetti",
     "Erin Weisbart",
-    "Pearl Ryder",
-    "David Stirling",
+    "Charlotte Bunne",
+    "Alexandr A. Kalinin",
+    "Rebecca Senft",
+    "Stephen J. Taylor",
     "Nasim Jamali",
-    "Anne Carpenter",
+    "Adeniyi Adeboye",
+    "Allen Goodman",
+    "Juan Caicedo",
+    "Anne E. Carpenter",
+    "Beth A. Cimini",
     "Shantanu Singh",
+    "Gregory P. Way",
 ]
 maintainers = [
-    "Gregory Way <gregory.way@gmail.com>",
+    "Gregory P. Way <gregory.way@cuanschutz.edu>",
+    "Dave Bunten <dave.bunten@cuanschutz.edu>",
+    "Kenneth I. Brewer <ken@kenbrewer.com>",
 ]
 license = "BSD-3-Clause"
 readme = "README.md"

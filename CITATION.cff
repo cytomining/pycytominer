@@ -1,44 +1,71 @@
 cff-version: 1.2.0
 message: "If you have used pycytominer in your project, please cite us as:"
 authors:
-  - family-names: Way
-    given-names: Gregory
-    orcid: https://orcid.org/0000-0002-0503-9348
+  - family-names: Serrano
+    given-names: Erik
+    orcid: https://orcid.org/0000-0003-4188-9080
   - family-names: Chandrasekaran
-    given-names: Srinivas Niranj
+    given-names: Niranj
     orcid: https://orcid.org/0000-0001-8874-9988
+  - family-names: Bunten
+    given-names: Dave
+    orcid: https://orcid.org/0000-0001-6041-3665
+  - family-names: Brewer
+    given-names: Kenneth
+    orcid: https://orcid.org/0000-0003-4030-0254
+  - family-names: Tomkinson
+    given-names: Jenna
+    orcid: https://orcid.org/0000-0003-2676-5813
+  - family-names: Kern
+    given-names: Roshan
+    orcid: https://orcid.org/0000-0002-5605-4759
   - family-names: Bornholdt
     given-names: Michael
   - family-names: Fleming
     given-names: Stephen
     orcid: https://orcid.org/0000-0002-1885-4405
+  - family-names: Pei
+    given-names: Ruifan
+  - family-names: Arevalo
+    given-names: John
+    orcid: https://orcid.org/0000-0002-1138-5036
   - family-names: Tsang
     given-names: Hillary
-    orcid: https://orcid.org/0000-0001-6461-3402
-  - family-names: Adeboye
-    given-names: Adeniyi
-  - family-names: Cimini
-    given-names: Beth
-    orcid: https://orcid.org/0000-0001-9640-9318
+  - family-names: Rubinetti
+    given-names: Vincent
   - family-names: Weisbart
     given-names: Erin
     orcid: https://orcid.org/0000-0002-6437-2458
-  - family-names: Ryder
-    given-names: Pearl
-    orcid: https://orcid.org/0000-0003-3699-3633
-  - family-names: Stirling
-    given-names: David
-    orcid: https://orcid.org/0000-0001-6802-4103
+  - family-names: Bunne
+    given-names: Charlotte
+  - family-names: Kalinin
+    given-names: Alexandr A.
+  - family-names: Senft
+    given-names: Rebecca
+  - family-names: Taylor
+    given-names: Stephen J.
+    orcid: https://orcid.org/0000-0002-7279-7798
   - family-names: Jamali
     given-names: Nasim
-    orcid: https://orcid.org/0000-0003-1851-6585
+  - family-names: Adeboye
+    given-names: Adeniyi
+  - family-names: Goodman
+    given-names: Allen
+  - family-names: Caicedo
+    given-names: Juan
   - family-names: Carpenter
-    given-names: Anne
+    given-names: Anne E.
     orcid: https://orcid.org/0000-0003-1555-8261
+  - family-names: Cimini
+    given-names: Beth A.
+    orcid: https://orcid.org/0000-0001-9640-9318
   - family-names: Singh
     given-names: Shantanu
     orcid: https://orcid.org/0000-0003-3150-3025
-title: "Pycytominer: Python package for processing image-based profiling data"
+  - family-names: Way
+    given-names: Gregory P.
+    orcid: https://orcid.org/0000-0002-0503-9348
+title: "Reproducible processing of image-based profiling representations with Pycytominer"
 version: "0.3.0"
 license: BSD 3-Clause License
 repository-code: "https://github.com/cytomining/pycytominer"
