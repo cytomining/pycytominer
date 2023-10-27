@@ -3,6 +3,9 @@
 {
   "name": "Pycytominer Dev",
   "image": "mcr.microsoft.com/devcontainers/python:0-3.11",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+  },
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
   // Configure tool-specific properties.
