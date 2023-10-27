@@ -1,0 +1,45 @@
+name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+on: [release]
+
+env:
+  LANG: "en_US.utf-8"
+  LC_ALL: "en_US.utf-8"
+  PYTHONIOENCODING: "UTF-8"
+  TARGET_PYTHON_VERSION: "3.9"
+
+jobs:
+  build-and-publish:
+    name: Build and publish Python 🐍 distributions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # We do not need to fetch all the history of the repository
+          # as commit being released is guaranteed to have a tag.
+          # poetry-dynamic-versioning will use that tag use to set the
+          # build version of the package.
+          fetch-depth: 1
+      - name: Setup base environment
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: false
+          setup-poetry: true
+          install-deps: false
+      - name: Build 📦 distributions
+        run: |
+          poetry build
+      - name: Publish any distribution 📦 to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - name: Publish tagged distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        if: startsWith(github.ref, 'refs/tags')
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

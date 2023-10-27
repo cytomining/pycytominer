@@ -109,7 +109,7 @@ def consensus(
             population_df=profiles,
             replicate_columns=replicate_columns,
             features=features,
-            **modz_args
+            **modz_args,
         )
     else:
         consensus_df = aggregate(
