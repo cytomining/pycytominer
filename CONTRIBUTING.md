@@ -143,20 +143,15 @@ Instructions for setting up a local development environment using VSCode DevCont
 
 #### Cloud environment
 
-We've set up cloud development configurations with both [Github Codespaces](https://github.com/codespaces) and [GitPod](https://www.gitpod.io/).
+We've set up cloud development configurations with [Github Codespaces](https://github.com/codespaces).
 These development environments include the project dependencies pre-installed via [Poetry](https://python-poetry.org/).
 Prior to commit, pre-installed git hooks auto-format any changed code.
-Using a pre-built cloud development environment is an easy way to get started contributing to pycytominer, and both Gitpod and Codespaces have generous free usage tiers.
 When you are ready to make a pull request, use the pre-configured test suite in VSCode or run `poetry run pytest` to ensure that your changes pass all tests.
-You can launch these cloud environments by clicking on the following links:
+You can create a codespace by clicking on the following link:
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://open.vscode.dev/cytomining/pycytominer)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/?repo=195106954&ref=main&devcontainer_path=.devcontainer%2Fdevcontainer.json)
 
 [Beginner's Guide to Codespaces](https://github.blog/2023-02-22-a-beginners-guide-to-learning-to-code-with-github-codespaces/)
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/cytomining/pycytominer)
-
-[Beginner's Guide to Gitpod](https://www.gitpod.io/docs/introduction/getting-started)
 
 #### Manual setup
 
@@ -169,7 +164,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 # Checkout the repository
 git clone https://github.com/cytomining/pycytominer.git
 cd pycytominer
-# Install pycytominer using poetry mode along with associated dev tools
+# Install pycytominer, dev dependencies, and pre-commit hooks
 bash .devcontainer/postCreateCommand.sh
 ```
 
