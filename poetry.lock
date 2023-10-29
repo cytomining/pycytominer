@@ -269,6 +269,20 @@ files = [
 ]
 
 [[package]]
+name = "argcomplete"
+version = "3.1.2"
+description = "Bash tab completion for argparse"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "argcomplete-3.1.2-py3-none-any.whl", hash = "sha256:d97c036d12a752d1079f190bc1521c545b941fda89ad85d15afa909b4d1b9a99"},
+    {file = "argcomplete-3.1.2.tar.gz", hash = "sha256:d5d1e5efd41435260b8f85673b74ea2e883affcbec9f4230c582689e8e78251b"},
+]
+
+[package.extras]
+test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
+
+[[package]]
 name = "astroid"
 version = "3.0.1"
 description = "An abstract syntax tree for Python with inference support."
@@ -700,6 +714,30 @@ files = [
 ]
 
 [[package]]
+name = "commitizen"
+version = "3.12.0"
+description = "Python commitizen client tool"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "commitizen-3.12.0-py3-none-any.whl", hash = "sha256:082f4733409bc4f01f987467295f8393ceb16b42cc648cf2f5a7a754c6d594db"},
+    {file = "commitizen-3.12.0.tar.gz", hash = "sha256:7c313f1f85f45c9acf1a70f1637deab5c388150ae8660a0037ac260e77bb1492"},
+]
+
+[package.dependencies]
+argcomplete = ">=1.12.1,<3.2"
+charset-normalizer = ">=2.1.0,<4"
+colorama = ">=0.4.1,<0.5.0"
+decli = ">=0.6.0,<0.7.0"
+importlib_metadata = ">=4.13,<7"
+jinja2 = ">=2.10.3"
+packaging = ">=19"
+pyyaml = ">=3.08"
+questionary = ">=2.0,<3.0"
+termcolor = ">=1.1,<3"
+tomlkit = ">=0.5.3,<1.0.0"
+
+[[package]]
 name = "configparser"
 version = "6.0.0"
 description = "Updated configparser from stdlib for earlier Pythons."
@@ -835,6 +873,17 @@ files = [
 ]
 
 [[package]]
+name = "decli"
+version = "0.6.1"
+description = "Minimal, easy-to-use, declarative cli tool"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "decli-0.6.1-py3-none-any.whl", hash = "sha256:7815ac58617764e1a200d7cadac6315fcaacc24d727d182f9878dd6378ccf869"},
+    {file = "decli-0.6.1.tar.gz", hash = "sha256:ed88ccb947701e8e5509b7945fda56e150e2ac74a69f25d47ac85ef30ab0c0f0"},
+]
+
+[[package]]
 name = "decorator"
 version = "5.1.1"
 description = "Decorators for Humans"
@@ -944,19 +993,19 @@ devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benc
 
 [[package]]
 name = "filelock"
-version = "3.12.4"
+version = "3.13.0"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "filelock-3.12.4-py3-none-any.whl", hash = "sha256:08c21d87ded6e2b9da6728c3dff51baf1dcecf973b768ef35bcbc3447edb9ad4"},
-    {file = "filelock-3.12.4.tar.gz", hash = "sha256:2e6f249f1f3654291606e046b09f1fd5eac39b360664c27f5aad072012f8bcbd"},
+    {file = "filelock-3.13.0-py3-none-any.whl", hash = "sha256:a552f4fde758f4eab33191e9548f671970f8b06d436d31388c9aa1e5861a710f"},
+    {file = "filelock-3.13.0.tar.gz", hash = "sha256:63c6052c82a1a24c873a549fbd39a26982e8f35a3016da231ead11a5be9dad44"},
 ]
 
 [package.extras]
-docs = ["furo (>=2023.7.26)", "sphinx (>=7.1.2)", "sphinx-autodoc-typehints (>=1.24)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.3)", "diff-cover (>=7.7)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)", "pytest-timeout (>=2.1)"]
-typing = ["typing-extensions (>=4.7.1)"]
+docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.24)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
+typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "fire"
@@ -1197,13 +1246,13 @@ Sphinx = ">=1.6.1"
 
 [[package]]
 name = "identify"
-version = "2.5.30"
+version = "2.5.31"
 description = "File identification library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.30-py2.py3-none-any.whl", hash = "sha256:afe67f26ae29bab007ec21b03d4114f41316ab9dd15aa8736a167481e108da54"},
-    {file = "identify-2.5.30.tar.gz", hash = "sha256:f302a4256a15c849b91cfcdcec052a8ce914634b2f77ae87dad29cd749f2d88d"},
+    {file = "identify-2.5.31-py2.py3-none-any.whl", hash = "sha256:90199cb9e7bd3c5407a9b7e81b4abec4bb9d249991c79439ec8af740afc6293d"},
+    {file = "identify-2.5.31.tar.gz", hash = "sha256:7736b3c7a28233637e3c36550646fc6389bedd74ae84cb788200cc8e2dd60b75"},
 ]
 
 [package.extras]
@@ -2272,13 +2321,13 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.39"
+version = "3.0.36"
 description = "Library for building powerful interactive command lines in Python"
 optional = false
-python-versions = ">=3.7.0"
+python-versions = ">=3.6.2"
 files = [
-    {file = "prompt_toolkit-3.0.39-py3-none-any.whl", hash = "sha256:9dffbe1d8acf91e3de75f3b544e4842382fc06c6babe903ac9acb74dc6e08d88"},
-    {file = "prompt_toolkit-3.0.39.tar.gz", hash = "sha256:04505ade687dc26dc4284b1ad19a83be2f2afe83e7a828ace0c72f3a1df72aac"},
+    {file = "prompt_toolkit-3.0.36-py3-none-any.whl", hash = "sha256:aa64ad242a462c5ff0363a7b9cfe696c20d55d9fc60c11fd8e632d064804d305"},
+    {file = "prompt_toolkit-3.0.36.tar.gz", hash = "sha256:3e163f254bef5a03b146397d7c1963bd3e2812f0964bb9a24e6ec761fd28db63"},
 ]
 
 [package.dependencies]
@@ -2668,6 +2717,20 @@ files = [
 
 [package.dependencies]
 cffi = {version = "*", markers = "implementation_name == \"pypy\""}
+
+[[package]]
+name = "questionary"
+version = "2.0.1"
+description = "Python library to build pretty command line user prompts ⭐️"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "questionary-2.0.1-py3-none-any.whl", hash = "sha256:8ab9a01d0b91b68444dff7f6652c1e754105533f083cbe27597c8110ecc230a2"},
+    {file = "questionary-2.0.1.tar.gz", hash = "sha256:bcce898bf3dbb446ff62830c86c5c6fb9a22a54146f0f5597d3da43b10d8fc8b"},
+]
+
+[package.dependencies]
+prompt_toolkit = ">=2.0,<=3.0.36"
 
 [[package]]
 name = "referencing"
@@ -3290,7 +3353,7 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 name = "termcolor"
 version = "2.3.0"
 description = "ANSI color formatting for output in terminal"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "termcolor-2.3.0-py3-none-any.whl", hash = "sha256:3afb05607b89aed0ffe25202399ee0867ad4d3cb4180d98aaf8eefa6a5f7d475"},
@@ -3349,6 +3412,17 @@ python-versions = ">=3.7"
 files = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
+]
+
+[[package]]
+name = "tomlkit"
+version = "0.12.1"
+description = "Style preserving TOML library"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tomlkit-0.12.1-py3-none-any.whl", hash = "sha256:712cbd236609acc6a3e2e97253dfc52d4c2082982a88f61b640ecf0817eab899"},
+    {file = "tomlkit-0.12.1.tar.gz", hash = "sha256:38e1ff8edb991273ec9f6181244a6a391ac30e9f5098e7535640ea6be97a7c86"},
 ]
 
 [[package]]
@@ -3782,4 +3856,4 @@ collate = ["cytominer-database"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8"
-content-hash = "37210b7c88b10acf03a97d5d0603ef1a0aaacdab12bd6a7c5aa14a7b7d0ea021"
+content-hash = "8cf2b95830b6f167fe5bf383567a41761649b500cd6a4830753f8904578b995d"
