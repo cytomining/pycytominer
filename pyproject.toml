@@ -1,6 +1,7 @@
 [tool.poetry]
 name = "pycytominer"
-version = "0.3.0"
+# This version is a placeholder updated during build by poetry-dynamic-versioning
+version = "0.0.0"
 description = "Python package for processing image-based profiling data"
 authors = [
     "Erik Serrano",
@@ -84,9 +85,25 @@ furo = "^2023.9.10"
 mock = "^5.1.0"
 autodoc = "^0.5.0"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
+vcs = "git"
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["pycytominer/__about__.py"]
+
+[tool.commitizen]
+# This version is used for changelog tracking and is updated using `cz bump`
+version = "0.2.0"
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "commitizen"
+update_changelog_on_bump = true
+version_files = [
+    "CITATION.cff"
+]
 
 [tool.black]
 line-length = 88
@@ -94,3 +111,7 @@ target-version = ['py39']
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+
+[build-system]
+requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.1.0"]
+build-backend = "poetry_dynamic_versioning.backend"
