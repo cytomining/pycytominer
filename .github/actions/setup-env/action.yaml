@@ -30,14 +30,15 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
-    - name: Generate Cache Key PY
+    - name: Generate Cache Key PY (Linux)
       # The cache key PY is a hash of the Python version and the
       # output of `pip freeze` (the installed packages).
       # This ensures that the cache is invalidated when the Python
       # version or the default packages change. Both of the remaining
       # cache keys depend on PY.
       shell: bash
-      run: echo "PY=$((python -VV; pip freeze) | sha256sum | cut -d' ' -f1)" >>
+      run:
+        echo "PY=$((python -VV; pip freeze) | shasum -a 256 | cut -d' ' -f1)" >>
         $GITHUB_ENV
     - name: Cache pre-commit installation
       # The cache key for the pre-commit installation is a hash of the
