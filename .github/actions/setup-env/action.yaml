@@ -1,0 +1,78 @@
+name: Setup Environment and Cache
+description: |
+  A reusable composite action to setup the environment for a job.
+  This action will:
+  - Setup Python
+  - Cache the pre-commit installation
+  - Cache the virtual environment
+  - Setup poetry
+  - Install dependencies
+inputs:
+  python-version:
+    description: The version of Python to use (passed to actions/setup-python)
+    required: true
+  cache-pre-commit:
+    description: Whether to cache the pre-commit installation
+    required: true
+  cache-venv:
+    description: Whether to cache the virtual environment
+    required: true
+  setup-poetry:
+    description: Whether to setup poetry
+    required: true
+  install-deps:
+    description: Whether to install dependencies
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Generate Cache Key PY (Linux)
+      # The cache key PY is a hash of the Python version and the
+      # output of `pip freeze` (the installed packages).
+      # This ensures that the cache is invalidated when the Python
+      # version or the default packages change. Both of the remaining
+      # cache keys depend on PY.
+      shell: bash
+      run:
+        echo "PY=$((python -VV; pip freeze) | shasum -a 256 | cut -d' ' -f1)" >>
+        $GITHUB_ENV
+    - name: Cache pre-commit installation
+      # The cache key for the pre-commit installation is a hash of the
+      # operating system, PY (see above), and the pre-commit config.
+      # This allows for caching the pre-commit hook installation across
+      # jobs and workflows.
+      if: ${{ inputs.cache-pre-commit == 'true' }}
+      uses: actions/cache@v3
+      with:
+        path: |
+          .cache
+          pre-commit
+        key: cache|${{ runner.os }}|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+    - name: Cache venv
+      # The cache key for the virtual environment is a hash of the
+      # operating system, PY (see above), the pyproject.toml and
+      # the poetry.lock file. This allows for caching the virtual
+      # environment with all the dependencies.
+      if: ${{ inputs.cache-venv == 'true' }}
+      uses: actions/cache@v3
+      with:
+        path: |
+          .cache
+          .venv
+        key:
+          cache|${{ runner.os }}|${{ env.PY }}|${{ hashFiles('pyproject.toml') }}|${{
+          hashFiles('poetry.lock') }}
+    - name: Setup poetry and poetry-dynamic-versioning
+      shell: bash
+      if: ${{ inputs.setup-poetry == 'true' }}
+      run: |
+        python -m pip install poetry poetry-dynamic-versioning
+    - name: Install dependencies with poetry
+      shell: bash
+      if: ${{ inputs.install-deps == 'true' }}
+      run: |
+        poetry install --with dev,docs --all-extras -v --no-interaction
