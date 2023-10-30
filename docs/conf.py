@@ -13,7 +13,7 @@
 import os
 import sys
 import pathlib
-import yaml
+import dunamai
 from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -28,9 +28,9 @@ copyright = "Copyright 2019 - {date} {author}".format(
     date=date.today().year, author=author
 )
 
-# The version from CITATION.cff is used to set the version of the package
-cff_path = pathlib.Path("..") / "CITATION.cff"
-version = yaml.safe_load(cff_path.read_text())["version"]
+# Get the version from dunamai (the backend of poetry-dynamic-versioning)
+auto_version = dunamai.Version.from_git()
+version = auto_version.serialize()
 release = version
 
 # -- General configuration ---------------------------------------------------
