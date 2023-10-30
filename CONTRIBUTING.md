@@ -21,6 +21,7 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Documentation](#documentation)
 - [Poetry](#poetry)
 - [Dev environments](#dev-environments)
+- [Releases](#releases)
 
 [Style guides](#style-guides)
 
@@ -167,6 +168,24 @@ cd pycytominer
 # Install pycytominer, dev dependencies, and pre-commit hooks
 bash .devcontainer/postCreateCommand.sh
 ```
+
+### Releases
+
+Project maintainers are responsible for releasing new versions of pycytominer.
+Creating a new release includes the following steps:
+
+1. Create a new branch from `main` for the release (e.g. `release-v1.0.0`)
+2. Run the command `cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen`.
+3. Review the changes to CHANGELOG.md and edit as needed.
+4. Review the [commit history](https://github.com/cytomining/pycytominer/compare) from the last release and add documentation for changes that weren't auto-included because they didn't follow the conventional-commit standard.
+5. `git add` all changes and run `cz bump` to create the release commit.
+6. Create a pull request for the release branch into `main`.
+7. Request a review from another maintainer.
+8. Once the pull request is approved, merge it into `main`.
+9. Create a new release on GitHub using the [release draft](https://github.com/cytomining/pycytominer/releases/new) feature.
+10. Publish the release.
+11. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via Github Actions.
+12. Manually create the release at [conda-forge](https://anaconda.org/conda-forge/pycytominer).
 
 ## Style guides
 
