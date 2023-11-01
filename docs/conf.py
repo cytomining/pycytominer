@@ -13,6 +13,7 @@
 import os
 import sys
 import pathlib
+import yaml
 from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -27,8 +28,9 @@ copyright = "Copyright 2019 - {date} {author}".format(
     date=date.today().year, author=author
 )
 
-# The full version, including alpha/beta/rc tags
-version = pycytominer.__about__.__version__
+# The version from CITATION.cff is used to set the version of the package
+cff_path = pathlib.Path("..") / "CITATION.cff"
+version = yaml.safe_load(cff_path.read_text())["version"]
 release = version
 
 # -- General configuration ---------------------------------------------------

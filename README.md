@@ -2,7 +2,7 @@
 
 # Data processing for image-based profiling
 
-[![Build Status](https://travis-ci.org/cytomining/pycytominer.svg?branch=main)](https://travis-ci.org/cytomining/pycytominer)
+[![Build Status](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml/badge.svg?branch=main)](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml?query=branch%3Amain)
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/main/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
