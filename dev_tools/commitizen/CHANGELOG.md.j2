@@ -1,0 +1,23 @@
+{# Adapted from https://github.com/commitizen-tools/commitizen/blob/1d842b5d823a452109070f8af8857249e95f7713/commitizen/templates/CHANGELOG.md.j2 #}
+{% for entry in tree %}
+
+## {{ entry.version }}{% if entry.date %} ({{ entry.date }}){% endif %}
+
+{# Add link to the detailed GitHub release notes #}
+[Detailed Release Notes](https://github.com/cytomining/pycytominer/releases/tag/{{ entry.version }})
+
+{% for change_key, changes in entry.changes.items() %}
+
+{% if change_key %}
+### {{ change_key }}
+{% endif %}
+
+{% for change in changes %}
+{% if change.scope %}
+- **{{ change.scope }}**: {{ change.message }}
+{% elif change.message %}
+- {{ change.message }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endfor %}

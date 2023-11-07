@@ -103,6 +103,7 @@ tag_format = "v$version"
 version_scheme = "pep440"
 version_provider = "commitizen"
 update_changelog_on_bump = true
+template = "dev_tools/commitizen/CHANGELOG.md.j2"
 version_files = [
     "CITATION.cff"
 ]
