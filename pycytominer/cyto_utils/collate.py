@@ -3,8 +3,6 @@ import pathlib
 import subprocess
 import sys
 import sqlite3
-import cytominer_database.ingest
-import cytominer_database.munge
 
 
 def run_check_errors(cmd):
@@ -71,6 +69,17 @@ def collate(
     """
 
     from pycytominer.cyto_utils.cells import SingleCells
+
+    # Check if optional dependency cytominer-database is installed
+    try:
+        import cytominer_database.ingest
+        import cytominer_database.munge
+    except ImportError:
+        raise ImportError(
+            """Optional dependency cytominer-database is not installed. 
+            Please install the `collate` optional dependency group: e.g. `pip install pycytominer[collate]`
+            """
+        )
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
     input_dir = pathlib.Path(f"{base_directory}/analysis/{batch}/{plate}/{csv_dir}")
