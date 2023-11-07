@@ -928,6 +928,20 @@ files = [
 ]
 
 [[package]]
+name = "dunamai"
+version = "1.19.0"
+description = "Dynamic version generation"
+optional = false
+python-versions = ">=3.5,<4.0"
+files = [
+    {file = "dunamai-1.19.0-py3-none-any.whl", hash = "sha256:1ed948676bbf0812bfaafe315a134634f8d6eb67138513c75aa66e747404b9c6"},
+    {file = "dunamai-1.19.0.tar.gz", hash = "sha256:6ad99ae34f7cd290550a2ef1305d2e0292e6e6b5b1b830dfc07ceb7fd35fec09"},
+]
+
+[package.dependencies]
+packaging = ">=20.9"
+
+[[package]]
 name = "entrypoints"
 version = "0.4"
 description = "Discover and load entry points from installed packages."
@@ -2157,8 +2171,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
-    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -3855,5 +3869,5 @@ collate = ["cytominer-database"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.8"
-content-hash = "8cf2b95830b6f167fe5bf383567a41761649b500cd6a4830753f8904578b995d"
+python-versions = ">=3.8,<4.0"
+content-hash = "190d54fe1dc6ec399bb66ab4777376b2b0ebbacc04a8ada0ee39350d93c5e72d"
