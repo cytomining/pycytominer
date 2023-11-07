@@ -1,3 +1,12 @@
+## v1.0.1 (2023-11-07)
+
+[Detailed Release Notes](https://github.com/cytomining/pycytominer/releases/tag/v1.0.1)
+
+### Fix
+
+- **docs**: add dynamic versioning to docs build
+- **collate**: move optional dep import to function
+
 ## v1.0.0 (2023-10-29)
 
 [Detailed Release Notes](https://github.com/cytomining/pycytominer/releases/tag/v1.0.0)

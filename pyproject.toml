@@ -97,7 +97,7 @@ files = ["pycytominer/__about__.py"]
 
 [tool.commitizen]
 # This version is used for changelog tracking and is updated using `cz bump`
-version = "1.0.0"
+version = "1.0.1"
 name = "cz_conventional_commits"
 tag_format = "v$version"
 version_scheme = "pep440"
