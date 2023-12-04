@@ -212,5 +212,5 @@ You can also find the citation in the 'cite this repository' link at the top rig
 APA:
 
 ```text
-Serrano, E., Chandrasekaran, N., Bunten, D., Brewer, K., Tomkinson, J., Kern, R., Bornholdt, M., Fleming, S., Pei, R., Arevalo, J., Tsang, H., Rubinetti, V., Tromans-Coia, C., Becker, T., Weisbart, E., Bunne, C., Kalinin, A. A., Senft, R., Taylor, S. J., Jamali, N., Adeboye, A., Abbasi, H. S., Goodman, A., Caicedo, J., Carpenter, A. E., Cimini, B. A., Singh, S., & Way, G. P. Reproducible image-based profiling with Pycytominer (Version 1.0.1) [Computer software]. https://doi.org/10.48550/arXiv.2311.13417
+Serrano, E., Chandrasekaran, N., Bunten, D., Brewer, K., Tomkinson, J., Kern, R., Bornholdt, M., Fleming, S., Pei, R., Arevalo, J., Tsang, H., Rubinetti, V., Tromans-Coia, C., Becker, T., Weisbart, E., Bunne, C., Kalinin, A. A., Senft, R., Taylor, S. J., Jamali, N., Adeboye, A., Abbasi, H. S., Goodman, A., Caicedo, J., Carpenter, A. E., Cimini, B. A., Singh, S., & Way, G. P. Reproducible image-based profiling with Pycytominer. https://doi.org/10.48550/arXiv.2311.13417
 ```
