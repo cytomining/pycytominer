@@ -6,6 +6,7 @@
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/main/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
+[![DOI](https://img.shields.io/badge/DOI-10.48550/arXiv.2311.13417-blue)](https://doi.org/10.48550/arXiv.2311.13417)
 
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
@@ -110,9 +111,17 @@ And, more specifically than that, image-based profiling readouts from [CellProfi
 
 Therefore, we have included some custom tools in `pycytominer/cyto_utils` that provides other functionality:
 
-- [CellProfiler CSV collation](#CellProfiler-CSV-collation)
-- [Cell locations lookup table generation](#Creating-a-cell-locations-lookup-table)
-- [Generating gct files for Morpheus visualization](#Generating-a-GCT-file-for-morpheus)
+- [Data processing for image-based profiling](#data-processing-for-image-based-profiling)
+  - [Installation](#installation)
+  - [Frameworks](#frameworks)
+  - [API](#api)
+  - [Usage](#usage)
+    - [Pipeline orchestration](#pipeline-orchestration)
+  - [Other functionality](#other-functionality)
+    - [CellProfiler CSV collation](#cellprofiler-csv-collation)
+    - [Creating a cell locations lookup table](#creating-a-cell-locations-lookup-table)
+    - [Generating a GCT file for morpheus](#generating-a-gct-file-for-morpheus)
+  - [Citing pycytominer](#citing-pycytominer)
 
 Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
 Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
@@ -193,4 +202,15 @@ pycytominer.cyto_utils.write_gct(
     profiles=df,
     output_file=output_file
 )
+```
+
+## Citing pycytominer
+
+If you have used `pycytominer` in your project, please use the citation below.
+You can also find the citation in the 'cite this repository' link at the top right under `about` section.
+
+APA:
+
+```text
+Serrano, E., Chandrasekaran, N., Bunten, D., Brewer, K., Tomkinson, J., Kern, R., Bornholdt, M., Fleming, S., Pei, R., Arevalo, J., Tsang, H., Rubinetti, V., Tromans-Coia, C., Becker, T., Weisbart, E., Bunne, C., Kalinin, A. A., Senft, R., Taylor, S. J., Jamali, N., Adeboye, A., Abbasi, H. S., Goodman, A., Caicedo, J., Carpenter, A. E., Cimini, B. A., Singh, S., & Way, G. P. Reproducible image-based profiling with Pycytominer. https://doi.org/10.48550/arXiv.2311.13417
 ```

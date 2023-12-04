@@ -26,33 +26,51 @@ authors:
     orcid: https://orcid.org/0000-0002-1885-4405
   - family-names: Pei
     given-names: Ruifan
+    orcid: https://orcid.org/0009-0003-4964-2821
   - family-names: Arevalo
     given-names: John
     orcid: https://orcid.org/0000-0002-1138-5036
   - family-names: Tsang
     given-names: Hillary
+    orcid: https://orcid.org/0000-0001-6461-3402
   - family-names: Rubinetti
     given-names: Vincent
+    orcid: https://orcid.org/0000-0002-4655-3773
+  - family-names: Tromans-Coia
+    given-names: Callum
+    orcid: https://orcid.org/0000-0002-5518-8915
+  - family-names: Becker
+    given-names: Tim
+    orcid: https://orcid.org/0000-0001-9615-0799
   - family-names: Weisbart
     given-names: Erin
     orcid: https://orcid.org/0000-0002-6437-2458
   - family-names: Bunne
     given-names: Charlotte
+    orcid: https://orcid.org/0000-0003-1431-103X
   - family-names: Kalinin
     given-names: Alexandr A.
+    orcid: https://orcid.org/0000-0003-4563-3226
   - family-names: Senft
     given-names: Rebecca
+    orcid: https://orcid.org/0000-0003-0081-4170
   - family-names: Taylor
     given-names: Stephen J.
     orcid: https://orcid.org/0000-0002-7279-7798
   - family-names: Jamali
     given-names: Nasim
+    orcid: https://orcid.org/0000-0003-1851-6585
   - family-names: Adeboye
     given-names: Adeniyi
+  - family-names: Abbasi
+    given-names: Hamdah Shafqat
+    orcid: https://orcid.org/0000-0003-0237-0323
   - family-names: Goodman
     given-names: Allen
+    orcid: https://orcid.org/0000-0002-6434-2320
   - family-names: Caicedo
     given-names: Juan
+    orcid: https://orcid.org/0000-0002-1277-4631
   - family-names: Carpenter
     given-names: Anne E.
     orcid: https://orcid.org/0000-0003-1555-8261
@@ -65,8 +83,9 @@ authors:
   - family-names: Way
     given-names: Gregory P.
     orcid: https://orcid.org/0000-0002-0503-9348
-title: "Reproducible processing of image-based profiling representations with Pycytominer"
+title: "Reproducible image-based profiling with Pycytominer"
 # This version is updated using `cz bump` command
 version: "1.0.1"
 license: BSD 3-Clause License
 repository-code: "https://github.com/cytomining/pycytominer"
+doi: 10.48550/arXiv.2311.13417
