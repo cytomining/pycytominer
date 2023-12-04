@@ -206,8 +206,10 @@ pycytominer.cyto_utils.write_gct(
 
 ## Citing pycytominer
 
-If you have used `pycytominer` in your project, please cite us as:
+If you have used `pycytominer` in your project, please use citation below: You can also find the citation in the 'cite this repository' link at the top right under `about` section.
 
-> Erik Serrano, Srinivas Niranj Chandrasekaran, Dave Bunten, Kenneth I. Brewer, Jenna Tomkinson, Roshan Kern, Michael Bornholdt, Stephen Fleming, Ruifan Pei, John Arevalo, Hillary Tsang, Vincent Rubinetti, Callum Tromans-Coia, Tim Becker, Erin Weisbart, Charlotte Bunne, Alexandr A. Kalinin, Rebecca Senft, Stephen J. Taylor, Nasim Jamali, Adeniyi Adeboye, Hamdah Shafqat Abbasi, Allen Goodman, Juan C. Caicedo, Anne E. Carpenter, Beth A. Cimini, Shantanu Singh, Gregory P. Way. ["Reproducible image-based profiling with Pycytominer"](https://arxiv.org/abs/2311.13417) _ArXiv: Quantitative Biology_, 2023
+APA:
 
-> DOI: <https://doi.org/10.48550/arXiv.2311.13417>
+```text
+Serrano, E., Chandrasekaran, N., Bunten, D., Brewer, K., Tomkinson, J., Kern, R., Bornholdt, M., Fleming, S., Pei, R., Arevalo, J., Tsang, H., Rubinetti, V., Tromans-Coia, C., Becker, T., Weisbart, E., Bunne, C., Kalinin, A. A., Senft, R., Taylor, S. J., Jamali, N., Adeboye, A., Abbasi, H. S., Goodman, A., Caicedo, J., Carpenter, A. E., Cimini, B. A., Singh, S., & Way, G. P. Reproducible image-based profiling with Pycytominer (Version 1.0.1) [Computer software]. https://doi.org/10.48550/arXiv.2311.13417
+```
