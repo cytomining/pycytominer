@@ -50,15 +50,15 @@ class Spherize(BaseEstimator, TransformerMixin):
         self.epsilon = epsilon
         self.center = center
 
-        assert (
-            method in avail_methods
-        ), f"Error {method} not supported. Select one of {avail_methods}"
+        if method not in avail_methods:
+            raise ValueError(
+                f"Error {method} not supported. Select one of {avail_methods}"
+            )
         self.method = method
 
         # PCA-cor and ZCA-cor require center=True
-        assert (
-            self.method not in ["PCA-cor", "ZCA-cor"] or self.center
-        ), "PCA-cor and ZCA-cor require center=True"
+        if self.method in ["PCA-cor", "ZCA-cor"] and not self.center:
+            raise ValueError("PCA-cor and ZCA-cor require center=True")
 
     def fit(self, X, y=None):
         """Identify the sphering transform given self.X
@@ -102,7 +102,12 @@ class Spherize(BaseEstimator, TransformerMixin):
         # compute the rank of the matrix X
         r = np.linalg.matrix_rank(X)
 
-        assert (r == n - 1) | (r == d), "X is not full rank"
+        # TODO: Below, we check for r == n-1 (or r == d). But we could also have r == n if X is not centered.
+        # So PCA or ZCA without centering should end up with r == n
+        if (r != n - 1) & (r != d):
+            raise ValueError(
+                "Sphering is not supported when the data matrix X is not full rank. Check for linear dependencies in the data and remove them."
+            )
 
         # Get the eigenvalues and eigenvectors of the covariance matrix using SVD
         _, Sigma, Vt = np.linalg.svd(X, full_matrices=True)
