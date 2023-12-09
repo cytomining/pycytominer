@@ -2,8 +2,10 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
   "name": "Pycytominer Dev",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "mcr.microsoft.com/devcontainers/python:0-3.11",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+  },
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
   // Configure tool-specific properties.
@@ -12,8 +14,11 @@
     "vscode": {
       // Set *default* container specific settings.json values on container create.
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.formatting.blackPath": "/usr/local/py-utils/bin/black"
+        "python.testing.pytestArgs": ["tests"],
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
       },
 
       // Add the IDs of extensions you want installed when the container is created.
