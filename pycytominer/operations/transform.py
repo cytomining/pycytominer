@@ -167,7 +167,7 @@ class Spherize(BaseEstimator, TransformerMixin):
             if self.center:
                 X = self.mean_centerer.transform(X)
 
-        if self.method in ["PCA", "ZCA"]:
+        if self.method in ["PCA", "PCA-cor"]:
             columns = ["PC" + str(i) for i in range(1, X.shape[1] + 1)]
 
         XW = X @ self.W
