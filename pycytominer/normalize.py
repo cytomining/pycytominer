@@ -160,13 +160,13 @@ def normalize(
         # Subset to only the features measured in the sample query
         fitted_scaler = scaler.fit(profiles.query(samples).loc[:, features])
 
-    # FIXME: If the scaler is Spherize and method is PCA/PCA-cor, the column
-    # names will not be the same as the original dataframe, so we should adapt
-    # this appropriately
+    fitted_scaled = fitted_scaler.transform(feature_df)
+
+    columns = fitted_scaler.columns if method == "spherize" else feature_df.columns
 
     feature_df = pd.DataFrame(
-        fitted_scaler.transform(feature_df),
-        columns=feature_df.columns,
+        fitted_scaled,
+        columns=columns,
         index=feature_df.index,
     )
 

@@ -170,6 +170,8 @@ class Spherize(BaseEstimator, TransformerMixin):
         if self.method in ["PCA", "PCA-cor"]:
             columns = ["PC" + str(i) for i in range(1, X.shape[1] + 1)]
 
+        self.columns = columns
+
         XW = X @ self.W
 
         if self.return_numpy:
