@@ -137,7 +137,10 @@ def normalize(
         scaler = RobustMAD(epsilon=mad_robustize_epsilon)
     elif method == "spherize":
         scaler = Spherize(
-            center=spherize_center, method=spherize_method, epsilon=spherize_epsilon
+            center=spherize_center,
+            method=spherize_method,
+            epsilon=spherize_epsilon,
+            return_numpy=True,
         )
 
     if features == "infer":
@@ -157,13 +160,12 @@ def normalize(
         # Subset to only the features measured in the sample query
         fitted_scaler = scaler.fit(profiles.query(samples).loc[:, features])
 
-    # Scale the feature dataframe
-    # See https://github.com/cytomining/pycytominer/issues/319
-    fitted_scaled = fitted_scaler.transform(feature_df)
-    if type(fitted_scaled) == pd.DataFrame:
-        fitted_scaled = fitted_scaled.values
+    # FIXME: If the scaler is Spherize and method is PCA/PCA-cor, the column
+    # names will not be the same as the original dataframe, so we should adapt
+    # this appropriately
+
     feature_df = pd.DataFrame(
-        fitted_scaled,
+        fitted_scaler.transform(feature_df),
         columns=feature_df.columns,
         index=feature_df.index,
     )

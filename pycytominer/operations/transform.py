@@ -34,7 +34,7 @@ class Spherize(BaseEstimator, TransformerMixin):
         a string indicating which class of sphering to perform
     """
 
-    def __init__(self, epsilon=1e-6, center=True, method="ZCA"):
+    def __init__(self, epsilon=1e-6, center=True, method="ZCA", return_numpy=False):
         """
         Parameters
         ----------
@@ -44,11 +44,14 @@ class Spherize(BaseEstimator, TransformerMixin):
             option to center the input X matrix
         method : str, default "ZCA"
             a string indicating which class of sphering to perform
+        return_numpy: bool, default False
+            option to return ndarray, instead of dataframe
         """
         avail_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
 
         self.epsilon = epsilon
         self.center = center
+        self.return_numpy = return_numpy
 
         if method not in avail_methods:
             raise ValueError(
@@ -167,7 +170,12 @@ class Spherize(BaseEstimator, TransformerMixin):
         if self.method in ["PCA", "ZCA"]:
             columns = ["PC" + str(i) for i in range(1, X.shape[1] + 1)]
 
-        return pd.DataFrame(X @ self.W, columns=columns)
+        XW = X @ self.W
+
+        if self.return_numpy:
+            return XW
+        else:
+            return pd.DataFrame(XW, columns=columns)
 
 
 class RobustMAD(BaseEstimator, TransformerMixin):
