@@ -358,3 +358,22 @@ def get_pairwise_correlation(population_df, method="pearson"):
     pairwise_df.columns = ["pair_a", "pair_b", "correlation"]
 
     return data_cor_df, pairwise_df
+
+
+def create_bug_report_message(error_detail, context):
+    """
+    Constructs an error message with a bug report prompt.
+
+    Parameters:
+    - error_detail (str): Description of the error.
+    - context (str): A description of the context for the error.
+
+    Returns:
+    - str: Error message with a link to file a bug report.
+    """
+    bug_report_url = "https://github.com/cytomining/pycytominer/issues"
+    return (
+        f"{error_detail} This is likely a bug in `{context}`. "
+        "Please help us improve our software by filing a bug report at "
+        f"{bug_report_url}."
+    )

@@ -5,11 +5,7 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-from pycytominer.cyto_utils import (
-    output,
-    infer_cp_features,
-    load_profiles,
-)
+from pycytominer.cyto_utils import output, infer_cp_features, load_profiles, util
 from pycytominer.operations import Spherize, RobustMAD
 
 
@@ -174,13 +170,21 @@ def normalize(
 
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
-    assert (
-        feature_df.shape == profiles.loc[:, features].shape
-    ), "Feature dataframe shape does not match original dataframe shape"
+    if feature_df.shape != profiles.loc[:, features].shape:
+        error_detail = (
+            "Feature dataframe shape does not match original dataframe shape."
+        )
+        context = f"the `{method}` method in `pycytominer.normalize`"
+        raise ValueError(util.create_bug_report_message(error_detail, context))
 
-    assert (normalized.shape[0] == profiles.shape[0]) and (
-        normalized.shape[1] == len(features) + len(meta_features)
-    ), "Normalized dataframe shape does not match original dataframe shape"
+    if (normalized.shape[0] != profiles.shape[0]) or (
+        normalized.shape[1] != len(features) + len(meta_features)
+    ):
+        error_detail = (
+            "Normalized dataframe shape does not match original dataframe shape."
+        )
+        context = f"the `{method}` method in `pycytominer.normalize`"
+        raise ValueError(util.create_bug_report_message(error_detail, context))
 
     if output_file != None:
         output(
