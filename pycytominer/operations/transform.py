@@ -12,6 +12,7 @@ from scipy.linalg import eigh
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
+from pycytominer.cyto_utils import util
 
 
 class Spherize(BaseEstimator, TransformerMixin):
@@ -105,11 +106,15 @@ class Spherize(BaseEstimator, TransformerMixin):
         # compute the rank of the matrix X
         r = np.linalg.matrix_rank(X)
 
-        # TODO: Below, we check for r == n-1 (or r == d). But we could also have r == n if X is not centered.
+        # TODO: Below, we check for r == n-1 (or r == d). But we could also have
+        # r == n if X is not centered.
         # So PCA or ZCA without centering should end up with r == n
         if (r != n - 1) & (r != d):
             raise ValueError(
-                "Sphering is not supported when the data matrix X is not full rank. Check for linear dependencies in the data and remove them."
+                (
+                    "Sphering is not supported when the data matrix X is not full rank."
+                    "Check for linear dependencies in the data and remove them."
+                )
             )
 
         # Get the eigenvalues and eigenvectors of the covariance matrix using SVD
@@ -118,8 +123,22 @@ class Spherize(BaseEstimator, TransformerMixin):
         # if n <= d then Sigma has shape (n,) so it will need to be expanded to
         # d filled with the value r'th element of Sigma
         if n <= d:
-            assert Sigma.shape[0] == n, "Unexpected shape of Sigma"
-            assert r == n - 1, "Unexpected rank"
+            if Sigma.shape[0] != n:
+                error_detail = f"When n <= d, Sigma should have shape (n,) i.e. ({n}, ) but it is {Sigma.shape}."
+                context = (
+                    "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
+                )
+                raise ValueError(util.create_bug_report_message(error_detail, context))
+
+            if r != n - 1:
+                error_detail = (
+                    f"When n <= d, the rank should be n - 1 i.e. {n - 1} but it is {r}."
+                )
+                context = (
+                    "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
+                )
+                raise ValueError(util.create_bug_report_message(error_detail, context))
+
             Sigma = np.concatenate((Sigma[0:r], np.repeat(Sigma[r - 1], d - r)))
 
         Sigma = Sigma + self.epsilon
