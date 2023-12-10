@@ -15,6 +15,7 @@ from pycytominer.cyto_utils.util import (
     check_fields_of_view_format,
     check_image_features,
     extract_image_features,
+    create_bug_report_message,
 )
 
 tmpdir = tempfile.gettempdir()
@@ -327,3 +328,16 @@ def test_pairwise_corr_with_inf_and_nan():
 
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)
+
+
+def test_create_bug_report_message():
+    error_detail = "Division by zero error occurred."
+    context = "calculate_statistics function"
+    actual_message = create_bug_report_message(error_detail, context)
+
+    # check that the strings `error_detail` and `context` are in the message
+    assert error_detail in actual_message
+    assert context in actual_message
+
+    # check that the message contains a link to file a bug report
+    assert "https://github.com/cytomining/pycytominer/issues" in actual_message
