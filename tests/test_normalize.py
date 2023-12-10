@@ -4,6 +4,7 @@ import random
 import numpy as np
 import pandas as pd
 from pycytominer.normalize import normalize
+import pytest
 
 random.seed(123)
 
@@ -446,60 +447,73 @@ def test_normalize_spherize():
     for spherize_method in ["ZCA", "PCA", "ZCA-cor", "PCA-cor"]:
         for spherize_center in [True, False]:
             if spherize_method in ["PCA-cor", "ZCA-cor"] and not spherize_center:
-                continue
-            result = normalize(
-                data_spherize_df,
-                features=["a", "b", "c", "d"],
-                meta_features=["id"],
-                method="spherize",
-                spherize_method=spherize_method,
-                spherize_center=spherize_center,
-            )
-            result_cov = (
-                pd.DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
-                .round()
-                .sum()
-                .clip(1)
-                .sum()
-            )
-            expected_result = data_spherize_df.shape[1] - 1
-            assert result_cov == expected_result
-
-            result = normalize(
-                data_spherize_df,
-                samples="id == 'control'",
-                features=["a", "b", "c", "d"],
-                meta_features=["id"],
-                method="spherize",
-                spherize_method=spherize_method,
-                spherize_center=spherize_center,
-            )
-            result_cov = (
-                np.cov(
-                    np.transpose(
-                        result.query("id == 'control'").drop("id", axis="columns")
+                # verify that calling normalize will throw a ValueError
+                with pytest.raises(ValueError):
+                    normalize(
+                        data_spherize_df,
+                        features=["a", "b", "c", "d"],
+                        meta_features=["id"],
+                        method="spherize",
+                        spherize_method=spherize_method,
+                        spherize_center=spherize_center,
                     )
-                )
-                .round()
-                .sum()
-                .clip(1)
-                .sum()
-            )
-            # Add some tolerance to result b/c of low sample size
-            expected_result = data_spherize_df.shape[1]
-            assert result_cov < expected_result
 
-            non_spherize_result_cov = (
-                np.cov(
-                    np.transpose(
-                        result.query("id == 'treatment'").drop("id", axis="columns")
-                    )
+            else:
+                result = normalize(
+                    data_spherize_df,
+                    features=["a", "b", "c", "d"],
+                    meta_features=["id"],
+                    method="spherize",
+                    spherize_method=spherize_method,
+                    spherize_center=spherize_center,
                 )
-                .round()
-                .sum()
-                .sum()
-            )
-            assert non_spherize_result_cov >= expected_result - 5
+                result_cov = (
+                    pd.DataFrame(
+                        np.cov(np.transpose(result.drop("id", axis="columns")))
+                    )
+                    .round()
+                    .sum()
+                    .clip(1)
+                    .sum()
+                )
+                expected_result = data_spherize_df.shape[1] - 1
+                assert result_cov == expected_result
+
+                result = normalize(
+                    data_spherize_df,
+                    samples="id == 'control'",
+                    features=["a", "b", "c", "d"],
+                    meta_features=["id"],
+                    method="spherize",
+                    spherize_method=spherize_method,
+                    spherize_center=spherize_center,
+                )
+                result_cov = (
+                    np.cov(
+                        np.transpose(
+                            result.query("id == 'control'").drop("id", axis="columns")
+                        )
+                    )
+                    .round()
+                    .sum()
+                    .clip(1)
+                    .sum()
+                )
+                # Add some tolerance to result b/c of low sample size
+                expected_result = data_spherize_df.shape[1]
+                assert result_cov < expected_result
+
+                non_spherize_result_cov = (
+                    np.cov(
+                        np.transpose(
+                            result.query("id == 'treatment'").drop("id", axis="columns")
+                        )
+                    )
+                    .round()
+                    .sum()
+                    .sum()
+                )
+                assert non_spherize_result_cov >= expected_result - 5
 
 
 def test_spherize_epsilon():
