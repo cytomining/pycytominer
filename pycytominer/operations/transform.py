@@ -106,10 +106,9 @@ class Spherize(BaseEstimator, TransformerMixin):
         # compute the rank of the matrix X
         r = np.linalg.matrix_rank(X)
 
-        # TODO: Below, we check for r == n-1 (or r == d). But we could also have
-        # r == n if X is not centered.
-        # So PCA or ZCA without centering should end up with r == n
-        if (r != n - 1) & (r != d):
+        # If n < d, then rank should be equal to n - 1 (if centered) or n (if not centered)
+        # If n >= d, then rank should be equal to d
+        if not ((r == d) | (self.center & (r == n - 1)) | (not self.center & (r == n))):
             raise ValueError(
                 (
                     "Sphering is not supported when the data matrix X is not full rank."
@@ -123,6 +122,7 @@ class Spherize(BaseEstimator, TransformerMixin):
         # if n <= d then Sigma has shape (n,) so it will need to be expanded to
         # d filled with the value r'th element of Sigma
         if n <= d:
+            # Do some error checking
             if Sigma.shape[0] != n:
                 error_detail = f"When n <= d, Sigma should have shape (n,) i.e. ({n}, ) but it is {Sigma.shape}."
                 context = (
@@ -147,15 +147,24 @@ class Spherize(BaseEstimator, TransformerMixin):
 
         # If ZCA, perform additional rotation
         if self.method in ["ZCA", "ZCA-cor"]:
-            # If rank is not d then ZCA is not possible
-            # TODO: Explain this better
-            assert r == d, "ZCA is not possible if rank is not d"
+            # Note: There was previously a requirement r==d otherwise the
+            # ZCA transform would not be well defined. However, it later appeared
+            # that this requirement was not necessary.
+
             self.W = self.W @ Vt
 
         # number of columns of self.W should be equal to that of X
         assert (
             self.W.shape[1] == X.shape[1]
         ), f"Error: W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
+
+        if self.W.shape[1] != X.shape[1]:
+            error_detail = (
+                f"The number of columns of W should be equal to that of X."
+                f"However, W has {self.W.shape[1]} columns, X has {X.shape[1]} columns."
+            )
+            context = "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
+            raise ValueError(util.create_bug_report_message(error_detail, context))
 
         return self
 
