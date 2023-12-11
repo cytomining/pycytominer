@@ -13,6 +13,7 @@
 import os
 import sys
 import pathlib
+import dunamai
 from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -27,8 +28,9 @@ copyright = "Copyright 2019 - {date} {author}".format(
     date=date.today().year, author=author
 )
 
-# The full version, including alpha/beta/rc tags
-version = pycytominer.__about__.__version__
+# Get the version from dunamai (the backend of poetry-dynamic-versioning)
+auto_version = dunamai.Version.from_git()
+version = auto_version.serialize()
 release = version
 
 # -- General configuration ---------------------------------------------------

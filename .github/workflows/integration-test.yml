@@ -1,0 +1,107 @@
+name: Integration Workflow
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["*"]
+  workflow_dispatch:
+    inputs:
+      pytest_addopts:
+        description: Extra options for pytest; use -vv for full details; see
+          https://docs.pytest.org/en/latest/example/simple.html#how-to-change-command-line-options-defaults
+        required: false
+        default: ""
+
+env:
+  LANG: "en_US.utf-8"
+  LC_ALL: "en_US.utf-8"
+  PIP_CACHE_DIR: ${{ github.workspace }}/.cache/pip
+  POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+  PRE_COMMIT_HOME: ${{ github.workspace }}/.cache/pre-commit
+  PYTEST_ADDOPTS: ${{ github.event.inputs.pytest_addopts }}
+  PYTHONIOENCODING: "UTF-8"
+  TARGET_PYTHON_VERSION: "3.9"
+
+jobs:
+  quality-test:
+    # This job is used to run pre-commit checks to ensure that all files are
+    # are formatted correctly.
+    name: Pre-commit checks
+    # Runs pre-commit checks on all files
+    # This job doesn't fail fast to ensure that feedback on function is still provided
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Full history likely required for planned commitizen checks
+          # See #345
+          fetch-depth: 0
+      - name: Setup python, and check pre-commit cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: true
+          cache-venv: false
+          setup-poetry: false
+          install-deps: false
+      - name: Run pre-commit checks on all files
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: --all-files
+  integration-test:
+    name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
+    # Runs pytest on all tested versions of python and OSes
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
+      # This is needed to avoid a warning from SQLAlchemy
+      # https://sqlalche.me/e/b8d9
+      # We can remove this once we upgrade to SQLAlchemy >= 2.0
+      SQLALCHEMY_SILENCE_UBER_WARNING: "1"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup python, and load cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache-pre-commit: false
+          cache-venv: true
+          setup-poetry: true
+          install-deps: true
+      - name: Run pytest and generate coverage report
+        # For the target version and ubuntu, run pytest and generate coverage report
+        if: (matrix.os == 'ubuntu-latest')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
+        run: poetry run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
+      - name: Upload coverage to Codecov
+        # For the target version and ubuntu, upload coverage to Codecov
+        continue-on-error: true
+        if: (matrix.os == 'ubuntu-latest') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        uses: codecov/codecov-action@v3
+        env:
+          OS: ${{ matrix.os }}
+          PYTHON: ${{ matrix.python-version }}
+        with:
+          file: ./coverage.xml
+          files: ./coverage1.xml,./coverage2.xml
+          directory: ./coverage/reports/
+          env_vars: OS,PYTHON
+          fail_ci_if_error: true
+          flags: unittests
+          name: pycytominer
+      - name: Run pytest
+        # For every other version and/or OS, run pytest without coverage
+        if: (matrix.os != 'ubuntu-latest') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
+        run: poetry run pytest ${{ github.event.inputs.pytest_addopts }}
