@@ -18,3 +18,8 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# note: presumes the existence of docker daemon to receive docker commands
+test_docker_build:
+	docker build -f build/docker/Dockerfile -t pycytominer:latest . && \
+	docker run pycytominer:latest poetry run pytest
