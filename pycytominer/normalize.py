@@ -173,16 +173,14 @@ def normalize(
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
     if feature_df.shape != profiles.loc[:, features].shape:
-        error_detail = "Feature dataframe shape does not match original dataframe shape"
+        error_detail = "The number of rows and columns in the feature dataframe does not match the original dataframe"
         context = f"the `{method}` method in `pycytominer.normalize`"
         raise ValueError(f"{error_detail}. This is likely a bug in {context}")
 
     if (normalized.shape[0] != profiles.shape[0]) or (
         normalized.shape[1] != len(features) + len(meta_features)
     ):
-        error_detail = (
-            "Normalized dataframe shape does not match original dataframe shape"
-        )
+        error_detail = "The number of rows and columns in the normalized dataframe does not match the original dataframe"
         context = f"the `{method}` method in `pycytominer.normalize`"
         raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
