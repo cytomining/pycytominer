@@ -124,20 +124,20 @@ class Spherize(BaseEstimator, TransformerMixin):
         if n <= d:
             # Do some error checking
             if Sigma.shape[0] != n:
-                error_detail = f"When n <= d, Sigma should have shape (n,) i.e. ({n}, ) but it is {Sigma.shape}."
+                error_detail = f"When n <= d, Sigma should have shape (n,) i.e. ({n}, ) but it is {Sigma.shape}"
                 context = (
                     "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
                 )
-                raise ValueError(util.create_bug_report_message(error_detail, context))
+                raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
             if r != n - 1:
                 error_detail = (
-                    f"When n <= d, the rank should be n - 1 i.e. {n - 1} but it is {r}."
+                    f"When n <= d, the rank should be n - 1 i.e. {n - 1} but it is {r}"
                 )
                 context = (
                     "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
                 )
-                raise ValueError(util.create_bug_report_message(error_detail, context))
+            raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
             Sigma = np.concatenate((Sigma[0:r], np.repeat(Sigma[r - 1], d - r)))
 
@@ -161,10 +161,10 @@ class Spherize(BaseEstimator, TransformerMixin):
         if self.W.shape[1] != X.shape[1]:
             error_detail = (
                 f"The number of columns of W should be equal to that of X."
-                f"However, W has {self.W.shape[1]} columns, X has {X.shape[1]} columns."
+                f"However, W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
             )
             context = "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
-            raise ValueError(util.create_bug_report_message(error_detail, context))
+            raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
         return self
 
