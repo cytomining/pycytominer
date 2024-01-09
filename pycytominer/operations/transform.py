@@ -60,7 +60,10 @@ class Spherize(BaseEstimator, TransformerMixin):
             )
         self.method = method
 
-        # PCA-cor and ZCA-cor require center=True
+        # PCA-cor and ZCA-cor require center=True because we assumed we are
+        # only ever interested in computing centered Pearson correlation
+        # https://stackoverflow.com/questions/23891391/uncentered-pearson-correlation
+
         if self.method in ["PCA-cor", "ZCA-cor"] and not self.center:
             raise ValueError("PCA-cor and ZCA-cor require center=True")
 
@@ -103,20 +106,27 @@ class Spherize(BaseEstimator, TransformerMixin):
         # Get the number of observations and variables
         n, d = X.shape
 
-        # compute the rank of the matrix X
+        # Checking the rank of matrix X considering the number of samples (n) and features (d).
         r = np.linalg.matrix_rank(X)
 
-        # If n < d, then rank should be equal to n - 1 (if centered) or n (if not centered)
-        # If n >= d, then rank should be equal to d
+        # Case 1: More features than samples (n < d).
+        # If centered (mean of each feature subtracted), one dimension becomes dependent, reducing rank to n - 1.
+        # If not centered, the max rank is limited by n, as there can't be more independent vectors than samples.
+        # Case 2: More samples than features or equal (n >= d).
+        # Here, the max rank is limited by d (number of features), assuming each provides unique information.
+
         if not ((r == d) | (self.center & (r == n - 1)) | (not self.center & (r == n))):
             raise ValueError(
                 (
-                    "Sphering is not supported when the data matrix X is not full rank."
+                    "The data matrix X is not full rank: n = {n}, d = {d}, r = {r}."
+                    "Perfect linear dependencies are unusual in data matrices so something seems amiss."
                     "Check for linear dependencies in the data and remove them."
                 )
             )
 
-        # Get the eigenvalues and eigenvectors of the covariance matrix using SVD
+        # Get the eigenvalues and eigenvectors of the covariance matrix
+        # by computing the SVD on the data matrix
+        # https://stats.stackexchange.com/q/134282/8494
         _, Sigma, Vt = np.linalg.svd(X, full_matrices=True)
 
         # if n <= d then Sigma has shape (n,) so it will need to be expanded to
@@ -130,18 +140,62 @@ class Spherize(BaseEstimator, TransformerMixin):
                 )
                 raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
-            if r != n - 1:
-                error_detail = (
-                    f"When n <= d, the rank should be n - 1 i.e. {n - 1} but it is {r}"
-                )
+            if (r != n - 1) & (r != n):
+                error_detail = f"When n <= d, the rank should be n - 1 or n i.e. {n - 1} or {n} but it is {r}"
                 context = (
                     "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
                 )
-            raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
+                raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
             Sigma = np.concatenate((Sigma[0:r], np.repeat(Sigma[r - 1], d - r)))
 
         Sigma = Sigma + self.epsilon
+
+        # From https://arxiv.org/abs/1512.00809, the PCA whitening matrix is
+        #
+        # W = Lambda^(-1/2) E^T
+        #
+        # where
+        # - E is the eigenvector matrix
+        # - Lambda is the (diagonal) eigenvalue matrix
+        # of cov(X), where X is the data matrix
+        # (i.e., cov(X) = E Lambda E^T)
+        #
+        # However, W can also be computed using the Singular Value Decomposition
+        # (SVD) of X. Assuming X is mean-centered (zero mean for each feature),
+        # the SVD of X is given by:
+        #
+        # X = U S V^T
+        #
+        # The covariance matrix of X can be expressed using its SVD:
+        #
+        # cov(X) = (X^T X) / (n - 1)
+        #        = (V S^2 V^T) / (n - 1)
+        #
+        # By comparing cov(X) = E * Lambda * E^T with the SVD form, we identify:
+        #
+        #   E = V (eigenvectors)
+        #   Lambda = S^2 / (n - 1) (eigenvalues)
+        #
+        # Thus, Lambda^(-1/2) can be expressed as:
+        #
+        #   Lambda^(-1/2) = inv(S) * sqrt(n - 1)
+        #
+        # Therefore, the PCA Whitening matrix W becomes:
+        #
+        # W = Lambda^(-1/2) * E^T
+        #   = (inv(S) * sqrt(n - 1)) * V^T
+        #   = (inv(S) * V^T) * sqrt(n - 1)
+        #
+        # In NumPy, this is implemented as:
+        #
+        #   W = (np.linalg.inv(S) @ Vt) * np.sqrt(n - 1)
+        #
+        # Alternatively, this can be expressed as:
+        #
+        #   W = (Vt / Sigma[:, np.newaxis]) * np.sqrt(n - 1)
+        #
+        # where Sigma contains the diagonal elements of S (singular values).
 
         self.W = (Vt / Sigma[:, np.newaxis]).transpose() * np.sqrt(n - 1)
 
