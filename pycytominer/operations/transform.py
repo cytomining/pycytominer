@@ -191,7 +191,9 @@ class Spherize(BaseEstimator, TransformerMixin):
         #
         #   W = (np.linalg.inv(S) @ Vt) * np.sqrt(n - 1)
         #
-        # Alternatively, this can be expressed as:
+        # But computing `np.linalg.inv(S)` is memory-intensive.
+        # 
+        # A more memory-efficient alternative is:
         #
         #   W = (Vt / Sigma[:, np.newaxis]) * np.sqrt(n - 1)
         #
