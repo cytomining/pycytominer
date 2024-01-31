@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir poetry poetry-dynamic-versioning
 COPY . .
 
 # install pycytominer from poetry with group deps and all extras
-RUN poetry install --with dev,docs --all-extras -v --no-interaction
+RUN poetry install --with dev --all-extras -v --no-interaction
 
 # set an alias for running python through the poetry env of pycytominer
 # hadolint ignore=DL3059
