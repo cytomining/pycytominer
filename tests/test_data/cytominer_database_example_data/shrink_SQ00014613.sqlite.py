@@ -20,8 +20,8 @@ shutil.copy(sqlite_source, sqlite_target)
 with sqlite3.connect(sqlite_target) as conn:
     conn.execute(
         """
-        DELETE FROM Image 
-        WHERE TableNumber NOT IN 
+        DELETE FROM Image
+        WHERE TableNumber NOT IN
         ('dd77885d07028e67dc9bcaaba4df34c6',
         '1e5d8facac7508cfd4086f3e3e950182')
         """
@@ -29,7 +29,7 @@ with sqlite3.connect(sqlite_target) as conn:
     for table in ["Cells", "Nuclei", "Cytoplasm"]:
         conn.execute(
             f"""
-            DELETE FROM {table} 
+            DELETE FROM {table}
             WHERE TableNumber NOT IN (SELECT TableNumber FROM Image)
             OR ObjectNumber > 1
             """

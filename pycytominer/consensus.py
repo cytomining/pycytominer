@@ -120,7 +120,7 @@ def consensus(
             subset_data_df=None,
         )
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=consensus_df,
             output_filename=output_file,

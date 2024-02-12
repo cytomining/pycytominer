@@ -360,7 +360,7 @@ class SingleCells:
             A subsampled pandas dataframe of single cell profiles.
         """
 
-        if self.subsampling_random_state == None:
+        if self.subsampling_random_state is None:
             random_state = np.random.randint(0, 10000, size=1)[0]
             self.set_subsample_random_state(random_state)
 
@@ -813,7 +813,7 @@ class SingleCells:
             )
 
         # if output argument is provided, call it using df_merged_sc and kwargs
-        if sc_output_file != None:
+        if sc_output_file is not None:
             return output(
                 df=sc_df,
                 output_filename=sc_output_file,
@@ -857,7 +857,7 @@ class SingleCells:
             else will write to file and return the filepath of the file
         """
 
-        if output_file != None:
+        if output_file is not None:
             self.set_output_file(output_file)
 
         compartment_idx = 0
@@ -883,7 +883,7 @@ class SingleCells:
 
         self.is_aggregated = True
 
-        if self.output_file != None:
+        if self.output_file is not None:
             return output(
                 df=aggregated,
                 output_filename=self.output_file,

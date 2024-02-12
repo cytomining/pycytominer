@@ -281,7 +281,7 @@ class AggregateDeepProfiler:
             df = pd.concat([df, meta_df], axis=1)
 
             # save metalevel file
-            if self.output_file != None:
+            if self.output_file is not None:
                 if not os.path.exists(self.output_file):
                     os.mkdir(self.output_file)
                 file_path = os.path.join(
@@ -475,7 +475,7 @@ class SingleCellDeepProfiler:
         normalized.insert(1, "Location_Center_Y", y_locations)
 
         # separate code because normalize() will not return if it has an output file specified
-        if output_file != None:
+        if output_file is not None:
             output(
                 df=normalized,
                 output_filename=output_file,

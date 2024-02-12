@@ -222,11 +222,11 @@ def test_SingleCells_init():
     assert AP_SUBSAMPLE.subsample_frac == 1
     assert AP.subsample_n == "all"
     assert AP_SUBSAMPLE.subsample_n == 2
-    assert AP.subset_data_df == None
-    assert AP.output_file == None
+    assert AP.subset_data_df is None
+    assert AP.output_file is None
     assert AP.aggregation_operation == "median"
     assert not AP.is_aggregated
-    assert AP.subsampling_random_state == None
+    assert AP.subsampling_random_state is None
     assert AP_SUBSAMPLE.subsampling_random_state == 123
     assert AP.fields_of_view == "all"
     assert AP.fields_of_view_feature == "Metadata_Site"
@@ -242,7 +242,7 @@ def test_SingleCells_reset_variables():
     ap_switch = SingleCells(sql_file=TMP_SQLITE_FILE)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
-    assert ap_switch.subsampling_random_state == None
+    assert ap_switch.subsampling_random_state is None
     ap_switch.set_subsample_frac(0.8)
     assert ap_switch.subsample_frac == 0.8
     ap_switch.set_subsample_frac(1)

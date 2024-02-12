@@ -184,7 +184,7 @@ def normalize(
         context = f"the `{method}` method in `pycytominer.normalize`"
         raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=normalized,
             output_filename=output_file,

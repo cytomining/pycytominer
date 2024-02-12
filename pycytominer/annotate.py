@@ -99,7 +99,7 @@ def annotate(
         annotated = cp_clean(annotated)
 
     if not isinstance(external_metadata, pd.DataFrame):
-        if external_metadata != None:
+        if external_metadata is not None:
             assert os.path.exists(
                 external_metadata
             ), f"external metadata at {external_metadata} does not exist"
@@ -133,7 +133,7 @@ def annotate(
 
     annotated = annotated.loc[:, meta_cols + other_cols]
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=annotated,
             output_filename=output_file,

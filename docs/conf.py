@@ -18,7 +18,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
 
-import pycytominer
+import pycytominer  # noqa: E402, RUF100
 
 # -- Project information -----------------------------------------------------
 
