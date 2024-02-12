@@ -71,8 +71,8 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
     # Confirm that every compartment has been specified in the linking_cols
     unique_linking_cols = sorted(list(set(unique_linking_cols)))
     diff_column = set(compartments).difference(unique_linking_cols)
-    assert unique_linking_cols == sorted(
-        compartments
+    assert (
+        unique_linking_cols == sorted(compartments)
     ), "All compartments must be specified in the linking_cols, {miss} is missing".format(
         miss=diff_column
     )

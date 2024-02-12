@@ -787,9 +787,8 @@ class SingleCells(object):
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")
             # pandas rename performance may be improved using copy=False, inplace=False
             # reference: https://ryanlstevens.github.io/2022-05-06-pandasColumnRenaming/
+            .rename(self.linking_col_rename, axis="columns", copy=False, inplace=False)
             .rename(
-                self.linking_col_rename, axis="columns", copy=False, inplace=False
-            ).rename(
                 self.full_merge_suffix_rename, axis="columns", copy=False, inplace=False
             )
         )
