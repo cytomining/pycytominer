@@ -62,6 +62,9 @@ cytominer-database = {version = "0.3.4", optional=true}
 cell-locations = ["fsspec", "s3fs", "boto3", "fire"]
 collate = ["cytominer-database"]
 
+[tool.poetry.group.dev]
+optional=true
+
 [tool.poetry.group.dev.dependencies]
 pytest = ">=5.0.1"
 codecov = ">=2.1.12"
