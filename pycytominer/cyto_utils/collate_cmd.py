@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image-feature-categories",
         dest="image_feature_categories",
-        type=lambda s: [item for item in s.split(",")],
+        type=lambda s: list(s.split(",")),
         default="Granularity,Texture,ImageQuality,Count,Threshold",
         help="Which image feature categories should be added if adding image features to the aggregated profiles. Multiple values can be passed in if comma separated with no spaces between them",
     )

@@ -108,7 +108,7 @@ def modz(
     population_features = population_df.columns.tolist()
     assert_error = f"{replicate_columns} not in input dataframe"
     if isinstance(replicate_columns, list):
-        assert all([x in population_features for x in replicate_columns]), assert_error
+        assert all(x in population_features for x in replicate_columns), assert_error
     elif isinstance(replicate_columns, str):
         assert replicate_columns in population_features, assert_error
         replicate_columns = replicate_columns.split()

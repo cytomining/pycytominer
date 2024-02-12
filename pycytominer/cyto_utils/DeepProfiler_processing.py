@@ -292,7 +292,7 @@ class AggregateDeepProfiler:
 
         # Concatenate all of the above created profiles
         self.aggregated_profiles = pd.concat(
-            [x for x in self.aggregated_profiles]
+            list(self.aggregated_profiles)
         ).reset_index(drop=True)
 
         # clean and reindex columns

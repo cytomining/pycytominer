@@ -312,7 +312,7 @@ def test_feature_select_variance_threshold():
     pd.testing.assert_frame_equal(result, expected_result)
 
     na_data_unique_test_df = data_unique_test_df.copy()
-    na_data_unique_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
+    na_data_unique_test_df.iloc[list(range(0, 50)), 1] = np.nan
     result = feature_select(
         na_data_unique_test_df,
         features=na_data_unique_test_df.columns.tolist(),
@@ -324,7 +324,7 @@ def test_feature_select_variance_threshold():
     pd.testing.assert_frame_equal(result, expected_result)
 
     na_data_unique_test_df = data_unique_test_df.copy()
-    na_data_unique_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
+    na_data_unique_test_df.iloc[list(range(0, 50)), 1] = np.nan
 
     result = feature_select(
         na_data_unique_test_df,
@@ -363,7 +363,7 @@ def test_feature_select_correlation_threshold():
 def test_feature_select_all():
     data_all_test_df = data_unique_test_df.assign(zz=a_feature)
     data_all_test_df.iloc[1, 4] = 2
-    data_all_test_df.iloc[[x for x in range(0, 50)], 1] = np.nan
+    data_all_test_df.iloc[list(range(0, 50)), 1] = np.nan
 
     result = feature_select(
         profiles=data_all_test_df,

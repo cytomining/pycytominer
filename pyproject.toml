@@ -128,7 +128,7 @@ select = [
     # flake8-builtins
     # "A",
     # flake8-comprehensions
-    # "C4",
+    "C4",
     # flake8-debugger
     "T10",
     # flake8-simplify

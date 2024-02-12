@@ -209,10 +209,8 @@ def test_annotate_cp_clean():
     )
 
     assert all(
-        [
-            x in anno_result.columns
-            for x in ["Image_Metadata_Well", "Image_Metadata_Plate"]
-        ]
+        x in anno_result.columns
+        for x in ["Image_Metadata_Well", "Image_Metadata_Plate"]
     )
 
     anno_result = annotate(
@@ -222,4 +220,4 @@ def test_annotate_cp_clean():
         join_on=["Metadata_well_position", "Image_Metadata_Well"],
     )
 
-    assert all([x in anno_result.columns for x in ["Metadata_Well", "Metadata_Plate"]])
+    assert all(x in anno_result.columns for x in ["Metadata_Well", "Metadata_Plate"])
