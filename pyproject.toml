@@ -130,7 +130,7 @@ select = [
     # flake8-comprehensions
     # "C4",
     # flake8-debugger
-    # "T10",
+    "T10",
     # flake8-simplify
     "SIM",
     # isort
