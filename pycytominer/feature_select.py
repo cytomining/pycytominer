@@ -114,11 +114,9 @@ def feature_select(
     if isinstance(operation, list):
         assert all(
             [x in all_ops for x in operation]
-        ), "Some operation(s) {} not supported. Choose {}".format(operation, all_ops)
+        ), f"Some operation(s) {operation} not supported. Choose {all_ops}"
     elif isinstance(operation, str):
-        assert operation in all_ops, "{} not supported. Choose {}".format(
-            operation, all_ops
-        )
+        assert operation in all_ops, f"{operation} not supported. Choose {all_ops}"
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")

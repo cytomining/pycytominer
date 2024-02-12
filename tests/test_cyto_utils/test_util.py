@@ -65,7 +65,7 @@ def test_check_compartments_not_valid():
         not_valid = ["CelLs", "CytopLasM", "SOMETHING", "NOTHING"]
         output = check_compartments(not_valid)
     assert issubclass(w[-1].category, UserWarning)
-    assert "{x}, nothing".format(x=warn_expected_string) in str(w[-1].message)
+    assert f"{warn_expected_string}, nothing" in str(w[-1].message)
 
 
 def test_get_default_compartments():

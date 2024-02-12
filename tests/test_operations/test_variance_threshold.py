@@ -112,7 +112,7 @@ def test_variance_threshold_featureinfer():
     assert "No CP features found." in str(nocp.value)
 
     data_cp_df = data_unique_test_df.copy()
-    data_cp_df.columns = ["Cells_{}".format(x) for x in data_unique_test_df.columns]
+    data_cp_df.columns = [f"Cells_{x}" for x in data_unique_test_df.columns]
 
     excluded_features = variance_threshold(
         population_df=data_cp_df, features="infer", unique_cut=unique_cut

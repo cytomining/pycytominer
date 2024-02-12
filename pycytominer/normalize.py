@@ -127,7 +127,7 @@ def normalize(
     method = method.lower()
 
     avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
-    assert method in avail_methods, "operation must be one {}".format(avail_methods)
+    assert method in avail_methods, f"operation must be one {avail_methods}"
 
     if method == "standardize":
         scaler = StandardScaler()

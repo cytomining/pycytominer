@@ -63,12 +63,10 @@ def label_compartment(cp_features, compartment, metadata_cols):
 
     assert (
         compartment in avail_compartments
-    ), "provide valid compartment. One of: {}".format(avail_compartments)
+    ), f"provide valid compartment. One of: {avail_compartments}"
 
     cp_features = [
-        "Metadata_{}".format(x)
-        if x in metadata_cols
-        else "{}_{}".format(compartment, x)
+        f"Metadata_{x}" if x in metadata_cols else f"{compartment}_{x}"
         for x in cp_features
     ]
 

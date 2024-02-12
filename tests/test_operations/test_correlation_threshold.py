@@ -90,7 +90,7 @@ def test_correlation_threshold_featureinfer():
     assert "No CP features found." in str(nocp.value)
 
     data_cp_df = data_df.copy()
-    data_cp_df.columns = ["Cells_{}".format(x) for x in data_df.columns]
+    data_cp_df.columns = [f"Cells_{x}" for x in data_df.columns]
 
     correlation_threshold_result = correlation_threshold(
         population_df=data_cp_df,

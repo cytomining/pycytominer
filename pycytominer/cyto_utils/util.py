@@ -134,7 +134,7 @@ def check_aggregate_operation(operation):
     avail_ops = ["mean", "median"]
     assert (
         operation in avail_ops
-    ), "operation {} not supported, select one of {}".format(operation, avail_ops)
+    ), f"operation {operation} not supported, select one of {avail_ops}"
 
     return operation
 

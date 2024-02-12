@@ -102,7 +102,7 @@ def annotate(
         if external_metadata != None:
             assert os.path.exists(
                 external_metadata
-            ), "external metadata at {} does not exist".format(external_metadata)
+            ), f"external metadata at {external_metadata} does not exist"
 
             external_metadata = pd.read_csv(external_metadata)
     else:
@@ -111,7 +111,7 @@ def annotate(
 
     if isinstance(external_metadata, pd.DataFrame):
         external_metadata.columns = [
-            "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x
             for x in external_metadata.columns
         ]
 

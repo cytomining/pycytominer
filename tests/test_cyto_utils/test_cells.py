@@ -32,9 +32,7 @@ def build_random_data(
         {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
     ).reset_index(drop=True)
 
-    data_df.columns = [
-        "{}_{}".format(compartment.capitalize(), x) for x in data_df.columns
-    ]
+    data_df.columns = [f"{compartment.capitalize()}_{x}" for x in data_df.columns]
 
     data_df = data_df.assign(
         ObjectNumber=list(range(1, 51)) * 2,

@@ -117,11 +117,9 @@ class Spherize(BaseEstimator, TransformerMixin):
 
         if not ((r == d) | (self.center & (r == n - 1)) | (not self.center & (r == n))):
             raise ValueError(
-                (
-                    "The data matrix X is not full rank: n = {n}, d = {d}, r = {r}."
-                    "Perfect linear dependencies are unusual in data matrices so something seems amiss."
-                    "Check for linear dependencies in the data and remove them."
-                )
+                "The data matrix X is not full rank: n = {n}, d = {d}, r = {r}."
+                "Perfect linear dependencies are unusual in data matrices so something seems amiss."
+                "Check for linear dependencies in the data and remove them."
             )
 
         # Get the eigenvalues and eigenvectors of the covariance matrix

@@ -24,9 +24,7 @@ import pycytominer
 
 project = pycytominer.__about__.__project__
 author = pycytominer.__about__.__author__
-copyright = "Copyright 2019 - {date} {author}".format(
-    date=date.today().year, author=author
-)
+copyright = f"Copyright 2019 - {date.today().year} {author}"
 
 # Get the version from dunamai (the backend of poetry-dynamic-versioning)
 auto_version = dunamai.Version.from_git()

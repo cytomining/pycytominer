@@ -24,7 +24,7 @@ default_compartments = get_default_compartments()
 default_linking_cols = get_default_linking_cols()
 
 
-class SingleCells(object):
+class SingleCells:
     """This is a class to interact with single cell morphological profiles. Interaction
     includes aggregation, normalization, and output.
 
@@ -331,7 +331,7 @@ class SingleCells(object):
             )
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
-            query = "select {} from {}".format(query_cols, compartment)
+            query = f"select {query_cols} from {compartment}"
             count_df = self.image_df.merge(
                 pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
             )
@@ -402,7 +402,7 @@ class SingleCells(object):
         check_compartments(compartment)
 
         query_cols = "TableNumber, ImageNumber, ObjectNumber"
-        query = "select {} from {}".format(query_cols, compartment)
+        query = f"select {query_cols} from {compartment}"
 
         # Load query and merge with image_df
         if df is None:
@@ -726,8 +726,8 @@ class SingleCells(object):
 
                 # Specify how to indicate merge suffixes
                 merge_suffix = [
-                    "_{comp_l}".format(comp_l=left_compartment),
-                    "_{comp_r}".format(comp_r=right_compartment),
+                    f"_{left_compartment}",
+                    f"_{right_compartment}",
                 ]
                 merge_suffix_rename += merge_suffix
                 left_link_col = self.compartment_linking_cols[left_compartment][
@@ -766,14 +766,12 @@ class SingleCells(object):
         full_merge_suffix_original = []
         for col_name in self.merge_cols + list(self.linking_col_rename.keys()):
             full_merge_suffix_original.append(col_name)
-            full_merge_suffix_rename.append("Metadata_{x}".format(x=col_name))
+            full_merge_suffix_rename.append(f"Metadata_{col_name}")
 
         for col_name in self.merge_cols + list(self.linking_col_rename.keys()):
             for suffix in set(merge_suffix_rename):
-                full_merge_suffix_original.append("{x}{y}".format(x=col_name, y=suffix))
-                full_merge_suffix_rename.append(
-                    "Metadata_{x}{y}".format(x=col_name, y=suffix)
-                )
+                full_merge_suffix_original.append(f"{col_name}{suffix}")
+                full_merge_suffix_rename.append(f"Metadata_{col_name}{suffix}")
 
         self.full_merge_suffix_rename = dict(
             zip(full_merge_suffix_original, full_merge_suffix_rename)

@@ -8,7 +8,7 @@ from pycytominer.cyto_utils.modz import modz_base
 
 # No replicate information
 data_df = pd.DataFrame({"x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]})
-data_df.index = ["sample_{}".format(x) for x in data_df.index]
+data_df.index = [f"sample_{x}" for x in data_df.index]
 
 # Include replicate information
 data_replicate_df = pd.concat(
@@ -31,7 +31,7 @@ data_replicate_df = pd.concat(
         ),
     ]
 ).reset_index(drop=True)
-data_replicate_df.index = ["sample_{}".format(x) for x in data_replicate_df.index]
+data_replicate_df.index = [f"sample_{x}" for x in data_replicate_df.index]
 
 precision = 4
 replicate_columns = "Metadata_g"
@@ -164,7 +164,7 @@ def test_modz_multiple_columns_feature_specify():
         ]
     ).reset_index(drop=True)
     data_replicate_feature_df.index = [
-        "sample_{}".format(x) for x in data_replicate_feature_df.index
+        f"sample_{x}" for x in data_replicate_feature_df.index
     ]
 
     # The expected result is to completely remove influence of anticorrelated sample
