@@ -102,7 +102,7 @@ def infer_cp_features(
     compartments = [x.title() for x in compartments]
 
     if image_features:
-        compartments = list(set(["Image"] + compartments))
+        compartments = list(set(["Image", *compartments]))
 
     features = []
     for col in population_df.columns.tolist():

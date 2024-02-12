@@ -71,6 +71,7 @@ codecov = ">=2.1.12"
 pytest-cov = "^4.1.0"
 pre-commit = ">=3.3.2"
 commitizen = "^3.12.0"
+ruff = "^0.2.1"
 
 [tool.poetry.group.docs]
 optional = true
@@ -115,6 +116,8 @@ version_files = [
 target-version = "py38"
 line-length = 88
 fix = true
+
+[tool.ruff.lint]
 select = [
     # flake8-2020
     # "YTT",
@@ -143,7 +146,7 @@ select = [
     # pyupgrade
     "UP",
     # ruff
-    # "RUF",
+    "RUF",
     # tryceratops
     # "TRY",
 ]

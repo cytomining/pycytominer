@@ -679,7 +679,7 @@ class SingleCells:
     def merge_single_cells(
         self,
         compute_subsample: bool = False,
-        sc_output_file: str = None,
+        sc_output_file: Optional[str] = None,
         compression_options: Optional[str] = None,
         float_format: Optional[str] = None,
         single_cell_normalize: bool = False,
@@ -754,8 +754,8 @@ class SingleCells:
 
                 sc_df = sc_df.merge(
                     self.load_compartment(compartment=right_compartment),
-                    left_on=self.merge_cols + [left_link_col],
-                    right_on=self.merge_cols + [right_link_col],
+                    left_on=[*self.merge_cols, left_link_col],
+                    right_on=[*self.merge_cols, right_link_col],
                     suffixes=merge_suffix,
                 )
 
