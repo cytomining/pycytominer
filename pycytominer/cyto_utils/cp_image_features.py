@@ -127,7 +127,7 @@ def aggregate_image_features(
         )
 
     # Aggregate other image features
-    if not len(np.setdiff1d(image_feature_categories, [count_prefix])) == 0:
+    if len(np.setdiff1d(image_feature_categories, [count_prefix])) != 0:
         image_features_df = image_features_df.drop(
             remove_cols, axis="columns", errors="ignore"
         )

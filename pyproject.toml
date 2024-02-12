@@ -132,7 +132,7 @@ select = [
     # flake8-debugger
     # "T10",
     # flake8-simplify
-    # "SIM",
+    "SIM",
     # isort
     # "I",
     # mccabe

@@ -95,9 +95,9 @@ platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
 platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
 
 # Write npz temp files
-key_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()}
+key_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict}
 npz_metadata_dict.update(npz_model_key)
-key_with_model_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()}
+key_with_model_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict}
 
 np.savez_compressed(output_npz_file, features=npz_feats, metadata=key_values)
 np.savez_compressed(

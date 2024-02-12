@@ -124,7 +124,7 @@ class SingleCells:
 
         # Check that the subsample_frac is between 0 and 1
         assert (
-            0 < subsample_frac and 1 >= subsample_frac
+            subsample_frac > 0 and subsample_frac <= 1
         ), "subsample_frac must be between 0 and 1"
 
         self.sql_file = sql_file
@@ -795,9 +795,9 @@ class SingleCells:
             if normalize_args is None:
                 normalize_args = {}
                 features = infer_cp_features(sc_df, compartments=self.compartments)
-            elif "features" not in normalize_args:
-                features = infer_cp_features(sc_df, compartments=self.compartments)
-            elif normalize_args["features"] == "infer":
+            elif ("features" not in normalize_args) or (
+                normalize_args["features"] == "infer"
+            ):
                 features = infer_cp_features(sc_df, compartments=self.compartments)
             else:
                 features = normalize_args["features"]
@@ -860,8 +860,7 @@ class SingleCells:
         if output_file is not None:
             self.set_output_file(output_file)
 
-        compartment_idx = 0
-        for compartment in self.compartments:
+        for compartment_idx, compartment in enumerate(self.compartments):
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
                     compartment=compartment,
@@ -879,7 +878,6 @@ class SingleCells:
                     on=self.strata,
                     how="inner",
                 )
-            compartment_idx += 1
 
         self.is_aggregated = True
 
