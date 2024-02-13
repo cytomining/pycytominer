@@ -3,6 +3,7 @@ repos:
     rev: "v0.1.6"
     hooks:
       - id: ruff
+        exclude: tutorials/nbconverted/
       - id: ruff-format
         exclude: tutorials/nbconverted/
   - repo: https://github.com/pre-commit/mirrors-prettier

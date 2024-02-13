@@ -17,6 +17,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
 
+# Ignore rules regarding import order which is required for sphinx build process
 import pycytominer  # noqa: E402, RUF100
 
 # -- Project information -----------------------------------------------------

@@ -121,10 +121,6 @@ fix = true
 select = [
     # flake8-2020
     "YTT",
-    # flake8-bandit
-    # "S",
-    # flake8-bugbear
-    # "B",
     # flake8-builtins
     "A",
     # flake8-comprehensions
@@ -133,10 +129,6 @@ select = [
     "T10",
     # flake8-simplify
     "SIM",
-    # isort
-    # "I",
-    # mccabe
-    # "C90",
     # pycodestyle
     "E", "W",
     # pyflakes
@@ -147,6 +139,15 @@ select = [
     "UP",
     # ruff
     "RUF",
+    # The following checks are disabled, but we are working towards enabling them in the future.
+    # flake8-bandit
+    # "S",
+    # flake8-bugbear
+    # "B",
+    # isort
+    # "I",
+    # mccabe
+    # "C90",
     # tryceratops
     # "TRY",
 ]
