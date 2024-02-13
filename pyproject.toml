@@ -120,7 +120,7 @@ fix = true
 [tool.ruff.lint]
 select = [
     # flake8-2020
-    # "YTT",
+    "YTT",
     # flake8-bandit
     # "S",
     # flake8-bugbear
@@ -142,7 +142,7 @@ select = [
     # pyflakes
     "F",
     # pygrep-hooks
-    # "PGH",
+    "PGH",
     # pyupgrade
     "UP",
     # ruff
