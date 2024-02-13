@@ -2,9 +2,6 @@
 Acquire consensus signatures for input samples
 """
 
-import numpy as np
-import pandas as pd
-
 from pycytominer import aggregate
 from pycytominer.cyto_utils import (
     output,

@@ -5,14 +5,11 @@ References
 .. [1] Kessy et al. 2016 "Optimal Whitening and Decorrelation" arXiv: https://arxiv.org/abs/1512.00809
 """
 
-import os
 import numpy as np
 import pandas as pd
-from scipy.linalg import eigh
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
-from pycytominer.cyto_utils import util
 
 
 class Spherize(BaseEstimator, TransformerMixin):

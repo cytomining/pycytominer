@@ -12,7 +12,6 @@
 #
 import os
 import sys
-import pathlib
 import dunamai
 from datetime import date
 

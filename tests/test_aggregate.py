@@ -235,7 +235,7 @@ def test_aggregate_incorrect_object_feature():
     incorrect_object_feature = "DOES NOT EXIST"
 
     with pytest.raises(KeyError) as err:
-        aggregate_result = aggregate(
+        aggregate(
             population_df=data_df,
             strata=["g"],
             features="infer",

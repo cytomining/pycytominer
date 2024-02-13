@@ -4,7 +4,6 @@ Utility function to load and process the output files of a DeepProfiler run.
 
 import os
 import pathlib
-import numpy as np
 import pandas as pd
 import warnings
 

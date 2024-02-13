@@ -1,10 +1,9 @@
 import numpy as np
-import pandas as pd
 from pycytominer.cyto_utils.util import (
     get_pairwise_correlation,
     check_correlation_method,
-    infer_cp_features,
 )
+from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):

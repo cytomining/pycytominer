@@ -3,7 +3,6 @@ Annotates profiles with metadata information
 """
 
 import os
-import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils import (
     output,

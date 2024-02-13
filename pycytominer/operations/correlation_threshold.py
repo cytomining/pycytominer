@@ -3,8 +3,6 @@ Returns list of features such that no two features have a correlation greater th
 specified threshold
 """
 
-import numpy as np
-import pandas as pd
 from pycytominer.cyto_utils import (
     infer_cp_features,
     get_pairwise_correlation,

@@ -3,12 +3,10 @@ Miscellaneous utility functions
 """
 
 import os
-import sys
 import warnings
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.features import (
-    infer_cp_features,
     convert_compartment_format_to_list,
 )
 
@@ -192,7 +190,7 @@ def check_fields_of_view_format(fields_of_view):
                     return list(map(int, fields_of_view))
                 except ValueError:
                     raise TypeError(
-                        f"Variables of type int expected, however some of the input fields of view are not integers."
+                        "Variables of type int expected, however some of the input fields of view are not integers."
                     )
         else:
             raise TypeError(
