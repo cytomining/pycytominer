@@ -198,12 +198,11 @@ Please follow all style guides to the best of your abilities.
 Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
 We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the poetry dev dependencies.
 
-### Python style guide
+### Python code quality guide
 
-For python code style, we use [black](https://github.com/psf/black).
-Please use black before committing any code.
-We will not accept code contributions that do not use black.
-Configuring your [dev environment](#dev-environments) as described above will ensure your code is formatted correctly automatically (using a tool called [pre-commit](https://pre-commit.com/)).
+For python code linting and formatting, we use [ruff](https://docs.astral.sh/ruff/) which is a Rust-based linter/formatter with drop-in parity with Black and Flake8.
+You can run `ruff check` to check for linting errors and `ruff format` to format your code.
+In addition, configuring your [dev environment](#dev-environments) as described above will ensure your code is formatted with ruff automatically using [pre-commit](https://pre-commit.com/) hooks.
 
 ### Documentation style guide
 
