@@ -126,7 +126,7 @@ select = [
     # flake8-bugbear
     # "B",
     # flake8-builtins
-    # "A",
+    "A",
     # flake8-comprehensions
     "C4",
     # flake8-debugger

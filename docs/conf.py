@@ -23,7 +23,7 @@ import pycytominer  # noqa: E402, RUF100
 
 project = pycytominer.__about__.__project__
 author = pycytominer.__about__.__author__
-copyright = f"Copyright 2019 - {date.today().year} {author}"
+project_copyright = f"Copyright 2019 - {date.today().year} {author}"
 
 # Get the version from dunamai (the backend of poetry-dynamic-versioning)
 auto_version = dunamai.Version.from_git()
