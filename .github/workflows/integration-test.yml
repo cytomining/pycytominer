@@ -38,8 +38,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          # Full history likely required for planned commitizen checks
-          # See #345
+          # Full history required for branch-based pre-commit checks
           fetch-depth: 0
       - name: Setup python, and check pre-commit cache
         uses: ./.github/actions/setup-env
@@ -105,3 +104,43 @@ jobs:
         # For every other version and/or OS, run pytest without coverage
         if: (matrix.os != 'ubuntu-latest') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
         run: poetry run pytest ${{ github.event.inputs.pytest_addopts }}
+  build:
+    name: Build versioned package
+    # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
+    # See https://github.com/actions/upload-artifact?tab=readme-ov-file#where-does-the-upload-go
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup python, and load cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: true
+          setup-poetry: true
+          install-deps: true
+      - name: Build
+        run: poetry build
+      - name: Get pycytominer version
+        id: get_version
+        run: |
+          echo "version=$(poetry version | cut -d' ' -f2 )" >> "$GITHUB_OUTPUT"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel
+          path: dist/*.whl
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 90
