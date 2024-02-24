@@ -136,9 +136,11 @@ jobs:
           name: wheel
           path: dist/*.whl
           if-no-files-found: error
+          retention-days: 90
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sdist
           path: dist/*.tar.gz
           if-no-files-found: error
+          retention-days: 90
