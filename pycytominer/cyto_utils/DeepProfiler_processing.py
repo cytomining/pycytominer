@@ -1,9 +1,9 @@
 """
 Utility function to load and process the output files of a DeepProfiler run.
 """
+
 import os
 import pathlib
-import numpy as np
 import pandas as pd
 import warnings
 
@@ -280,7 +280,7 @@ class AggregateDeepProfiler:
             df = pd.concat([df, meta_df], axis=1)
 
             # save metalevel file
-            if self.output_file != None:
+            if self.output_file is not None:
                 if not os.path.exists(self.output_file):
                     os.mkdir(self.output_file)
                 file_path = os.path.join(
@@ -291,7 +291,7 @@ class AggregateDeepProfiler:
 
         # Concatenate all of the above created profiles
         self.aggregated_profiles = pd.concat(
-            [x for x in self.aggregated_profiles]
+            list(self.aggregated_profiles)
         ).reset_index(drop=True)
 
         # clean and reindex columns
@@ -474,7 +474,7 @@ class SingleCellDeepProfiler:
         normalized.insert(1, "Location_Center_Y", y_locations)
 
         # separate code because normalize() will not return if it has an output file specified
-        if output_file != None:
+        if output_file is not None:
             output(
                 df=normalized,
                 output_filename=output_file,

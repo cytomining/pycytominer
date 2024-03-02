@@ -29,7 +29,7 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
     blocklist = pd.read_csv(blocklist_file)
 
     assert any(
-        [x == "blocklist" for x in blocklist.columns]
+        x == "blocklist" for x in blocklist.columns
     ), "one column must be named 'blocklist'"
 
     blocklist_features = blocklist.blocklist.to_list()
@@ -63,12 +63,10 @@ def label_compartment(cp_features, compartment, metadata_cols):
 
     assert (
         compartment in avail_compartments
-    ), "provide valid compartment. One of: {}".format(avail_compartments)
+    ), f"provide valid compartment. One of: {avail_compartments}"
 
     cp_features = [
-        "Metadata_{}".format(x)
-        if x in metadata_cols
-        else "{}_{}".format(compartment, x)
+        f"Metadata_{x}" if x in metadata_cols else f"{compartment}_{x}"
         for x in cp_features
     ]
 
@@ -104,11 +102,11 @@ def infer_cp_features(
     compartments = [x.title() for x in compartments]
 
     if image_features:
-        compartments = list(set(["Image"] + compartments))
+        compartments = list({"Image", *compartments})
 
     features = []
     for col in population_df.columns.tolist():
-        if any([col.startswith(x.title()) for x in compartments]):
+        if any(col.startswith(x.title()) for x in compartments):
             features.append(col)
 
     if metadata:

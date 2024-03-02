@@ -5,7 +5,7 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-from pycytominer.cyto_utils import output, infer_cp_features, load_profiles, util
+from pycytominer.cyto_utils import output, infer_cp_features, load_profiles
 from pycytominer.operations import Spherize, RobustMAD
 
 
@@ -127,7 +127,7 @@ def normalize(
     method = method.lower()
 
     avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
-    assert method in avail_methods, "operation must be one {}".format(avail_methods)
+    assert method in avail_methods, f"operation must be one {avail_methods}"
 
     if method == "standardize":
         scaler = StandardScaler()
@@ -184,7 +184,7 @@ def normalize(
         context = f"the `{method}` method in `pycytominer.normalize`"
         raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=normalized,
             output_filename=output_file,

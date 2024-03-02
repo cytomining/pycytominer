@@ -3,12 +3,10 @@ Miscellaneous utility functions
 """
 
 import os
-import sys
 import warnings
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.features import (
-    infer_cp_features,
     convert_compartment_format_to_list,
 )
 
@@ -134,7 +132,7 @@ def check_aggregate_operation(operation):
     avail_ops = ["mean", "median"]
     assert (
         operation in avail_ops
-    ), "operation {} not supported, select one of {}".format(operation, avail_ops)
+    ), f"operation {operation} not supported, select one of {avail_ops}"
 
     return operation
 
@@ -192,7 +190,7 @@ def check_fields_of_view_format(fields_of_view):
                     return list(map(int, fields_of_view))
                 except ValueError:
                     raise TypeError(
-                        f"Variables of type int expected, however some of the input fields of view are not integers."
+                        "Variables of type int expected, however some of the input fields of view are not integers."
                     )
         else:
             raise TypeError(
@@ -245,7 +243,7 @@ def check_image_features(image_features, image_columns):
         Nothing is returned.
     """
 
-    if "Image" in list(set(img_col.split("_")[0] for img_col in image_columns)):
+    if "Image" in list({img_col.split("_")[0] for img_col in image_columns}):
         # Image has already been prepended to most, but not all, columns
         level = 1
         image_columns = [x for x in image_columns if "_" in x]
@@ -254,7 +252,7 @@ def check_image_features(image_features, image_columns):
 
     try:
         assert all(
-            feature in list(set(img_col.split("_")[level] for img_col in image_columns))
+            feature in list({img_col.split("_")[level] for img_col in image_columns})
             for feature in image_features
         )
     except AssertionError:

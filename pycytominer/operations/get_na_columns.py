@@ -3,7 +3,6 @@ Remove variables with specified threshold of NA values
 Note: This was called `drop_na_columns` in cytominer for R
 """
 
-import pandas as pd
 from pycytominer.cyto_utils.features import infer_cp_features
 
 

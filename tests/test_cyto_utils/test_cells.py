@@ -32,9 +32,7 @@ def build_random_data(
         {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
     ).reset_index(drop=True)
 
-    data_df.columns = [
-        "{}_{}".format(compartment.capitalize(), x) for x in data_df.columns
-    ]
+    data_df.columns = [f"{compartment.capitalize()}_{x}" for x in data_df.columns]
 
     data_df = data_df.assign(
         ObjectNumber=list(range(1, 51)) * 2,
@@ -224,11 +222,11 @@ def test_SingleCells_init():
     assert AP_SUBSAMPLE.subsample_frac == 1
     assert AP.subsample_n == "all"
     assert AP_SUBSAMPLE.subsample_n == 2
-    assert AP.subset_data_df == None
-    assert AP.output_file == None
+    assert AP.subset_data_df is None
+    assert AP.output_file is None
     assert AP.aggregation_operation == "median"
     assert not AP.is_aggregated
-    assert AP.subsampling_random_state == None
+    assert AP.subsampling_random_state is None
     assert AP_SUBSAMPLE.subsampling_random_state == 123
     assert AP.fields_of_view == "all"
     assert AP.fields_of_view_feature == "Metadata_Site"
@@ -244,7 +242,7 @@ def test_SingleCells_reset_variables():
     ap_switch = SingleCells(sql_file=TMP_SQLITE_FILE)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
-    assert ap_switch.subsampling_random_state == None
+    assert ap_switch.subsampling_random_state is None
     ap_switch.set_subsample_frac(0.8)
     assert ap_switch.subsample_frac == 0.8
     ap_switch.set_subsample_frac(1)
@@ -313,7 +311,7 @@ def test_load_compartment():
         # note: pd.api.types.is_integer sometimes is unable to detect int64
         or CELLS_DF[colname].dtype == "int64"
         # avoid recasting the metadata_types
-        and colname not in metadata_types.keys()
+        and colname not in metadata_types
     }
 
     # create deep copy of CELLS_DF with manually re-typed float columns as float32

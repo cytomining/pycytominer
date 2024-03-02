@@ -4,7 +4,6 @@ Modified from caret::nearZeroVar()
 """
 
 import numpy as np
-import pandas as pd
 from pycytominer.cyto_utils import infer_cp_features
 
 

@@ -1,5 +1,3 @@
-import os
-import pytest
 import pandas as pd
 from pycytominer.cyto_utils import (
     aggregate_fields_count,

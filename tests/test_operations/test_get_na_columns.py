@@ -69,7 +69,7 @@ def test_get_na_columns_sample():
 
 def test_get_na_columns_featureinfer():
     with pytest.raises(AssertionError) as nocp:
-        na_result = get_na_columns(
+        get_na_columns(
             population_df=data_df, samples="all", features="infer", cutoff=0.1
         )
 

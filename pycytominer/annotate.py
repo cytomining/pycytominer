@@ -3,7 +3,6 @@ Annotates profiles with metadata information
 """
 
 import os
-import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils import (
     output,
@@ -99,10 +98,10 @@ def annotate(
         annotated = cp_clean(annotated)
 
     if not isinstance(external_metadata, pd.DataFrame):
-        if external_metadata != None:
+        if external_metadata is not None:
             assert os.path.exists(
                 external_metadata
-            ), "external metadata at {} does not exist".format(external_metadata)
+            ), f"external metadata at {external_metadata} does not exist"
 
             external_metadata = pd.read_csv(external_metadata)
     else:
@@ -111,7 +110,7 @@ def annotate(
 
     if isinstance(external_metadata, pd.DataFrame):
         external_metadata.columns = [
-            "Metadata_{}".format(x) if not x.startswith("Metadata_") else x
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x
             for x in external_metadata.columns
         ]
 
@@ -133,7 +132,7 @@ def annotate(
 
     annotated = annotated.loc[:, meta_cols + other_cols]
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=annotated,
             output_filename=output_file,

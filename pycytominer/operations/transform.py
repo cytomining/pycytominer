@@ -5,14 +5,11 @@ References
 .. [1] Kessy et al. 2016 "Optimal Whitening and Decorrelation" arXiv: https://arxiv.org/abs/1512.00809
 """
 
-import os
 import numpy as np
 import pandas as pd
-from scipy.linalg import eigh
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
-from pycytominer.cyto_utils import util
 
 
 class Spherize(BaseEstimator, TransformerMixin):
@@ -117,11 +114,9 @@ class Spherize(BaseEstimator, TransformerMixin):
 
         if not ((r == d) | (self.center & (r == n - 1)) | (not self.center & (r == n))):
             raise ValueError(
-                (
-                    "The data matrix X is not full rank: n = {n}, d = {d}, r = {r}."
-                    "Perfect linear dependencies are unusual in data matrices so something seems amiss."
-                    "Check for linear dependencies in the data and remove them."
-                )
+                "The data matrix X is not full rank: n = {n}, d = {d}, r = {r}."
+                "Perfect linear dependencies are unusual in data matrices so something seems amiss."
+                "Check for linear dependencies in the data and remove them."
             )
 
         # Get the eigenvalues and eigenvectors of the covariance matrix

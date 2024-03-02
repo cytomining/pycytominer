@@ -82,9 +82,6 @@ def test_consensus_modz():
     assert modz_df.shape == (2, 5)
     assert np.round(modz_df.loc[0, "Cells_x"], 5) == 3.7602
 
-    mean_df = consensus(
-        data_df, replicate_columns="Metadata_treatment", operation="mean"
-    )
     modz_df = consensus(
         data_df,
         replicate_columns="Metadata_treatment",

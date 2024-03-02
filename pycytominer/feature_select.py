@@ -1,6 +1,7 @@
 """
 Select features to use in downstream analysis based on specified selection method
 """
+
 from pycytominer.operations import (
     correlation_threshold,
     variance_threshold,
@@ -112,12 +113,10 @@ def feature_select(
     # Make sure the user provides a supported operation
     if isinstance(operation, list):
         assert all(
-            [x in all_ops for x in operation]
-        ), "Some operation(s) {} not supported. Choose {}".format(operation, all_ops)
+            x in all_ops for x in operation
+        ), f"Some operation(s) {operation} not supported. Choose {all_ops}"
     elif isinstance(operation, str):
-        assert operation in all_ops, "{} not supported. Choose {}".format(
-            operation, all_ops
-        )
+        assert operation in all_ops, f"{operation} not supported. Choose {all_ops}"
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")
@@ -182,7 +181,7 @@ def feature_select(
 
     selected_df = profiles.drop(excluded_features, axis="columns")
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=selected_df,
             output_filename=output_file,

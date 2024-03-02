@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 # # Single-cell Profiling Walkthrough
 #
@@ -113,7 +112,7 @@ linking_cols = {
 
 
 # setting up sqlite address
-sqlite_address = f"sqlite:///{str(plate_data)}"
+sqlite_address = f"sqlite:///{plate_data!s}"
 
 # loading single cell morphology data into pycyotminer's SingleCells Object
 single_cell_profile = SingleCells(

@@ -25,9 +25,10 @@ def test_output_shape_and_required_columns(
         metadata_input_dataframe.shape[1] + 2,
     )
 
-    # verify that the Nuclear_Location_Center_X and Nuclear_Location_Center_Y columns are present
-    assert "Nuclei_Location_Center_X" in cell_loc["CellCenters"][0][0].keys()
-    assert "Nuclei_Location_Center_Y" in cell_loc["CellCenters"][0][0].keys()
+    assert isinstance(cell_loc["CellCenters"][0][0], dict)
+    # verify that the Nuclear_Location_Center_X and Nuclear_Location_Center_Y dictionary keys are present
+    assert "Nuclei_Location_Center_X" in cell_loc["CellCenters"][0][0]
+    assert "Nuclei_Location_Center_Y" in cell_loc["CellCenters"][0][0]
 
 
 @pytest.mark.parametrize("cell_loc", ["cell_loc1", "cell_loc2", "cell_loc3"])
