@@ -5,7 +5,7 @@
 ### Fix
 
 - **build**: fix build versioning
-- simplify Spherize transform – epsilon to regularize instead of clip, add additional checks (see #320) 
+- simplify Spherize transform – epsilon to regularize instead of clip, add additional checks (see #320)
 
 ### Refactor
 
