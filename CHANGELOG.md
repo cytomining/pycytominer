@@ -1,11 +1,11 @@
 ## v1.1.0 (2024-03-05)
 
-[Detailed Release Notes](https://github.com/cytomining/pycytominer/releases/tag/v1.1.0)
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.1.0)
 
 ### Fix
 
 - **build**: fix build versioning
-- Fix Spherize – use SVD, simplify calculations
+- simplify Spherize transform – epsilon to regularize instead of clip, add additional checks (see #320) 
 
 ### Refactor
 
@@ -16,11 +16,11 @@
 ### Test
 
 - add flake8-bandit ignores
-- add clarififying comments for cell_loc test
+- add clarifying comments for cell_loc test
 
 ### Docs
 
-- Update Readme with Citation section
+- update Readme with Citation section
 - **template**: PR template attribution to comment
 - **changelog**: add commitizen template
 - add description of ruff linting/formatting
