@@ -1,10 +1,10 @@
 """
 This tests the output from a DeepProfiler run (May 2021)
 """
+
 import os
 import random
 import pytest
-import numpy as np
 import pandas as pd
 import pathlib
 import numpy.testing as npt

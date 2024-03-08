@@ -55,7 +55,7 @@ def test_write_gct():
         version="#1.3",
     )
     gct_row_list = []
-    with open(output_filename, "r") as gct_file:
+    with open(output_filename) as gct_file:
         gctreader = csv.reader(gct_file, delimiter="\t")
         for row in gctreader:
             gct_row_list.append(row)
@@ -102,7 +102,7 @@ def test_write_gct_infer_features():
         version="#1.3",
     )
     gct_row_list = []
-    with open(output_filename, "r") as gct_file:
+    with open(output_filename) as gct_file:
         gctreader = csv.reader(gct_file, delimiter="\t")
         for row in gctreader:
             gct_row_list.append(row)
@@ -147,7 +147,7 @@ def test_write_gct_with_feature_metadata():
         version="#1.3",
     )
     gct_row_list = []
-    with open(output_filename, "r") as gct_file:
+    with open(output_filename) as gct_file:
         gctreader = csv.reader(gct_file, delimiter="\t")
         for row in gctreader:
             gct_row_list.append(row)

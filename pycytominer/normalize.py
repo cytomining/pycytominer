@@ -5,11 +5,7 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-from pycytominer.cyto_utils import (
-    output,
-    infer_cp_features,
-    load_profiles,
-)
+from pycytominer.cyto_utils import output, infer_cp_features, load_profiles
 from pycytominer.operations import Spherize, RobustMAD
 
 
@@ -131,7 +127,7 @@ def normalize(
     method = method.lower()
 
     avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
-    assert method in avail_methods, "operation must be one {}".format(avail_methods)
+    assert method in avail_methods, f"operation must be one {avail_methods}"
 
     if method == "standardize":
         scaler = StandardScaler()
@@ -141,7 +137,10 @@ def normalize(
         scaler = RobustMAD(epsilon=mad_robustize_epsilon)
     elif method == "spherize":
         scaler = Spherize(
-            center=spherize_center, method=spherize_method, epsilon=spherize_epsilon
+            center=spherize_center,
+            method=spherize_method,
+            epsilon=spherize_epsilon,
+            return_numpy=True,
         )
 
     if features == "infer":
@@ -161,16 +160,31 @@ def normalize(
         # Subset to only the features measured in the sample query
         fitted_scaler = scaler.fit(profiles.query(samples).loc[:, features])
 
-    # Scale the feature dataframe
+    fitted_scaled = fitted_scaler.transform(feature_df)
+
+    columns = fitted_scaler.columns if method == "spherize" else feature_df.columns
+
     feature_df = pd.DataFrame(
-        fitted_scaler.transform(feature_df),
-        columns=feature_df.columns,
+        fitted_scaled,
+        columns=columns,
         index=feature_df.index,
     )
 
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
-    if output_file != None:
+    if feature_df.shape != profiles.loc[:, features].shape:
+        error_detail = "The number of rows and columns in the feature dataframe does not match the original dataframe"
+        context = f"the `{method}` method in `pycytominer.normalize`"
+        raise ValueError(f"{error_detail}. This is likely a bug in {context}")
+
+    if (normalized.shape[0] != profiles.shape[0]) or (
+        normalized.shape[1] != len(features) + len(meta_features)
+    ):
+        error_detail = "The number of rows and columns in the normalized dataframe does not match the original dataframe"
+        context = f"the `{method}` method in `pycytominer.normalize`"
+        raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
+
+    if output_file is not None:
         output(
             df=normalized,
             output_filename=output_file,

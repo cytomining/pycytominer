@@ -1,6 +1,4 @@
-import os
 import numpy as np
-import pandas as pd
 
 
 def annotate_cmap(
@@ -84,14 +82,13 @@ def annotate_cmap(
                 "Metadata_mg_per_ml",
             ] = 0
 
-    if perturbation_mode == "genetic":
-        if "Metadata_pert_name" in annotated.columns:
-            annotated = annotated.assign(
-                Metadata_broad_sample_type=[
-                    "control" if x == "EMPTY" else "trt"
-                    for x in annotated.Metadata_pert_name
-                ]
-            )
+    if perturbation_mode == "genetic" and "Metadata_pert_name" in annotated.columns:
+        annotated = annotated.assign(
+            Metadata_broad_sample_type=[
+                "control" if x == "EMPTY" else "trt"
+                for x in annotated.Metadata_pert_name
+            ]
+        )
 
     if "Metadata_broad_sample_type" in annotated.columns:
         annotated = annotated.assign(

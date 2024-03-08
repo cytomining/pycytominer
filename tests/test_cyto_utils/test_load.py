@@ -22,10 +22,10 @@ tmpdir = tempfile.gettempdir()
 output_data_file = os.path.join(tmpdir, "test_data.csv")
 output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
 output_data_parquet = os.path.join(tmpdir, "test_parquet.parquet")
-output_data_gzip_file = "{}.gz".format(output_data_file)
+output_data_gzip_file = f"{output_data_file}.gz"
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
-output_platemap_file_gzip = "{}.gz".format(output_platemap_file)
+output_platemap_file_gzip = f"{output_platemap_file}.gz"
 output_npz_file = os.path.join(tmpdir, "test_npz.npz")
 output_npz_with_model_file = os.path.join(tmpdir, "test_npz_withmodel.npz")
 output_npz_without_metadata_file = os.path.join(tmpdir, "test_npz_withoutmetadata.npz")
@@ -95,9 +95,9 @@ platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
 platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
 
 # Write npz temp files
-key_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()}
+key_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict}
 npz_metadata_dict.update(npz_model_key)
-key_with_model_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict.keys()}
+key_with_model_values = {k: npz_metadata_dict[k] for k in npz_metadata_dict}
 
 np.savez_compressed(output_npz_file, features=npz_feats, metadata=key_values)
 np.savez_compressed(
@@ -161,16 +161,14 @@ def test_load_npz():
     core_cols = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"]
 
     assert npz_df.shape == (6, 5)
-    assert npz_df.columns.tolist() == core_cols + ["DP_0", "DP_1"]
+    assert npz_df.columns.tolist() == [*core_cols, "DP_0", "DP_1"]
 
     assert npz_custom_prefix_df.shape == (6, 5)
-    assert npz_custom_prefix_df.columns.tolist() == core_cols + [
-        "test_0",
-        "test_1",
-    ]
+    assert npz_custom_prefix_df.columns.tolist() == [*core_cols, "test_0", "test_1"]
 
     assert npz_with_model_df.shape == (6, 6)
-    assert npz_with_model_df.columns.tolist() == core_cols + [
+    assert npz_with_model_df.columns.tolist() == [
+        *core_cols,
         "Metadata_Model",
         "cnn_0",
         "cnn_1",
@@ -185,11 +183,11 @@ def test_load_npz():
 
     # Check real data
     assert real_data_df.shape == (206, 54)
-    assert all([x in real_data_df.columns for x in core_cols + ["Metadata_Model"]])
+    assert all(x in real_data_df.columns for x in [*core_cols, "Metadata_Model"])
     assert len(real_data_df.Metadata_Model.unique()) == 1
     assert real_data_df.Metadata_Model.unique()[0] == "cnn"
     assert real_data_df.drop(
-        core_cols + ["Metadata_Model"], axis="columns"
+        [*core_cols, "Metadata_Model"], axis="columns"
     ).columns.tolist() == [f"cnn_{x}" for x in range(0, 50)]
 
     # Check locations data

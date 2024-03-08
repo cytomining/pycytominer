@@ -4,7 +4,6 @@ import random
 import pytest
 import pandas as pd
 from pycytominer import annotate
-from pycytominer.cyto_utils import cp_clean
 
 random.seed(123)
 
@@ -56,7 +55,7 @@ broad_platemap_df = platemap_df.assign(Metadata_broad_sample=example_broad_sampl
 
 def test_annotate_cmap_assert():
     with pytest.raises(AssertionError) as nocmap:
-        anno_result = annotate(
+        annotate(
             profiles=data_df,
             platemap=platemap_df,
             join_on=["Metadata_well_position", "Metadata_Well"],
@@ -209,10 +208,8 @@ def test_annotate_cp_clean():
     )
 
     assert all(
-        [
-            x in anno_result.columns
-            for x in ["Image_Metadata_Well", "Image_Metadata_Plate"]
-        ]
+        x in anno_result.columns
+        for x in ["Image_Metadata_Well", "Image_Metadata_Plate"]
     )
 
     anno_result = annotate(
@@ -222,4 +219,4 @@ def test_annotate_cp_clean():
         join_on=["Metadata_well_position", "Image_Metadata_Well"],
     )
 
-    assert all([x in anno_result.columns for x in ["Metadata_Well", "Metadata_Plate"]])
+    assert all(x in anno_result.columns for x in ["Metadata_Well", "Metadata_Plate"])

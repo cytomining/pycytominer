@@ -2,9 +2,6 @@
 Acquire consensus signatures for input samples
 """
 
-import numpy as np
-import pandas as pd
-
 from pycytominer import aggregate
 from pycytominer.cyto_utils import (
     output,
@@ -120,7 +117,7 @@ def consensus(
             subset_data_df=None,
         )
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=consensus_df,
             output_filename=output_file,

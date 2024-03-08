@@ -2,8 +2,6 @@
 Remove noisy features, as defined by features with excessive standard deviation within the same perturbation group.
 """
 
-import numpy as np
-import pandas as pd
 from pycytominer.cyto_utils import infer_cp_features
 
 

@@ -12,21 +12,19 @@
 #
 import os
 import sys
-import pathlib
 import dunamai
 from datetime import date
 
 sys.path.insert(0, os.path.abspath(".."))
 
-import pycytominer
+# Ignore rules regarding import order which is required for sphinx build process
+import pycytominer  # noqa: E402, RUF100
 
 # -- Project information -----------------------------------------------------
 
 project = pycytominer.__about__.__project__
 author = pycytominer.__about__.__author__
-copyright = "Copyright 2019 - {date} {author}".format(
-    date=date.today().year, author=author
-)
+project_copyright = f"Copyright 2019 - {date.today().year} {author}"
 
 # Get the version from dunamai (the backend of poetry-dynamic-versioning)
 auto_version = dunamai.Version.from_git()

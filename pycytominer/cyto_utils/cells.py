@@ -24,7 +24,7 @@ default_compartments = get_default_compartments()
 default_linking_cols = get_default_linking_cols()
 
 
-class SingleCells(object):
+class SingleCells:
     """This is a class to interact with single cell morphological profiles. Interaction
     includes aggregation, normalization, and output.
 
@@ -124,7 +124,7 @@ class SingleCells(object):
 
         # Check that the subsample_frac is between 0 and 1
         assert (
-            0 < subsample_frac and 1 >= subsample_frac
+            subsample_frac > 0 and subsample_frac <= 1
         ), "subsample_frac must be between 0 and 1"
 
         self.sql_file = sql_file
@@ -331,7 +331,7 @@ class SingleCells(object):
             )
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
-            query = "select {} from {}".format(query_cols, compartment)
+            query = f"select {query_cols} from {compartment}"
             count_df = self.image_df.merge(
                 pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
             )
@@ -360,7 +360,7 @@ class SingleCells(object):
             A subsampled pandas dataframe of single cell profiles.
         """
 
-        if self.subsampling_random_state == None:
+        if self.subsampling_random_state is None:
             random_state = np.random.randint(0, 10000, size=1)[0]
             self.set_subsample_random_state(random_state)
 
@@ -402,7 +402,7 @@ class SingleCells(object):
         check_compartments(compartment)
 
         query_cols = "TableNumber, ImageNumber, ObjectNumber"
-        query = "select {} from {}".format(query_cols, compartment)
+        query = f"select {query_cols} from {compartment}"
 
         # Load query and merge with image_df
         if df is None:
@@ -679,7 +679,7 @@ class SingleCells(object):
     def merge_single_cells(
         self,
         compute_subsample: bool = False,
-        sc_output_file: str = None,
+        sc_output_file: Optional[str] = None,
         compression_options: Optional[str] = None,
         float_format: Optional[str] = None,
         single_cell_normalize: bool = False,
@@ -726,8 +726,8 @@ class SingleCells(object):
 
                 # Specify how to indicate merge suffixes
                 merge_suffix = [
-                    "_{comp_l}".format(comp_l=left_compartment),
-                    "_{comp_r}".format(comp_r=right_compartment),
+                    f"_{left_compartment}",
+                    f"_{right_compartment}",
                 ]
                 merge_suffix_rename += merge_suffix
                 left_link_col = self.compartment_linking_cols[left_compartment][
@@ -754,8 +754,8 @@ class SingleCells(object):
 
                 sc_df = sc_df.merge(
                     self.load_compartment(compartment=right_compartment),
-                    left_on=self.merge_cols + [left_link_col],
-                    right_on=self.merge_cols + [right_link_col],
+                    left_on=[*self.merge_cols, left_link_col],
+                    right_on=[*self.merge_cols, right_link_col],
                     suffixes=merge_suffix,
                 )
 
@@ -766,14 +766,12 @@ class SingleCells(object):
         full_merge_suffix_original = []
         for col_name in self.merge_cols + list(self.linking_col_rename.keys()):
             full_merge_suffix_original.append(col_name)
-            full_merge_suffix_rename.append("Metadata_{x}".format(x=col_name))
+            full_merge_suffix_rename.append(f"Metadata_{col_name}")
 
         for col_name in self.merge_cols + list(self.linking_col_rename.keys()):
             for suffix in set(merge_suffix_rename):
-                full_merge_suffix_original.append("{x}{y}".format(x=col_name, y=suffix))
-                full_merge_suffix_rename.append(
-                    "Metadata_{x}{y}".format(x=col_name, y=suffix)
-                )
+                full_merge_suffix_original.append(f"{col_name}{suffix}")
+                full_merge_suffix_rename.append(f"Metadata_{col_name}{suffix}")
 
         self.full_merge_suffix_rename = dict(
             zip(full_merge_suffix_original, full_merge_suffix_rename)
@@ -787,9 +785,8 @@ class SingleCells(object):
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")
             # pandas rename performance may be improved using copy=False, inplace=False
             # reference: https://ryanlstevens.github.io/2022-05-06-pandasColumnRenaming/
+            .rename(self.linking_col_rename, axis="columns", copy=False, inplace=False)
             .rename(
-                self.linking_col_rename, axis="columns", copy=False, inplace=False
-            ).rename(
                 self.full_merge_suffix_rename, axis="columns", copy=False, inplace=False
             )
         )
@@ -798,9 +795,9 @@ class SingleCells(object):
             if normalize_args is None:
                 normalize_args = {}
                 features = infer_cp_features(sc_df, compartments=self.compartments)
-            elif "features" not in normalize_args:
-                features = infer_cp_features(sc_df, compartments=self.compartments)
-            elif normalize_args["features"] == "infer":
+            elif ("features" not in normalize_args) or (
+                normalize_args["features"] == "infer"
+            ):
                 features = infer_cp_features(sc_df, compartments=self.compartments)
             else:
                 features = normalize_args["features"]
@@ -816,7 +813,7 @@ class SingleCells(object):
             )
 
         # if output argument is provided, call it using df_merged_sc and kwargs
-        if sc_output_file != None:
+        if sc_output_file is not None:
             return output(
                 df=sc_df,
                 output_filename=sc_output_file,
@@ -860,11 +857,10 @@ class SingleCells(object):
             else will write to file and return the filepath of the file
         """
 
-        if output_file != None:
+        if output_file is not None:
             self.set_output_file(output_file)
 
-        compartment_idx = 0
-        for compartment in self.compartments:
+        for compartment_idx, compartment in enumerate(self.compartments):
             if compartment_idx == 0:
                 aggregated = self.aggregate_compartment(
                     compartment=compartment,
@@ -882,11 +878,10 @@ class SingleCells(object):
                     on=self.strata,
                     how="inner",
                 )
-            compartment_idx += 1
 
         self.is_aggregated = True
 
-        if self.output_file != None:
+        if self.output_file is not None:
             return output(
                 df=aggregated,
                 output_filename=self.output_file,

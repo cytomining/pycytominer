@@ -63,7 +63,7 @@ def write_gct(
 
     # Step 2: Get the sample metadata portion of the output file
     metadata_part = metadata_df.transpose()
-    metadata_part.columns = ["SAMPLE_{}".format(x) for x in metadata_part.columns]
+    metadata_part.columns = [f"SAMPLE_{x}" for x in metadata_part.columns]
     metadata_part = (
         metadata_part.transpose()
         .reset_index()

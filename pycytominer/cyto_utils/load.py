@@ -59,7 +59,7 @@ def infer_delim(file: str):
     the delimiter used in the dataframe (typically either tab or commas)
     """
     try:
-        with open(file, "r") as csvfile:
+        with open(file) as csvfile:
             line = csvfile.readline()
     except UnicodeDecodeError:
         with gzip.open(file, "r") as gzipfile:

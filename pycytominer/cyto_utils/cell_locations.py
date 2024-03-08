@@ -4,12 +4,13 @@ Utility function to augment a metadata file with X,Y locations of cells in each 
 
 import pathlib
 import pandas as pd
+import tempfile
+from typing import Optional, Union
+
 import boto3
 import botocore
-import tempfile
 import collections
 import sqlalchemy
-from typing import Union
 
 
 class CellLocation:
@@ -77,7 +78,7 @@ class CellLocation:
         self,
         metadata_input: Union[str, pd.DataFrame],
         single_cell_input: Union[str, sqlalchemy.engine.Engine],
-        augmented_metadata_output: str = None,
+        augmented_metadata_output: Optional[str] = None,
         overwrite: bool = False,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
@@ -234,7 +235,7 @@ class CellLocation:
         output_df_list = collections.defaultdict(list)
 
         # iterate over each group of cells in the merged DataFrame
-        group_cols = self.image_key + [self.image_column]
+        group_cols = [*self.image_key, self.image_column]
 
         for group_values, cell_df in df.groupby(group_cols):
             # add the image-level information to the output dictionary

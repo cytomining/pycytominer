@@ -6,7 +6,10 @@
   "features": {
     "ghcr.io/devcontainers-contrib/features/poetry:2": {}
   },
-  // Use 'postCreateCommand' to run commands after the container is created.
+  // This command is kept outside of the postCreateCommand script because we
+  // don't want to include a privileged command in the manual setup process.
+  "onCreateCommand": "sudo /usr/local/py-utils/bin/poetry self add \"poetry-dynamic-versioning[plugin]\"",
+  // This postCreateCommand script is also referenced for manual dev setup.
   "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
   // Configure tool-specific properties.
   "customizations": {
@@ -22,7 +25,11 @@
       },
 
       // Add the IDs of extensions you want installed when the container is created.
-      "extensions": ["ms-python.python", "ms-python.vscode-pylance"]
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
+      ]
     }
   }
 }

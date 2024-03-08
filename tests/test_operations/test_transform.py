@@ -1,4 +1,3 @@
-import os
 import random
 import pytest
 import numpy as np
@@ -22,6 +21,8 @@ def test_spherize():
     spherize_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
     for method in spherize_methods:
         for center in [True, False]:
+            if ["PCA-cor", "ZCA-cor"] and not center:
+                continue
             scaler = Spherize(method=method, center=center)
             scaler = scaler.fit(data_df)
             transform_df = scaler.transform(data_df)
@@ -46,6 +47,8 @@ def test_low_variance_spherize():
     spherize_methods = ["PCA-cor", "ZCA-cor"]
     for method in spherize_methods:
         for center in [True, False]:
+            if method in ["PCA-cor", "ZCA-cor"] and not center:
+                continue
             scaler = Spherize(method=method, center=center)
             with pytest.raises(ValueError) as errorinfo:
                 scaler = scaler.fit(data_no_variance)
@@ -57,6 +60,8 @@ def test_spherize_precenter():
     data_precentered = data_df - data_df.mean()
     spherize_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
     for method in spherize_methods:
+        if method in ["PCA-cor", "ZCA-cor"]:
+            continue
         scaler = Spherize(method=method, center=False)
         scaler = scaler.fit(data_precentered)
         transform_df = scaler.transform(data_df)

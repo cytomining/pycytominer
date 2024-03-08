@@ -23,8 +23,10 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Dev environments](#dev-environments)
 - [Releases](#releases)
 
-[Style guides](#style-guides)
+[Code Quality](#code-quality)
 
+- [Formatting](#formatting)
+- [Linting](#linting)
 - [Git commit messages](#git-commit-messages)
 - [Python style guide](#python-style-guide)
 - [Documentation style guide](#documentation-style-guide)
@@ -175,10 +177,12 @@ Project maintainers are responsible for releasing new versions of pycytominer.
 Creating a new release includes the following steps:
 
 1. Create a new branch from `main` for the release (e.g. `release-v1.0.0`)
-2. Run the command `cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen`.
-3. Review the changes to CHANGELOG.md and edit as needed.
-4. Review the [commit history](https://github.com/cytomining/pycytominer/compare) from the last release and add documentation for changes that weren't auto-included because they didn't follow the conventional-commit standard.
-5. `git add` all changes and run `cz bump` to create the release commit.
+2. Review the [commit history](https://github.com/cytomining/pycytominer/compare) from the last release and check whether it includes commits that don't follow the [conventional commit standard](https://www.conventionalcommits.org/en/v1.0.0/#summary).
+   If all changes follow conventional commits, skip to step 5.
+3. Run the command `cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen` and generate the draft changelog.
+4. Review the changes to `CHANGELOG.md`. If necessary, add descriptions of missing changes and modify descriptions to match conventional commits standard.
+5. `git add` any manual changes and run `cz bump` to create the release commit.
+   Push the changes to the release branch.
 6. Create a pull request for the release branch into `main`.
 7. Request a review from another maintainer.
 8. Once the pull request is approved, merge it into `main`.
@@ -187,23 +191,33 @@ Creating a new release includes the following steps:
 11. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via Github Actions.
 12. Manually create the release at [conda-forge](https://anaconda.org/conda-forge/pycytominer).
 
-## Style guides
+## Code Quality
 
-Please follow all style guides to the best of your abilities.
+Please follow the below quality guides to the best of your abilities.
+If you have configured your [dev environment](#dev-environments) as described above, the formatting and linting rules will also be enforced automatically using the installed [pre-commit](https://pre-commit.com/) hooks.
+
+### Formatting
+
+We use [ruff](https://docs.astral.sh/ruff/) for formatting Python code, and [prettier](https://prettier.io/) for formatting markdown, json and yaml files.
+Ruff includes a python code formatter similar to Black.
+We include `ruff` in the poetry dev dependencies so it can be run manually using `ruff format`
+Prettier (which is not python-based) is not included in the poetry dev dependencies, but can be installed and run manually.
+Alternately, both `ruff format` and `prettier` will be run automatically at commit time with the pre-commit hooks installed.
+
+### Linting
+
+For python code linting, we also use [ruff](https://docs.astral.sh/ruff/), which can perform same linting checks as Flake8.
+You can use the command `ruff check` to check for linting errors.
+The list of linting rules and exceptions are defined in the `pyproject.toml` file under the `[tool.ruff.lint]` section.
+We also include some commented-out rules in that section that we are working towards enabling in the future.
+All linting checks will also be run automatically at commit time with the pre-commit hooks as described above.
 
 ### Git commit messages
 
 Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
 We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the poetry dev dependencies.
 
-### Python style guide
-
-For python code style, we use [black](https://github.com/psf/black).
-Please use black before committing any code.
-We will not accept code contributions that do not use black.
-Configuring your [dev environment](#dev-environments) as described above will ensure your code is formatted correctly automatically (using a tool called [pre-commit](https://pre-commit.com/)).
-
 ### Documentation style guide
 
 We use the [numpy documentation style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
-We also use [prettier](https://prettier.io/) for automatic formatting of markdown, json and yaml files.
+When writing markdown documentation, please also ensure that each sentence is on a new line.

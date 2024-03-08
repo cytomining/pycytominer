@@ -7,7 +7,7 @@ import sqlite3
 
 def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
-    if type(cmd) == str:
+    if isinstance(cmd, str):
         cmd = cmd.split()
     output = subprocess.run(cmd, capture_output=True, text=True)
     if output.stderr != "":
@@ -76,7 +76,7 @@ def collate(
         import cytominer_database.munge
     except ImportError:
         raise ImportError(
-            """Optional dependency cytominer-database is not installed. 
+            """Optional dependency cytominer-database is not installed.
             Please install the `collate` optional dependency group: e.g. `pip install pycytominer[collate]`
             """
         )
@@ -143,7 +143,7 @@ def collate(
             )
             for eachcompartment in ["Cells", "Cytoplasm", "Nuclei"]:
                 cursor.execute(
-                    f"""CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx 
+                    f"""CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx
                                 ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);"""
                 )
             cursor.execute(
