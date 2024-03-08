@@ -17,6 +17,7 @@
 
 - add flake8-bandit ignores
 - add clarifying comments for cell_loc test
+- update cell_loc s3 paths and testing
 
 ### Docs
 
