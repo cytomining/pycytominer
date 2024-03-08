@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.11 as base
 
 # set various metadata, loosely following biocontainers standards from:
 # https://biocontainers-edu.readthedocs.io/en/latest/what_is_biocontainers.html
@@ -13,19 +13,25 @@ LABEL about.license="SPDX:BSD-3-Clause"
 # set the workdir to /app
 WORKDIR /app
 
-# copy pyproject and poetry lockfile for stepped installation
-COPY pyproject.toml poetry.lock ./
+# configures poetry to install dependencies without virtualenvs
+# see: https://python-poetry.org/docs/configuration/#virtualenvscreate
+ENV POETRY_VIRTUALENVS_CREATE=false
 
 # install poetry and poetry dynamic versioning
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir poetry poetry-dynamic-versioning
+RUN pip install --no-cache-dir poetry
 
-# copy the rest of the repository
+# create stage for production build (no dev or non-essential deps)
+FROM base as production
+
+# copy the pycytominer source into image
 COPY . .
 
-# install pycytominer from poetry with group deps and all extras
-RUN poetry install --with dev --all-extras -v --no-interaction
+# install pycytominer using poetry root dependencies and all extras
+RUN poetry install --only-root --all-extras -v --no-interaction
 
-# set an alias for running python through the poetry env of pycytominer
-# hadolint ignore=DL3059
-RUN echo 'alias python="poetry run python"' >> ~/.bashrc
+# create stage for production build (no dev or non-essential deps)
+FROM production as testing
+
+# install pycytominer from poetry with group deps and all extras for testing
+RUN poetry install --with dev --all-extras -v --no-interaction
