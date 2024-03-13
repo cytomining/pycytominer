@@ -1,3 +1,51 @@
+## v1.1.0 (2024-03-05)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.1.0)
+
+### Fix
+
+- **build**: fix build versioning
+- simplify Spherize transform – epsilon to regularize instead of clip, add additional checks (see #320)
+
+### Refactor
+
+- **docs**: apply flake8-builtins checks
+- **dev**: apply pyflakes checks
+- **dev**: apply flake8-simplify checks
+
+### Test
+
+- add flake8-bandit ignores
+- add clarifying comments for cell_loc test
+- update cell_loc s3 paths and testing
+
+### Docs
+
+- update Readme with Citation section
+- **template**: PR template attribution to comment
+- **changelog**: add commitizen template
+- add description of ruff linting/formatting
+- reorganize style guide
+
+### CI
+
+- add versioned artifact build action
+- **integration-test**: add explicit artifact retention time
+- add pygrep-hooks and flake8-20202 checks
+
+### Style
+
+- swap out black for ruff-format
+- apply pyupgrade checks
+- **devcontainer**: add ruff extension
+- apply ruff native checks
+- apply pycodestyle checks
+- add flake8-comprehensions checks
+
+### Build
+
+- **poetry**: make dev dep group optional
+
 ## v1.0.1 (2023-11-07)
 
 [Detailed Release Notes](https://github.com/cytomining/pycytominer/releases/tag/v1.0.1)
