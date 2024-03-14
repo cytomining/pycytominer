@@ -179,9 +179,9 @@ Creating a new release includes the following steps:
 1. Create a new branch from `main` for the release (e.g. `release-v1.0.0`)
 2. Review the [commit history](https://github.com/cytomining/pycytominer/compare) from the last release and check whether it includes commits that don't follow the [conventional commit standard](https://www.conventionalcommits.org/en/v1.0.0/#summary).
    If all changes follow conventional commits, skip to step 5.
-3. Run the command `cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen` and generate the draft changelog.
+3. Run the command `poetry run cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen` and generate the draft changelog.
 4. Review the changes to `CHANGELOG.md`. If necessary, add descriptions of missing changes and modify descriptions to match conventional commits standard.
-5. `git add` any manual changes and run `cz bump` to create the release commit.
+5. `git add` any manual changes and run `poetry run cz bump` to create the release commit.
    Push the changes to the release branch.
 6. Create a pull request for the release branch into `main`.
 7. Request a review from another maintainer.

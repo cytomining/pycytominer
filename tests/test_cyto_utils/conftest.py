@@ -44,7 +44,7 @@ def fixture_metadata_input_file_s3() -> str:
     """
     Provide a metadata input file for cell_locations test data
     """
-    return "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/test_BR00126114_load_data_with_illum.parquet"
+    return "s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum.parquet"
 
 
 @pytest.fixture(name="single_cell_input_file_s3")
@@ -52,7 +52,7 @@ def fixture_single_cell_input_file_s3() -> str:
     """
     Provide a single cell input file for cell_locations test data
     """
-    return "s3://cellpainting-gallery/test-cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/test_BR00126114.sqlite"
+    return "s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/backend/2021_08_23_Batch12/BR00126114/BR00126114.sqlite"
 
 
 @pytest.fixture(name="metadata_input_dataframe")
@@ -113,27 +113,3 @@ def fixture_cell_loc_obj3(
         metadata_input=metadata_input_file_s3,
         single_cell_input=single_cell_input_file_s3,
     )
-
-
-@pytest.fixture(name="cell_loc1")
-def fixture_cell_loc1(cell_loc_obj1: CellLocation) -> pd.DataFrame:
-    """
-    Provide the output of running CellLocation.add_cell_location
-    """
-    return cell_loc_obj1.add_cell_location()
-
-
-@pytest.fixture(name="cell_loc2")
-def fixture_cell_loc2(cell_loc_obj2: CellLocation) -> pd.DataFrame:
-    """
-    Provide the output of running CellLocation.add_cell_location
-    """
-    return cell_loc_obj2.add_cell_location()
-
-
-@pytest.fixture(name="cell_loc3")
-def fixture_cell_loc3(cell_loc_obj3: CellLocation) -> pd.DataFrame:
-    """
-    Provide the output of running CellLocation.add_cell_location
-    """
-    return cell_loc_obj3.add_cell_location()
