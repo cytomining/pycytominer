@@ -28,7 +28,7 @@ FROM base as production
 COPY . .
 
 # install pycytominer using poetry root dependencies and all extras
-RUN poetry install --only-root --all-extras -v --no-interaction
+RUN poetry install --all-extras -v --no-interaction
 
 # create stage for production build (no dev or non-essential deps)
 FROM production as testing
