@@ -144,3 +144,52 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
           retention-days: 90
+  docker-image-test:
+    runs-on: ubuntu-latest
+    # set a dependency sequence to occur after build job completion
+    needs: build
+    env:
+      version: ${{ needs.build.outputs.version }}
+      sdist_filename: pycytominer-${{ needs.build.outputs.version}}.tar.gz
+      sdist_extracted_name: pycytominer-${{ needs.build.outputs.version}}
+    steps:
+      # checks out selected files for docker image build testing
+      - name: Checkout selected files
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            build/docker/Dockerfile
+            tests
+          sparse-checkout-cone-mode: false
+      - name: Download sdist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist
+      # gather the sdist tar.gz name (which varies)
+      # unzips the sdist
+      - name: Extract sdist
+        run: |
+          tar -xzvf "${{ env.sdist_filename}}"
+      # note: roughly follows Docker documentation on GitHub Actions usage
+      # found on the following https://github.com/docker/build-push-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      # attempts to build a test image for observing test behavior
+      # and modeling a production image build. Version label
+      # assumes pwd of, for example: pycytominer-1.0.1.post37.dev0+55690e4,
+      # where we attempt to use 1.0.1.post37.dev0+55690e4 as a version label.
+      - name: Build docker image for testing
+        run: |
+          cd "${{ env.sdist_extracted_name }}" && \
+          cp -r ../tests . && \
+          docker build -f ../build/docker/Dockerfile \
+            -t pycytominer:testing \
+            --label version="${{ env.version }}" \
+            --target testing \
+            .
+      # runs pytest for pycytominer within a docker container based on the image above
+      - name: Run tests through docker image
+        run: |
+          docker run pycytominer:testing pytest

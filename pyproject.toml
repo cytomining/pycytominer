@@ -39,6 +39,7 @@ license = "BSD-3-Clause"
 readme = "README.md"
 homepage = "https://pycytominer.readthedocs.io/"
 repository = "https://github.com/cytomining/pycytominer"
+include = [{ path = "poetry.lock", format = "sdist" }]
 
 [tool.poetry.dependencies]
 python          = ">=3.8,<4.0"
