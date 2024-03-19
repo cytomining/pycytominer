@@ -191,6 +191,16 @@ Creating a new release includes the following steps:
 11. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via Github Actions.
 12. Manually create the release at [conda-forge](https://anaconda.org/conda-forge/pycytominer).
 
+#### Docker Hub Image Releases
+
+We automate image pushes for `pycytominer` under the `cytomining` organization on [Docker Hub](https://hub.docker.com/) using GitHub Actions workflows.
+These pushes are defined within [.github/workflows/integration-test.yml](.github/workflows/integration-test.yml).
+
+- **Scheduled**: We create new Docker image releases on a weekly basis to incorporate the latest updates from external dependencies (such as OS updates, Python versions, etc.).
+  An image tag published this way may appear as `cytomining/pycytominer:1.1.0.post2.dev0_892dee2_240320`, where the dynamic version of `pycytominer` is referenced alongside a date in the format `YYMMDD`.
+- **Push (to `main`)**: We generate new Docker image releases on pushes or merges to the `main` branch.
+  An image tag published this way might appear as either `cytomining/pycytominer:1.1.0` (for a release) or `cytomining/pycytominer:1.1.0.post2.dev0_892dee2` (for a non-release).
+
 ## Code Quality
 
 Please follow the below quality guides to the best of your abilities.
