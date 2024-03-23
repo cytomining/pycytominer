@@ -366,7 +366,7 @@ class CellLocation:
 
         column_types = {
             self.image_column: "int64",
-            self.table_column: "str",
+            self.table_column: "int64",
             self.object_column: "int64",
             self.cell_x_loc: "float",
             self.cell_y_loc: "float",
