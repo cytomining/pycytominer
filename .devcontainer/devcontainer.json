@@ -4,7 +4,8 @@
   "name": "Pycytominer Dev",
   "image": "mcr.microsoft.com/devcontainers/python:0-3.11",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker": {}
   },
   // This command is kept outside of the postCreateCommand script because we
   // don't want to include a privileged command in the manual setup process.
