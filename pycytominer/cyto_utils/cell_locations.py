@@ -358,7 +358,7 @@ class CellLocation:
         # merge the Image and Nuclei tables in SQL
 
         join_query = f"""
-        SELECT Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
+        SELECT Nuclei.{self.table_column},Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
         FROM Nuclei
         INNER JOIN Image
         ON Nuclei.{self.image_column} = Image.{self.image_column} and Nuclei.{self.table_column} = Image.{self.table_column};
