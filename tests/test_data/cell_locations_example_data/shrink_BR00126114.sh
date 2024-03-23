@@ -16,16 +16,16 @@ aws s3 cp s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/backend/2021
 aws s3 cp s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum.parquet .
 
 # Write a SQL query to select rows of the `Image` table in the SQLite file where `ImageNumber` is 1 or 2.
-# Only select the columns: `Metadata_Plate`, `Metadata_Well`, `Metadata_Site`, `ImageNumber`
+# Only select the columns: `Metadata_Plate`, `Metadata_Well`, `Metadata_Site`, `TableNumber`, `ImageNumber`
 
-sqlite3 -header -csv BR00126114.sqlite "SELECT Metadata_Plate, Metadata_Well, Metadata_Site, ImageNumber FROM Image WHERE ImageNumber = 1 OR ImageNumber = 2;" > image_query.csv
+sqlite3 -header -csv BR00126114.sqlite "SELECT Metadata_Plate, Metadata_Well, Metadata_Site, TableNumber, ImageNumber FROM Image WHERE ImageNumber = 1 OR ImageNumber = 2;" > image_query.csv
 
 
 # Write a SQL query to select rows of the `Nuclei` table in the SQLite file where `ImageNumber` is 1 or 2.
-# Only select the columns: `ImageNumber`, `ObjectNumber`, `Nuclei_Location_Center_X`, `Nuclei_Location_Center_Y`
+# Only select the columns:  `TableNumber``, `ImageNumber`, `ObjectNumber`, `Nuclei_Location_Center_X`, `Nuclei_Location_Center_Y`
 
-sqlite3 -header -csv BR00126114.sqlite "SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei WHERE ImageNumber = 1 LIMIT 10;" > nuclei_query_1.csv
-sqlite3 -header -csv BR00126114.sqlite "SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei WHERE ImageNumber = 2 LIMIT 10;" > nuclei_query_2.csv
+sqlite3 -header -csv BR00126114.sqlite "SELECT TableNumber, ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei WHERE ImageNumber = 1 LIMIT 10;" > nuclei_query_1.csv
+sqlite3 -header -csv BR00126114.sqlite "SELECT TableNumber, ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei WHERE ImageNumber = 2 LIMIT 10;" > nuclei_query_2.csv
 
 csvstack nuclei_query_1.csv nuclei_query_2.csv > nuclei_query.csv
 

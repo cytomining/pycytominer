@@ -48,9 +48,10 @@ def test_output_shape_and_required_columns(
     metadata_input_dataframe = get_metadata_input_dataframe(cell_loc=cls_cell_loc)
 
     # check the shape of the data
+    # cell_loc will have 3 extra columns: TableNumber, ImageNumber, CellCenters
     assert cell_loc.shape == (
         metadata_input_dataframe.shape[0],
-        metadata_input_dataframe.shape[1] + 2,
+        metadata_input_dataframe.shape[1] + 3,
     )
 
     assert isinstance(cell_loc["CellCenters"][0][0], dict)
@@ -89,7 +90,7 @@ def test_output_value_correctness(
     # gather an engine from the cell_loc class
     _, engine = cls_cell_loc._get_single_cell_engine()
 
-    nuclei_query = "SELECT ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei;"
+    nuclei_query = "SELECT TableNumber, ImageNumber, ObjectNumber, Nuclei_Location_Center_X, Nuclei_Location_Center_Y FROM Nuclei;"
 
     nuclei_df = pd.read_sql_query(nuclei_query, engine)
 
