@@ -8,7 +8,7 @@
   },
   // This command is kept outside of the postCreateCommand script because we
   // don't want to include a privileged command in the manual setup process.
-  "onCreateCommand": "sudo /usr/local/py-utils/bin/poetry self add \"poetry-dynamic-versioning[plugin]\"",
+  "onCreateCommand": "sudo /usr/local/py-utils/bin/poetry self add \"poetry-dynamic-versioning[plugin]\" && git config --global --add safe.directory ${containerWorkspaceFolder}",
   // This postCreateCommand script is also referenced for manual dev setup.
   "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
   // Configure tool-specific properties.
