@@ -58,6 +58,9 @@ fire    =   {version = ">=0.5.0",       optional=true}
 
 # Extra dependencies for collate
 cytominer-database = {version = "0.3.4", optional=true}
+pydantic = "^2.6.4"
+pandera = "^0.18.3"
+pydantic-settings = "^2.2.1"
 
 [tool.poetry.extras]
 cell-locations = ["fsspec", "s3fs", "boto3", "fire"]
