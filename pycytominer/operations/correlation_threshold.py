@@ -42,7 +42,8 @@ def correlation_threshold(
     # Check that the input method is supported
     method = check_correlation_method(method)
 
-    assert 0 <= threshold <= 1, "threshold variable must be between (0 and 1)"
+    if not 0 <= threshold <= 1:
+        raise ValueError("threshold variable must be between (0 and 1)")
 
     # Subset dataframe and calculate correlation matrix across subset features
     if samples != "all":

@@ -205,9 +205,10 @@ class Spherize(BaseEstimator, TransformerMixin):
             self.W = self.W @ Vt
 
         # number of columns of self.W should be equal to that of X
-        assert (
-            self.W.shape[1] == X.shape[1]
-        ), f"Error: W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
+        if not (self.W.shape[1] == X.shape[1]):
+            raise ValueError(
+                f"Error: W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
+            )
 
         if self.W.shape[1] != X.shape[1]:
             error_detail = (

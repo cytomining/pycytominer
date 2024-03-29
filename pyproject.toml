@@ -140,9 +140,9 @@ select = [
     "UP",
     # ruff
     "RUF",
-    # The following checks are disabled, but we are working towards enabling them in the future.
     # flake8-bandit
-    # "S",
+    "S",
+    # The following checks are disabled, but we are working towards enabling them in the future.
     # flake8-bugbear
     # "B",
     # isort
@@ -163,6 +163,7 @@ ignore = [
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
 "tests/*" = ["S101"] # Ignore assert statements in tests
+"pycytominer/cyto_utils/*" = ["S101", "S608"] # Ignore assert statements in cyto_utils
 
 [tool.ruff.format]
 preview = true

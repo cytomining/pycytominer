@@ -49,17 +49,19 @@ def noise_removal(
 
     # If a metadata column name is specified, use that as the perturb groups
     if isinstance(noise_removal_perturb_groups, str):
-        assert noise_removal_perturb_groups in population_df.columns, (
-            'f"{perturb} not found. Are you sure it is a ' "metadata column?"
-        )
+        if noise_removal_perturb_groups not in population_df.columns:
+            raise ValueError(
+                'f"{perturb} not found. Are you sure it is a ' "metadata column?"
+            )
         group_info = population_df[noise_removal_perturb_groups]
 
     # Otherwise, the user specifies a list of perturbs
     elif isinstance(noise_removal_perturb_groups, list):
-        assert len(noise_removal_perturb_groups) == len(population_df), (
-            f"The length of input list: {len(noise_removal_perturb_groups)} is not equivalent to your "
-            f"data: {population_df.shape[0]}"
-        )
+        if not len(noise_removal_perturb_groups) == len(population_df):
+            raise ValueError(
+                f"The length of input list: {len(noise_removal_perturb_groups)} is not equivalent to your "
+                f"data: {population_df.shape[0]}"
+            )
         group_info = noise_removal_perturb_groups
     else:
         raise TypeError(
