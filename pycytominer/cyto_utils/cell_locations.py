@@ -175,7 +175,11 @@ class CellLocation:
 
         self.s3.download_file(bucket, key, tmp_file.name)
 
-        return tmp_file.name
+        # Check if the downloaded file exists and has a size greater than 0
+        if os.path.exists(tmp_file.name) and os.path.getsize(tmp_file.name) > 0:
+            return tmp_file.name
+        else:
+            raise ValueError(f"Downloaded file '{tmp_file.name}' is empty or does not exist.")
 
     def _load_metadata(self):
         """Load the metadata into a Pandas DataFrame
