@@ -14,7 +14,7 @@ class Profiles(BaseModel):
     - df: DataFrame: Profiles dataframe
     - metadata_columns: Optional[Index]: Columns that contain metadata information
     - features_columns: Optional[Index]: Columns that contain feature information
-    - strata_columns: Optional[Index]: Columns that contain strata information
+    - columns: Optional[Index]: Columns that contain strata information
     """
 
     df: DataFrame = Field(
@@ -37,14 +37,6 @@ class Profiles(BaseModel):
             ]
         ],
     )
-    strata_columns: Optional[Index] = Field(
-        title="Strata columns",
-        description="Columns that contain strata information (must be a subset of metadata columns)",
-        examples=[
-            ["Metadata_Plate", "Metadata_Well"],
-            Index(["PlateBarcode", "WellPosition"]),
-        ],
-    )
     metadata_columns: Optional[Index] = Field(
         title="Metadata columns",
         description="Columns that contain metadata information",
@@ -62,6 +54,15 @@ class Profiles(BaseModel):
 
 class SingleCellProfiles(Profiles):
     """Single cell profiles data model."""
+
+    strata_columns: Optional[Index] = Field(
+        title="Strata columns",
+        description="Columns that contain strata information (must be a subset of metadata columns)",
+        examples=[
+            ["Metadata_Plate", "Metadata_Well"],
+            Index(["PlateBarcode", "WellPosition"]),
+        ],
+    )
 
 
 class AggregatedProfiles(Profiles):

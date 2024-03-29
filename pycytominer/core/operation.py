@@ -16,7 +16,7 @@ FileOperation = TypeVar("FileOperation", bound="FileOperation")
 class Operation(BaseModel):
     """Base class for other file/dataframe operations in pycytominer."""
 
-    profiles: Profiles = Field(
+    input_profiles: Profiles = Field(
         ..., title="Profiles", description="Profiles data model."
     )
 
@@ -24,7 +24,7 @@ class Operation(BaseModel):
 class DataframeOperation(Operation):
     """Base class for dataframe operations in pycytominer."""
 
-    df: DataFrame = Field(
+    input_df: DataFrame = Field(
         ...,
         title="Dataframe",
         description="A dataframe containing profiles data including metadata and features",
