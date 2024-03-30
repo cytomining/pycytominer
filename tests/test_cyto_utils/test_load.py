@@ -54,31 +54,23 @@ example_npz_file_locations = os.path.join(
 )
 
 # Build data to use in tests
-data_df = pd.concat(
-    [
-        pd.DataFrame(
-            {
-                "Metadata_Well": ["A01", "A02", "A03"],
-                "x": [1, 3, 8],
-                "y": [5, 3, 1],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "Metadata_Well": ["B01", "B02", "B03"],
-                "x": [1, 3, 5],
-                "y": [8, 3, 1],
-            }
-        ),
-    ]
-).reset_index(drop=True)
+data_df = pd.concat([
+    pd.DataFrame({
+        "Metadata_Well": ["A01", "A02", "A03"],
+        "x": [1, 3, 8],
+        "y": [5, 3, 1],
+    }),
+    pd.DataFrame({
+        "Metadata_Well": ["B01", "B02", "B03"],
+        "x": [1, 3, 5],
+        "y": [8, 3, 1],
+    }),
+]).reset_index(drop=True)
 
-platemap_df = pd.DataFrame(
-    {
-        "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
-        "gene": ["x", "y", "z"] * 2,
-    }
-).reset_index(drop=True)
+platemap_df = pd.DataFrame({
+    "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
+    "gene": ["x", "y", "z"] * 2,
+}).reset_index(drop=True)
 
 npz_metadata_dict = {"Plate": "PlateA", "Well": "A01", "Site": 2}
 npz_model_key = {"Model": "cnn"}

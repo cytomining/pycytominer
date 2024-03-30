@@ -14,25 +14,23 @@ output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
 input_test_file = os.path.join(tmpdir, "example_input.csv")
 
 # Set example data
-data_df = pd.DataFrame(
-    {
-        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-        "Metadata_treatment": [
-            "drug",
-            "drug",
-            "control",
-            "control",
-            "drug",
-            "drug",
-            "control",
-            "control",
-        ],
-        "Cells_x": [1, 2, 8, 2, 5, 5, 5, 1],
-        "Cells_y": [3, 1, 7, 4, 5, 9, 6, 1],
-        "Cytoplasm_z": [1, 8, 2, 5, 6, 22, 2, 2],
-        "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
-    }
-).reset_index(drop=True)
+data_df = pd.DataFrame({
+    "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+    "Metadata_treatment": [
+        "drug",
+        "drug",
+        "control",
+        "control",
+        "drug",
+        "drug",
+        "control",
+        "control",
+    ],
+    "Cells_x": [1, 2, 8, 2, 5, 5, 5, 1],
+    "Cells_y": [3, 1, 7, 4, 5, 9, 6, 1],
+    "Cytoplasm_z": [1, 8, 2, 5, 6, 22, 2, 2],
+    "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
+}).reset_index(drop=True)
 
 data_df.to_csv(input_test_file, index=False)
 

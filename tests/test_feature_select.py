@@ -15,65 +15,60 @@ tmpdir = tempfile.gettempdir()
 output_test_file_csv = os.path.join(tmpdir, "test.csv")
 output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
 
-data_df = pd.DataFrame(
-    {
-        "x": [1, 3, 8, 5, 2, 2],
-        "y": [1, 2, 8, 5, 2, 1],
-        "z": [9, 3, 8, 9, 2, 9],
-        "zz": [0, -3, 8, 9, 6, 9],
-    }
-).reset_index(drop=True)
+data_df = pd.DataFrame({
+    "x": [1, 3, 8, 5, 2, 2],
+    "y": [1, 2, 8, 5, 2, 1],
+    "z": [9, 3, 8, 9, 2, 9],
+    "zz": [0, -3, 8, 9, 6, 9],
+}).reset_index(drop=True)
 
-data_na_df = pd.DataFrame(
-    {
-        "x": [np.nan, 3, 8, 5, 2, 2],
-        "xx": [np.nan, 3, 8, 5, 2, 2],
-        "y": [1, 2, 8, np.nan, 2, np.nan],
-        "yy": [1, 2, 8, 10, 2, 100],
-        "z": [9, 3, 8, 9, 2, np.nan],
-        "zz": [np.nan, np.nan, 8, np.nan, 6, 9],
-    }
-).reset_index(drop=True)
+data_na_df = pd.DataFrame({
+    "x": [np.nan, 3, 8, 5, 2, 2],
+    "xx": [np.nan, 3, 8, 5, 2, 2],
+    "y": [1, 2, 8, np.nan, 2, np.nan],
+    "yy": [1, 2, 8, 10, 2, 100],
+    "z": [9, 3, 8, 9, 2, np.nan],
+    "zz": [np.nan, np.nan, 8, np.nan, 6, 9],
+}).reset_index(drop=True)
 
-data_feature_infer_df = pd.DataFrame(
-    {
-        "Metadata_x": [np.nan, np.nan, 8, np.nan, 2, np.nan],
-        "Cytoplasm_xx": [np.nan, 3, 8, 5, 2, 2],
-        "Nuclei_y": [1, 2, 8, np.nan, 2, np.nan],
-        "Nuclei_yy": [1, 2, 8, 10, 2, 100],
-        "Cytoplasm_z": [9, 3, 8, 9, 2, np.nan],
-        "Cells_zz": [np.nan, np.nan, 8, np.nan, 6, 9],
-    }
-).reset_index(drop=True)
+data_feature_infer_df = pd.DataFrame({
+    "Metadata_x": [np.nan, np.nan, 8, np.nan, 2, np.nan],
+    "Cytoplasm_xx": [np.nan, 3, 8, 5, 2, 2],
+    "Nuclei_y": [1, 2, 8, np.nan, 2, np.nan],
+    "Nuclei_yy": [1, 2, 8, 10, 2, 100],
+    "Cytoplasm_z": [9, 3, 8, 9, 2, np.nan],
+    "Cells_zz": [np.nan, np.nan, 8, np.nan, 6, 9],
+}).reset_index(drop=True)
 
 a_feature = [1] * 99 + [2]
 b_feature = [1, 2] * 50
 c_feature = [1, 2] * 25 + random.sample(range(1, 1000), 50)
 d_feature = random.sample(range(1, 1000), 100)
 
-data_unique_test_df = pd.DataFrame(
-    {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
-).reset_index(drop=True)
+data_unique_test_df = pd.DataFrame({
+    "a": a_feature,
+    "b": b_feature,
+    "c": c_feature,
+    "d": d_feature,
+}).reset_index(drop=True)
 
-data_outlier_df = pd.DataFrame(
-    {
-        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-        "Metadata_treatment": [
-            "drug",
-            "drug",
-            "control",
-            "control",
-            "drug",
-            "drug",
-            "control",
-            "control",
-        ],
-        "Cells_x": [1, 2, -8, 2, 5, 5, 5, -1],
-        "Cytoplasm_y": [3, -1, 7, 4, 5, -9, 6, 1],
-        "Nuclei_z": [-1, 8, 2, 5, -6, 20, 2, -2],
-        "Cells_zz": [14, -46, 1, 60, -30, -10000, 2, 2],
-    }
-).reset_index(drop=True)
+data_outlier_df = pd.DataFrame({
+    "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+    "Metadata_treatment": [
+        "drug",
+        "drug",
+        "control",
+        "control",
+        "drug",
+        "drug",
+        "control",
+        "control",
+    ],
+    "Cells_x": [1, 2, -8, 2, 5, 5, 5, -1],
+    "Cytoplasm_y": [3, -1, 7, 4, 5, -9, 6, 1],
+    "Nuclei_z": [-1, 8, 2, 5, -6, 20, 2, -2],
+    "Cells_zz": [14, -46, 1, 60, -30, -10000, 2, 2],
+}).reset_index(drop=True)
 
 
 def test_feature_select_noise_removal():
@@ -249,14 +244,12 @@ def test_feature_select_get_na_columns():
         operation="drop_na_columns",
         na_cutoff=0.3,
     )
-    expected_result = pd.DataFrame(
-        {
-            "x": [np.nan, 3, 8, 5, 2, 2],
-            "xx": [np.nan, 3, 8, 5, 2, 2],
-            "yy": [1, 2, 8, 10, 2, 100],
-            "z": [9, 3, 8, 9, 2, np.nan],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "x": [np.nan, 3, 8, 5, 2, 2],
+        "xx": [np.nan, 3, 8, 5, 2, 2],
+        "yy": [1, 2, 8, 10, 2, 100],
+        "z": [9, 3, 8, 9, 2, np.nan],
+    })
     pd.testing.assert_frame_equal(result, expected_result)
 
 
@@ -270,14 +263,12 @@ def test_feature_select_get_na_columns_feature_infer():
         operation="drop_na_columns",
         na_cutoff=0.3,
     )
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_x": [np.nan, np.nan, 8, np.nan, 2, np.nan],
-            "Cytoplasm_xx": [np.nan, 3, 8, 5, 2, 2],
-            "Nuclei_yy": [1, 2, 8, 10, 2, 100],
-            "Cytoplasm_z": [9, 3, 8, 9, 2, np.nan],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_x": [np.nan, np.nan, 8, np.nan, 2, np.nan],
+        "Cytoplasm_xx": [np.nan, 3, 8, 5, 2, 2],
+        "Nuclei_yy": [1, 2, 8, 10, 2, 100],
+        "Cytoplasm_z": [9, 3, 8, 9, 2, np.nan],
+    })
     pd.testing.assert_frame_equal(result, expected_result)
 
     result = feature_select(
@@ -286,13 +277,11 @@ def test_feature_select_get_na_columns_feature_infer():
         operation="drop_na_columns",
         na_cutoff=0.3,
     )
-    expected_result = pd.DataFrame(
-        {
-            "Cytoplasm_xx": [np.nan, 3, 8, 5, 2, 2],
-            "Nuclei_yy": [1, 2, 8, 10, 2, 100],
-            "Cytoplasm_z": [9, 3, 8, 9, 2, np.nan],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Cytoplasm_xx": [np.nan, 3, 8, 5, 2, 2],
+        "Nuclei_yy": [1, 2, 8, 10, 2, 100],
+        "Cytoplasm_z": [9, 3, 8, 9, 2, np.nan],
+    })
     pd.testing.assert_frame_equal(result, expected_result)
 
 
@@ -306,9 +295,11 @@ def test_feature_select_variance_threshold():
         operation="variance_threshold",
         unique_cut=0.01,
     )
-    expected_result = pd.DataFrame(
-        {"b": b_feature, "c": c_feature, "d": d_feature}
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "b": b_feature,
+        "c": c_feature,
+        "d": d_feature,
+    }).reset_index(drop=True)
     pd.testing.assert_frame_equal(result, expected_result)
 
     na_data_unique_test_df = data_unique_test_df.copy()
@@ -371,9 +362,11 @@ def test_feature_select_all():
         operation=["drop_na_columns", "correlation_threshold"],
         corr_threshold=0.7,
     )
-    expected_result = pd.DataFrame(
-        {"c": c_feature, "d": d_feature, "zz": a_feature}
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "c": c_feature,
+        "d": d_feature,
+        "zz": a_feature,
+    }).reset_index(drop=True)
     expected_result.iloc[1, 2] = 2
     pd.testing.assert_frame_equal(result, expected_result)
 
@@ -426,14 +419,12 @@ def test_feature_select_blocklist():
     Testing feature_select and get_na_columns pycytominer function
     """
 
-    data_blocklist_df = pd.DataFrame(
-        {
-            "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
-            "y": [1, 2, 8, 5, 2, 1],
-            "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
-            "zz": [0, -3, 8, 9, 6, 9],
-        }
-    ).reset_index(drop=True)
+    data_blocklist_df = pd.DataFrame({
+        "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
+        "y": [1, 2, 8, 5, 2, 1],
+        "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+        "zz": [0, -3, 8, 9, 6, 9],
+    }).reset_index(drop=True)
 
     result = feature_select(data_blocklist_df, features="infer", operation="blocklist")
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})

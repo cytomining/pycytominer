@@ -15,27 +15,29 @@ OUTPUT_FILE_CSV = pathlib.Path(f"{TMPDIR}/test.csv")
 OUTPUT_FILE_PARQUET = pathlib.Path(f"{TMPDIR}/test.parquet")
 
 # Build data to use in tests
-DATA_DF = pd.concat(
-    [
-        pd.DataFrame(
-            {"Metadata_Well": ["A01", "A02", "A03"], "x": [1, 3, 8], "y": [5, 3, 1]}
-        ),
-        pd.DataFrame(
-            {"Metadata_Well": ["B01", "B02", "B03"], "x": [1, 3, 5], "y": [8, 3, 1]}
-        ),
-    ]
-).reset_index(drop=True)
+DATA_DF = pd.concat([
+    pd.DataFrame({
+        "Metadata_Well": ["A01", "A02", "A03"],
+        "x": [1, 3, 8],
+        "y": [5, 3, 1],
+    }),
+    pd.DataFrame({
+        "Metadata_Well": ["B01", "B02", "B03"],
+        "x": [1, 3, 5],
+        "y": [8, 3, 1],
+    }),
+]).reset_index(drop=True)
 
-PLATEMAP_DF = pd.DataFrame(
-    {
-        "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
-        "gene": ["x", "y", "z"] * 2,
-    }
-).reset_index(drop=True)
+PLATEMAP_DF = pd.DataFrame({
+    "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
+    "gene": ["x", "y", "z"] * 2,
+}).reset_index(drop=True)
 
-EXTERNAL_METADATA_DF = pd.DataFrame(
-    {"gene": ["x", "y", "z"], "pathway": ["a", "b", "c"], "time_h": [48] * 3}
-).reset_index(drop=True)
+EXTERNAL_METADATA_DF = pd.DataFrame({
+    "gene": ["x", "y", "z"],
+    "pathway": ["a", "b", "c"],
+    "time_h": [48] * 3,
+}).reset_index(drop=True)
 
 
 def test_annotate():

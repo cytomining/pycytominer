@@ -32,23 +32,23 @@ expected_pert_ids = [
 ]
 example_genetic_perts = ["TP53", "KRAS", "DNMT3", "PTEN", "EMPTY", "EMPTY"]
 
-data_df = pd.concat(
-    [
-        pd.DataFrame(
-            {"Metadata_Well": ["A01", "A02", "A03"], "x": [1, 3, 8], "y": [5, 3, 1]}
-        ),
-        pd.DataFrame(
-            {"Metadata_Well": ["B01", "B02", "B03"], "x": [1, 3, 5], "y": [8, 3, 1]}
-        ),
-    ]
-).reset_index(drop=True)
+data_df = pd.concat([
+    pd.DataFrame({
+        "Metadata_Well": ["A01", "A02", "A03"],
+        "x": [1, 3, 8],
+        "y": [5, 3, 1],
+    }),
+    pd.DataFrame({
+        "Metadata_Well": ["B01", "B02", "B03"],
+        "x": [1, 3, 5],
+        "y": [8, 3, 1],
+    }),
+]).reset_index(drop=True)
 
-platemap_df = pd.DataFrame(
-    {
-        "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
-        "gene": ["x", "y", "z"] * 2,
-    }
-).reset_index(drop=True)
+platemap_df = pd.DataFrame({
+    "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
+    "gene": ["x", "y", "z"] * 2,
+}).reset_index(drop=True)
 
 broad_platemap_df = platemap_df.assign(Metadata_broad_sample=example_broad_samples)
 
@@ -163,9 +163,10 @@ def test_annotate_cmap_pertchemical():
 
 
 def test_annotate_cmap_externalmetadata():
-    external_data_example = pd.DataFrame(
-        {"test_well_join": ["A01"], "test_info_col": ["DMSO is cool"]}
-    ).reset_index(drop=True)
+    external_data_example = pd.DataFrame({
+        "test_well_join": ["A01"],
+        "test_info_col": ["DMSO is cool"],
+    }).reset_index(drop=True)
 
     external_data_example.to_csv(output_file, index=False, sep=",")
 

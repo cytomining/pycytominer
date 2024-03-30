@@ -3,14 +3,12 @@ import pandas as pd
 import pytest
 from pycytominer.operations import get_na_columns
 
-data_df = pd.DataFrame(
-    {
-        "x": [np.nan, 3, 8, 5, 2, 2],
-        "y": [1, 2, 8, np.nan, 2, np.nan],
-        "z": [9, 3, 8, 9, 2, np.nan],
-        "zz": [np.nan, np.nan, 8, np.nan, 6, 9],
-    }
-).reset_index(drop=True)
+data_df = pd.DataFrame({
+    "x": [np.nan, 3, 8, 5, 2, 2],
+    "y": [1, 2, 8, np.nan, 2, np.nan],
+    "z": [9, 3, 8, 9, 2, np.nan],
+    "zz": [np.nan, np.nan, 8, np.nan, 6, 9],
+}).reset_index(drop=True)
 
 
 def test_get_na_columns():

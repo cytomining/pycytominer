@@ -75,12 +75,10 @@ def test_get_default_compartments():
 
 def test_load_known_metadata_dictionary():
     meta_cols = ["ObjectNumber", "ImageNumber", "TableNumber"]
-    meta_df = pd.DataFrame(
-        {
-            "compartment": ["cells"] * 3 + ["nuclei"] * 3 + ["cytoplasm"] * 3,
-            "feature": meta_cols * 3,
-        }
-    )
+    meta_df = pd.DataFrame({
+        "compartment": ["cells"] * 3 + ["nuclei"] * 3 + ["cytoplasm"] * 3,
+        "feature": meta_cols * 3,
+    })
 
     metadata_file = os.path.join(tmpdir, "metadata_temp.txt")
     meta_df.to_csv(metadata_file, sep="\t", index=False)
@@ -230,33 +228,29 @@ def test_check_image_features_image_table():
 
 
 def test_extract_image_features():
-    image_df = pd.DataFrame(
-        {
-            "TableNumber": ["x_hash", "y_hash"],
-            "ImageNumber": ["x", "y"],
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A01"],
-            "Count_Cells": [50, 50],
-            "Granularity_1_Mito": [3.0, 4.0],
-            "Texture_Variance_RNA_20_00": [12.0, 14.0],
-            "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
-            "ImageQuality_XX_YY_ZZ": [10, 20],
-        }
-    )
+    image_df = pd.DataFrame({
+        "TableNumber": ["x_hash", "y_hash"],
+        "ImageNumber": ["x", "y"],
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A01"],
+        "Count_Cells": [50, 50],
+        "Granularity_1_Mito": [3.0, 4.0],
+        "Texture_Variance_RNA_20_00": [12.0, 14.0],
+        "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
+        "ImageQuality_XX_YY_ZZ": [10, 20],
+    })
 
     image_feature_categories = ["Count", "Granularity", "ImageQuality"]
 
-    expected_result = pd.DataFrame(
-        {
-            "TableNumber": ["x_hash", "y_hash"],
-            "ImageNumber": ["x", "y"],
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A01"],
-            "Metadata_Count_Cells": [50, 50],
-            "Image_Granularity_1_Mito": [3.0, 4.0],
-            "Image_ImageQuality_XX_YY_ZZ": [10, 20],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "TableNumber": ["x_hash", "y_hash"],
+        "ImageNumber": ["x", "y"],
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A01"],
+        "Metadata_Count_Cells": [50, 50],
+        "Image_Granularity_1_Mito": [3.0, 4.0],
+        "Image_ImageQuality_XX_YY_ZZ": [10, 20],
+    })
 
     result = extract_image_features(
         image_feature_categories,
@@ -283,47 +277,39 @@ def _assert_pairwise_corr_helper(data_df, expected_result):
 
 
 def test_get_pairwise_correlation():
-    data_df = pd.concat(
-        [
-            pd.DataFrame({"x": [1, 3, 8], "y": [5, 3, 1]}),
-            pd.DataFrame({"x": [1, 3, 5], "y": [8, 3, 1]}),
-        ]
-    ).reset_index(drop=True)
+    data_df = pd.concat([
+        pd.DataFrame({"x": [1, 3, 8], "y": [5, 3, 1]}),
+        pd.DataFrame({"x": [1, 3, 5], "y": [8, 3, 1]}),
+    ]).reset_index(drop=True)
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)
 
 
 def test_pairwise_corr_with_nan():
-    data_df = pd.concat(
-        [
-            pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, None]}),
-            pd.DataFrame({"x": [1, 3, 5, None], "y": [8, 3, 1, 3]}),
-        ]
-    ).reset_index(drop=True)
+    data_df = pd.concat([
+        pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, None]}),
+        pd.DataFrame({"x": [1, 3, 5, None], "y": [8, 3, 1, 3]}),
+    ]).reset_index(drop=True)
 
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)
 
 
 def test_pairwise_corr_with_inf():
-    data_df = pd.concat(
-        [
-            pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, float("inf")]}),
-            pd.DataFrame({"x": [1, 3, 5, float("inf")], "y": [8, 3, 1, 3]}),
-        ]
-    ).reset_index(drop=True)
+    data_df = pd.concat([
+        pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, float("inf")]}),
+        pd.DataFrame({"x": [1, 3, 5, float("inf")], "y": [8, 3, 1, 3]}),
+    ]).reset_index(drop=True)
 
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)
 
 
 def test_pairwise_corr_with_inf_and_nan():
-    data_df = pd.concat(
-        [
-            pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, None]}),
-            pd.DataFrame({"x": [1, 3, 5, float("inf")], "y": [8, 3, 1, 3]}),
-        ]
-    ).reset_index(drop=True)
+    data_df = pd.concat([
+        pd.DataFrame({"x": [1, 3, 8, 3], "y": [5, 3, 1, None]}),
+        pd.DataFrame({"x": [1, 3, 5, float("inf")], "y": [8, 3, 1, 3]}),
+    ]).reset_index(drop=True)
 
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)

@@ -258,13 +258,11 @@ class CellLocation:
                 cell_dict[self.cell_y_loc],
             ):
                 # add the cell information to a dictionary
-                row_cell_dicts.append(
-                    {
-                        self.object_column: object_column,
-                        self.cell_x_loc: cell_x_loc,
-                        self.cell_y_loc: cell_y_loc,
-                    }
-                )
+                row_cell_dicts.append({
+                    self.object_column: object_column,
+                    self.cell_x_loc: cell_x_loc,
+                    self.cell_y_loc: cell_y_loc,
+                })
 
             # add the cell-level information to the output dictionary
             output_df_list["CellCenters"].append(row_cell_dicts)

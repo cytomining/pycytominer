@@ -6,39 +6,31 @@ import pandas as pd
 from pycytominer.cyto_utils import write_gct
 
 # Build data to use in tests
-data_replicate_df = pd.concat(
-    [
-        pd.DataFrame(
-            {
-                "Metadata_g": "a",
-                "Metadata_t": "t",
-                "Cells_x": [1, 1, -1],
-                "Cytoplasm_y": [5, 5, -5],
-                "Nuclei_z": [2, 2, -2],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "Metadata_g": "b",
-                "Metadata_t": "u",
-                "Cells_x": [1, 3, 5],
-                "Cytoplasm_y": [8, 3, 1],
-                "Nuclei_z": [5, -2, 1],
-            }
-        ),
-    ]
-).reset_index(drop=True)
+data_replicate_df = pd.concat([
+    pd.DataFrame({
+        "Metadata_g": "a",
+        "Metadata_t": "t",
+        "Cells_x": [1, 1, -1],
+        "Cytoplasm_y": [5, 5, -5],
+        "Nuclei_z": [2, 2, -2],
+    }),
+    pd.DataFrame({
+        "Metadata_g": "b",
+        "Metadata_t": "u",
+        "Cells_x": [1, 3, 5],
+        "Cytoplasm_y": [8, 3, 1],
+        "Nuclei_z": [5, -2, 1],
+    }),
+]).reset_index(drop=True)
 
 replicate_columns = ["g", "h"]
 data_replicate_df = data_replicate_df.assign(Metadata_h=["c", "c", "c", "d", "d", "d"])
 
 
-data_nocpfeatures_df = pd.concat(
-    [
-        pd.DataFrame({"g": "a", "x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]}),
-        pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1], "z": [5, -2, 1]}),
-    ]
-).reset_index(drop=True)
+data_nocpfeatures_df = pd.concat([
+    pd.DataFrame({"g": "a", "x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]}),
+    pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1], "z": [5, -2, 1]}),
+]).reset_index(drop=True)
 
 data_nocpfeatures_df = data_nocpfeatures_df.assign(h=["c", "c", "c", "d", "d", "d"])
 
@@ -129,14 +121,12 @@ def test_write_gct_infer_features():
 def test_write_gct_with_feature_metadata():
     output_filename = os.path.join(tmpdir, "test_gct_feature_meta.gct")
 
-    feature_metadata = pd.DataFrame(
-        {
-            "id": ["color", "shape"],
-            "Cells_x": ["blue", "triangle"],
-            "Cytoplasm_y": ["red", "square"],
-            "Nuclei_z": ["green", "oval"],
-        }
-    ).transpose()
+    feature_metadata = pd.DataFrame({
+        "id": ["color", "shape"],
+        "Cells_x": ["blue", "triangle"],
+        "Cytoplasm_y": ["red", "square"],
+        "Nuclei_z": ["green", "oval"],
+    }).transpose()
 
     write_gct(
         profiles=data_replicate_df,
@@ -206,13 +196,11 @@ def test_write_gct_with_feature_metadata():
 def test_write_gct_assert_error():
     with pytest.raises(AssertionError) as ae:
         output_filename = os.path.join(tmpdir, "test_gct_feature_meta_fail.gct")
-        feature_metadata = pd.DataFrame(
-            {
-                "Cells_x": ["blue", "triangle"],
-                "Cytoplasm_y": ["red", "square"],
-                "Nuclei_z": ["green", "oval"],
-            }
-        ).transpose()
+        feature_metadata = pd.DataFrame({
+            "Cells_x": ["blue", "triangle"],
+            "Cytoplasm_y": ["red", "square"],
+            "Nuclei_z": ["green", "oval"],
+        }).transpose()
 
         write_gct(
             profiles=data_replicate_df,
