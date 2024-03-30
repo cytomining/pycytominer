@@ -4,10 +4,10 @@ Acquire consensus signatures for input samples
 
 from pycytominer import aggregate
 from pycytominer.cyto_utils import (
-    output,
-    modz,
-    load_profiles,
     check_consensus_operation,
+    load_profiles,
+    modz,
+    output,
 )
 
 

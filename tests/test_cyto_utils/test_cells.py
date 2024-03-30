@@ -6,6 +6,9 @@ import tempfile
 import numpy as np
 import pandas as pd
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
+
 from pycytominer import aggregate, annotate, normalize
 from pycytominer.cyto_utils import (
     get_default_compartments,
@@ -13,8 +16,6 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
 )
 from pycytominer.cyto_utils.cells import SingleCells, _sqlite_strata_conditions
-from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 
 random.seed(123)
 

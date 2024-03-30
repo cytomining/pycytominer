@@ -1,8 +1,10 @@
 import random
-import pytest
+
 import numpy as np
 import pandas as pd
-from pycytominer.operations import variance_threshold, calculate_frequency
+import pytest
+
+from pycytominer.operations import calculate_frequency, variance_threshold
 
 random.seed(123)
 

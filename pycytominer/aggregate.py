@@ -4,10 +4,11 @@ Aggregate profiles based on given grouping variables.
 
 import numpy as np
 import pandas as pd
+
 from pycytominer.cyto_utils import (
-    output,
     check_aggregate_operation,
     infer_cp_features,
+    output,
 )
 
 

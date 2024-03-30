@@ -2,18 +2,18 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
-from pycytominer.operations import (
-    correlation_threshold,
-    variance_threshold,
-    get_na_columns,
-    noise_removal,
-)
 from pycytominer.cyto_utils import (
-    load_profiles,
-    output,
+    drop_outlier_features,
     get_blocklist_features,
     infer_cp_features,
-    drop_outlier_features,
+    load_profiles,
+    output,
+)
+from pycytominer.operations import (
+    correlation_threshold,
+    get_na_columns,
+    noise_removal,
+    variance_threshold,
 )
 
 

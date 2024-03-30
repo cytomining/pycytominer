@@ -3,14 +3,16 @@ Annotates profiles with metadata information
 """
 
 import os
+
 import pandas as pd
+
 from pycytominer.cyto_utils import (
-    output,
+    annotate_cmap,
+    cp_clean,
     infer_cp_features,
     load_platemap,
     load_profiles,
-    annotate_cmap,
-    cp_clean,
+    output,
 )
 
 

@@ -1,7 +1,7 @@
-import pytest
 import pandas as pd
-from pycytominer.cyto_utils.features import infer_cp_features
+import pytest
 
+from pycytominer.cyto_utils.features import infer_cp_features
 
 data_df = pd.DataFrame({
     "Cells_Something_Something": [1, 3, 8, 5, 2, 2],

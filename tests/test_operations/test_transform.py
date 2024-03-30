@@ -1,9 +1,11 @@
 import random
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
 from scipy.stats import median_abs_deviation
-from pycytominer.operations.transform import Spherize, RobustMAD
+
+from pycytominer.operations.transform import RobustMAD, Spherize
 
 random.seed(123)
 

@@ -17,14 +17,15 @@
 
 import pathlib
 
+# ignore mix type warnings from pandas
+import warnings
+
 import pandas as pd
+
+from pycytominer import annotate, feature_select, normalize
 
 # pycytominer imports
 from pycytominer.cyto_utils.cells import SingleCells
-from pycytominer import annotate, normalize, feature_select
-
-# ignore mix type warnings from pandas
-import warnings
 
 warnings.filterwarnings("ignore")
 
