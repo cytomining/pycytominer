@@ -248,7 +248,8 @@ class AggregateDeepProfiler:
             # if no files were found there is a miss-match between the index and the output files
             if not len(arr):
                 warnings.warn(
-                    f"No files for the key {metadata_level} could be found.\nThis program will continue, but be aware that this might induce errors!"
+                    f"No files for the key {metadata_level} could be found.\nThis program will continue, but be aware that this might induce errors!",
+                    stacklevel=1,
                 )
                 continue
             df = pd.concat(arr)
@@ -384,7 +385,8 @@ class SingleCellDeepProfiler:
             # skip a file if there are no features
             if len(features.index) == 0:
                 warnings.warn(
-                    f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!"
+                    f"No features could be found at {features_path}.\nThis program will continue, but be aware that this might induce errors!",
+                    stacklevel=1,
                 )
                 continue
             locations = load_npz_locations(

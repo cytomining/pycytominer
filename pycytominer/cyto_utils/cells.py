@@ -95,13 +95,13 @@ class SingleCells:
     def __init__(
         self,
         sql_file,
-        strata=["Metadata_Plate", "Metadata_Well"],
+        strata=("Metadata_Plate", "Metadata_Well"),
         aggregation_operation="median",
         output_file=None,
         compartments=default_compartments,
         compartment_linking_cols=default_linking_cols,
-        merge_cols=["TableNumber", "ImageNumber"],
-        image_cols=["TableNumber", "ImageNumber", "Metadata_Site"],
+        merge_cols=("TableNumber", "ImageNumber"),
+        image_cols=("TableNumber", "ImageNumber", "Metadata_Site"),
         add_image_features=False,
         image_feature_categories=None,
         features="infer",
@@ -241,8 +241,8 @@ class SingleCells:
 
         try:
             self.subsample_n = int(subsample_n)
-        except ValueError:
-            raise ValueError("subsample n must be an integer or coercable")
+        except ValueError as e:
+            raise ValueError("subsample n must be an integer or coercable") from e
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):

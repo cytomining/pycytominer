@@ -21,9 +21,12 @@ random.seed(123)
 
 def build_random_data(
     compartment="cells",
-    ImageNumber=sorted(["x", "y"] * 50),
-    TableNumber=sorted(["x_hash", "y_hash"] * 50),
+    ImageNumber=None,
+    TableNumber=None,
 ):
+    # Set mutable default values outside of function signature
+    ImageNumber = ImageNumber if ImageNumber else sorted(["x", "y"] * 50)
+    TableNumber = TableNumber if TableNumber else sorted(["x_hash", "y_hash"] * 50)
     a_feature = random.sample(range(1, 1000), 100)
     b_feature = random.sample(range(1, 1000), 100)
     c_feature = random.sample(range(1, 1000), 100)

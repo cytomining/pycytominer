@@ -17,7 +17,7 @@ from pycytominer.cyto_utils import (
 def annotate(
     profiles,
     platemap,
-    join_on=["Metadata_well_position", "Metadata_Well"],
+    join_on=("Metadata_well_position", "Metadata_Well"),
     output_file=None,
     output_type="csv",
     add_metadata_id_to_platemap=True,
@@ -28,7 +28,7 @@ def annotate(
     external_join_right=None,
     compression_options=None,
     float_format=None,
-    cmap_args={},
+    cmap_args=None,
     **kwargs,
 ):
     """Add metadata to aggregated profiles.
@@ -75,6 +75,8 @@ def annotate(
         DataFrame. If you specify output_file, then write to file and do not return
         data.
     """
+
+    cmap_args = cmap_args if cmap_args is not None else {}
 
     # Load Data
     profiles = load_profiles(profiles)
