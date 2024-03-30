@@ -13,14 +13,14 @@ from pycytominer.cyto_utils import (
 
 def consensus(
     profiles,
-    replicate_columns=["Metadata_Plate", "Metadata_Well"],
+    replicate_columns=("Metadata_Plate", "Metadata_Well"),
     operation="median",
     features="infer",
     output_file=None,
     output_type="csv",
     compression_options=None,
     float_format=None,
-    modz_args={"method": "spearman"},
+    modz_args=None,
 ):
     """Form level 5 consensus profile data.
 
@@ -95,6 +95,10 @@ def consensus(
         output_file=None,
     )
     """
+    # Set default modz_args
+    if modz_args is None:
+        modz_args = {"method": "spearman"}
+
     # Confirm that the operation is supported
     check_consensus_operation(operation)
 

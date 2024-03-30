@@ -15,7 +15,7 @@ def output(
     output_type: str = "csv",
     sep: str = ",",
     float_format: Optional[str] = None,
-    compression_options: Union[str, Dict] = {"method": "gzip", "mtime": 1},
+    compression_options: Union[str, Dict, None] = None,
     **kwargs,
 ):
     """Given an output file and compression options, write file to disk
@@ -78,6 +78,11 @@ def output(
         float_format=None,
     )
     """
+
+    # Set default compression options (done outside of function signature to avoid mutable default arguments)
+    compression_options = (
+        compression_options if compression_options else {"method": "gzip", "mtime": 1}
+    )
 
     if output_type == "csv":
         compression_options = set_compression_method(compression=compression_options)

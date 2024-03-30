@@ -56,7 +56,7 @@ def check_compartments(compartments):
         warn_str = "Non-canonical compartment detected: {x}".format(
             x=", ".join(non_canonical_compartments)
         )
-        warnings.warn(warn_str)
+        warnings.warn(warn_str, stacklevel=1)
 
 
 def load_known_metadata_dictionary(metadata_file=default_metadata_file):
@@ -186,10 +186,10 @@ def check_fields_of_view_format(fields_of_view):
             else:
                 try:
                     return list(map(int, fields_of_view))
-                except ValueError:
+                except ValueError as e:
                     raise TypeError(
                         "Variables of type int expected, however some of the input fields of view are not integers."
-                    )
+                    ) from e
         else:
             raise TypeError(
                 f"Variable of type list expected, however type {type(fields_of_view)} was passed."
@@ -215,11 +215,9 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
 
     """
 
-    try:
-        assert len(
-            list(np.intersect1d(data_fields_of_view, input_fields_of_view))
-        ) == len(input_fields_of_view)
-    except AssertionError:
+    if not len(list(np.intersect1d(data_fields_of_view, input_fields_of_view))) == len(
+        input_fields_of_view
+    ):
         raise ValueError(
             "Some of the input fields of view are not present in the image table."
         )
@@ -248,12 +246,10 @@ def check_image_features(image_features, image_columns):
     else:
         level = 0
 
-    try:
-        assert all(
-            feature in list({img_col.split("_")[level] for img_col in image_columns})
-            for feature in image_features
-        )
-    except AssertionError:
+    if not all(
+        feature in list({img_col.split("_")[level] for img_col in image_columns})
+        for feature in image_features
+    ):
         raise ValueError(
             "Some of the input image features are not present in the image table."
         )

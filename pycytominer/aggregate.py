@@ -13,7 +13,7 @@ from pycytominer.cyto_utils import (
 
 def aggregate(
     population_df,
-    strata=["Metadata_Plate", "Metadata_Well"],
+    strata=("Metadata_Plate", "Metadata_Well"),
     features="infer",
     operation="median",
     output_file=None,

@@ -101,5 +101,5 @@ def write_gct(
         gctwriter = csv.writer(gctfile, delimiter="\t")
         gctwriter.writerow([version])
         gctwriter.writerow(data_dimensions)
-        for feature, row in full_df.iterrows():
+        for _, row in full_df.iterrows():
             gctwriter.writerow(row)

@@ -86,7 +86,7 @@ class CellLocation:
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
         table_column: str = "TableNumber",
-        image_key: list = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
+        image_key: list = ("Metadata_Plate", "Metadata_Well", "Metadata_Site"),
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):

@@ -31,7 +31,7 @@ def collate(
     tmp_dir="/tmp",
     overwrite=False,
     add_image_features=True,
-    image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
+    image_feature_categories=("Granularity", "Texture", "ImageQuality", "Threshold"),
     printtoscreen=True,
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
@@ -74,12 +74,12 @@ def collate(
     try:
         import cytominer_database.ingest
         import cytominer_database.munge
-    except ImportError:
+    except ImportError as e:
         raise ImportError(
             """Optional dependency cytominer-database is not installed.
             Please install the `collate` optional dependency group: e.g. `pip install pycytominer[collate]`
             """
-        )
+        ) from e
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
     input_dir = pathlib.Path(f"{base_directory}/analysis/{batch}/{plate}/{csv_dir}")

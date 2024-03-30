@@ -144,7 +144,7 @@ select = [
     # flake8-bandit
     # "S",
     # flake8-bugbear
-    # "B",
+    "B",
     # isort
     # "I",
     # mccabe

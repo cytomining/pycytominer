@@ -75,7 +75,7 @@ def label_compartment(cp_features, compartment, metadata_cols):
 
 def infer_cp_features(
     population_df,
-    compartments=["Cells", "Nuclei", "Cytoplasm"],
+    compartments=("Cells", "Nuclei", "Cytoplasm"),
     metadata=False,
     image_features=False,
 ):
