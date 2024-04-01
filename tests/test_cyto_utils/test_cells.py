@@ -28,9 +28,12 @@ def build_random_data(
     b_feature = random.sample(range(1, 1000), 100)
     c_feature = random.sample(range(1, 1000), 100)
     d_feature = random.sample(range(1, 1000), 100)
-    data_df = pd.DataFrame(
-        {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
-    ).reset_index(drop=True)
+    data_df = pd.DataFrame({
+        "a": a_feature,
+        "b": b_feature,
+        "c": c_feature,
+        "d": d_feature,
+    }).reset_index(drop=True)
 
     data_df.columns = [f"{compartment.capitalize()}_{x}" for x in data_df.columns]
 
@@ -58,37 +61,31 @@ CYTOPLASM_DF = build_random_data(compartment="cytoplasm").assign(
     Cytoplasm_Parent_Nuclei=(list(range(1, 51)) * 2)[::-1],
 )
 NUCLEI_DF = build_random_data(compartment="nuclei")
-IMAGE_DF = pd.DataFrame(
-    {
-        "TableNumber": ["x_hash", "y_hash"],
-        "ImageNumber": ["x", "y"],
-        "Metadata_Plate": ["plate", "plate"],
-        "Metadata_Well": ["A01", "A02"],
-        "Metadata_Site": [1, 1],
-    }
-)
+IMAGE_DF = pd.DataFrame({
+    "TableNumber": ["x_hash", "y_hash"],
+    "ImageNumber": ["x", "y"],
+    "Metadata_Plate": ["plate", "plate"],
+    "Metadata_Well": ["A01", "A02"],
+    "Metadata_Site": [1, 1],
+})
 
-IMAGE_DF_ADDITIONAL_FEATURES = pd.DataFrame(
-    {
-        "TableNumber": ["x_hash", "y_hash"],
-        "ImageNumber": ["x", "y"],
-        "Metadata_Plate": ["plate", "plate"],
-        "Metadata_Well": ["A01", "A01"],
-        "Metadata_Site": [1, 2],
-        "Count_Cells": [50, 50],
-        "Granularity_1_Mito": [3.0, 4.0],
-        "Texture_Variance_RNA_20_00": [12.0, 14.0],
-        "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
-    }
-)
+IMAGE_DF_ADDITIONAL_FEATURES = pd.DataFrame({
+    "TableNumber": ["x_hash", "y_hash"],
+    "ImageNumber": ["x", "y"],
+    "Metadata_Plate": ["plate", "plate"],
+    "Metadata_Well": ["A01", "A01"],
+    "Metadata_Site": [1, 2],
+    "Count_Cells": [50, 50],
+    "Granularity_1_Mito": [3.0, 4.0],
+    "Texture_Variance_RNA_20_00": [12.0, 14.0],
+    "Texture_InfoMeas2_DNA_5_02": [5.0, 1.0],
+})
 
 # platemap metadata df for optional annotation of SingleCells
-PLATEMAP_DF = pd.DataFrame(
-    {
-        "well_position": ["A01", "A02"],
-        "gene": ["x", "y"],
-    }
-).reset_index(drop=True)
+PLATEMAP_DF = pd.DataFrame({
+    "well_position": ["A01", "A02"],
+    "gene": ["x", "y"],
+}).reset_index(drop=True)
 
 
 # Ingest data into temporary sqlite file
@@ -266,13 +263,11 @@ def test_SingleCells_reset_variables():
 
 def test_SingleCells_count():
     count_df = AP.count_cells()
-    expected_count = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "cell_count": [50, 50],
-        }
-    )
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "cell_count": [50, 50],
+    })
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
@@ -631,16 +626,14 @@ def test_aggregate_comparment():
     result = aggregate(df)
     ap_result = AP.aggregate_compartment("cells")
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "Cells_a": [368.0, 583.5],
-            "Cells_b": [482.0, 478.5],
-            "Cells_c": [531.0, 461.5],
-            "Cells_d": [585.5, 428.0],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "Cells_a": [368.0, 583.5],
+        "Cells_b": [482.0, 478.5],
+        "Cells_c": [531.0, 461.5],
+        "Cells_d": [585.5, 428.0],
+    })
 
     pd.testing.assert_frame_equal(result, expected_result)
     pd.testing.assert_frame_equal(result, ap_result)
@@ -650,26 +643,24 @@ def test_aggregate_comparment():
 def test_aggregate_profiles():
     result = AP.aggregate_profiles()
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "Metadata_Object_Count": [50, 50],
-            "Metadata_Site_Count": [1, 1],
-            "Cells_a": [368.0, 583.5],
-            "Cells_b": [482.0, 478.5],
-            "Cells_c": [531.0, 461.5],
-            "Cells_d": [585.5, 428.0],
-            "Cytoplasm_a": [479.5, 495.5],
-            "Cytoplasm_b": [445.5, 459.0],
-            "Cytoplasm_c": [407.5, 352.0],
-            "Cytoplasm_d": [533.0, 545.0],
-            "Nuclei_a": [591.5, 435.5],
-            "Nuclei_b": [574.0, 579.0],
-            "Nuclei_c": [588.5, 538.5],
-            "Nuclei_d": [483.0, 560.0],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "Metadata_Object_Count": [50, 50],
+        "Metadata_Site_Count": [1, 1],
+        "Cells_a": [368.0, 583.5],
+        "Cells_b": [482.0, 478.5],
+        "Cells_c": [531.0, 461.5],
+        "Cells_d": [585.5, 428.0],
+        "Cytoplasm_a": [479.5, 495.5],
+        "Cytoplasm_b": [445.5, 459.0],
+        "Cytoplasm_c": [407.5, 352.0],
+        "Cytoplasm_d": [533.0, 545.0],
+        "Nuclei_a": [591.5, 435.5],
+        "Nuclei_b": [574.0, 579.0],
+        "Nuclei_c": [588.5, 538.5],
+        "Nuclei_d": [483.0, 560.0],
+    })
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1), expected_result.sort_index(axis=1)
@@ -689,13 +680,11 @@ def test_aggregate_profiles():
 
 def test_aggregate_subsampling_count_cells():
     count_df = AP_SUBSAMPLE.count_cells()
-    expected_count = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "cell_count": [50, 50],
-        }
-    )
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "cell_count": [50, 50],
+    })
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
     assert isinstance(
@@ -703,13 +692,11 @@ def test_aggregate_subsampling_count_cells():
     )
 
     count_df = AP_SUBSAMPLE.count_cells(count_subset=True)
-    expected_count = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "cell_count": [2, 2],
-        }
-    )
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "cell_count": [2, 2],
+    })
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
@@ -718,41 +705,37 @@ def test_aggregate_subsampling_profile():
         AP_SUBSAMPLE.aggregate_profiles(compute_subsample=True), pd.DataFrame
     )
 
-    expected_subset = pd.DataFrame(
-        {
-            "ImageNumber": sorted(["x", "y"] * 2),
-            "Metadata_Plate": ["plate"] * 4,
-            "Metadata_Site": [1] * 4,
-            "Metadata_Well": sorted(["A01", "A02"] * 2),
-            "TableNumber": sorted(["x_hash", "y_hash"] * 2),
-            "Metadata_ObjectNumber": [46, 3] * 2,
-        }
-    )
+    expected_subset = pd.DataFrame({
+        "ImageNumber": sorted(["x", "y"] * 2),
+        "Metadata_Plate": ["plate"] * 4,
+        "Metadata_Site": [1] * 4,
+        "Metadata_Well": sorted(["A01", "A02"] * 2),
+        "TableNumber": sorted(["x_hash", "y_hash"] * 2),
+        "Metadata_ObjectNumber": [46, 3] * 2,
+    })
 
     pd.testing.assert_frame_equal(AP_SUBSAMPLE.subset_data_df, expected_subset)
 
 
 def test_aggregate_subsampling_profile_output():
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "Metadata_Site_Count": [1] * 2,
-            "Metadata_Object_Count": [AP_SUBSAMPLE.subsample_n] * 2,
-            "Cells_a": [110.0, 680.5],
-            "Cells_b": [340.5, 201.5],
-            "Cells_c": [285.0, 481.0],
-            "Cells_d": [352.0, 549.0],
-            "Cytoplasm_a": [407.5, 705.5],
-            "Cytoplasm_b": [650.0, 439.5],
-            "Cytoplasm_c": [243.5, 78.5],
-            "Cytoplasm_d": [762.5, 625.0],
-            "Nuclei_a": [683.5, 171.0],
-            "Nuclei_b": [50.5, 625.0],
-            "Nuclei_c": [431.0, 483.0],
-            "Nuclei_d": [519.0, 286.5],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "Metadata_Site_Count": [1] * 2,
+        "Metadata_Object_Count": [AP_SUBSAMPLE.subsample_n] * 2,
+        "Cells_a": [110.0, 680.5],
+        "Cells_b": [340.5, 201.5],
+        "Cells_c": [285.0, 481.0],
+        "Cells_d": [352.0, 549.0],
+        "Cytoplasm_a": [407.5, 705.5],
+        "Cytoplasm_b": [650.0, 439.5],
+        "Cytoplasm_c": [243.5, 78.5],
+        "Cytoplasm_d": [762.5, 625.0],
+        "Nuclei_a": [683.5, 171.0],
+        "Nuclei_b": [50.5, 625.0],
+        "Nuclei_c": [431.0, 483.0],
+        "Nuclei_d": [519.0, 286.5],
+    })
 
     # test CSV-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
@@ -776,26 +759,24 @@ def test_aggregate_subsampling_profile_output():
 
 
 def test_aggregate_subsampling_profile_output_multiple_queries():
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "Metadata_Site_Count": [1] * 2,
-            "Metadata_Object_Count": [AP_SUBSAMPLE.subsample_n] * 2,
-            "Cells_a": [110.0, 680.5],
-            "Cells_b": [340.5, 201.5],
-            "Cells_c": [285.0, 481.0],
-            "Cells_d": [352.0, 549.0],
-            "Cytoplasm_a": [407.5, 705.5],
-            "Cytoplasm_b": [650.0, 439.5],
-            "Cytoplasm_c": [243.5, 78.5],
-            "Cytoplasm_d": [762.5, 625.0],
-            "Nuclei_a": [683.5, 171.0],
-            "Nuclei_b": [50.5, 625.0],
-            "Nuclei_c": [431.0, 483.0],
-            "Nuclei_d": [519.0, 286.5],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "Metadata_Site_Count": [1] * 2,
+        "Metadata_Object_Count": [AP_SUBSAMPLE.subsample_n] * 2,
+        "Cells_a": [110.0, 680.5],
+        "Cells_b": [340.5, 201.5],
+        "Cells_c": [285.0, 481.0],
+        "Cells_d": [352.0, 549.0],
+        "Cytoplasm_a": [407.5, 705.5],
+        "Cytoplasm_b": [650.0, 439.5],
+        "Cytoplasm_c": [243.5, 78.5],
+        "Cytoplasm_d": [762.5, 625.0],
+        "Nuclei_a": [683.5, 171.0],
+        "Nuclei_b": [50.5, 625.0],
+        "Nuclei_c": [431.0, 483.0],
+        "Nuclei_d": [519.0, 286.5],
+    })
 
     # test CSV-based output
     output_result = AP_SUBSAMPLE.aggregate_profiles(
@@ -896,15 +877,13 @@ def test_aggregate_count_cells_multiple_strata():
         ImageNumber=base_image_number,
         TableNumber=base_table_number,
     )
-    image_df = pd.DataFrame(
-        {
-            "TableNumber": ["x_hash_a", "x_hash_b", "y_hash_a", "y_hash_b"],
-            "ImageNumber": ["x", "x", "y", "y"],
-            "Metadata_Plate": ["plate"] * 4,
-            "Metadata_Well": ["A01", "A02"] * 2,
-            "Metadata_Site": [1, 1, 2, 2],
-        }
-    ).sort_values(by="Metadata_Well")
+    image_df = pd.DataFrame({
+        "TableNumber": ["x_hash_a", "x_hash_b", "y_hash_a", "y_hash_b"],
+        "ImageNumber": ["x", "x", "y", "y"],
+        "Metadata_Plate": ["plate"] * 4,
+        "Metadata_Well": ["A01", "A02"] * 2,
+        "Metadata_Site": [1, 1, 2, 2],
+    }).sort_values(by="Metadata_Well")
 
     # Ingest data into temporary sqlite file
     image_df.to_sql(name="image", con=test_engine, index=False, if_exists="replace")
@@ -922,14 +901,12 @@ def test_aggregate_count_cells_multiple_strata():
     )
 
     count_df = ap_strata.count_cells()
-    expected_count = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate"] * 4,
-            "Metadata_Well": sorted(["A01", "A02"] * 2),
-            "Metadata_Site": [1, 2] * 2,
-            "cell_count": [25] * 4,
-        }
-    )
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate"] * 4,
+        "Metadata_Well": sorted(["A01", "A02"] * 2),
+        "Metadata_Site": [1, 2] * 2,
+        "cell_count": [25] * 4,
+    })
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
     assert isinstance(
@@ -937,99 +914,91 @@ def test_aggregate_count_cells_multiple_strata():
     )
 
     count_df = ap_strata.count_cells(count_subset=True)
-    expected_count = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate"] * 4,
-            "Metadata_Well": sorted(["A01", "A02"] * 2),
-            "Metadata_Site": [1, 2] * 2,
-            "cell_count": [4] * 4,
-        }
-    )
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate"] * 4,
+        "Metadata_Well": sorted(["A01", "A02"] * 2),
+        "Metadata_Site": [1, 2] * 2,
+        "cell_count": [4] * 4,
+    })
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
 def test_add_image_features():
     result = AP_IMAGE_ALL_FEATURES.aggregate_profiles()
-    expected_result_all_features = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate"],
-            "Metadata_Well": ["A01"],
-            "Metadata_Site_Count": [2],
-            "Metadata_Object_Count": [100],
-            "Metadata_Count_Cells": [100],
-            "Image_Granularity_1_Mito": [3.5],
-            "Image_Texture_Variance_RNA_20_00": [13.0],
-            "Image_Texture_InfoMeas2_DNA_5_02": [3.0],
-            "Cells_a": [530.0],
-            "Cells_b": [478.5],
-            "Cells_c": [489.5],
-            "Cells_d": [514.5],
-            "Cytoplasm_a": [480.5],
-            "Cytoplasm_b": [446.5],
-            "Cytoplasm_c": [383.0],
-            "Cytoplasm_d": [539.5],
-            "Nuclei_a": [481.0],
-            "Nuclei_b": [574.0],
-            "Nuclei_c": [571.0],
-            "Nuclei_d": [493.0],
-        }
-    )
+    expected_result_all_features = pd.DataFrame({
+        "Metadata_Plate": ["plate"],
+        "Metadata_Well": ["A01"],
+        "Metadata_Site_Count": [2],
+        "Metadata_Object_Count": [100],
+        "Metadata_Count_Cells": [100],
+        "Image_Granularity_1_Mito": [3.5],
+        "Image_Texture_Variance_RNA_20_00": [13.0],
+        "Image_Texture_InfoMeas2_DNA_5_02": [3.0],
+        "Cells_a": [530.0],
+        "Cells_b": [478.5],
+        "Cells_c": [489.5],
+        "Cells_d": [514.5],
+        "Cytoplasm_a": [480.5],
+        "Cytoplasm_b": [446.5],
+        "Cytoplasm_c": [383.0],
+        "Cytoplasm_d": [539.5],
+        "Nuclei_a": [481.0],
+        "Nuclei_b": [574.0],
+        "Nuclei_c": [571.0],
+        "Nuclei_d": [493.0],
+    })
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1), expected_result_all_features.sort_index(axis=1)
     )
 
     result = AP_IMAGE_SUBSET_FEATURES.aggregate_profiles()
-    expected_result_subset_features = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate"],
-            "Metadata_Well": ["A01"],
-            "Metadata_Site_Count": [2],
-            "Metadata_Object_Count": [100],
-            "Metadata_Count_Cells": [100],
-            "Image_Texture_Variance_RNA_20_00": [13.0],
-            "Image_Texture_InfoMeas2_DNA_5_02": [3.0],
-            "Cells_a": [530.0],
-            "Cells_b": [478.5],
-            "Cells_c": [489.5],
-            "Cells_d": [514.5],
-            "Cytoplasm_a": [480.5],
-            "Cytoplasm_b": [446.5],
-            "Cytoplasm_c": [383.0],
-            "Cytoplasm_d": [539.5],
-            "Nuclei_a": [481.0],
-            "Nuclei_b": [574.0],
-            "Nuclei_c": [571.0],
-            "Nuclei_d": [493.0],
-        }
-    )
+    expected_result_subset_features = pd.DataFrame({
+        "Metadata_Plate": ["plate"],
+        "Metadata_Well": ["A01"],
+        "Metadata_Site_Count": [2],
+        "Metadata_Object_Count": [100],
+        "Metadata_Count_Cells": [100],
+        "Image_Texture_Variance_RNA_20_00": [13.0],
+        "Image_Texture_InfoMeas2_DNA_5_02": [3.0],
+        "Cells_a": [530.0],
+        "Cells_b": [478.5],
+        "Cells_c": [489.5],
+        "Cells_d": [514.5],
+        "Cytoplasm_a": [480.5],
+        "Cytoplasm_b": [446.5],
+        "Cytoplasm_c": [383.0],
+        "Cytoplasm_d": [539.5],
+        "Nuclei_a": [481.0],
+        "Nuclei_b": [574.0],
+        "Nuclei_c": [571.0],
+        "Nuclei_d": [493.0],
+    })
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1), expected_result_subset_features.sort_index(axis=1)
     )
 
     result = AP_IMAGE_COUNT.aggregate_profiles()
-    expected_result_count = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate"],
-            "Metadata_Well": ["A01"],
-            "Metadata_Site_Count": [2],
-            "Metadata_Object_Count": [100],
-            "Metadata_Count_Cells": [100],
-            "Cells_a": [530.0],
-            "Cells_b": [478.5],
-            "Cells_c": [489.5],
-            "Cells_d": [514.5],
-            "Cytoplasm_a": [480.5],
-            "Cytoplasm_b": [446.5],
-            "Cytoplasm_c": [383.0],
-            "Cytoplasm_d": [539.5],
-            "Nuclei_a": [481.0],
-            "Nuclei_b": [574.0],
-            "Nuclei_c": [571.0],
-            "Nuclei_d": [493.0],
-        }
-    )
+    expected_result_count = pd.DataFrame({
+        "Metadata_Plate": ["plate"],
+        "Metadata_Well": ["A01"],
+        "Metadata_Site_Count": [2],
+        "Metadata_Object_Count": [100],
+        "Metadata_Count_Cells": [100],
+        "Cells_a": [530.0],
+        "Cells_b": [478.5],
+        "Cells_c": [489.5],
+        "Cells_d": [514.5],
+        "Cytoplasm_a": [480.5],
+        "Cytoplasm_b": [446.5],
+        "Cytoplasm_c": [383.0],
+        "Cytoplasm_d": [539.5],
+        "Nuclei_a": [481.0],
+        "Nuclei_b": [574.0],
+        "Nuclei_c": [571.0],
+        "Nuclei_d": [493.0],
+    })
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1), expected_result_count.sort_index(axis=1)
@@ -1052,26 +1021,24 @@ def test_load_non_canonical_image_table():
 
     result = AP_IMAGE_DIFF_NAME.aggregate_profiles()
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_Plate": ["plate", "plate"],
-            "Metadata_Well": ["A01", "A02"],
-            "Metadata_Object_Count": [50, 50],
-            "Metadata_Site_Count": [1, 1],
-            "Cells_a": [368.0, 583.5],
-            "Cells_b": [482.0, 478.5],
-            "Cells_c": [531.0, 461.5],
-            "Cells_d": [585.5, 428.0],
-            "Cytoplasm_a": [479.5, 495.5],
-            "Cytoplasm_b": [445.5, 459.0],
-            "Cytoplasm_c": [407.5, 352.0],
-            "Cytoplasm_d": [533.0, 545.0],
-            "Nuclei_a": [591.5, 435.5],
-            "Nuclei_b": [574.0, 579.0],
-            "Nuclei_c": [588.5, 538.5],
-            "Nuclei_d": [483.0, 560.0],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "Metadata_Object_Count": [50, 50],
+        "Metadata_Site_Count": [1, 1],
+        "Cells_a": [368.0, 583.5],
+        "Cells_b": [482.0, 478.5],
+        "Cells_c": [531.0, 461.5],
+        "Cells_d": [585.5, 428.0],
+        "Cytoplasm_a": [479.5, 495.5],
+        "Cytoplasm_b": [445.5, 459.0],
+        "Cytoplasm_c": [407.5, 352.0],
+        "Cytoplasm_d": [533.0, 545.0],
+        "Nuclei_a": [591.5, 435.5],
+        "Nuclei_b": [574.0, 579.0],
+        "Nuclei_c": [588.5, 538.5],
+        "Nuclei_d": [483.0, 560.0],
+    })
 
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1), expected_result.sort_index(axis=1)

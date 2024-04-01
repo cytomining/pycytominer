@@ -18,25 +18,23 @@ random.seed(123)
 TMPDIR = tempfile.gettempdir()
 
 # Build data to use in tests
-DATA_DF = pd.DataFrame(
-    {
-        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-        "Metadata_treatment": [
-            "drug",
-            "drug",
-            "control",
-            "control",
-            "drug",
-            "drug",
-            "control",
-            "control",
-        ],
-        "x": [1, 2, 8, 2, 5, 5, 5, 1],
-        "y": [3, 1, 7, 4, 5, 9, 6, 1],
-        "z": [1, 8, 2, 5, 6, 22, 2, 2],
-        "zz": [14, 46, 1, 6, 30, 100, 2, 2],
-    }
-).reset_index(drop=True)
+DATA_DF = pd.DataFrame({
+    "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+    "Metadata_treatment": [
+        "drug",
+        "drug",
+        "control",
+        "control",
+        "drug",
+        "drug",
+        "control",
+        "control",
+    ],
+    "x": [1, 2, 8, 2, 5, 5, 5, 1],
+    "y": [3, 1, 7, 4, 5, 9, 6, 1],
+    "z": [1, 8, 2, 5, 6, 22, 2, 2],
+    "zz": [14, 46, 1, 6, 30, 100, 2, 2],
+}).reset_index(drop=True)
 
 # Set default compression options
 TEST_COMPRESSION_OPTIONS = {"method": "gzip"}

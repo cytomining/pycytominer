@@ -106,9 +106,9 @@ def check_correlation_method(method):
 
     method = method.lower()
     avail_methods = ["pearson", "spearman", "kendall"]
-    assert method in avail_methods, "method {} not supported, select one of {}".format(
-        method, avail_methods
-    )
+    assert (
+        method in avail_methods
+    ), f"method {method} not supported, select one of {avail_methods}"
 
     return method
 
@@ -159,9 +159,7 @@ def check_consensus_operation(operation):
     except AssertionError:
         assert (
             operation in avail_ops
-        ), "operation {} not supported, select one of {} or see aggregate.py".format(
-            operation, avail_ops
-        )
+        ), f"operation {operation} not supported, select one of {avail_ops} or see aggregate.py"
 
     return operation
 

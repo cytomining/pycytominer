@@ -12,9 +12,12 @@ b_feature = random.sample(range(1, 100), 10)
 c_feature = random.sample(range(1, 100), 10)
 d_feature = random.sample(range(1, 100), 10)
 
-data_df = pd.DataFrame(
-    {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature}
-).reset_index(drop=True)
+data_df = pd.DataFrame({
+    "a": a_feature,
+    "b": b_feature,
+    "c": c_feature,
+    "d": d_feature,
+}).reset_index(drop=True)
 
 
 def test_spherize():

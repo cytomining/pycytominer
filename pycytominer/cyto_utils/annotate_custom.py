@@ -23,9 +23,9 @@ def annotate_cmap(
         CMAP annotated data
     """
     pert_opts = ["none", "chemical", "genetic"]
-    assert perturbation_mode in pert_opts, "perturbation mode must be one of {}".format(
-        pert_opts
-    )
+    assert (
+        perturbation_mode in pert_opts
+    ), f"perturbation mode must be one of {pert_opts}"
 
     assert (
         "Metadata_broad_sample" in annotated.columns

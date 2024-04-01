@@ -8,12 +8,10 @@ blocklist_file = ROOT_DIR / "pycytominer" / "data" / "blocklist_features.txt"
 
 blocklist = pd.read_csv(blocklist_file).blocklist.tolist()
 
-data_blocklist_df = pd.DataFrame(
-    {
-        "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
-        "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
-    }
-).reset_index(drop=True)
+data_blocklist_df = pd.DataFrame({
+    "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
+    "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+}).reset_index(drop=True)
 
 
 def test_blocklist():

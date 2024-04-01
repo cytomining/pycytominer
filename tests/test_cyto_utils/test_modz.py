@@ -7,26 +7,20 @@ data_df = pd.DataFrame({"x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]})
 data_df.index = [f"sample_{x}" for x in data_df.index]
 
 # Include replicate information
-data_replicate_df = pd.concat(
-    [
-        pd.DataFrame(
-            {
-                "Metadata_g": "a",
-                "Cells_x": [1, 1, -1],
-                "Cytoplasm_y": [5, 5, -5],
-                "Nuclei_z": [2, 2, -2],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "Metadata_g": "b",
-                "Cells_x": [1, 3, 5],
-                "Cytoplasm_y": [8, 3, 1],
-                "Nuclei_z": [5, -2, 1],
-            }
-        ),
-    ]
-).reset_index(drop=True)
+data_replicate_df = pd.concat([
+    pd.DataFrame({
+        "Metadata_g": "a",
+        "Cells_x": [1, 1, -1],
+        "Cytoplasm_y": [5, 5, -5],
+        "Nuclei_z": [2, 2, -2],
+    }),
+    pd.DataFrame({
+        "Metadata_g": "b",
+        "Cells_x": [1, 3, 5],
+        "Cytoplasm_y": [8, 3, 1],
+        "Nuclei_z": [5, -2, 1],
+    }),
+]).reset_index(drop=True)
 data_replicate_df.index = [f"sample_{x}" for x in data_replicate_df.index]
 
 precision = 4
@@ -93,15 +87,13 @@ def test_modz_multiple_columns():
     consensus_df = modz(
         data_replicate_multi_df, replicate_columns, min_weight=0, precision=precision
     )
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_g": ["a", "b"],
-            "Metadata_h": ["c", "d"],
-            "Cells_x": [1.0, 4.0],
-            "Cytoplasm_y": [5.0, 2.0],
-            "Nuclei_z": [2.0, -0.5],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_g": ["a", "b"],
+        "Metadata_h": ["c", "d"],
+        "Cells_x": [1.0, 4.0],
+        "Cytoplasm_y": [5.0, 2.0],
+        "Nuclei_z": [2.0, -0.5],
+    })
     pd.testing.assert_frame_equal(
         expected_result.reset_index(), consensus_df.reset_index()
     )
@@ -124,14 +116,12 @@ def test_modz_multiple_columns_one_metadata_column():
     consensus_df = modz(
         data_replicate_multi_df, replicate_columns, min_weight=0, precision=precision
     )
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_g": ["a", "b"],
-            "Cells_x": [1.0, 4.0],
-            "Cytoplasm_y": [5.0, 2.0],
-            "Nuclei_z": [2.0, -0.5],
-        }
-    )
+    expected_result = pd.DataFrame({
+        "Metadata_g": ["a", "b"],
+        "Cells_x": [1.0, 4.0],
+        "Cytoplasm_y": [5.0, 2.0],
+        "Nuclei_z": [2.0, -0.5],
+    })
     pd.testing.assert_frame_equal(
         expected_result.reset_index(), consensus_df.reset_index()
     )
@@ -153,12 +143,10 @@ def test_modz_multiple_columns_one_metadata_column():
 
 def test_modz_multiple_columns_feature_specify():
     # Include replicate information
-    data_replicate_feature_df = pd.concat(
-        [
-            pd.DataFrame({"g": "a", "x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]}),
-            pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1], "z": [5, -2, 1]}),
-        ]
-    ).reset_index(drop=True)
+    data_replicate_feature_df = pd.concat([
+        pd.DataFrame({"g": "a", "x": [1, 1, -1], "y": [5, 5, -5], "z": [2, 2, -2]}),
+        pd.DataFrame({"g": "b", "x": [1, 3, 5], "y": [8, 3, 1], "z": [5, -2, 1]}),
+    ]).reset_index(drop=True)
     data_replicate_feature_df.index = [
         f"sample_{x}" for x in data_replicate_feature_df.index
     ]

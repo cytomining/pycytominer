@@ -16,48 +16,44 @@ output_test_file_csv = os.path.join(tmpdir, "test.csv")
 output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
 
 # Build data to use in tests
-data_df = pd.DataFrame(
-    {
-        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-        "Metadata_treatment": [
-            "drug",
-            "drug",
-            "control",
-            "control",
-            "drug",
-            "drug",
-            "control",
-            "control",
-        ],
-        "x": [1, 2, 8, 2, 5, 5, 5, 1],
-        "y": [3, 1, 7, 4, 5, 9, 6, 1],
-        "z": [1, 8, 2, 5, 6, 22, 2, 2],
-        "zz": [14, 46, 1, 6, 30, 100, 2, 2],
-    }
-).reset_index(drop=True)
+data_df = pd.DataFrame({
+    "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+    "Metadata_treatment": [
+        "drug",
+        "drug",
+        "control",
+        "control",
+        "drug",
+        "drug",
+        "control",
+        "control",
+    ],
+    "x": [1, 2, 8, 2, 5, 5, 5, 1],
+    "y": [3, 1, 7, 4, 5, 9, 6, 1],
+    "z": [1, 8, 2, 5, 6, 22, 2, 2],
+    "zz": [14, 46, 1, 6, 30, 100, 2, 2],
+}).reset_index(drop=True)
 
 data_file = os.path.join(tmpdir, "test_normalize.csv")
 data_df.to_csv(data_file, index=False, sep=",")
 
-data_feature_infer_df = pd.DataFrame(
-    {
-        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-        "Metadata_treatment": [
-            "drug",
-            "drug",
-            "control",
-            "control",
-            "drug",
-            "drug",
-            "control",
-            "control",
-        ],
-        "Cells_x": [1, 2, 8, 2, 5, 5, 5, 1],
-        "Cells_y": [3, 1, 7, 4, 5, 9, 6, 1],
-        "Cytoplasm_z": [1, 8, 2, 5, 6, 22, 2, 2],
-        "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
-    }
-).reset_index(drop=True)
+data_feature_infer_df = pd.DataFrame({
+    "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+    "Metadata_treatment": [
+        "drug",
+        "drug",
+        "control",
+        "control",
+        "drug",
+        "drug",
+        "control",
+        "control",
+    ],
+    "Cells_x": [1, 2, 8, 2, 5, 5, 5, 1],
+    "Cells_y": [3, 1, 7, 4, 5, 9, 6, 1],
+    "Cytoplasm_z": [1, 8, 2, 5, 6, 22, 2, 2],
+    "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
+}).reset_index(drop=True)
 
 data_feature_infer_file = os.path.join(tmpdir, "test_normalize_infer.csv")
 data_feature_infer_df.to_csv(data_feature_infer_file, index=False, sep=",")
@@ -68,9 +64,13 @@ c_feature = random.sample(range(1, 100), 10)
 d_feature = random.sample(range(1, 100), 10)
 id_feature = ["control"] * 5 + ["treatment"] * 5
 
-data_spherize_df = pd.DataFrame(
-    {"a": a_feature, "b": b_feature, "c": c_feature, "d": d_feature, "id": id_feature}
-).reset_index(drop=True)
+data_spherize_df = pd.DataFrame({
+    "a": a_feature,
+    "b": b_feature,
+    "c": c_feature,
+    "d": d_feature,
+    "id": id_feature,
+}).reset_index(drop=True)
 
 data_no_var_df = pd.concat(
     [data_df, pd.DataFrame([1] * data_df.shape[0], columns=["yy"])], axis="columns"
@@ -92,25 +92,23 @@ def test_normalize_standardize_allsamples():
         method="standardize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
-            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
-            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
-            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+        "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+        "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+        "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
@@ -130,25 +128,23 @@ def test_normalize_standardize_ctrlsamples():
         method="standardize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-1.1, -0.7, 1.5, -0.7, 0.4, 0.4, 0.4, -1.1],
-            "y": [-0.7, -1.5, 1.1, -0.2, 0.2, 2.0, 0.7, -1.5],
-            "z": [-1.3, 4.0, -0.6, 1.7, 2.5, 14.8, -0.6, -0.6],
-            "zz": [5.9, 22.5, -0.9, 1.7, 14.2, 50.6, -0.4, -0.4],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-1.1, -0.7, 1.5, -0.7, 0.4, 0.4, 0.4, -1.1],
+        "y": [-0.7, -1.5, 1.1, -0.2, 0.2, 2.0, 0.7, -1.5],
+        "z": [-1.3, 4.0, -0.6, 1.7, 2.5, 14.8, -0.6, -0.6],
+        "zz": [5.9, 22.5, -0.9, 1.7, 14.2, 50.6, -0.4, -0.4],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
@@ -168,25 +164,23 @@ def test_normalize_robustize_allsamples():
         method="robustize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-0.8, -0.5, 1.4, -0.5, 0.5, 0.5, 0.5, -0.8],
-            "y": [-0.4, -0.9, 0.7, -0.1, 0.1, 1.2, 0.4, -0.9],
-            "z": [-0.6, 1.0, -0.3, 0.3, 0.6, 4.1, -0.3, -0.3],
-            "zz": [0.1, 1.1, -0.3, -0.1, 0.6, 2.8, -0.2, -0.2],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-0.8, -0.5, 1.4, -0.5, 0.5, 0.5, 0.5, -0.8],
+        "y": [-0.4, -0.9, 0.7, -0.1, 0.1, 1.2, 0.4, -0.9],
+        "z": [-0.6, 1.0, -0.3, 0.3, 0.6, 4.1, -0.3, -0.3],
+        "zz": [0.1, 1.1, -0.3, -0.1, 0.6, 2.8, -0.2, -0.2],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
@@ -206,25 +200,23 @@ def test_normalize_robustize_ctrlsamples():
         method="robustize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-0.6, -0.4, 1.1, -0.4, 0.4, 0.4, 0.4, -0.6],
-            "y": [-0.7, -1.3, 0.7, -0.3, 0.0, 1.3, 0.3, -1.3],
-            "z": [-1.3, 8.0, 0.0, 4.0, 5.3, 26.7, 0.0, 0.0],
-            "zz": [9.6, 35.2, -0.8, 3.2, 22.4, 78.4, 0.0, 0.0],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-0.6, -0.4, 1.1, -0.4, 0.4, 0.4, 0.4, -0.6],
+        "y": [-0.7, -1.3, 0.7, -0.3, 0.0, 1.3, 0.3, -1.3],
+        "z": [-1.3, 8.0, 0.0, 4.0, 5.3, 26.7, 0.0, 0.0],
+        "zz": [9.6, 35.2, -0.8, 3.2, 22.4, 78.4, 0.0, 0.0],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
@@ -244,25 +236,23 @@ def test_normalize_robustize_mad_allsamples():
         method="mad_robustize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-1.1, -0.7, 2, -0.7, 0.7, 0.7, 0.7, -1.1],
-            "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
-            "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
-            "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-1.1, -0.7, 2, -0.7, 0.7, 0.7, 0.7, -1.1],
+        "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
+        "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
+        "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
@@ -284,26 +274,24 @@ def test_normalize_robustize_mad_allsamples_novar():
         method="mad_robustize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-1.1, -0.7, 2, -0.7, 0.7, 0.7, 0.7, -1.1],
-            "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
-            "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
-            "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
-            "yy": [0.0] * normalize_result.shape[0],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-1.1, -0.7, 2, -0.7, 0.7, 0.7, 0.7, -1.1],
+        "y": [-0.5, -1.2, 0.8, -0.2, 0.2, 1.5, 0.5, -1.2],
+        "z": [-0.8, 1.5, -0.5, 0.5, 0.8, 6.2, -0.5, -0.5],
+        "zz": [0.3, 2.9, -0.7, -0.3, 1.6, 7.1, -0.6, -0.6],
+        "yy": [0.0] * normalize_result.shape[0],
+    }).reset_index(drop=True)
 
     # Check that infinite or nan values are not introduced
     assert np.isfinite(normalize_result.loc[:, features].values).all()
@@ -336,25 +324,23 @@ def test_normalize_standardize_allsamples_fromfile():
         method="standardize",
     ).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "Cells_x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
-            "Cells_y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
-            "Cytoplasm_z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
-            "Nuclei_zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "Cells_x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+        "Cells_y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+        "Cytoplasm_z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+        "Nuclei_zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(infer_normalize_result, expected_result)
 
@@ -381,25 +367,23 @@ def test_normalize_standardize_allsamples_output():
         output_file=out_normalize_file,
     )
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
-            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
-            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
-            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+        "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+        "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+        "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+    }).reset_index(drop=True)
 
     from_file_result = pd.read_csv(out_normalize_file).round(1)
 
@@ -420,25 +404,23 @@ def test_normalize_standardize_allsamples_compress():
     )
     normalize_result = pd.read_csv(compress_file).round(1)
 
-    expected_result = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
-            "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
-            "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
-            "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
-        }
-    ).reset_index(drop=True)
+    expected_result = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [-1.1, -0.7, 1.9, -0.7, 0.6, 0.6, 0.6, -1.1],
+        "y": [-0.6, -1.3, 0.9, -0.2, 0.2, 1.7, 0.6, -1.3],
+        "z": [-0.8, 0.3, -0.6, -0.2, 0.0, 2.5, -0.6, -0.6],
+        "zz": [-0.3, 0.7, -0.8, -0.6, 0.2, 2.3, -0.7, -0.7],
+    }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 

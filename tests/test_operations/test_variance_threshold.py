@@ -7,26 +7,22 @@ from pycytominer.operations import variance_threshold, calculate_frequency
 random.seed(123)
 
 # Build data to use in tests
-data_df = pd.DataFrame(
-    {
-        "a": [1, 1, 1, 1, 1, 1],
-        "b": [1, 1, 1, 1, 1, 2],
-        "c": [1, 1, 1, 1, 2, 3],
-        "x": [1, 3, 8, 5, 2, 2],
-        "y": [1, 2, 8, 5, 2, 1],
-        "z": [9, 3, 8, 9, 2, 9],
-        "zz": [0, -3, 8, 9, 6, 9],
-    }
-).reset_index(drop=True)
+data_df = pd.DataFrame({
+    "a": [1, 1, 1, 1, 1, 1],
+    "b": [1, 1, 1, 1, 1, 2],
+    "c": [1, 1, 1, 1, 2, 3],
+    "x": [1, 3, 8, 5, 2, 2],
+    "y": [1, 2, 8, 5, 2, 1],
+    "z": [9, 3, 8, 9, 2, 9],
+    "zz": [0, -3, 8, 9, 6, 9],
+}).reset_index(drop=True)
 
-data_unique_test_df = pd.DataFrame(
-    {
-        "a": [1] * 99 + [2],
-        "b": [1, 2] * 50,
-        "c": [1, 2] * 25 + random.sample(range(1, 1000), 50),
-        "d": random.sample(range(1, 1000), 100),
-    }
-).reset_index(drop=True)
+data_unique_test_df = pd.DataFrame({
+    "a": [1] * 99 + [2],
+    "b": [1, 2] * 50,
+    "c": [1, 2] * 25 + random.sample(range(1, 1000), 50),
+    "d": random.sample(range(1, 1000), 100),
+}).reset_index(drop=True)
 
 
 def test_calculate_frequency():

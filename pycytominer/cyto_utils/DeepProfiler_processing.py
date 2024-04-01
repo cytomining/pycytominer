@@ -17,7 +17,6 @@ from pycytominer.cyto_utils import (
 
 
 class DeepProfilerData:
-
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
 
     Attributes
@@ -121,7 +120,6 @@ class DeepProfilerData:
 
 
 class AggregateDeepProfiler:
-
     """This class holds all functions needed to aggregate the DeepProfiler (DP) run.
 
     Attributes
@@ -312,7 +310,6 @@ class AggregateDeepProfiler:
 
 
 class SingleCellDeepProfiler:
-
     """This class holds functions needed to analyze single cells from the DeepProfiler (DP) run. Only pycytominer.normalization() is implemented.
 
     Attributes
