@@ -1,8 +1,9 @@
 import os
 import pathlib
-import pytest
 
 import pandas as pd
+import pytest
+
 from pycytominer.cyto_utils.collate import collate
 
 # Set constants

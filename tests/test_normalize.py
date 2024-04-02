@@ -1,10 +1,12 @@
 import os
-import tempfile
 import random
+import tempfile
+
 import numpy as np
 import pandas as pd
-from pycytominer.normalize import normalize
 import pytest
+
+from pycytominer.normalize import normalize
 
 random.seed(123)
 

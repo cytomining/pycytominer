@@ -1,8 +1,9 @@
 import pytest
+
 from pycytominer.cyto_utils import (
-    get_default_linking_cols,
-    get_default_compartments,
     assert_linking_cols_complete,
+    get_default_compartments,
+    get_default_linking_cols,
     provide_linking_cols_feature_name_update,
 )
 

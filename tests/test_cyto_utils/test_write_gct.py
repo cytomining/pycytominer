@@ -1,8 +1,10 @@
-import os
 import csv
+import os
 import tempfile
-import pytest
+
 import pandas as pd
+import pytest
+
 from pycytominer.cyto_utils import write_gct
 
 # Build data to use in tests

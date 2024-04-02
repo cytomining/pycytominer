@@ -146,7 +146,7 @@ select = [
     # flake8-bugbear
     # "B",
     # isort
-    # "I",
+    "I",
     # mccabe
     # "C90",
     # tryceratops
@@ -163,6 +163,7 @@ ignore = [
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
 "tests/*" = ["S101"] # Ignore assert statements in tests
+"pycytominer/cyto_utils/*" = ["I"] # Ignore isort in cyto_utils due to circular imports
 
 [tool.ruff.format]
 preview = true

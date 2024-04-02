@@ -3,20 +3,20 @@ This tests the output from a DeepProfiler run (May 2021)
 """
 
 import os
-import random
-import pytest
-import pandas as pd
 import pathlib
+import random
+
 import numpy.testing as npt
+import pandas as pd
+import pytest
 
-
-from pycytominer.cyto_utils.DeepProfiler_processing import (
-    DeepProfilerData,
-    AggregateDeepProfiler,
-    SingleCellDeepProfiler,
-)
 from pycytominer import normalize
 from pycytominer.cyto_utils import infer_cp_features
+from pycytominer.cyto_utils.DeepProfiler_processing import (
+    AggregateDeepProfiler,
+    DeepProfilerData,
+    SingleCellDeepProfiler,
+)
 
 ROOT_DIR = pathlib.Path(__file__).parents[2]
 random.seed(42)

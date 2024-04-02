@@ -6,6 +6,7 @@ import time
 
 import pandas as pd
 import pytest
+
 from pycytominer.cyto_utils.output import (
     check_compression_method,
     output,

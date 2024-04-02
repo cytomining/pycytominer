@@ -1,8 +1,10 @@
 import os
 import random
 import tempfile
+
 import numpy as np
 import pandas as pd
+
 from pycytominer import consensus
 
 random.seed(123)
