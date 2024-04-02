@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
     tags: ["*"]
+  schedule:
+    # runs every Wednesday at 7 AM UTC
+    - cron: "0 7 * * 3"
   workflow_dispatch:
     inputs:
       pytest_addopts:
@@ -34,6 +37,7 @@ jobs:
     strategy:
       fail-fast: false
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -69,6 +73,7 @@ jobs:
       # https://sqlalche.me/e/b8d9
       # We can remove this once we upgrade to SQLAlchemy >= 2.0
       SQLALCHEMY_SILENCE_UBER_WARNING: "1"
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -144,7 +149,7 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
           retention-days: 90
-  docker-image-test:
+  docker-image-test-and-push:
     runs-on: ubuntu-latest
     # set a dependency sequence to occur after build job completion
     needs: build
@@ -193,3 +198,48 @@ jobs:
       - name: Run tests through docker image
         run: |
           docker run pycytominer:testing pytest
+      # Gather and prepare the dynamic version and other vars for use with work below.
+      # For example, 1.1.0.post6.dev0+bc093ef becomes 1.1.0.post6.dev0_bc093ef
+      - name: Gather dynamic version and set env var
+        id: env-vars
+        run: >-
+          echo "CLEAN_VERSION=$(echo ${{ env.sdist_filename }} | tr '+' '_' )" >> "$GITHUB_OUTPUT" &&
+          echo "DATE_TAG=$(date +'%y%m%d')" >> "$GITHUB_OUTPUT"
+      - name: Login to Docker Hub
+        # only run this task if we have a pull request merged or the schedule triggers from main
+        if: (github.event.pull_request.merged ||  github.event_name == 'schedule') && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      # Docker image push based on weekly schedule
+      - name: Schedule-based docker image push
+        # only run this task if we have a schedule trigger from main on cytomining/pycytominer
+        if: github.event_name == 'schedule' &&  github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
+        uses: docker/build-push-action@v5
+        with:
+          context: "${{ env.sdist_extracted_name }}"
+          push: true
+          file: ../build/docker/Dockerfile
+          target: production
+          tags: cytomining/pycytominer:${{ steps.env-vars.outputs.CLEAN_VERSION }}_${{ steps.env-vars.outputs.DATE_TAG }}
+      # Docker image push based on GitHub pushes to main
+      - name: Push-based docker image push
+        # only run this task if we have a pull request which is merged
+        if: github.event.pull_request.merged && github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
+        uses: docker/build-push-action@v5
+        with:
+          context: "${{ env.sdist_extracted_name }}"
+          push: true
+          file: ../build/docker/Dockerfile
+          target: production
+          tags: cytomining/pycytominer:latest,cytomining/pycytominer:${{ steps.env-vars.outputs.CLEAN_VERSION }}
+      # update docker hub description using readme on merge
+      - name: Docker Hub
+        # only run this task if we have a pull request which is merged
+        if: github.event.pull_request.merged && github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: cytomining/pycytominer
