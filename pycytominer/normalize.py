@@ -1,6 +1,4 @@
-"""
-Normalize observation features based on specified normalization method
-"""
+"""Normalize observation features based on specified normalization method."""
 
 import pandas as pd
 from sklearn.preprocessing import RobustScaler, StandardScaler
@@ -25,7 +23,7 @@ def normalize(
     spherize_method="ZCA-cor",
     spherize_epsilon=1e-6,
 ):
-    """Normalize profiling features
+    """Normalize profiling features.
 
     Parameters
     ----------
@@ -119,7 +117,6 @@ def normalize(
         method="standardize"
     )
     """
-
     # Load Data
     profiles = load_profiles(profiles)
 

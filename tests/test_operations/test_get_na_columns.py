@@ -13,9 +13,7 @@ data_df = pd.DataFrame({
 
 
 def test_get_na_columns():
-    """
-    Testing get_na_columns pycytominer function
-    """
+    """Testing get_na_columns pycytominer function."""
     get_na_columns_result = get_na_columns(
         population_df=data_df, features=["x", "y", "zz"], cutoff=0.4
     )
@@ -41,9 +39,7 @@ def test_get_na_columns():
 
 
 def test_get_na_columns_sample():
-    """
-    Testing get_na_columns pycyominer function with samples option
-    """
+    """Testing get_na_columns pycyominer function with samples option."""
     data_sample_id_df = data_df.assign(
         Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
     )

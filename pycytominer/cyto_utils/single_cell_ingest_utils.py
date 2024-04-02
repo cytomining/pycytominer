@@ -3,7 +3,7 @@ from pycytominer.cyto_utils import get_default_compartments
 
 
 def get_default_linking_cols():
-    """Define the standard experiment linking columns between tables
+    """Define the standard experiment linking columns between tables.
 
     Returns
     -------
@@ -26,7 +26,7 @@ def get_default_linking_cols():
 
 
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
-    """Confirm that the linking cols and compartments are compatible
+    """Confirm that the linking cols and compartments are compatible.
 
     Parameters
     ----------

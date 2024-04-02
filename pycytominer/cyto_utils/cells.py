@@ -115,7 +115,7 @@ class SingleCells:
         object_feature="Metadata_ObjectNumber",
         default_datatype_float=np.float64,
     ):
-        """Constructor method"""
+        """Constructor method."""
         # Check compartments specified
         check_compartments(compartments)
 
@@ -186,7 +186,6 @@ class SingleCells:
         None
             Nothing is returned.
         """
-
         # Check that the user didn't specify both subset frac and subsample all
         assert (  # noqa: S101
             self.subsample_frac == 1 or self.subsample_n == "all"
@@ -205,7 +204,6 @@ class SingleCells:
         None
             Nothing is returned.
         """
-
         self.output_file = output_file
 
     def set_subsample_frac(self, subsample_frac):
@@ -221,7 +219,6 @@ class SingleCells:
         None
             Nothing is returned.
         """
-
         self.subsample_frac = subsample_frac
         self._check_subsampling()
 
@@ -238,7 +235,6 @@ class SingleCells:
         None
             Nothing is returned.
         """
-
         try:
             self.subsample_n = int(subsample_n)
         except ValueError:
@@ -258,11 +254,10 @@ class SingleCells:
         None
             Nothing is returned.
         """
-
         self.subsampling_random_state = random_state
 
     def load_image(self, image_table_name=None):
-        """Load image table from sqlite file
+        """Load image table from sqlite file.
 
         Returns
         -------
@@ -317,7 +312,6 @@ class SingleCells:
         pandas.core.frame.DataFrame
             DataFrame of cell counts in the experiment.
         """
-
         check_compartments(compartment)
 
         if count_subset:
@@ -359,7 +353,6 @@ class SingleCells:
         pandas.core.frame.DataFrame
             A subsampled pandas dataframe of single cell profiles.
         """
-
         if self.subsampling_random_state is None:
             random_state = np.random.randint(0, 10000, size=1)[0]
             self.set_subsample_random_state(random_state)
@@ -398,7 +391,6 @@ class SingleCells:
         None
             Nothing is returned.
         """
-
         check_compartments(compartment)
 
         query_cols = "TableNumber, ImageNumber, ObjectNumber"
@@ -458,7 +450,6 @@ class SingleCells:
         pandas.core.frame.DataFrame
             Compartment dataframe.
         """
-
         # Get data useful to pre-alloc memory
         num_cells = self.count_sql_table_rows(compartment)
         col_names = self.get_sql_table_col_names(compartment)
@@ -495,7 +486,7 @@ class SingleCells:
         add_image_features=False,
         n_aggregation_memory_strata=1,
     ):
-        """Aggregate morphological profiles. Uses pycytominer.aggregate()
+        """Aggregate morphological profiles. Uses pycytominer.aggregate().
 
         Parameters
         ----------
@@ -520,7 +511,6 @@ class SingleCells:
         pandas.core.frame.DataFrame
             DataFrame of aggregated profiles.
         """
-
         check_compartments(compartment)
 
         if (self.subsample_frac < 1 or self.subsample_n != "all") and compute_subsample:
@@ -622,7 +612,6 @@ class SingleCells:
             between chunks, and thus groupby aggregations are valid
 
         """
-
         assert (  # noqa: S101
             n_aggregation_memory_strata > 0
         ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
@@ -712,7 +701,6 @@ class SingleCells:
             if output_file=None returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
-
         # Load the single cell dataframe by merging on the specific linking columns
         sc_df = ""
         linking_check_cols = []
@@ -856,7 +844,6 @@ class SingleCells:
             if output_file=None) returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
-
         if output_file is not None:
             self.set_output_file(output_file)
 

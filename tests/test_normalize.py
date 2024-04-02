@@ -84,7 +84,7 @@ def test_normalize_standardize_allsamples():
     Testing normalize pycytominer function
     method = "standardize"
     meta_features = None
-    samples="all"
+    samples="all".
     """
     normalize_result = normalize(
         profiles=data_df.copy(),
@@ -120,7 +120,7 @@ def test_normalize_standardize_ctrlsamples():
     Testing normalize pycytominer function
     method = "standardize"
     meta_features = None
-    samples="Metadata_treatment == 'control'"
+    samples="Metadata_treatment == 'control'".
     """
     normalize_result = normalize(
         profiles=data_df.copy(),
@@ -156,7 +156,7 @@ def test_normalize_robustize_allsamples():
     Testing normalize pycytominer function
     method = "robustize"
     meta_features = None
-    samples="all"
+    samples="all".
     """
     normalize_result = normalize(
         profiles=data_df.copy(),
@@ -192,7 +192,7 @@ def test_normalize_robustize_ctrlsamples():
     Testing normalize pycytominer function
     method = "robustize"
     meta_features = None
-    samples="Metadata_treatment == 'control'"
+    samples="Metadata_treatment == 'control'".
     """
     normalize_result = normalize(
         profiles=data_df.copy(),
@@ -228,7 +228,7 @@ def test_normalize_robustize_mad_allsamples():
     Testing normalize pycytominer function
     method = "mad_robustize"
     meta_features = None
-    samples="all"
+    samples="all".
     """
     normalize_result = normalize(
         profiles=data_df.copy(),
@@ -264,7 +264,7 @@ def test_normalize_robustize_mad_allsamples_novar():
     Testing normalize pycytominer function
     method = "mad_robustize"
     meta_features = None
-    samples="all"
+    samples="all".
     """
     features = ["x", "y", "z", "zz", "yy"]
 
@@ -308,7 +308,7 @@ def test_normalize_standardize_allsamples_fromfile():
     data_file provided
     method = "standardize"
     meta_features = None
-    samples="all"
+    samples="all".
     """
     normalize_result = normalize(
         profiles=data_file,
@@ -356,7 +356,7 @@ def test_normalize_standardize_allsamples_output():
     data_file provided
     method = "standardize"
     meta_features = None
-    samples="all"
+    samples="all".
     """
     out_normalize_file = os.path.join(tmpdir, "test_normalize_output.csv")
 
@@ -501,9 +501,7 @@ def test_normalize_spherize():
 
 
 def test_spherize_epsilon():
-    """
-    Test that epsilon is successfully passed to the spherize transform method
-    """
+    """Test that epsilon is successfully passed to the spherize transform method."""
     sphere_norm_df = normalize(
         data_spherize_df, features=["a", "b", "c", "d"], meta_features=["id"]
     )
@@ -532,9 +530,7 @@ def test_spherize_epsilon():
 
 
 def test_output_type():
-    """
-    Testing normalize pycytominer function with output
-    """
+    """Testing normalize pycytominer function with output."""
     # dictionary with the output name associated with the file type
     output_dict = {"csv": output_test_file_csv, "parquet": output_test_file_parquet}
 

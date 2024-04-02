@@ -1,3 +1,4 @@
+"""Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments."""
 from pycytominer import __about__
 
 from .aggregate import aggregate

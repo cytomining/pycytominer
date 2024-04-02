@@ -1,6 +1,4 @@
-"""
-Utility function to augment a metadata file with X,Y locations of cells in each image
-"""
+"""Utility function to augment a metadata file with X,Y locations of cells in each image."""
 
 import pathlib
 import pandas as pd
@@ -107,13 +105,13 @@ class CellLocation:
         )
 
     def _expanduser(self, obj: Union[str, None]):
-        """Expand the user home directory in a path"""
+        """Expand the user home directory in a path."""
         if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
             return pathlib.Path(obj).expanduser().as_posix()
         return obj
 
     def _parse_s3_path(self, s3_path: str):
-        """Parse an S3 path into a bucket and key
+        """Parse an S3 path into a bucket and key.
 
         Parameters
         ----------
@@ -127,7 +125,6 @@ class CellLocation:
         str
             The key
         """
-
         s3_path = s3_path.replace("s3://", "")
 
         bucket = s3_path.split("/")[0]
@@ -137,7 +134,7 @@ class CellLocation:
         return bucket, key
 
     def _s3_file_exists(self, s3_path: str):
-        """Check if a file exists on S3
+        """Check if a file exists on S3.
 
         Parameters
         ----------
@@ -149,7 +146,6 @@ class CellLocation:
         bool
             True if the file exists on S3, False otherwise
         """
-
         bucket, key = self._parse_s3_path(s3_path)
 
         try:
@@ -163,10 +159,7 @@ class CellLocation:
             return True
 
     def _download_s3(self, uri: str):
-        """
-        Download a file from S3 to a temporary file and return the temporary path
-        """
-
+        """Download a file from S3 to a temporary file and return the temporary path."""
         bucket, key = self._parse_s3_path(uri)
 
         tmp_file = tempfile.NamedTemporaryFile(
@@ -178,14 +171,13 @@ class CellLocation:
         return tmp_file.name
 
     def _load_metadata(self):
-        """Load the metadata into a Pandas DataFrame
+        """Load the metadata into a Pandas DataFrame.
 
         Returns
         -------
         Pandas DataFrame
             The metadata loaded into a Pandas DataFrame
         """
-
         if not isinstance(self.metadata_input, pd.DataFrame):
             # verify that the metadata file is a CSV or a Parquet file
 
@@ -224,7 +216,7 @@ class CellLocation:
         return df
 
     def _create_nested_df(self, df: pd.DataFrame):
-        """Create a new column `CellCenters` by nesting the X and Y locations of cell from an image into the row of the image
+        """Create a new column `CellCenters` by nesting the X and Y locations of cell from an image into the row of the image.
 
         Parameters
         ----------
@@ -235,7 +227,6 @@ class CellLocation:
         -------
         Pandas DataFrame
         """
-
         # define a dictionary to store the output
         output_df_list = collections.defaultdict(list)
 
@@ -271,10 +262,7 @@ class CellLocation:
         return pd.DataFrame(output_df_list)
 
     def _get_single_cell_engine(self):
-        """
-        Get the sqlalchemy.engine.Engine object for the single_cell file
-        """
-
+        """Get the sqlalchemy.engine.Engine object for the single_cell file."""
         if isinstance(self.single_cell_input, str):
             # check if the single_cell file is a SQLite file
             if not self.single_cell_input.endswith(".sqlite"):
@@ -298,10 +286,7 @@ class CellLocation:
         return temp_single_cell_input, engine
 
     def _check_single_cell_correctness(self, engine: sqlalchemy.engine.Engine):
-        """
-        Check that the single_cell file has the required tables and columns
-        """
-
+        """Check that the single_cell file has the required tables and columns."""
         inspector = sqlalchemy.inspect(engine)
 
         if not all(
@@ -342,9 +327,7 @@ class CellLocation:
             )
 
     def _get_joined_image_nuclei_tables(self):
-        """
-        Merge the Image and Nuclei tables in SQL
-        """
+        """Merge the Image and Nuclei tables in SQL."""
         # get the sqlalchemy.engine.Engine object for the single_cell file
         temp_single_cell_input, engine = self._get_single_cell_engine()
 
@@ -382,14 +365,13 @@ class CellLocation:
         return joined_df
 
     def _load_single_cell(self):
-        """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlalchemy.engine.Engine object into a Pandas DataFrame
+        """Load the required columns from the `Image` and `Nuclei` tables in the single_cell file or sqlalchemy.engine.Engine object into a Pandas DataFrame.
 
         Returns
         -------
         Pandas DataFrame
             The required columns from the `Image` and `Nuclei` tables loaded into a Pandas DataFrame
         """
-
         return self._create_nested_df(self._get_joined_image_nuclei_tables())
 
     def add_cell_location(self):
@@ -401,7 +383,6 @@ class CellLocation:
         Pandas DataFrame
             Either a data frame or the path to a Parquet file with the X,Y locations of all cells packed into a single column
         """
-
         # If self.augmented_metadata_output is not None and it is a str and the file already exists, there is nothing to do
         if (
             self.augmented_metadata_output is not None

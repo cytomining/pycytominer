@@ -30,7 +30,6 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
     FileNotFoundError
         Raised if the provided path in the `file` does not exist
     """
-
     file = pathlib.PurePath(file)
     try:
         # strict=true tests if path exists
@@ -47,7 +46,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
 def infer_delim(file: str):
     """
-    Sniff the delimiter in the given file
+    Sniff the delimiter in the given file.
 
     Parameters
     ----------
@@ -72,7 +71,7 @@ def infer_delim(file: str):
 
 def load_profiles(profiles):
     """
-    Unless a dataframe is provided, load the given profile dataframe from path or string
+    Unless a dataframe is provided, load the given profile dataframe from path or string.
 
     Parameters
     ----------
@@ -83,8 +82,8 @@ def load_profiles(profiles):
     ------
     pandas DataFrame of profiles
 
-    Raises:
-    -------
+    Raises
+    ------
     FileNotFoundError
         Raised if the provided profile does not exists
     """
@@ -102,7 +101,7 @@ def load_profiles(profiles):
 
 def load_platemap(platemap, add_metadata_id=True):
     """
-    Unless a dataframe is provided, load the given platemap dataframe from path or string
+    Unless a dataframe is provided, load the given platemap dataframe from path or string.
 
     Parameters
     ----------

@@ -79,7 +79,7 @@ def modz(
     min_weight=0.01,
     precision=4,
 ):
-    """Collapse replicates into a consensus signature using a weighted transformation
+    """Collapse replicates into a consensus signature using a weighted transformation.
 
     Parameters
     ----------

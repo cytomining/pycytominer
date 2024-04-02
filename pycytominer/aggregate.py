@@ -1,6 +1,4 @@
-"""
-Aggregate profiles based on given grouping variables.
-"""
+"""Aggregate profiles based on given grouping variables."""
 
 import numpy as np
 import pandas as pd
@@ -65,7 +63,6 @@ def aggregate(
         data.
 
     """
-
     # Check that the operation is supported
     operation = check_aggregate_operation(operation)
 

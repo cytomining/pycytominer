@@ -1,6 +1,4 @@
-"""
-Remove noisy features, as defined by features with excessive standard deviation within the same perturbation group.
-"""
+"""Remove noisy features, as defined by features with excessive standard deviation within the same perturbation group."""
 
 from pycytominer.cyto_utils import infer_cp_features
 

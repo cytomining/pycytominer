@@ -1,6 +1,6 @@
 """
 Remove variables with near-zero variance.
-Modified from caret::nearZeroVar()
+Modified from caret::nearZeroVar().
 """
 
 import numpy as np
@@ -11,7 +11,7 @@ from pycytominer.cyto_utils import infer_cp_features
 def variance_threshold(
     population_df, features="infer", samples="all", freq_cut=0.05, unique_cut=0.01
 ):
-    """Exclude features that have low variance (low information content)
+    """Exclude features that have low variance (low information content).
 
     Parameters
     ----------
@@ -42,7 +42,6 @@ def variance_threshold(
          List of features to exclude from the population_df.
 
     """
-
     if not 0 <= freq_cut <= 1:
         raise ValueError("freq_cut variable must be between (0 and 1)")
     if not 0 <= unique_cut <= 1:
@@ -80,7 +79,7 @@ def variance_threshold(
 
 def calculate_frequency(feature_column, freq_cut):
     """Calculate frequency of second most common to most common feature.
-    Used in pandas.apply()
+    Used in pandas.apply().
 
     Parameters
     ----------
@@ -97,7 +96,6 @@ def calculate_frequency(feature_column, freq_cut):
     Feature name if it passes threshold, "NA" otherwise
 
     """
-
     val_count = feature_column.value_counts()
     try:
         max_count = val_count.iloc[0]

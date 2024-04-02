@@ -1,7 +1,7 @@
 """
 Transform profiles into a gct (Gene Cluster Text) file
 A gct is a tab deliminted text file that traditionally stores gene expression data
-File Format Description: https://clue.io/connectopedia/gct_format
+File Format Description: https://clue.io/connectopedia/gct_format.
 
 Modified from cytominer_scripts "write_gcg" written in R
 https://github.com/broadinstitute/cytominer_scripts/blob/master/write_gct.R
@@ -21,7 +21,7 @@ def write_gct(
     feature_metadata=None,
     version="#1.3",
 ):
-    """Convert profiles to a .gct file
+    """Convert profiles to a .gct file.
 
     Parameters
     ----------
@@ -47,7 +47,6 @@ def write_gct(
     None
         Writes gct to file
     """
-
     # Note, only version 1.3 is currently supported
     assert version == "#1.3", "Only version #1.3 is currently supported."  # noqa: S101
 

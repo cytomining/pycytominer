@@ -1,13 +1,13 @@
 """
 Remove variables with specified threshold of NA values
-Note: This was called `drop_na_columns` in cytominer for R
+Note: This was called `drop_na_columns` in cytominer for R.
 """
 
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
-    """Get features that have more NA values than cutoff defined
+    """Get features that have more NA values than cutoff defined.
 
     Parameters
     ----------
@@ -30,7 +30,6 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
     excluded_features : list of str
          List of features to exclude from the population_df.
     """
-
     if samples != "all":
         population_df.query(samples, inplace=True)
 

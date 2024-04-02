@@ -1,6 +1,4 @@
-"""
-Acquire consensus signatures for input samples
-"""
+"""Acquire consensus signatures for input samples."""
 
 from pycytominer import aggregate
 from pycytominer.cyto_utils import (

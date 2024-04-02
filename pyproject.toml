@@ -144,6 +144,8 @@ select = [
     "S",
     # isort
     "I",
+    # pydocstyle
+    "D",
     # The following checks are disabled, but we are working towards enabling them in the future.
     # flake8-bugbear
     # "B",
@@ -159,6 +161,10 @@ ignore = [
     "E731",
 ]
 
+[tool.ruff.lint.pydocstyle]
+# Use Google-style docstrings.
+convention = "numpy"
+
 [tool.ruff.lint.per-file-ignores]
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
@@ -173,6 +179,8 @@ ignore = [
 
 [tool.ruff.format]
 preview = true
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"

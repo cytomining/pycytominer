@@ -6,7 +6,7 @@ import sqlite3
 
 
 def run_check_errors(cmd):
-    """Run a system command, and exit if an error occurred, otherwise continue"""
+    """Run a system command, and exit if an error occurred, otherwise continue."""
     if isinstance(cmd, str):
         cmd = cmd.split()
     output = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
@@ -34,7 +34,7 @@ def collate(
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
     printtoscreen=True,
 ):
-    """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
+    """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database.
 
     Parameters
     ----------
@@ -67,7 +67,6 @@ def collate(
     printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
     """
-
     from pycytominer.cyto_utils.cells import SingleCells
 
     # Check if optional dependency cytominer-database is installed

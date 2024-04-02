@@ -1,13 +1,11 @@
-"""
-Functions for counting the number of fields and aggregating other images features
-"""
+"""Functions for counting the number of fields and aggregating other images features."""
 
 import numpy as np
 from pycytominer import aggregate
 
 
 def aggregate_fields_count(image_df, strata, fields_of_view_feature):
-    """Compute the number of fields per well and create a new column called Metadata_Site_Count
+    """Compute the number of fields per well and create a new column called Metadata_Site_Count.
 
     Parameters
     ----------
@@ -24,7 +22,6 @@ def aggregate_fields_count(image_df, strata, fields_of_view_feature):
         DataFrame with the Metadata_Site_Count column.
 
     """
-
     fields_count_df = image_df.loc[:, list(np.union1d(strata, fields_of_view_feature))]
 
     fields_count_df = (
@@ -62,7 +59,6 @@ def aggregate_image_count_features(
     remove_cols : list of str
         Columns to remove from the image table before aggregating using aggregate_image_features()
     """
-
     count_features = list(
         image_features_df.columns[
             image_features_df.columns.str.startswith("Metadata_" + str(count_prefix))
@@ -112,7 +108,6 @@ def aggregate_image_features(
         DataFrame of aggregated image features.
 
     """
-
     # Aggregate image count features
     if count_prefix in image_feature_categories:
         df, remove_cols = aggregate_image_count_features(

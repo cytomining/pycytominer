@@ -1,3 +1,4 @@
+"""Pycytominer package metadata."""
 __project__ = "pycytominer"
 # These version placeholders are updated during build by poetry-dynamic-versioning
 __version__ = "0.0.0"

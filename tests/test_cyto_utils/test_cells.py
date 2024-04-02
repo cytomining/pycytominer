@@ -205,9 +205,7 @@ AP_SUBSET = SingleCells(sql_file=TMP_SQLITE_FILE, features=SUBSET_FEATURES)
 
 
 def test_SingleCells_init():
-    """
-    Testing initialization of SingleCells
-    """
+    """Testing initialization of SingleCells."""
     assert AP.sql_file == TMP_SQLITE_FILE
     assert AP.strata == ["Metadata_Plate", "Metadata_Well"]
     assert AP.merge_cols == ["TableNumber", "ImageNumber"]
@@ -234,9 +232,7 @@ def test_SingleCells_init():
 
 
 def test_SingleCells_reset_variables():
-    """
-    Testing initialization of SingleCells
-    """
+    """Testing initialization of SingleCells."""
     ap_switch = SingleCells(sql_file=TMP_SQLITE_FILE)
     assert ap_switch.subsample_frac == 1
     assert ap_switch.subsample_n == "all"
@@ -529,10 +525,7 @@ def test_merge_single_cells_subsample():
 
 
 def test_merge_single_cells_annotate():
-    """
-    Tests SingleCells.merge_single_cells using optional annotate functionality
-    """
-
+    """Tests SingleCells.merge_single_cells using optional annotate functionality."""
     expected_sc_merged_df = annotate(
         profiles=AP.merge_single_cells(),
         platemap=PLATEMAP_DF,
@@ -546,10 +539,7 @@ def test_merge_single_cells_annotate():
 
 
 def test_merge_single_cells_cytominer_database_test_file():
-    """
-    Tests SingleCells.merge_single_cells using cytominer-database test file
-    """
-
+    """Tests SingleCells.merge_single_cells using cytominer-database test file."""
     # read test file based on cytominer-database exports
     sql_path = pathlib.Path(
         f"{os.path.dirname(__file__)}/../test_data/cytominer_database_example_data/test_SQ00014613.sqlite",
@@ -1007,9 +997,7 @@ def test_add_image_features():
 
 
 def test_load_non_canonical_image_table():
-    """
-    Loading an image table with non-canonical image table name
-    """
+    """Loading an image table with non-canonical image table name."""
     # test for exception loading image table with default table name "image"
     with pytest.raises(OperationalError):
         AP_IMAGE_DIFF_NAME.load_image()
