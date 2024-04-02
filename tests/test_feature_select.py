@@ -173,7 +173,7 @@ def test_feature_select_noise_removal():
     bad_perturb_list = ["a", "a", "b", "b", "a", "a", "b"]
 
     with pytest.raises(
-        AssertionError
+        ValueError
     ):  # When the inputted perturb list doesn't match the length of the data
         feature_select(
             data_df,
@@ -184,7 +184,7 @@ def test_feature_select_noise_removal():
         )
 
     with pytest.raises(
-        AssertionError
+        ValueError
     ):  # When the perturb list is inputted as string, but there is no such metadata column in the population_df
         feature_select(
             profiles=data_df,
@@ -206,7 +206,7 @@ def test_feature_select_noise_removal():
         )
 
     with pytest.raises(
-        AssertionError
+        ValueError
     ):  # When the perturbation group doesn't match b/c samples argument used
         # Add metadata_sample column
         data_sample_id_df = data_df.assign(

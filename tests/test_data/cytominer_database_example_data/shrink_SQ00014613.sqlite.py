@@ -32,7 +32,7 @@ with sqlite3.connect(sqlite_target) as conn:
             DELETE FROM {table}
             WHERE TableNumber NOT IN (SELECT TableNumber FROM Image)
             OR ObjectNumber > 1
-            """
+            """  # noqa: S608
         )
 
     conn.commit()

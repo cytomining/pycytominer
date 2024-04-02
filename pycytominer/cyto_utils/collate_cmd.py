@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--tmp-dir",
         dest="tmp_dir",
-        default="/tmp",
+        default="/tmp",  # noqa: S108
         help="The temporary directory to be used by cytominer-databases for output",
     )
     parser.add_argument(

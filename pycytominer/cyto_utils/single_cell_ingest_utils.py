@@ -55,21 +55,21 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
     unique_linking_cols = []
     for x in linking_cols:
         unique_linking_cols.append(x)
-        assert x in compartments, f"{x} {comp_err}"
+        assert x in compartments, f"{x} {comp_err}"  # noqa: S101
         for y in linking_cols[x]:
             unique_linking_cols.append(y)
-            assert y in compartments, f"{y} {comp_err}"
+            assert y in compartments, f"{y} {comp_err}"  # noqa: S101
             linking_check.append("-".join(sorted([x, y])))
 
     # Make sure that each combination has been specified exactly twice
     linking_counter = Counter(linking_check)
     for combo in linking_counter:
-        assert linking_counter[combo] == 2, f"Missing column identifier between {combo}"
+        assert linking_counter[combo] == 2, f"Missing column identifier between {combo}"  # noqa: S101
 
     # Confirm that every compartment has been specified in the linking_cols
     unique_linking_cols = sorted(set(unique_linking_cols))
     diff_column = set(compartments).difference(unique_linking_cols)
-    assert (
+    assert (  # noqa: S101
         unique_linking_cols == sorted(compartments)
     ), f"All compartments must be specified in the linking_cols, {diff_column} is missing"
 

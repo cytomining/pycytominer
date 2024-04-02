@@ -9,7 +9,7 @@ def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
     if isinstance(cmd, str):
         cmd = cmd.split()
-    output = subprocess.run(cmd, capture_output=True, text=True)
+    output = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
     if output.stderr != "":
         print_cmd = " ".join(map(str, cmd))
         sys.exit(
@@ -28,7 +28,7 @@ def collate(
     csv_dir="analysis",
     aws_remote=None,
     aggregate_only=False,
-    tmp_dir="/tmp",
+    tmp_dir="/tmp",  # noqa: S108
     overwrite=False,
     add_image_features=True,
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],

@@ -106,7 +106,7 @@ def check_correlation_method(method):
 
     method = method.lower()
     avail_methods = ["pearson", "spearman", "kendall"]
-    assert (
+    assert (  # noqa: S101
         method in avail_methods
     ), f"method {method} not supported, select one of {avail_methods}"
 
@@ -130,7 +130,7 @@ def check_aggregate_operation(operation):
 
     operation = operation.lower()
     avail_ops = ["mean", "median"]
-    assert (
+    assert (  # noqa: S101
         operation in avail_ops
     ), f"operation {operation} not supported, select one of {avail_ops}"
 
@@ -157,7 +157,7 @@ def check_consensus_operation(operation):
     try:
         operation = check_aggregate_operation(operation)
     except AssertionError:
-        assert (
+        assert (  # noqa: S101
             operation in avail_ops
         ), f"operation {operation} not supported, select one of {avail_ops} or see aggregate.py"
 
@@ -216,7 +216,7 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
     """
 
     try:
-        assert len(
+        assert len(  # noqa: S101
             list(np.intersect1d(data_fields_of_view, input_fields_of_view))
         ) == len(input_fields_of_view)
     except AssertionError:
@@ -249,7 +249,7 @@ def check_image_features(image_features, image_columns):
         level = 0
 
     try:
-        assert all(
+        assert all(  # noqa: S101
             feature in list({img_col.split("_")[level] for img_col in image_columns})
             for feature in image_features
         )

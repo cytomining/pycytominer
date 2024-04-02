@@ -140,13 +140,13 @@ select = [
     "UP",
     # ruff
     "RUF",
-    # The following checks are disabled, but we are working towards enabling them in the future.
     # flake8-bandit
-    # "S",
-    # flake8-bugbear
-    # "B",
+    "S",
     # isort
     "I",
+    # The following checks are disabled, but we are working towards enabling them in the future.
+    # flake8-bugbear
+    # "B",
     # mccabe
     # "C90",
     # tryceratops
@@ -162,8 +162,14 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
-"tests/*" = ["S101"] # Ignore assert statements in tests
-"pycytominer/cyto_utils/*" = ["I"] # Ignore isort in cyto_utils due to circular imports
+# Ignore assert statements in tests
+"tests/*" = ["S101"]
+"pycytominer/cyto_utils/*" = [
+    # I (isort) is ignored due to circular dependencies in the cyto_utils module
+    "I", 
+    # S608 (raw sql operations) is ignored because it is a common pattern in the cyto_utils module
+    "S608",
+]
 
 [tool.ruff.format]
 preview = true

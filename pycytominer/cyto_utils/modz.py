@@ -31,7 +31,7 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
         modz transformed dataframe - a consensus signature of the input data
         weighted by replicate correlation
     """
-    assert population_df.shape[0] > 0, "population_df must include at least one sample"
+    assert population_df.shape[0] > 0, "population_df must include at least one sample"  # noqa: S101
 
     method = check_correlation_method(method=method)
 
@@ -107,9 +107,9 @@ def modz(
     population_features = population_df.columns.tolist()
     assert_error = f"{replicate_columns} not in input dataframe"
     if isinstance(replicate_columns, list):
-        assert all(x in population_features for x in replicate_columns), assert_error
+        assert all(x in population_features for x in replicate_columns), assert_error  # noqa: S101
     elif isinstance(replicate_columns, str):
-        assert replicate_columns in population_features, assert_error
+        assert replicate_columns in population_features, assert_error  # noqa: S101
         replicate_columns = replicate_columns.split()
     else:
         return ValueError("replicate_columns must be a list or string")

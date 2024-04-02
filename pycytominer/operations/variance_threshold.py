@@ -43,8 +43,10 @@ def variance_threshold(
 
     """
 
-    assert 0 <= freq_cut <= 1, "freq_cut variable must be between (0 and 1)"
-    assert 0 <= unique_cut <= 1, "unique_cut variable must be between (0 and 1)"
+    if not 0 <= freq_cut <= 1:
+        raise ValueError("freq_cut variable must be between (0 and 1)")
+    if not 0 <= unique_cut <= 1:
+        raise ValueError("unique_cut variable must be between (0 and 1)")
 
     # Subset dataframe
     if samples != "all":

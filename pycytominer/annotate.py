@@ -101,9 +101,10 @@ def annotate(
 
     if not isinstance(external_metadata, pd.DataFrame):
         if external_metadata is not None:
-            assert os.path.exists(
-                external_metadata
-            ), f"external metadata at {external_metadata} does not exist"
+            if not os.path.exists(external_metadata):
+                raise FileNotFoundError(
+                    f"external metadata at {external_metadata} does not exist"
+                )
 
             external_metadata = pd.read_csv(external_metadata)
     else:
