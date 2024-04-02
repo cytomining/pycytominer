@@ -25,13 +25,17 @@ RUN pip install --no-cache-dir poetry
 FROM base as production
 
 # copy the pycytominer source into image
-COPY . .
+COPY README.md pyproject.toml poetry.lock ./
+COPY pycytominer ./pycytominer
 
 # install pycytominer using poetry root dependencies and all extras
 RUN poetry install --all-extras -v --no-interaction
 
 # create stage for production build (no dev or non-essential deps)
 FROM production as testing
+
+# copy the tests dir for testing purposes
+COPY tests ./tests
 
 # install pycytominer from poetry with group deps and all extras for testing
 RUN poetry install --with dev --all-extras -v --no-interaction
