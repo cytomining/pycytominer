@@ -123,7 +123,7 @@ class SingleCells:
         aggregation_operation = check_aggregate_operation(aggregation_operation)
 
         # Check that the subsample_frac is between 0 and 1
-        assert (
+        assert (  # noqa: S101
             subsample_frac > 0 and subsample_frac <= 1
         ), "subsample_frac must be between 0 and 1"
 
@@ -188,7 +188,7 @@ class SingleCells:
         """
 
         # Check that the user didn't specify both subset frac and subsample all
-        assert (
+        assert (  # noqa: S101
             self.subsample_frac == 1 or self.subsample_n == "all"
         ), "Do not set both subsample_frac and subsample_n"
 
@@ -321,8 +321,8 @@ class SingleCells:
         check_compartments(compartment)
 
         if count_subset:
-            assert self.is_aggregated, "Make sure to aggregate_profiles() first!"
-            assert self.is_subset_computed, "Make sure to get_subsample() first!"
+            assert self.is_aggregated, "Make sure to aggregate_profiles() first!"  # noqa: S101
+            assert self.is_subset_computed, "Make sure to get_subsample() first!"  # noqa: S101
             count_df = (
                 self.subset_data_df.groupby(self.strata)["Metadata_ObjectNumber"]
                 .count()
@@ -623,7 +623,7 @@ class SingleCells:
 
         """
 
-        assert (
+        assert (  # noqa: S101
             n_aggregation_memory_strata > 0
         ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
 

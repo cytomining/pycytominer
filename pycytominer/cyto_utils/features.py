@@ -28,7 +28,7 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
 
     blocklist = pd.read_csv(blocklist_file)
 
-    assert any(
+    assert any(  # noqa: S101
         x == "blocklist" for x in blocklist.columns
     ), "one column must be named 'blocklist'"
 
@@ -61,7 +61,7 @@ def label_compartment(cp_features, compartment, metadata_cols):
     compartment = compartment.Title()
     avail_compartments = ["Cells", "Cytoplasm", "Nuceli", "Image", "Barcode"]
 
-    assert (
+    assert (  # noqa: S101
         compartment in avail_compartments
     ), f"provide valid compartment. One of: {avail_compartments}"
 
@@ -114,7 +114,7 @@ def infer_cp_features(
             population_df.columns.str.startswith("Metadata_")
         ].tolist()
 
-    assert (
+    assert (  # noqa: S101
         len(features) > 0
     ), "No CP features found. Are you sure this dataframe is from CellProfiler?"
 

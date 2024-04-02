@@ -49,7 +49,7 @@ def write_gct(
     """
 
     # Note, only version 1.3 is currently supported
-    assert version == "#1.3", "Only version #1.3 is currently supported."
+    assert version == "#1.3", "Only version #1.3 is currently supported."  # noqa: S101
 
     # Step 1: Create first two rows of data
     if features == "infer":
@@ -79,7 +79,7 @@ def write_gct(
     full_df = pd.concat([metadata_part, feature_df], axis="rows")
     if isinstance(feature_metadata, pd.DataFrame):
         nrow_metadata = feature_metadata.shape[1]
-        assert (
+        assert (  # noqa: S101
             "id" in feature_metadata.index.tolist()
         ), "make sure feature metadata has row named 'id' that stores feature metadata names!"
         full_df = feature_metadata.merge(

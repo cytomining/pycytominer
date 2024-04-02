@@ -167,11 +167,11 @@ class AggregateDeepProfiler:
         ---------
         See above for all parameters.
         """
-        assert aggregate_operation in [
+        assert aggregate_operation in [  # noqa: S101
             "median",
             "mean",
         ], "Input of aggregate_operation is incorrect, it must be either median or mean"
-        assert aggregate_on in [
+        assert aggregate_on in [  # noqa: S101
             "site",
             "well",
             "plate",

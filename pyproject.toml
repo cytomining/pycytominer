@@ -163,7 +163,7 @@ ignore = [
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
 "tests/*" = ["S101"] # Ignore assert statements in tests
-"pycytominer/cyto_utils/*" = ["S101", "S608"] # Ignore assert statements in cyto_utils
+"pycytominer/cyto_utils/*" = ["S608"] # Ignore SQL injection checks in cyto_utils
 
 [tool.ruff.format]
 preview = true

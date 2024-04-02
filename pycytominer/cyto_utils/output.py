@@ -136,6 +136,6 @@ def check_compression_method(compression: str):
     None
         Asserts available options
     """
-    assert (
+    assert (  # noqa: S101
         compression in COMPRESS_OPTIONS
     ), f"{compression} is not supported, select one of {COMPRESS_OPTIONS}"
