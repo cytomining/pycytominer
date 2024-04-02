@@ -1,20 +1,22 @@
 import os
-import pytest
 import tempfile
 import warnings
+
 import pandas as pd
+import pytest
+
 from pycytominer.cyto_utils.util import (
-    check_compartments,
-    get_default_compartments,
-    load_known_metadata_dictionary,
-    get_pairwise_correlation,
-    check_correlation_method,
     check_aggregate_operation,
+    check_compartments,
     check_consensus_operation,
+    check_correlation_method,
     check_fields_of_view,
     check_fields_of_view_format,
     check_image_features,
     extract_image_features,
+    get_default_compartments,
+    get_pairwise_correlation,
+    load_known_metadata_dictionary,
 )
 
 tmpdir = tempfile.gettempdir()

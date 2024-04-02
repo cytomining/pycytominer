@@ -1,8 +1,10 @@
 import os
 import tempfile
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
+
 from pycytominer import aggregate
 from pycytominer.cyto_utils import infer_cp_features
 

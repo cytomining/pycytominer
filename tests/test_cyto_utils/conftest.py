@@ -3,10 +3,12 @@ conftest.py for pytest
 """
 
 import os
-import pandas as pd
 import pathlib
+
+import pandas as pd
 import pytest
 import sqlalchemy
+
 from pycytominer.cyto_utils.cell_locations import CellLocation
 
 

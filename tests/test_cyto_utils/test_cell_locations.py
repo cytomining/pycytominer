@@ -1,10 +1,12 @@
 """This tests the output from CellLocation class"""
 
+from typing import List, Type
+
 import pandas as pd
 import pytest
-from typing import Type, List
-from pycytominer.cyto_utils.cell_locations import CellLocation
 from _pytest.fixtures import FixtureRequest
+
+from pycytominer.cyto_utils.cell_locations import CellLocation
 
 
 def get_metadata_input_dataframe(cell_loc: CellLocation) -> pd.DataFrame:

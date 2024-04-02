@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from pycytominer.operations import correlation_threshold
 
 # Build data to use in tests

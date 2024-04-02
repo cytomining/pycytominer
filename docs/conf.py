@@ -12,8 +12,9 @@
 #
 import os
 import sys
-import dunamai
 from datetime import date
+
+import dunamai
 
 sys.path.insert(0, os.path.abspath(".."))
 

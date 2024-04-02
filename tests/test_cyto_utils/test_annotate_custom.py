@@ -1,8 +1,10 @@
 import os
-import tempfile
 import random
-import pytest
+import tempfile
+
 import pandas as pd
+import pytest
+
 from pycytominer import annotate
 
 random.seed(123)
