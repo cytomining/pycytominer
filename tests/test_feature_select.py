@@ -1,9 +1,11 @@
 import os
 import random
 import tempfile
+
 import numpy as np
 import pandas as pd
 import pytest
+
 from pycytominer.feature_select import feature_select
 
 random.seed(123)

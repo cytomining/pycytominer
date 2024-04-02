@@ -1,15 +1,17 @@
 import os
-import random
-import pytest
 import pathlib
+import random
 import tempfile
+
 import numpy as np
 import pandas as pd
+import pytest
+
 from pycytominer.cyto_utils import (
-    load_profiles,
-    load_platemap,
     load_npz_features,
     load_npz_locations,
+    load_platemap,
+    load_profiles,
 )
 from pycytominer.cyto_utils.load import infer_delim, is_path_a_parquet_file
 

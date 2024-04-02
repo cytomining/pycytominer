@@ -4,9 +4,9 @@ specified threshold
 """
 
 from pycytominer.cyto_utils import (
-    infer_cp_features,
-    get_pairwise_correlation,
     check_correlation_method,
+    get_pairwise_correlation,
+    infer_cp_features,
 )
 
 
