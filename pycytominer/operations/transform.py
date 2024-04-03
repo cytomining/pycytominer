@@ -13,9 +13,9 @@ from sklearn.preprocessing import StandardScaler
 
 
 class Spherize(BaseEstimator, TransformerMixin):
-    """Class to apply a sphering transform (aka whitening) data in the base sklearn
-    transform API. Note, this implementation is modified/inspired from the following
-    sources:
+    """Class to apply a sphering transform (aka whitening) data in the base sklearn transform API.
+
+    This implementation is modified/inspired from the following sources:
     1) A custom function written by Juan C. Caicedo
     2) A custom ZCA function at https://github.com/mwv/zca
     3) Notes from Niranj Chandrasekaran (https://github.com/cytomining/pycytominer/issues/90)
@@ -33,7 +33,8 @@ class Spherize(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, epsilon=1e-6, center=True, method="ZCA", return_numpy=False):
-        """
+        """Construct a Spherize object.
+
         Parameters
         ----------
         epsilon : float, default 1e-6

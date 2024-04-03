@@ -1,4 +1,5 @@
-"""
+"""Function to get columns with NA values above a certain threshold.
+
 Remove variables with specified threshold of NA values
 Note: This was called `drop_na_columns` in cytominer for R.
 """

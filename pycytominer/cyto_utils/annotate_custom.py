@@ -1,3 +1,5 @@
+"""Functions to annotate data frames with custom options according to CMAP specifications."""
+
 import numpy as np
 
 

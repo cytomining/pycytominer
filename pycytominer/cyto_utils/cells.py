@@ -1,3 +1,5 @@
+"""Module containing the SingleCells class, which is used to interact with single cell morphological profiles."""
+
 from typing import Dict, Union, Optional
 
 import numpy as np
@@ -25,8 +27,7 @@ default_linking_cols = get_default_linking_cols()
 
 
 class SingleCells:
-    """This is a class to interact with single cell morphological profiles. Interaction
-    includes aggregation, normalization, and output.
+    """Class to interact with single cell morphological profiles including aggregation, normalization, and output.
 
     Attributes
     ----------
@@ -115,7 +116,7 @@ class SingleCells:
         object_feature="Metadata_ObjectNumber",
         default_datatype_float=np.float64,
     ):
-        """Constructor method."""
+        """Construct a SingleCells object."""
         # Check compartments specified
         check_compartments(compartments)
 
@@ -179,7 +180,7 @@ class SingleCells:
             self.load_image(image_table_name=self.image_table_name)
 
     def _check_subsampling(self):
-        """Internal method checking if subsampling options were specified correctly.
+        """Check if subsampling options were specified correctly.
 
         Returns
         -------
@@ -192,7 +193,7 @@ class SingleCells:
         ), "Do not set both subsample_frac and subsample_n"
 
     def set_output_file(self, output_file):
-        """Setting operation to conveniently rename output file.
+        """Set or modify output file.
 
         Parameters
         ----------
@@ -207,7 +208,7 @@ class SingleCells:
         self.output_file = output_file
 
     def set_subsample_frac(self, subsample_frac):
-        """Setting operation to conveniently update the subsample fraction.
+        """Set or update the subsample fraction.
 
         Parameters
         ----------
@@ -223,7 +224,7 @@ class SingleCells:
         self._check_subsampling()
 
     def set_subsample_n(self, subsample_n):
-        """Setting operation to conveniently update the subsample n.
+        """Set or update the subsample n.
 
         Parameters
         ----------
@@ -242,7 +243,7 @@ class SingleCells:
         self._check_subsampling()
 
     def set_subsample_random_state(self, random_state):
-        """Setting operation to conveniently update the subsample random state.
+        """Set or update the subsample random state.
 
         Parameters
         ----------
@@ -435,7 +436,7 @@ class SingleCells:
         return meta_cols, feat_cols
 
     def load_compartment(self, compartment):
-        """Creates the compartment dataframe.
+        """Create the compartment dataframe.
 
         Note: makes use of default_datatype_float attribute
         for setting a default floating point datatype.
@@ -590,8 +591,7 @@ class SingleCells:
         compartment,
         n_aggregation_memory_strata=1,
     ):
-        """A generator function that returns chunks of the entire compartment
-        table from disk.
+        """Yield chunks of the entire compartment table from disk.
 
         We want to return dataframes with all compartment entries within unique
         combinations of self.merge_cols when aggregated by self.strata
@@ -881,9 +881,7 @@ class SingleCells:
 
 
 def _sqlite_strata_conditions(df, dtypes, n=1):
-    """Given a dataframe where columns are merge_cols and rows are unique
-    value combinations that appear as aggregation strata, return a list
-    of strings which constitute valid SQLite conditional statements.
+    """Construct a list of strings which constitute valid SQLite conditional statements.
 
     Parameters
     ----------

@@ -1,5 +1,5 @@
-"""
-Remove variables with near-zero variance.
+"""Remove variables with near-zero variance.
+
 Modified from caret::nearZeroVar().
 """
 
@@ -79,7 +79,6 @@ def variance_threshold(
 
 def calculate_frequency(feature_column, freq_cut):
     """Calculate frequency of second most common to most common feature.
-    Used in pandas.apply().
 
     Parameters
     ----------

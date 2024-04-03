@@ -1,4 +1,5 @@
-"""
+"""Module to write a gct file from a pandas DataFrame.
+
 Transform profiles into a gct (Gene Cluster Text) file
 A gct is a tab deliminted text file that traditionally stores gene expression data
 File Format Description: https://clue.io/connectopedia/gct_format.

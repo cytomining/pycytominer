@@ -1,3 +1,5 @@
+"""Module containing statistical operations for data processing."""
+
 from .correlation_threshold import correlation_threshold
 from .get_na_columns import get_na_columns
 from .noise_removal import noise_removal

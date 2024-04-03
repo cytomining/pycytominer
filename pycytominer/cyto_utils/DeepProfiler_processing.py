@@ -211,7 +211,7 @@ class AggregateDeepProfiler:
 
     def aggregate_deep(self):
         """
-        Main function of this class. Aggregates the profiles into a pandas dataframe.
+        Aggregate the DeepProfiler profiles into a pandas dataframe.
 
         For each key in file_aggregate, the profiles are loaded, concatenated and then aggregated.
         If files are missing, we throw a warning but continue the code.
@@ -303,7 +303,9 @@ class AggregateDeepProfiler:
 
 
 class SingleCellDeepProfiler:
-    """This class holds functions needed to analyze single cells from the DeepProfiler (DP) run. Only pycytominer.normalization() is implemented.
+    """Class that holds functions needed to analyze single cells from the DeepProfiler (DP) run.
+
+    Only pycytominer.normalization() is implemented.
 
     Attributes
     ----------
@@ -352,9 +354,9 @@ class SingleCellDeepProfiler:
     def get_single_cells(
         self, output=False, location_x_col_index=0, location_y_col_index=1
     ):
-        """
-        Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
-        single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
+        """Set up a single_cells dataframe in the format expected by pycytominer.normalize().
+
+        Helper function to normalize_deep_single_cells() that sets up the single_cells attribute or outputs it as a dataframe.
 
         Arguments
         -----------
@@ -409,7 +411,7 @@ class SingleCellDeepProfiler:
         spherize_epsilon=1e-6,
     ):
         """
-        Normalizes all cells into a pandas dataframe.
+        Normalize all cells into a pandas dataframe.
 
         For each file in the DP project features folder, the features from each cell are loaded.
         These features are put into a profiles dataframe for use in pycytominer.normalize.

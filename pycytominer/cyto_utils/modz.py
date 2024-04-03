@@ -1,3 +1,5 @@
+"""Module for performing a modified z score transformation."""
+
 import numpy as np
 from pycytominer.cyto_utils.util import (
     get_pairwise_correlation,

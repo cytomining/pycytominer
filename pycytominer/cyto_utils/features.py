@@ -179,7 +179,7 @@ def drop_outlier_features(
 
 
 def convert_compartment_format_to_list(compartments):
-    """Converts compartment to a list.
+    """Convert cell painting compartments to a list.
 
     Parameters
     ----------

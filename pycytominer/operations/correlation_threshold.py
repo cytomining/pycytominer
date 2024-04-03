@@ -1,5 +1,6 @@
-"""
-Returns list of features such that no two features have a correlation greater than a
+"""Module for correlation threshold operation.
+
+The correlation threshold operation list of features such that no two features have a correlation greater than a
 specified threshold.
 """
 
@@ -79,8 +80,9 @@ def correlation_threshold(
 
 
 def determine_high_cor_pair(correlation_row, sorted_correlation_pairs):
-    """Select highest correlated variable given a correlation row with columns:
-    ["pair_a", "pair_b", "correlation"]. For use in a pandas.apply().
+    """Select highest correlated variable given a correlation row.
+
+    From a row with columns: ["pair_a", "pair_b", "correlation"]. For use in a pandas.apply().
 
     Parameters
     ----------

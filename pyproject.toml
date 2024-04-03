@@ -118,6 +118,9 @@ target-version = "py38"
 line-length = 88
 fix = true
 extend-include = ["*.ipynb"]
+exclude = [
+    "walkthroughs/nbconverted/*",
+]
 
 [tool.ruff.lint]
 select = [
@@ -170,8 +173,12 @@ convention = "numpy"
 [tool.ruff.lint.per-file-ignores]
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
-# Ignore assert statements in tests
-"tests/*" = ["S101"]
+"tests/*" = [
+    # Allow assert statements in tests
+    "S101",
+    # Disable docstring checks in tests
+    "D",
+]
 "pycytominer/cyto_utils/*" = [
     # I (isort) is ignored due to circular dependencies in the cyto_utils module
     "I", 

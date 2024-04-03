@@ -1,3 +1,5 @@
+"""Module for loading data from various file formats."""
+
 import csv
 import gzip
 import pathlib
@@ -7,7 +9,7 @@ from typing import Union
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
-    """Checks if the provided file path is a parquet file.
+    """Check if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions.
     If the file does not end with `parquet`, this will return False, else True.

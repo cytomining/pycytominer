@@ -10,7 +10,7 @@ def noise_removal(
     samples="all",
     noise_removal_stdev_cutoff=0.8,
 ):
-    """
+    """Remove features with excessive standard deviation within the same perturbation group.
 
     Parameters
     ----------

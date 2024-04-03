@@ -12,8 +12,7 @@ import sqlalchemy
 
 
 class CellLocation:
-    """This class holds all the functions augment a metadata file with X,Y
-    locations of cells in each image.
+    """Class holding all the functions augment a metadata file with X,Y locations of cells in each image.
 
     In the metadata file, which is either a CSV or a Parquet file,
     - Each row is single multi-channel image
@@ -376,6 +375,7 @@ class CellLocation:
 
     def add_cell_location(self):
         """Add the X,Y locations of all cells to the metadata file in the corresponding row, packed into a single column.
+
         Optionally, save the augmented metadata file as a Parquet file.
 
         Returns

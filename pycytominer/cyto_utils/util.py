@@ -14,7 +14,7 @@ default_metadata_file = os.path.join(
 
 
 def get_default_compartments():
-    """Returns default compartments.
+    """Return default compartments.
 
     Returns
     -------
@@ -26,7 +26,7 @@ def get_default_compartments():
 
 
 def check_compartments(compartments):
-    """Checks if the input compartments are noncanonical compartments.
+    """Check if the input compartments are noncanonical compartments.
 
     Parameters
     ----------
@@ -56,13 +56,13 @@ def check_compartments(compartments):
 
 
 def load_known_metadata_dictionary(metadata_file=default_metadata_file):
-    """From a tab separated text file (two columns: ["compartment", "feature"]), load
-    previously known metadata columns per compartment.
+    """Load previously known metadata columns per compartment from metadata text file.
 
     Parameters
     ----------
     metadata_file : str, optional
-        File location of the metadata text file. Uses a default dictionary if you do not specify.
+        File location of the metadata text file which should be a tab-separated file with two columns: ["compartment", "feature"].
+        If not provided, the default metadata file will be used.
 
     Returns
     -------

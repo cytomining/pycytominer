@@ -1,3 +1,5 @@
+"""Module that provides functions for collating CellProfiler-created CSVs into a single SQLite file."""
+
 import os
 import pathlib
 import subprocess
