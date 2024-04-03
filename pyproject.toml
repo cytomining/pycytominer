@@ -117,6 +117,7 @@ version_files = [
 target-version = "py38"
 line-length = 88
 fix = true
+extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = [
@@ -160,6 +161,7 @@ ignore = [
     # DoNotAssignLambda
     "E731",
 ]
+exclude = ["*.ipynb"]
 
 [tool.ruff.lint.pydocstyle]
 # Use Google-style docstrings.

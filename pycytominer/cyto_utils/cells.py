@@ -914,13 +914,17 @@ def _sqlite_strata_conditions(df, dtypes, n=1):
         [3]         | [1, 2]
         [4]         | [1]
 
-    >>> _sqlite_strata_conditions(df, dtypes={'TableNumber': 'integer', 'ImageNumber': 'integer'}, n=1)
+    >>> _sqlite_strata_conditions(
+    ...     df, dtypes={"TableNumber": "integer", "ImageNumber": "integer"}, n=1
+    ... )
     ["(TableNumber in (1) and ImageNumber in (1))",
      "(TableNumber in (2) and ImageNumber in (1, 2, 3))",
      "(TableNumber in (3) and ImageNumber in (1, 2))",
      "(TableNumber in (4) and ImageNumber in (1))"]
 
-    >>> _sqlite_strata_conditions(df, dtypes={'TableNumber': 'text', 'ImageNumber': 'integer'}, n=2)
+    >>> _sqlite_strata_conditions(
+    ...     df, dtypes={"TableNumber": "text", "ImageNumber": "integer"}, n=2
+    ... )
     ["(TableNumber in ('1') and ImageNumber in (1))
       or (TableNumber in ('2') and ImageNumber in (1, 2, 3))",
      "(TableNumber in ('3') and ImageNumber in (1, 2))
