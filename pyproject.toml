@@ -180,3 +180,7 @@ testpaths = "tests"
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.1.0"]
 build-backend = "poetry_dynamic_versioning.backend"
+
+# Avoids warnings aboud missing section
+# see: https://setuptools-scm.readthedocs.io/en/latest/usage/
+[tool.setuptools_scm]
