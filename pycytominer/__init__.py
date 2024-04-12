@@ -1,4 +1,4 @@
-from pycytominer import __about__
+from pycytominer import __about__, __config__
 
 from .aggregate import aggregate
 from .annotate import annotate

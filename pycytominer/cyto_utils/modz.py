@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from pycytominer.cyto_utils.util import (
     get_pairwise_correlation,
     check_correlation_method,
@@ -43,9 +44,17 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
     # Round correlation results
     pair_df = pair_df.round(precision)
 
+    # create a copy of cor_df values for use with np.fill_diagonal
+    cor_df_values = cor_df.values.copy()
+
     # Step 2: Identify sample weights
     # Fill diagonal of correlation_matrix with np.nan
-    np.fill_diagonal(cor_df.values, np.nan)
+    np.fill_diagonal(cor_df_values, np.nan)
+
+    # reconstitute the changed data as a new dataframe to avoid read-only behavior
+    cor_df = pd.DataFrame(
+        data=cor_df_values, index=cor_df.index, columns=cor_df.columns
+    )
 
     # Remove negative values
     cor_df = cor_df.clip(lower=0)
