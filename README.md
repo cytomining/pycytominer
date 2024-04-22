@@ -22,18 +22,42 @@ For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_u
 
 From the single cell output, pycytominer performs five steps using a simple API (described below), before passing along data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
 
+The best way to communicate with us is through [GitHub Issues](https://github.com/cytomining/pycytominer/issues), where we are able to discuss and troubleshoot topics related to pycytominer.
+Please see our [`CONTRIBUTING.md`](https://github.com/cytomining/pycytominer/blob/main/CONTRIBUTING.md) for details about communicating possible bugs, new features, or other information.
+
 ## Installation
 
-You can install pycytominer via pip:
+You can install pycytominer using the following platforms.
+This project follows a `<major>.<minor>.<patch>` semantic versioning scheme which is used for every release with small variations per platform.
+
+**pip** ([link](https://pypi.org/project/pycytominer/)):
 
 ```bash
+# install pycyotminer from PyPI
 pip install pycytominer
 ```
 
-or conda:
+**conda** ([link](https://anaconda.org/conda-forge/pycytominer)):
 
 ```bash
+# install pycytominer from conda-forge
 conda install -c conda-forge pycytominer
+```
+
+**Docker Hub** ([link](https://hub.docker.com/r/cytomining/pycytominer)):
+
+Container images of pycytominer are made available through Docker Hub.
+These images follow a tagging scheme that extends our release sematic versioning which may be found within our [`CONTRIBUTING.md` Docker Hub Image Releases](https://github.com/cytomining/pycytominer/blob/main/CONTRIBUTING.md#docker-hub-image-releases) documentation.
+
+```bash
+# pull the latest pycytominer image and run a module
+docker run --platform=linux/amd64 cytomining/pycytominer:latest python -m pycytominer.<modules go here>
+
+# pull a commit-based version of pycytominer (b1bb292) and run an interactive bash session within the container
+docker run -it --platform=linux/amd64 cytomining/pycytominer:pycytominer-1.1.0.post16.dev0_b1bb292 bash
+
+# pull a scheduled update of pycytominer, map the present working directory to /opt within the container, and run a python script.
+docker run -v $PWD:/opt --platform=linux/amd64 cytomining/pycytominer:pycytominer-1.1.0.post16.dev0_b1bb292_240417 python /opt/script.py
 ```
 
 ## Frameworks
