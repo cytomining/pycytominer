@@ -1,5 +1,17 @@
 <img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/main/logo/with-text-for-light-bg.png?raw=true">
 
+- [Data processing for image-based profiling](#data-processing-for-image-based-profiling)
+  - [Installation](##installation)
+  - [Frameworks](#frameworks)
+  - [API](#api)
+  - [Usage](#usage)
+    - [Pipeline orchestration](#pipeline-orchestration)
+  - [Other functionality](#other-functionality)
+    - [CellProfiler CSV collation](#cellprofiler-csv-collation)
+    - [Creating a cell locations lookup table](#creating-a-cell-locations-lookup-table)
+    - [Generating a GCT file for morpheus](#generating-a-gct-file-for-morpheus)
+  - [Citing pycytominer](#citing-pycytominer)
+
 # Data processing for image-based profiling
 
 [![Build Status](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml/badge.svg?branch=main)](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml?query=branch%3Amain)
@@ -111,19 +123,7 @@ And, more specifically than that, image-based profiling readouts from [CellProfi
 
 Therefore, we have included some custom tools in `pycytominer/cyto_utils` that provides other functionality:
 
-- [Data processing for image-based profiling](#data-processing-for-image-based-profiling)
-  - [Installation](#installation)
-  - [Frameworks](#frameworks)
-  - [API](#api)
-  - [Usage](#usage)
-    - [Pipeline orchestration](#pipeline-orchestration)
-  - [Other functionality](#other-functionality)
-    - [CellProfiler CSV collation](#cellprofiler-csv-collation)
-    - [Creating a cell locations lookup table](#creating-a-cell-locations-lookup-table)
-    - [Generating a GCT file for morpheus](#generating-a-gct-file-for-morpheus)
-  - [Citing pycytominer](#citing-pycytominer)
-
-Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
+Note, [`pycytominer.cyto_utils.cells.SingleCells()`](./pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
 Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
 
 ### CellProfiler CSV collation

@@ -1,6 +1,4 @@
-"""
-Module used for pycytominer configuration details.
-"""
+"""Module used for pycytominer configuration details."""
 
 import pandas as pd
 
