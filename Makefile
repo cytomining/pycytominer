@@ -1,25 +1,44 @@
-# Minimal makefile for Sphinx documentation
-#
+install: .devcontainer/postCreateCommand.sh ## Install the poetry environment and install the pre-commit hooks
+	@echo "🛠️ Creating virtual environment using poetry and installing pre-commit hooks"
+	@bash .devcontainer/postCreateCommand.sh
+	@echo "🐢 Launching poetry shell"
+	@poetry shell
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = docs
-BUILDDIR      = build
+.PHONY: check
+check: ## Run code quality tools.
+	@echo "🔒 Checking Poetry lock file consistency with 'pyproject.toml': Running poetry lock --check"
+	@poetry check --lock
+	@echo "🔎 Linting code: Running pre-commit"
+	@poetry run pre-commit run -a
 
-# Put it first so that "make" without argument is like "make help".
+.PHONY: test
+test: ## Test the code with pytest
+	@echo "🧪 Testing code: Running pytest"
+	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
+
+.PHONY: docs
+docs: ## Build the documentation
+	@echo "📚 Building documentation"
+	@poetry run sphinx-build docs build
+
+.PHONY: build
+build: clean-build ## Build wheel file using poetry
+	@echo "🛞 Creating wheel and sdist files"
+	@poetry build
+
+.PHONY: clean-build
+clean-build: ## clean build artifacts
+	@echo "🧹 Cleaning build artifacts"
+	@rm -rf dist
+
+.PHONY: docker-build
+test_docker_build: ## Build the docker image and run the tests
+	@echo "🐳 Building docker image and running tests"
+	@docker build -f build/docker/Dockerfile -t pycytominer:latest .
+	@docker run pycytominer:latest poetry run pytest
+
+.PHONY: help
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' "$(MAKEFILE_LIST)" | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: help Makefile
-
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-# note: presumes the existence of docker daemon to receive docker commands
-test_docker_build:
-	docker build -f build/docker/Dockerfile -t pycytominer:latest . && \
-	docker run pycytominer:latest poetry run pytest
+.DEFAULT_GOAL := help
