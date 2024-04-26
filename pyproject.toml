@@ -88,6 +88,7 @@ dunamai = "^1.19.0"
 mkdocs-material = "^9.5.19"
 mkdocstrings = {extras = ["python"], version = "^0.23.0"}
 mkdocs-include-markdown-plugin = "^6.0.5"
+mkdocs-jupyter = "^0.24.7"
 
 [tool.poetry-dynamic-versioning]
 enable = false
