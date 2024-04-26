@@ -45,7 +45,7 @@ def label_compartment(cp_features, compartment, metadata_cols):
     cp_features : list of str
         All features being used.
     compartment : str
-       Measured compartment.
+        Measured compartment.
     metadata_cols : list
         Columns that should be considered metadata.
 
@@ -150,7 +150,7 @@ def drop_outlier_features(
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
     outlier_cutoff : int or float, default 500
-    see https://github.com/cytomining/pycytominer/issues/237 for details.
+        see https://github.com/cytomining/pycytominer/issues/237 for details.
         Threshold to remove features if absolute values is greater
 
     Returns
