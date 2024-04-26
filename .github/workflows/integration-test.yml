@@ -36,7 +36,7 @@ jobs:
     # This job doesn't fail fast to ensure that feedback on function is still provided
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
@@ -64,7 +64,7 @@ jobs:
       matrix:
         os:
           - macos-13
-          - ubuntu-latest
+          - ubuntu-22.04
         python-version: ["3.8", "3.9", "3.10", "3.11"]
     runs-on: ${{ matrix.os }}
     env:
@@ -87,12 +87,12 @@ jobs:
           install-deps: true
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
-        if: (matrix.os == 'ubuntu-latest')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
+        if: (matrix.os == 'ubuntu-22.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
         run: poetry run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
         continue-on-error: true
-        if: (matrix.os == 'ubuntu-latest') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        if: (matrix.os == 'ubuntu-22.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
         uses: codecov/codecov-action@v3
         env:
           OS: ${{ matrix.os }}
@@ -107,13 +107,13 @@ jobs:
           name: pycytominer
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
-        if: (matrix.os != 'ubuntu-latest') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
+        if: (matrix.os != 'ubuntu-22.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
         run: poetry run pytest ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
     # See https://github.com/actions/upload-artifact?tab=readme-ov-file#where-does-the-upload-go
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -150,7 +150,7 @@ jobs:
           if-no-files-found: error
           retention-days: 90
   docker-image-test-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     # set a dependency sequence to occur after build job completion
     needs: build
     env:
