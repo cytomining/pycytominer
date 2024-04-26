@@ -1,14 +1,13 @@
-Install
-=======
+# Installation
 
 To install pycytominer, use pip:
 
-.. code-block:: bash
-
+```bash
    pip install pycytominer
+```
 
 You can also install pycytominer with conda:
 
-.. code-block:: bash
-
+```bash
    conda install -c conda-forge pycytominer
+```

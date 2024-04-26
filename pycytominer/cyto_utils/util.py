@@ -1,6 +1,4 @@
-"""
-Miscellaneous utility functions
-"""
+"""Miscellaneous utility functions."""
 
 import os
 import warnings
@@ -16,7 +14,7 @@ default_metadata_file = os.path.join(
 
 
 def get_default_compartments():
-    """Returns default compartments.
+    """Return default compartments.
 
     Returns
     -------
@@ -24,12 +22,11 @@ def get_default_compartments():
         Default compartments.
 
     """
-
     return ["cells", "cytoplasm", "nuclei"]
 
 
 def check_compartments(compartments):
-    """Checks if the input compartments are noncanonical compartments.
+    """Check if the input compartments are noncanonical compartments.
 
     Parameters
     ----------
@@ -42,7 +39,6 @@ def check_compartments(compartments):
         Nothing is returned.
 
     """
-
     default_compartments = get_default_compartments()
 
     compartments = convert_compartment_format_to_list(compartments)
@@ -60,13 +56,13 @@ def check_compartments(compartments):
 
 
 def load_known_metadata_dictionary(metadata_file=default_metadata_file):
-    """From a tab separated text file (two columns: ["compartment", "feature"]), load
-    previously known metadata columns per compartment.
+    """Load previously known metadata columns per compartment from metadata text file.
 
     Parameters
     ----------
     metadata_file : str, optional
-        File location of the metadata text file. Uses a default dictionary if you do not specify.
+        File location of the metadata text file which should be a tab-separated file with two columns: ["compartment", "feature"].
+        If not provided, the default metadata file will be used.
 
     Returns
     -------
@@ -74,7 +70,6 @@ def load_known_metadata_dictionary(metadata_file=default_metadata_file):
         Compartment (keys) mappings to previously known metadata (values).
 
     """
-
     metadata_dict = {}
     with open(metadata_file) as meta_fh:
         next(meta_fh)
@@ -103,7 +98,6 @@ def check_correlation_method(method):
         Correctly formatted correlation method.
 
     """
-
     method = method.lower()
     avail_methods = ["pearson", "spearman", "kendall"]
     assert (  # noqa: S101
@@ -127,7 +121,6 @@ def check_aggregate_operation(operation):
         Correctly formatted operation method.
 
     """
-
     operation = operation.lower()
     avail_ops = ["mean", "median"]
     assert (  # noqa: S101
@@ -151,7 +144,6 @@ def check_consensus_operation(operation):
         Correctly formatted operation method.
 
     """
-
     operation = operation.lower()
     avail_ops = ["modz"]  # All aggregation operations are also supported
     try:
@@ -178,7 +170,6 @@ def check_fields_of_view_format(fields_of_view):
         Correctly formatted fields_of_view variable.
 
     """
-
     if fields_of_view != "all":
         if isinstance(fields_of_view, list):
             if all(isinstance(x, int) for x in fields_of_view):
@@ -214,7 +205,6 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
         Nothing is returned.
 
     """
-
     try:
         assert len(  # noqa: S101
             list(np.intersect1d(data_fields_of_view, input_fields_of_view))
@@ -226,7 +216,7 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
 
 
 def check_image_features(image_features, image_columns):
-    """Confirm that the input list of image features are present in the image table
+    """Confirm that the input list of image features are present in the image table.
 
     Parameters
     ----------
@@ -240,7 +230,6 @@ def check_image_features(image_features, image_columns):
     None
         Nothing is returned.
     """
-
     if "Image" in list({img_col.split("_")[0] for img_col in image_columns}):
         # Image has already been prepended to most, but not all, columns
         level = 1
@@ -281,7 +270,6 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
         Correctly formatted image feature categories.
 
     """
-
     # Check if the input image feature groups are valid.
     check_image_features(image_feature_categories, list(image_df.columns))
 
@@ -320,13 +308,13 @@ def get_pairwise_correlation(population_df, method="pearson"):
         Includes metadata and observation features.
     method : str, default "pearson"
         Which correlation matrix to use to test cutoff.
+
     Returns
     -------
     list of str
         Features to exclude from the population_df.
 
     """
-
     # Check that the input method is supported
     method = check_correlation_method(method)
 

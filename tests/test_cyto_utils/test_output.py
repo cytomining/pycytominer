@@ -75,10 +75,7 @@ def test_output_tsv():
 
 
 def test_output_parquet():
-    """
-    Tests using output function with parquet type
-    """
-
+    """Tests using output function with parquet type."""
     output_filename = pathlib.Path(f"{TMPDIR}/test_output.parquet")
 
     # test with base output arguments and

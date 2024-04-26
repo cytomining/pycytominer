@@ -1,6 +1,4 @@
-"""
-Utility function to compress output data
-"""
+"""Utility function to compress output data."""
 
 from typing import Dict, Union, Optional
 
@@ -18,7 +16,7 @@ def output(
     compression_options: Union[str, Dict] = {"method": "gzip", "mtime": 1},
     **kwargs,
 ):
-    """Given an output file and compression options, write file to disk
+    """Given an output file and compression options, write file to disk.
 
     Parameters
     ----------
@@ -78,7 +76,6 @@ def output(
         float_format=None,
     )
     """
-
     if output_type == "csv":
         compression_options = set_compression_method(compression=compression_options)
 
@@ -99,7 +96,7 @@ def output(
 
 
 def set_compression_method(compression: Union[str, Dict]):
-    """Set the compression options
+    """Set the compression options.
 
     Parameters
     ----------
@@ -112,7 +109,6 @@ def set_compression_method(compression: Union[str, Dict]):
     compression, dict
         A formated dictionary expected by output()
     """
-
     if compression is None:
         compression = {"method": None}
 
@@ -124,7 +120,7 @@ def set_compression_method(compression: Union[str, Dict]):
 
 
 def check_compression_method(compression: str):
-    """Ensure compression options are set properly
+    """Ensure compression options are set properly.
 
     Parameters
     ----------

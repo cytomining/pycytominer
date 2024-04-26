@@ -1,4 +1,4 @@
-"""This tests the output from CellLocation class"""
+"""This tests the output from CellLocation class."""
 
 from typing import List, Type
 
@@ -14,7 +14,6 @@ def get_metadata_input_dataframe(cell_loc: CellLocation) -> pd.DataFrame:
     Gathers the metadata input dataframe given various conditions
     from a CellLocation object.
     """
-
     return (
         pd.read_parquet(
             cell_loc.metadata_input,
@@ -41,10 +40,7 @@ def test_output_shape_and_required_columns(
     cell_loc_param: List[str],
     request: Type[FixtureRequest],
 ):
-    """
-    This tests the shape of the output from CellLocation class and verifies that the required columns are present
-    """
-
+    """This tests the shape of the output from CellLocation class and verifies that the required columns are present."""
     cls_cell_loc = request.getfixturevalue(cell_loc_param)
     cell_loc = cls_cell_loc.add_cell_location()
     metadata_input_dataframe = get_metadata_input_dataframe(cell_loc=cls_cell_loc)
@@ -74,10 +70,7 @@ def test_output_value_correctness(
     cell_loc_param: List[str],
     request: Type[FixtureRequest],
 ):
-    """
-    This tests the correctness of the values in the output from CellLocation class by comparing the values in the output to the values in the input
-    """
-
+    """This tests the correctness of the values in the output from CellLocation class by comparing the values in the output to the values in the input."""
     cls_cell_loc = request.getfixturevalue(cell_loc_param)
     cell_loc = cls_cell_loc.add_cell_location()
     metadata_input_dataframe = get_metadata_input_dataframe(cell_loc=cls_cell_loc)

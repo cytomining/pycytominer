@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pycytominer"
 # This version is a placeholder updated during build by poetry-dynamic-versioning
-version = "0.0.0"
+version = "1.1.0.post29.dev0+9615c0d"
 description = "Python package for processing image-based profiling data"
 authors = [
     "Erik Serrano",
@@ -39,7 +39,9 @@ license = "BSD-3-Clause"
 readme = "README.md"
 homepage = "https://pycytominer.readthedocs.io/"
 repository = "https://github.com/cytomining/pycytominer"
-include = [{ path = "poetry.lock", format = "sdist" }]
+include = [
+    { path = "poetry.lock", format = "sdist" }, 
+]
 
 [tool.poetry.dependencies]
 python          = ">=3.8,<4.0"
@@ -78,22 +80,18 @@ ruff = "^0.3.4"
 optional = true
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "*"
-sphinx = "~7.1"
-sphinx-autobuild = "^2021.3.14"
-sphinx-autoapi = "^3.0.0"
+mkdocs = "^1.6.0"
 ipython = "^8.12"
-groundwork-sphinx-theme = "^1.1.1"
-sphinx-copybutton = "^0.5.2"
 nbsphinx = "^0.9.3"
-m2r2 = "^0.3.3.post2"
-furo = "^2023.9.10"
 mock = "^5.1.0"
-autodoc = "^0.5.0"
 dunamai = "^1.19.0"
+mkdocs-material = "^9.5.19"
+mkdocstrings = {extras = ["python"], version = "^0.23.0"}
+mkdocs-include-markdown-plugin = "^6.0.5"
+mkdocs-jupyter = "^0.24.7"
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 style = "pep440"
 vcs = "git"
 
@@ -117,6 +115,10 @@ version_files = [
 target-version = "py38"
 line-length = 88
 fix = true
+extend-include = ["*.ipynb"]
+exclude = [
+    "walkthroughs/nbconverted/*",
+]
 
 [tool.ruff.lint]
 select = [
@@ -144,6 +146,8 @@ select = [
     "S",
     # isort
     "I",
+    # pydocstyle
+    "D",
     # The following checks are disabled, but we are working towards enabling them in the future.
     # flake8-bugbear
     # "B",
@@ -158,12 +162,21 @@ ignore = [
     # DoNotAssignLambda
     "E731",
 ]
+exclude = ["*.ipynb"]
+
+[tool.ruff.lint.pydocstyle]
+# Use Google-style docstrings.
+convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 "__init__.py" = ["E402", "F401"]
-# Ignore assert statements in tests
-"tests/*" = ["S101"]
+"tests/*" = [
+    # Allow assert statements in tests
+    "S101",
+    # Disable docstring checks in tests
+    "D",
+]
 "pycytominer/cyto_utils/*" = [
     # I (isort) is ignored due to circular dependencies in the cyto_utils module
     "I", 
@@ -173,6 +186,8 @@ ignore = [
 
 [tool.ruff.format]
 preview = true
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"

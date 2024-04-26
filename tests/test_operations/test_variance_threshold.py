@@ -28,9 +28,7 @@ data_unique_test_df = pd.DataFrame({
 
 
 def test_calculate_frequency():
-    """
-    Testing calculate_frequency pycytominer function for variance threshold calculation
-    """
+    """Testing calculate_frequency pycytominer function for variance threshold calculation."""
     freq_cut = 0.05
 
     excluded_features_freq = data_df.apply(

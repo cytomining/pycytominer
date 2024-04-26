@@ -13,14 +13,14 @@ from sklearn.preprocessing import StandardScaler
 
 
 class Spherize(BaseEstimator, TransformerMixin):
-    """Class to apply a sphering transform (aka whitening) data in the base sklearn
-    transform API. Note, this implementation is modified/inspired from the following
-    sources:
+    """Class to apply a sphering transform (aka whitening) data in the base sklearn transform API.
+
+    This implementation is modified/inspired from the following sources:
     1) A custom function written by Juan C. Caicedo
     2) A custom ZCA function at https://github.com/mwv/zca
     3) Notes from Niranj Chandrasekaran (https://github.com/cytomining/pycytominer/issues/90)
     4) The R package "whitening" written by Strimmer et al (http://strimmerlab.org/software/whitening/)
-    5) Kessy et al. 2016 "Optimal Whitening and Decorrelation" [1]_
+    5) Kessy et al. 2016 "Optimal Whitening and Decorrelation" [1]_.
 
     Attributes
     ----------
@@ -33,7 +33,8 @@ class Spherize(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, epsilon=1e-6, center=True, method="ZCA", return_numpy=False):
-        """
+        """Construct a Spherize object.
+
         Parameters
         ----------
         epsilon : float, default 1e-6
@@ -65,7 +66,7 @@ class Spherize(BaseEstimator, TransformerMixin):
             raise ValueError("PCA-cor and ZCA-cor require center=True")
 
     def fit(self, X, y=None):
-        """Identify the sphering transform given self.X
+        """Identify the sphering transform given self.X.
 
         Parameters
         ----------
@@ -221,7 +222,7 @@ class Spherize(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-        """Perform the sphering transform
+        """Perform the sphering transform.
 
         Parameters
         ----------
@@ -235,7 +236,6 @@ class Spherize(BaseEstimator, TransformerMixin):
         pandas.core.frame.DataFrame
             Spherized dataframe
         """
-
         columns = X.columns
 
         # Get Numpy representation of the DataFrame
@@ -261,7 +261,7 @@ class Spherize(BaseEstimator, TransformerMixin):
 
 
 class RobustMAD(BaseEstimator, TransformerMixin):
-    """Class to perform a "Robust" normalization with respect to median and mad
+    """Class to perform a "Robust" normalization with respect to median and mad.
 
         scaled = (x - median) / mad
 
@@ -298,7 +298,7 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, copy=None):
-        """Apply the RobustMAD calculation
+        """Apply the RobustMAD calculation.
 
         Parameters
         ----------

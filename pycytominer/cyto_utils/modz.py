@@ -1,3 +1,5 @@
+"""Module for performing a modified z score transformation."""
+
 import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils.util import (
@@ -88,7 +90,7 @@ def modz(
     min_weight=0.01,
     precision=4,
 ):
-    """Collapse replicates into a consensus signature using a weighted transformation
+    """Collapse replicates into a consensus signature using a weighted transformation.
 
     Parameters
     ----------

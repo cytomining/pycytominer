@@ -49,9 +49,7 @@ dtype_convert_dict = {x: float for x in features}
 
 
 def test_aggregate_median_allvar():
-    """
-    Testing aggregate pycytominer function
-    """
+    """Testing aggregate pycytominer function."""
     aggregate_result = aggregate(
         population_df=data_df, strata=["g"], features="infer", operation="median"
     )
@@ -78,9 +76,7 @@ def test_aggregate_median_allvar():
 
 
 def test_aggregate_mean_allvar():
-    """
-    Testing aggregate pycytominer function
-    """
+    """Testing aggregate pycytominer function."""
     aggregate_result = aggregate(
         population_df=data_df, strata=["g"], features="infer", operation="mean"
     )
@@ -95,9 +91,7 @@ def test_aggregate_mean_allvar():
 
 
 def test_aggregate_median_subsetvar():
-    """
-    Testing aggregate pycytominer function
-    """
+    """Testing aggregate pycytominer function."""
     aggregate_result = aggregate(
         population_df=data_df, strata=["g"], features=["Cells_x"], operation="median"
     )
@@ -109,9 +103,7 @@ def test_aggregate_median_subsetvar():
 
 
 def test_aggregate_mean_subsetvar():
-    """
-    Testing aggregate pycytominer function
-    """
+    """Testing aggregate pycytominer function."""
     aggregate_result = aggregate(
         population_df=data_df, strata=["g"], features=["Cells_x"], operation="mean"
     )
@@ -123,10 +115,7 @@ def test_aggregate_mean_subsetvar():
 
 
 def test_aggregate_median_dtype_confirm():
-    """
-    Testing aggregate pycytominer function
-    """
-
+    """Testing aggregate pycytominer function."""
     # Convert dtype of one variable to object
     data_dtype_df = data_df.copy()
     data_dtype_df.Cells_x = data_dtype_df.Cells_x.astype(str)
@@ -145,10 +134,7 @@ def test_aggregate_median_dtype_confirm():
 
 
 def test_aggregate_median_with_missing_values():
-    """
-    Testing aggregate pycytominer function
-    """
-
+    """Testing aggregate pycytominer function."""
     # Convert dtype of one variable to object
     data_dtype_df = data_missing_df.copy()
     data_dtype_df.Cells_x = data_dtype_df.Cells_x.astype(str)
@@ -167,10 +153,7 @@ def test_aggregate_median_with_missing_values():
 
 
 def test_aggregate_compute_object_count():
-    """
-    Testing aggregate pycytominer function
-    """
-
+    """Testing aggregate pycytominer function."""
     aggregate_result = aggregate(
         population_df=data_df,
         strata=["g"],
@@ -212,10 +195,7 @@ def test_aggregate_compute_object_count():
 
 
 def test_aggregate_incorrect_object_feature():
-    """
-    Testing aggregate pycytominer function
-    """
-
+    """Testing aggregate pycytominer function."""
     incorrect_object_feature = "DOES NOT EXIST"
 
     with pytest.raises(KeyError) as err:
@@ -250,10 +230,7 @@ def test_aggregate_incorrect_object_feature():
 
 
 def test_custom_objectnumber_feature():
-    """
-    Testing aggregate pycytominer function
-    """
-
+    """Testing aggregate pycytominer function."""
     data_df_copy = data_df.copy().rename(
         columns={"Metadata_ObjectNumber": "Custom_ObjectNumber_Feature"}
     )
@@ -287,9 +264,7 @@ def test_custom_objectnumber_feature():
 
 
 def test_output_type():
-    """
-    Testing aggregate pycytominer function
-    """
+    """Testing aggregate pycytominer function."""
     # dictionary with the output name associated with the file type
     output_dict = {"csv": test_output_file_csv, "parquet": test_output_file_parquet}
 

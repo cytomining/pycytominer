@@ -1,6 +1,4 @@
-"""
-Normalize observation features based on specified normalization method
-"""
+"""Normalize observation features based on specified normalization method."""
 
 import pandas as pd
 from sklearn.preprocessing import RobustScaler, StandardScaler
@@ -25,7 +23,7 @@ def normalize(
     spherize_method="ZCA-cor",
     spherize_epsilon=1e-6,
 ):
-    """Normalize profiling features
+    """Normalize profiling features.
 
     Parameters
     ----------
@@ -58,15 +56,13 @@ def normalize(
         If provided, will write normalized profiles as a specified file type (either CSV or parquet).
         If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compression_options : str or dict, optional
-        Contains compression options as input to
-        pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
+        Contains compression options as input to `pd.DataFrame.to_csv(compression=compression_options)`.
     float_format : str, optional
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
     mad_robustize_epsilon: float, optional
-        The mad_robustize fudge factor parameter. The function only uses
-        this variable if method = "mad_robustize". Set this to 0 if
+        The mad_robustize fudge factor parameter. The function only uses this variable if method = "mad_robustize". Set this to 0 if
         mad_robustize generates features with large values.
     spherize_center : bool
         If the function should center data before sphering (aka whitening). The
@@ -88,38 +84,37 @@ def normalize(
 
     Examples
     --------
+    ```python
     import pandas as pd
     from pycytominer import normalize
 
-    data_df = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [1, 2, 8, 2, 5, 5, 5, 1],
-            "y": [3, 1, 7, 4, 5, 9, 6, 1],
-            "z": [1, 8, 2, 5, 6, 22, 2, 2],
-            "zz": [14, 46, 1, 6, 30, 100, 2, 2],
-        }
-    ).reset_index(drop=True)
+    data_df = pd.DataFrame({
+        "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+        "Metadata_treatment": [
+            "drug",
+            "drug",
+            "control",
+            "control",
+            "drug",
+            "drug",
+            "control",
+            "control",
+        ],
+        "x": [1, 2, 8, 2, 5, 5, 5, 1],
+        "y": [3, 1, 7, 4, 5, 9, 6, 1],
+        "z": [1, 8, 2, 5, 6, 22, 2, 2],
+        "zz": [14, 46, 1, 6, 30, 100, 2, 2],
+    }).reset_index(drop=True)
 
     normalized_df = normalize(
         profiles=data_df,
         features=["x", "y", "z", "zz"],
         meta_features="infer",
         samples="Metadata_treatment == 'control'",
-        method="standardize"
+        method="standardize",
     )
+    ```
     """
-
     # Load Data
     profiles = load_profiles(profiles)
 

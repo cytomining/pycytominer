@@ -1,0 +1,67 @@
+site_name: pycytominer
+repo_url: https://github.com/cytomining/pycytominer
+site_url: https://cytomining.github.io/pycytominer
+site_description: Python package for processing image-based profiling data
+site_author: Pycytominer contributors
+edit_uri: edit/main/docs/
+repo_name: cytomining/pycytominer
+
+nav:
+  - Home: README.md
+  - Installation: install.md
+  - Main Functions: functions.md
+  - Cyto Utilities: cyto_utils.md
+  - Operations: operations.md
+  - Tutorial: tutorial.md
+  - Walkthroughs:
+      - Single Cell Usage: walkthroughs/single_cell_usage.ipynb
+plugins:
+  - search
+  - mkdocs-jupyter
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - pycytominer
+          options:
+            show_source: true
+            show_submodules: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            docstring_style: numpy
+            show_root_members_full_path: true
+
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/cytomining/pycytominer
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pycytominer
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true

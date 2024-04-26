@@ -1,6 +1,4 @@
-"""
-Select features to use in downstream analysis based on specified selection method
-"""
+"""Select features to use in downstream analysis based on specified selection method."""
 
 from pycytominer.cyto_utils import (
     drop_outlier_features,
@@ -37,7 +35,7 @@ def feature_select(
     noise_removal_perturb_groups=None,
     noise_removal_stdev_cutoff=None,
 ):
-    """Performs feature selection based on the given operation.
+    """Perform feature selection based on the given operation.
 
     Parameters
     ----------
@@ -100,7 +98,6 @@ def feature_select(
         data.
 
     """
-
     all_ops = [
         "variance_threshold",
         "correlation_threshold",

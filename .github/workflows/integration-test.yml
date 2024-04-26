@@ -28,6 +28,23 @@ env:
   TARGET_PYTHON_VERSION: "3.9"
 
 jobs:
+  docs-check:
+    # This job is used to check the documentation build with strict mode enabled
+    name: Docs check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup python, and load cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: true
+          setup-poetry: true
+          install-deps: true
+      - name: Build documentation
+        run: poetry run mkdocs build --strict
   quality-test:
     # This job is used to run pre-commit checks to ensure that all files are
     # are formatted correctly.

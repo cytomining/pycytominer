@@ -1,9 +1,11 @@
+"""Utility functions for single cell ingest."""
+
 from collections import Counter
 from pycytominer.cyto_utils import get_default_compartments
 
 
 def get_default_linking_cols():
-    """Define the standard experiment linking columns between tables
+    """Define the standard experiment linking columns between tables.
 
     Returns
     -------
@@ -26,7 +28,7 @@ def get_default_linking_cols():
 
 
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
-    """Confirm that the linking cols and compartments are compatible
+    """Confirm that the linking cols and compartments are compatible.
 
     Parameters
     ----------
@@ -75,8 +77,7 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
 
 
 def provide_linking_cols_feature_name_update(linking_cols="default"):
-    """Output a dictionary to use to update pandas dataframe column names. The linking
-    cols must be Metadata.
+    """Output a dictionary to use to update pandas dataframe column names from linking cols in the Metadata.
 
     Parameters
     ----------

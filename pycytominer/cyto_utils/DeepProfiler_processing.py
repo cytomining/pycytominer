@@ -1,6 +1,4 @@
-"""
-Utility function to load and process the output files of a DeepProfiler run.
-"""
+"""Utility function to load and process the output files of a DeepProfiler run."""
 
 import os
 import pathlib
@@ -17,7 +15,7 @@ from pycytominer.cyto_utils import (
 
 
 class DeepProfilerData:
-    """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
+    """Class that holds all functions needed to load and annotate the DeepProfiler (DP) run.
 
     Attributes
     ----------
@@ -58,7 +56,6 @@ class DeepProfilerData:
 
         See above for all other parameters.
         """
-
         self.index_df = pd.read_csv(index_file, dtype=str)
         self.profile_dir = profile_dir
         self.filename_delimiter = filename_delimiter
@@ -67,9 +64,7 @@ class DeepProfilerData:
             self.file_extension = f".{self.file_extension}"
 
     def build_filenames(self):
-        """
-        Create file names indicated by plate, well, and site information
-        """
+        """Create file names indicated by plate, well, and site information."""
         self.filenames = self.index_df.apply(
             self.build_filename_from_index, axis="columns"
         )
@@ -78,9 +73,7 @@ class DeepProfilerData:
         ]
 
     def build_filename_from_index(self, row):
-        """
-        Builds the name of the profile files
-        """
+        """Build the name of the profile files."""
         plate = row["Metadata_Plate"]
         well = row["Metadata_Well"]
         site = row["Metadata_Site"]
@@ -89,9 +82,10 @@ class DeepProfilerData:
         return filename
 
     def extract_filename_metadata(self, npz_file, delimiter="_"):
-        """
-        Extract metadata (site, well and plate) from the filename.
-        The input format of the file: path/plate/well{delimiter}site.npz
+        """Extract metadata (site, well and plate) from the filename.
+
+        This function is used to extract the metadata from the filename of the npz files.
+        It expects a naming convetion of path/plate/well{delimiter}site.npz.
 
         Arguments
         ---------
@@ -120,7 +114,7 @@ class DeepProfilerData:
 
 
 class AggregateDeepProfiler:
-    """This class holds all functions needed to aggregate the DeepProfiler (DP) run.
+    """Class that holds all functions needed to aggregate the DeepProfiler (DP) run.
 
     Attributes
     ----------
@@ -183,10 +177,9 @@ class AggregateDeepProfiler:
         self.output_file = output_file
 
     def setup_aggregate(self):
-        """
-        Sets up the file_aggregate attribute. This is a helper function to aggregate_deep().
+        """Set up the file_aggregate attribute.
 
-        the file_aggregate dictionary contains the file locations and metadata for each grouping.
+        A helper function to `aggregate_deep` that aggregate the file_aggregate dictionary contains the file locations and metadata for each grouping.
         If for example we are grouping by well then the keys of self.file_aggregate would be:
         plate1/well1, plate1/well2, plate2/well1, etc.
         """
@@ -218,7 +211,7 @@ class AggregateDeepProfiler:
 
     def aggregate_deep(self):
         """
-        Main function of this class. Aggregates the profiles into a pandas dataframe.
+        Aggregate the DeepProfiler profiles into a pandas dataframe.
 
         For each key in file_aggregate, the profiles are loaded, concatenated and then aggregated.
         If files are missing, we throw a warning but continue the code.
@@ -310,7 +303,9 @@ class AggregateDeepProfiler:
 
 
 class SingleCellDeepProfiler:
-    """This class holds functions needed to analyze single cells from the DeepProfiler (DP) run. Only pycytominer.normalization() is implemented.
+    """Class that holds functions needed to analyze single cells from the DeepProfiler (DP) run.
+
+    Only pycytominer.normalization() is implemented.
 
     Attributes
     ----------
@@ -354,15 +349,14 @@ class SingleCellDeepProfiler:
         ---------
         See above for all parameters.
         """
-
         self.deep_data = deep_data
 
     def get_single_cells(
         self, output=False, location_x_col_index=0, location_y_col_index=1
     ):
-        """
-        Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
-        single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
+        """Set up a single_cells dataframe in the format expected by pycytominer.normalize().
+
+        Helper function to normalize_deep_single_cells() that sets up the single_cells attribute or outputs it as a dataframe.
 
         Arguments
         -----------
@@ -417,7 +411,7 @@ class SingleCellDeepProfiler:
         spherize_epsilon=1e-6,
     ):
         """
-        Normalizes all cells into a pandas dataframe.
+        Normalize all cells into a pandas dataframe.
 
         For each file in the DP project features folder, the features from each cell are loaded.
         These features are put into a profiles dataframe for use in pycytominer.normalize.

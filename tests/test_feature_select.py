@@ -74,9 +74,7 @@ data_outlier_df = pd.DataFrame({
 
 
 def test_feature_select_noise_removal():
-    """
-    Testing noise_removal feature selection operation
-    """
+    """Testing noise_removal feature selection operation."""
     # Set perturbation groups for the test dataframes
     data_df_groups = ["a", "a", "a", "b", "b", "b"]
 
@@ -223,9 +221,7 @@ def test_feature_select_noise_removal():
 
 
 def test_feature_select_get_na_columns():
-    """
-    Testing feature_select and get_na_columns pycytominer function
-    """
+    """Testing feature_select and get_na_columns pycytominer function."""
     result = feature_select(
         data_na_df, features=data_na_df.columns.tolist(), operation="drop_na_columns"
     )
@@ -256,9 +252,7 @@ def test_feature_select_get_na_columns():
 
 
 def test_feature_select_get_na_columns_feature_infer():
-    """
-    Testing feature_select and get_na_columns pycytominer function
-    """
+    """Testing feature_select and get_na_columns pycytominer function."""
     result = feature_select(
         data_feature_infer_df,
         features="infer",
@@ -288,9 +282,7 @@ def test_feature_select_get_na_columns_feature_infer():
 
 
 def test_feature_select_variance_threshold():
-    """
-    Testing feature_select and variance_threshold pycytominer function
-    """
+    """Testing feature_select and variance_threshold pycytominer function."""
     result = feature_select(
         data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
@@ -331,10 +323,7 @@ def test_feature_select_variance_threshold():
 
 
 def test_feature_select_correlation_threshold():
-    """
-    Testing feature_select and correlation_threshold pycytominer function
-    """
-
+    """Testing feature_select and correlation_threshold pycytominer function."""
     result = feature_select(
         data_df, features=data_df.columns.tolist(), operation="correlation_threshold"
     )
@@ -417,10 +406,7 @@ def test_feature_select_compress():
 
 
 def test_feature_select_blocklist():
-    """
-    Testing feature_select and get_na_columns pycytominer function
-    """
-
+    """Testing feature_select and get_na_columns pycytominer function."""
     data_blocklist_df = pd.DataFrame({
         "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
         "y": [1, 2, 8, 5, 2, 1],
@@ -442,9 +428,7 @@ def test_feature_select_blocklist():
 
 
 def test_feature_select_drop_outlier():
-    """
-    Testing feature_select and get_na_columns pycytominer function
-    """
+    """Testing feature_select and get_na_columns pycytominer function."""
     result = feature_select(
         data_outlier_df, features="infer", operation="drop_outliers"
     )
@@ -467,9 +451,7 @@ def test_feature_select_drop_outlier():
 
 
 def test_output_type():
-    """
-    Testing feature_select pycytominer function
-    """
+    """Testing feature_select pycytominer function."""
     # dictionary with the output name associated with the file type
     output_dict = {"csv": output_test_file_csv, "parquet": output_test_file_parquet}
 

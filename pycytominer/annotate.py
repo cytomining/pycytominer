@@ -1,6 +1,4 @@
-"""
-Annotates profiles with metadata information
-"""
+"""Annotates profiles with metadata information."""
 
 import os
 
@@ -77,7 +75,6 @@ def annotate(
         DataFrame. If you specify output_file, then write to file and do not return
         data.
     """
-
     # Load Data
     profiles = load_profiles(profiles)
     platemap = load_platemap(platemap, add_metadata_id_to_platemap)

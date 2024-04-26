@@ -1,6 +1,4 @@
-"""
-Utility function to manipulate cell profiler features
-"""
+"""Utility function to manipulate cell profiler features."""
 
 import os
 import pandas as pd
@@ -25,7 +23,6 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
     blocklist_features : list of str
         Features to exclude from downstream analysis.
     """
-
     blocklist = pd.read_csv(blocklist_file)
 
     assert any(  # noqa: S101
@@ -48,7 +45,7 @@ def label_compartment(cp_features, compartment, metadata_cols):
     cp_features : list of str
         All features being used.
     compartment : str
-       Measured compartment.
+        Measured compartment.
     metadata_cols : list
         Columns that should be considered metadata.
 
@@ -57,7 +54,6 @@ def label_compartment(cp_features, compartment, metadata_cols):
     cp_features: list of str
         Recoded column names with appropriate metadata and compartment labels.
     """
-
     compartment = compartment.Title()
     avail_compartments = ["Cells", "Cytoplasm", "Nuceli", "Image", "Barcode"]
 
@@ -97,7 +93,6 @@ def infer_cp_features(
     features: list of str
         List of Cell Painting features.
     """
-
     compartments = convert_compartment_format_to_list(compartments)
     compartments = [x.title() for x in compartments]
 
@@ -135,7 +130,6 @@ def count_na_features(population_df, features):
     -------
     Dataframe of NA counts per feature
     """
-
     return pd.DataFrame(population_df.loc[:, features].isna().sum(), columns=["num_na"])
 
 
@@ -156,7 +150,7 @@ def drop_outlier_features(
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
     outlier_cutoff : int or float, default 500
-    see https://github.com/cytomining/pycytominer/issues/237 for details.
+        see https://github.com/cytomining/pycytominer/issues/237 for details.
         Threshold to remove features if absolute values is greater
 
     Returns
@@ -164,7 +158,6 @@ def drop_outlier_features(
     outlier_features: list of str
         Features greater than the threshold.
     """
-
     # Subset dataframe
     if samples != "all":
         population_df.query(samples, inplace=True)
@@ -186,7 +179,7 @@ def drop_outlier_features(
 
 
 def convert_compartment_format_to_list(compartments):
-    """Converts compartment to a list.
+    """Convert cell painting compartments to a list.
 
     Parameters
     ----------
@@ -198,7 +191,6 @@ def convert_compartment_format_to_list(compartments):
     compartments : list of str
         List of Cell Painting compartments.
     """
-
     if isinstance(compartments, list):
         compartments = [x.lower() for x in compartments]
     elif isinstance(compartments, str):

@@ -1,6 +1,7 @@
-"""
-Returns list of features such that no two features have a correlation greater than a
-specified threshold
+"""Module for correlation threshold operation.
+
+The correlation threshold operation list of features such that no two features have a correlation greater than a
+specified threshold.
 """
 
 from pycytominer.cyto_utils import (
@@ -13,7 +14,7 @@ from pycytominer.cyto_utils import (
 def correlation_threshold(
     population_df, features="infer", samples="all", threshold=0.9, method="pearson"
 ):
-    """Exclude features that have correlations above a certain threshold
+    """Exclude features that have correlations above a certain threshold.
 
     Parameters
     ----------
@@ -38,7 +39,6 @@ def correlation_threshold(
     excluded_features : list of str
          List of features to exclude from the population_df.
     """
-
     # Check that the input method is supported
     method = check_correlation_method(method)
 
@@ -80,8 +80,9 @@ def correlation_threshold(
 
 
 def determine_high_cor_pair(correlation_row, sorted_correlation_pairs):
-    """Select highest correlated variable given a correlation row with columns:
-    ["pair_a", "pair_b", "correlation"]. For use in a pandas.apply().
+    """Select highest correlated variable given a correlation row.
+
+    From a row with columns: ["pair_a", "pair_b", "correlation"]. For use in a pandas.apply().
 
     Parameters
     ----------
@@ -94,7 +95,6 @@ def determine_high_cor_pair(correlation_row, sorted_correlation_pairs):
     -------
     The feature that has a lower total correlation sum with all other features
     """
-
     pair_a = correlation_row["pair_a"]
     pair_b = correlation_row["pair_b"]
 

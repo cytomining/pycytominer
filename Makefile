@@ -18,8 +18,8 @@ test: ## Test the code with pytest
 
 .PHONY: docs
 docs: ## Build the documentation
-	@echo "📚 Building documentation"
-	@poetry run sphinx-build docs build
+	@echo "📚 Serving documentation"
+	@mkdocs serve
 
 .PHONY: build
 build: clean-build ## Build wheel file using poetry

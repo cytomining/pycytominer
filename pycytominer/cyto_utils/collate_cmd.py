@@ -1,3 +1,5 @@
+"""Command line interface for collate function in pycytominer.cyto_utils.collate."""
+
 import argparse
 from pycytominer.cyto_utils.collate import collate
 

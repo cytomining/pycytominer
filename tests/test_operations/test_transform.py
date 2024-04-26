@@ -79,9 +79,7 @@ def test_spherize_precenter():
 
 
 def test_robust_mad():
-    """
-    Testing the RobustMAD class
-    """
+    """Testing the RobustMAD class."""
     scaler = RobustMAD()
     scaler = scaler.fit(data_df)
     transform_df = scaler.transform(data_df)

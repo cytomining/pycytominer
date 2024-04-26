@@ -1,10 +1,12 @@
+"""Functions to annotate data frames with custom options according to CMAP specifications."""
+
 import numpy as np
 
 
 def annotate_cmap(
     annotated, annotate_join_on, cell_id="unknown", perturbation_mode="none"
 ):
-    """Annotates data frame with custom options according to CMAP specifications
+    """Annotates data frame with custom options according to CMAP specifications.
 
     Parameters
     ----------
@@ -103,7 +105,7 @@ def annotate_cmap(
 
 
 def cp_clean(profiles):
-    """Specifically clean certain column names derived from different CellProfiler versions
+    """Specifically clean certain column names derived from different CellProfiler versions.
 
     Parameters
     ----------
@@ -115,7 +117,6 @@ def cp_clean(profiles):
     profiles
         Renamed to standard metadata
     """
-
     profiles = profiles.rename(
         {
             "Image_Metadata_Plate": "Metadata_Plate",

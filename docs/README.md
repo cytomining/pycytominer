@@ -1,17 +1,5 @@
 <img height="200" src="https://raw.githubusercontent.com/cytomining/pycytominer/main/logo/with-text-for-light-bg.png?raw=true">
 
-- [Data processing for image-based profiling](#data-processing-for-image-based-profiling)
-  - [Installation](##installation)
-  - [Frameworks](#frameworks)
-  - [API](#api)
-  - [Usage](#usage)
-    - [Pipeline orchestration](#pipeline-orchestration)
-  - [Other functionality](#other-functionality)
-    - [CellProfiler CSV collation](#cellprofiler-csv-collation)
-    - [Creating a cell locations lookup table](#creating-a-cell-locations-lookup-table)
-    - [Generating a GCT file for morpheus](#generating-a-gct-file-for-morpheus)
-  - [Citing pycytominer](#citing-pycytominer)
-
 # Data processing for image-based profiling
 
 [![Build Status](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml/badge.svg?branch=main)](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml?query=branch%3Amain)
@@ -30,7 +18,7 @@ The tool is most often used for processing data through the following pipeline:
 Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. CellProfiler or DeepProfiler).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
 For CellProfiler, we use [cytominer-database](https://github.com/cytomining/cytominer-database) or [CytoTable](https://github.com/cytomining/CytoTable).
-For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
+For DeepProfiler, we include single cell processing tools in [pycytominer.cyto_utils](cyto_utils.md).
 
 From the single cell output, pycytominer performs five steps using a simple API (described below), before passing along data to [cytominer-eval](https://github.com/cytomining/cytominer-eval) for quality and perturbation strength evaluation.
 
@@ -123,7 +111,7 @@ And, more specifically than that, image-based profiling readouts from [CellProfi
 
 Therefore, we have included some custom tools in `pycytominer/cyto_utils` that provides other functionality:
 
-Note, [`pycytominer.cyto_utils.cells.SingleCells()`](./pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
+Note, [`pycytominer.cyto_utils.cells.SingleCells()`](cyto_utils.md##pycytominer.cyto_utils.cells) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
 Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
 
 ### CellProfiler CSV collation

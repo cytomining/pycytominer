@@ -1,6 +1,4 @@
-"""
-This tests the output from a DeepProfiler run (May 2021)
-"""
+"""This tests the output from a DeepProfiler run (May 2021)."""
 
 import os
 import pathlib
@@ -24,7 +22,7 @@ random.seed(42)
 
 @pytest.fixture(scope="session")
 def deep_profiler_data(tmp_path_factory):
-    """This fixture returns the DeepProfilerData object and the output folder"""
+    """This fixture returns the DeepProfilerData object and the output folder."""
     example_project_dir = ROOT_DIR / "tests" / "test_data" / "DeepProfiler_example_data"
     profile_dir = example_project_dir / "outputs" / "results" / "features"
     index_file = example_project_dir / "inputs" / "metadata" / "test_index.csv"
@@ -41,7 +39,7 @@ def deep_profiler_data(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def single_cell_deep_profiler(deep_profiler_data):
-    """This fixture returns the single cell data and the SingleCellDeepProfiler object"""
+    """This fixture returns the single cell data and the SingleCellDeepProfiler object."""
     deep_data, output_folder = deep_profiler_data
 
     # compile single cell data from DP run
@@ -52,7 +50,7 @@ def single_cell_deep_profiler(deep_profiler_data):
 
 
 def test_single_cell(single_cell_deep_profiler):
-    """Test output from SingleCellDeepProfiler.get_single_cells()"""
+    """Test output from SingleCellDeepProfiler.get_single_cells()."""
     single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
 
     meta_cols = [x for x in single_cells.columns if x.startswith("Location_")]
@@ -66,8 +64,7 @@ def test_single_cell(single_cell_deep_profiler):
 
 
 def test_single_cell_normalize(single_cell_deep_profiler):
-    """Test output from SingleCellDeepProfiler.normalize_deep_single_cells()"""
-
+    """Test output from SingleCellDeepProfiler.normalize_deep_single_cells()."""
     single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
 
     # normalize single cell data with DP processing

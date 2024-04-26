@@ -1,6 +1,4 @@
-"""
-Aggregate profiles based on given grouping variables.
-"""
+"""Aggregate profiles based on given grouping variables."""
 
 from typing import Any, Dict, List, Optional, Union
 
@@ -67,7 +65,6 @@ def aggregate(
         data.
 
     """
-
     # Check that the operation is supported
     operation = check_aggregate_operation(operation)
 
