@@ -43,31 +43,35 @@ def test_check_compartments():
 
 
 def test_check_compartments_not_valid():
-    warn_expected_string = "Non-canonical compartment detected: something"
     warnings.simplefilter("always")
     with warnings.catch_warnings(record=True) as w:
         not_valid = ["SOMETHING"]
         check_compartments(not_valid)
     assert issubclass(w[-1].category, UserWarning)
-    assert warn_expected_string in str(w[-1].message)
+    assert "Non-canonical compartment detected: SOMETHING" in str(w[-1].message)
 
     with warnings.catch_warnings(record=True) as w:
         not_valid = "SOMETHING"  # Also works with strings
         check_compartments(not_valid)
     assert issubclass(w[-1].category, UserWarning)
-    assert warn_expected_string in str(w[-1].message)
+    assert "Non-canonical compartment detected: SOMETHING" in str(w[-1].message)
 
     with warnings.catch_warnings(record=True) as w:
         not_valid = ["CelLs", "CytopLasM", "SOMETHING"]
         check_compartments(not_valid)
     assert issubclass(w[-1].category, UserWarning)
-    assert warn_expected_string in str(w[-1].message)
+    assert "Non-canonical compartment detected: CelLs, CytopLasM, SOMETHING" in str(
+        w[-1].message
+    )
 
     with warnings.catch_warnings(record=True) as w:
         not_valid = ["CelLs", "CytopLasM", "SOMETHING", "NOTHING"]
         check_compartments(not_valid)
     assert issubclass(w[-1].category, UserWarning)
-    assert f"{warn_expected_string}, nothing" in str(w[-1].message)
+    assert (
+        "Non-canonical compartment detected: CelLs, CytopLasM, SOMETHING, NOTHING"
+        in str(w[-1].message)
+    )
 
 
 def test_get_default_compartments():

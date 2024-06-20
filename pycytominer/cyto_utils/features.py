@@ -4,6 +4,7 @@ Utility function to manipulate cell profiler features
 
 import os
 import pandas as pd
+from typing import Union, List
 
 blocklist_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
@@ -185,7 +186,9 @@ def drop_outlier_features(
     return outlier_features
 
 
-def convert_compartment_format_to_list(compartments):
+def convert_compartment_format_to_list(
+    compartments: Union[List[str], str],
+) -> List[str]:
     """Converts compartment to a list.
 
     Parameters
@@ -199,9 +202,4 @@ def convert_compartment_format_to_list(compartments):
         List of Cell Painting compartments.
     """
 
-    if isinstance(compartments, list):
-        compartments = [x.lower() for x in compartments]
-    elif isinstance(compartments, str):
-        compartments = [compartments.lower()]
-
-    return compartments
+    return compartments if isinstance(compartments, list) else [compartments]
