@@ -113,6 +113,7 @@ normalized_df = pycytominer.normalize(
     samples="Metadata_broad_sample == 'DMSO'"
 )
 ```
+
 ### Handling Non-CellProfiler Morphological Features in Pycytominer
 
 In some cases, raw morphological features may not be extracted from CellProfiler. While Pycytominer fully supports features extracted by [`CellProfiler`](https://cellprofiler.org/), errors may occur when using features from other tools.
@@ -145,8 +146,8 @@ normalized_df = pycytominer.normalize(
     samples="Metadata_broad_sample == 'DMSO'"
 )
 ```
-**Note:** We are actively working on enhancing `pycytominer` to support morphological features extracted from a variety of software tools!
 
+**Note:** We are actively working on enhancing `pycytominer` to support morphological features extracted from a variety of software tools!
 
 ### Pipeline orchestration
 
