@@ -55,26 +55,28 @@ exclude_patterns = ["**tests**"]
 
 
 # -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-pycytominer_hex = "#88239A"
+# The theme to use for HTML and HTML Help pages.
 # Furo theme options specified here: https://pradyunsg.me/furo/
 html_theme = "furo"
+
+# colors used for styling the HTML output in light or dark mode
+pycytominer_hex_light = "#88239A"
+pycytominer_hex_dark = "#CF72DF"
+
 # Furo theme option colors specified here:
 # https://github.com/pradyunsg/furo/blob/main/src/furo/assets/styles/variables/_colors.scss
 html_theme_options = {
     "light_css_variables": {
-        "color-brand-primary": pycytominer_hex,
-        "color-brand-content": pycytominer_hex,
-        "color-api-pre-name": pycytominer_hex,
-        "color-api-name": pycytominer_hex,
+        "color-brand-primary": pycytominer_hex_light,
+        "color-brand-content": pycytominer_hex_light,
+        "color-api-pre-name": pycytominer_hex_light,
+        "color-api-name": pycytominer_hex_light,
     },
     "dark_css_variables": {
-        "color-brand-primary": pycytominer_hex,
-        "color-brand-content": pycytominer_hex,
-        "color-api-pre-name": pycytominer_hex,
-        "color-api-name": pycytominer_hex,
+        "color-brand-primary": pycytominer_hex_dark,
+        "color-brand-content": pycytominer_hex_dark,
+        "color-api-pre-name": pycytominer_hex_dark,
+        "color-api-name": pycytominer_hex_dark,
     },
 }
 
