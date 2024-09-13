@@ -91,9 +91,8 @@ jobs:
         run: poetry run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
-        continue-on-error: true
         if: (matrix.os == 'ubuntu-22.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         env:
           OS: ${{ matrix.os }}
           PYTHON: ${{ matrix.python-version }}
