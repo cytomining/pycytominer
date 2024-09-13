@@ -121,7 +121,7 @@ def aggregate(
         population_df = population_df.drop([columns_to_drop], axis="columns")
 
     if output_file is not None:
-        output(
+        return output(
             df=population_df,
             output_filename=output_file,
             output_type=output_type,

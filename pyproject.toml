@@ -73,6 +73,7 @@ pytest-cov = "^4.1.0"
 pre-commit = ">=3.3.2"
 commitizen = "^3.12.0"
 ruff = "^0.3.4"
+mypy = "^1.11.2"
 
 [tool.poetry.group.docs]
 optional = true
@@ -176,6 +177,18 @@ preview = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+
+[tool.mypy]
+# ignores optionally added type packages
+ignore_missing_imports = true
+# ignores redefinition of variable labels to new types
+allow_redefinition = true
+exclude = [
+    # ignore notebook-based walkthroughs
+    "walkthroughs",
+    # ignore tests dir
+    "tests"
+]
 
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.1.0"]

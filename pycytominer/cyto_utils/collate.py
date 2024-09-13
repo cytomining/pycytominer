@@ -131,7 +131,7 @@ def collate(
         with sqlite3.connect(cache_backend_file, isolation_level=None) as connection:
             cursor = connection.cursor()
             if column:
-                if print:
+                if printtoscreen:
                     print(f"Adding a Metadata_Plate column based on column {column}")
                 cursor.execute("ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;")
                 cursor.execute(f"UPDATE image SET Metadata_Plate ={column};")

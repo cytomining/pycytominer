@@ -12,10 +12,10 @@ COMPRESS_OPTIONS = ["gzip", None]
 def output(
     df: pd.DataFrame,
     output_filename: str,
-    output_type: str = "csv",
+    output_type: Optional[str] = "csv",
     sep: str = ",",
     float_format: Optional[str] = None,
-    compression_options: Union[str, Dict] = {"method": "gzip", "mtime": 1},
+    compression_options: Optional[Union[str, Dict]] = {"method": "gzip", "mtime": 1},
     **kwargs,
 ):
     """Given an output file and compression options, write file to disk
@@ -79,6 +79,10 @@ def output(
     )
     """
 
+    # ensure a default output type
+    if output_type is None:
+        output_type = "csv"
+
     if output_type == "csv":
         compression_options = set_compression_method(compression=compression_options)
 
@@ -98,7 +102,7 @@ def output(
     return output_filename
 
 
-def set_compression_method(compression: Union[str, Dict]):
+def set_compression_method(compression: Optional[Union[str, Dict]]):
     """Set the compression options
 
     Parameters
