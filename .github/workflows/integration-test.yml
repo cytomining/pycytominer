@@ -53,7 +53,7 @@ jobs:
           setup-poetry: false
           install-deps: false
       - name: Run pre-commit checks on all files
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files
   integration-test:
