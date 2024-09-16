@@ -241,7 +241,7 @@ jobs:
       - name: Update Docker Hub repository description from readme
         # only run this task if we have a pull request which is merged
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
