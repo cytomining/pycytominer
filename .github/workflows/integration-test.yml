@@ -104,6 +104,9 @@ jobs:
           fail_ci_if_error: true
           flags: unittests
           name: pycytominer
+          # Adds codecov token. See the link below for more information:
+          # https://docs.codecov.com/docs/adding-the-codecov-token
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
         if: (matrix.os != 'ubuntu-22.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
