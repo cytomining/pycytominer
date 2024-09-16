@@ -219,7 +219,7 @@ jobs:
       - name: Schedule-based docker image push
         # only run this task if we have a schedule trigger from main on cytomining/pycytominer
         if: github.event_name == 'schedule' &&  github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: "${{ env.sdist_extracted_name }}"
           push: true
@@ -230,7 +230,7 @@ jobs:
       - name: Push-based docker image push
         # only run this task if we have a pull request which is merged
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: "${{ env.sdist_extracted_name }}"
           push: true
