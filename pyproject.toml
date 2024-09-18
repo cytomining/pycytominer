@@ -181,8 +181,6 @@ testpaths = "tests"
 [tool.mypy]
 # ignores optionally added type packages
 ignore_missing_imports = true
-# ignores redefinition of variable labels to new types
-allow_redefinition = true
 exclude = [
     # ignore notebook-based walkthroughs
     "walkthroughs",
