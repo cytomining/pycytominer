@@ -136,8 +136,11 @@ normalized_df = pycytominer.normalize(
 
 ### Handling Non-CellProfiler Morphological Features in Pycytominer
 
-In some cases, raw morphological features may not be extracted from [CellProfiler](https://cellprofiler.org/).
-While Pycytominer fully supports features extracted by [`CellProfiler`](https://cellprofiler.org/), errors may occur when using features from other tools.
+Pycytominer also supports processing of raw morphological features from image analysis tools beyond [CellProfiler](https://cellprofiler.org/).
+These tools include In Carta, Harmony, and others.
+Using Pycytominer with these tools requires minor modifications to function arguments, and we encourage these users to pay particularly close attention to individual function documentation.
+
+If you are using Pycytominer with these other tools, we'd love to hear from you so that we can learn how to best support broad and multiple use-cases.
 
 To resolve this, you can manually specify the morphological features using the `features` [parameter](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.normalize.normalize).
 This parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate), [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select), and [`consensus`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
