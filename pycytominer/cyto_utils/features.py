@@ -115,9 +115,11 @@ def infer_cp_features(
             population_df.columns.str.startswith("Metadata_")
         ].tolist()
 
-    assert (  # noqa: S101
-        len(features) > 0
-    ), "No CP features found. Are you sure this dataframe is from CellProfiler?"
+    if len(features) == 0:
+        raise ValueError(
+            "No features found. Pycytominer expects CellProfiler features by default. "
+            "If you're using non-CellProfiler data, please specify the feature space using the `features` parameter."
+        )
 
     return features
 
