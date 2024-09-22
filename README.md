@@ -78,7 +78,7 @@ CellProfiler-generated image-based profiles typically consist of two main compon
 
 - **Morphology features:** These are the quantified morphological features captured from microscopy images. Naming of these features is structured like this
 
-The feature naming scheme in Pycytominer follows a specific structure.
+These features follow a specific structure.
 
 - **Metadata features:** These feature names are prefixed with `Metadata_`, indicating that the data in these columns contain metadata information.
 
