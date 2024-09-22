@@ -168,7 +168,6 @@ normalized_df = pycytominer.normalize(
 )
 ```
 
-**Note:** We are actively working on enhancing `pycytominer` to support morphological features extracted from a variety of software tools!
 
 ### Pipeline orchestration
 
