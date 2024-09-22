@@ -143,7 +143,7 @@ Using Pycytominer with these tools requires minor modifications to function argu
 If you are using Pycytominer with these other tools, we'd love to hear from you so that we can learn how to best support broad and multiple use-cases.
 
 For example, to resolve potential feature issues in the `normalize()` function, you can manually specify the morphological features using the `features` [parameter](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.normalize.normalize).
-This parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate), [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select), and [`consensus`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
+This parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate) and [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
 
 Below is an example of loading data that is not from [`CellProfiler`](https://cellprofiler.org/), demonstrating how to handle non-CellProfiler features.
 
