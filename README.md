@@ -82,7 +82,7 @@ These features follow a specific structure.
 
 - **Metadata features:** These feature names are prefixed with `Metadata_`, indicating that the data in these columns contain metadata information.
 
-- **Morphological features:** These follow CellProfiler’s naming conventions, where default compartments are labeled as "cells," "cytoplasm," and "nuclei." If users have different compartments in their dataset, they will need to manually specify those compartments using the `compartments` [parameter](https://pycytominer.readthedocs.io/en/stable/pycytominer.cyto_utils.html#pycytominer.cyto_utils.cells.SingleCells.compartments).
+- **Morphological features:** These follow CellProfiler’s naming conventions, where default compartments are labeled as "cells," "cytoplasm," and "**nuclei**." If users have different compartments in their dataset, they will need to manually specify those compartments using the `compartments` [parameter](https://pycytominer.readthedocs.io/en/stable/pycytominer.cyto_utils.html#pycytominer.cyto_utils.cells.SingleCells.compartments).
 
 ## API
 
