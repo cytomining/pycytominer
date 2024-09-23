@@ -39,10 +39,14 @@ def test_feature_infer():
 
 
 def test_feature_infer_nocp():
-    with pytest.raises(AssertionError) as nocp:
+    with pytest.raises(ValueError) as nocp:
         infer_cp_features(population_df=non_cp_data_df)
 
-    assert "No CP features found." in str(nocp.value)
+    expected_message = (
+        "No features found. Pycytominer expects CellProfiler features by default. "
+        "If you're using non-CellProfiler data, please specify the feature space using the `features` parameter."
+    )
+    assert expected_message in str(nocp.value)
 
 
 def test_metadata_feature_infer():

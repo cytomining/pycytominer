@@ -67,9 +67,13 @@ def test_get_na_columns_sample():
 
 
 def test_get_na_columns_featureinfer():
-    with pytest.raises(AssertionError) as nocp:
+    with pytest.raises(ValueError) as nocp:
         get_na_columns(
             population_df=data_df, samples="all", features="infer", cutoff=0.1
         )
 
-    assert "No CP features found." in str(nocp.value)
+        expected_message = (
+            "No features found. Pycytominer expects CellProfiler features by default. "
+            "If you're using non-CellProfiler data, please specify the feature space using the `features` parameter."
+        )
+        assert expected_message in str(nocp.value)
