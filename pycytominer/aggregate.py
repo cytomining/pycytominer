@@ -101,7 +101,9 @@ def aggregate(
     population_df = pd.concat([strata_df, population_df], axis="columns")
 
     # Perform aggregating function
-    population_df = population_df.groupby(strata, dropna=False)
+    # Note: type ignore added below to address the change in variable types for
+    # label `population_df`.
+    population_df = population_df.groupby(strata, dropna=False) # type: ignore[assignment]
 
     if operation == "median":
         population_df = population_df.median().reset_index()
