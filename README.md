@@ -171,7 +171,6 @@ normalized_df = pycytominer.normalize(
 )
 ```
 
-
 ### Pipeline orchestration
 
 Pycytominer is a collection of different functions with no explicit link between steps.
