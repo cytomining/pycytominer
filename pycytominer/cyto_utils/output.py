@@ -15,7 +15,10 @@ def output(
     output_type: Optional[str] = "csv",
     sep: str = ",",
     float_format: Optional[str] = None,
-    compression_options: Optional[Union[str, Dict[str, Any]]] = {"method": "gzip", "mtime": 1},
+    compression_options: Optional[Union[str, Dict[str, Any]]] = {
+        "method": "gzip",
+        "mtime": 1,
+    },
     **kwargs,
 ):
     """Given an output file and compression options, write file to disk

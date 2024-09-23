@@ -103,7 +103,7 @@ def aggregate(
     # Perform aggregating function
     # Note: type ignore added below to address the change in variable types for
     # label `population_df`.
-    population_df = population_df.groupby(strata, dropna=False) # type: ignore[assignment]
+    population_df = population_df.groupby(strata, dropna=False)  # type: ignore[assignment]
 
     if operation == "median":
         population_df = population_df.median().reset_index()
@@ -120,7 +120,7 @@ def aggregate(
         for column in population_df.columns
         if column in ["ImageNumber", "ObjectNumber"]
     ]:
-        population_df = population_df.drop([columns_to_drop], axis="columns")
+        population_df = population_df.drop(columns=columns_to_drop, axis="columns")
 
     if output_file is not None:
         return output(
