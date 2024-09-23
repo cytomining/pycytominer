@@ -106,7 +106,9 @@ class CellLocation:
             "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
         )
 
-    def _expanduser(self, obj: Union[str, pd.DataFrame, None]):
+    def _expanduser(
+        self, obj: Union[str, pd.DataFrame, sqlalchemy.engine.Engine, None]
+    ):
         """Expand the user home directory in a path"""
         if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
             return pathlib.Path(obj).expanduser().as_posix()

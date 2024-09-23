@@ -202,7 +202,6 @@ module = [
     "cytominer_database.*",
     "boto3.*",
     "botocore.*",
-    "sqlalchemy.*",
     "fire.*"
 ]
 ignore_missing_imports = true
