@@ -74,6 +74,12 @@ pre-commit = ">=3.3.2"
 commitizen = "^3.12.0"
 ruff = "^0.3.4"
 mypy = "^1.11.2"
+types-openpyxl = "^3.1.5.20240918"
+pandas-stubs = [
+  {version = "<2.2.2.240909", python = "<3.10"},
+  {version = "^2.2.2.240909", python = ">=3.10"}
+]
+types-sqlalchemy = "^1.4.53.38"
 
 [tool.poetry.group.docs]
 optional = true
@@ -179,14 +185,27 @@ preview = true
 testpaths = "tests"
 
 [tool.mypy]
-# ignores optionally added type packages
-ignore_missing_imports = true
 exclude = [
     # ignore notebook-based walkthroughs
     "walkthroughs",
     # ignore tests dir
     "tests"
 ]
+
+[[tool.mypy.overrides]]
+# ignore missing import errors for the following
+# packages which do not have standard type stubs
+# or experience issues with imported types.
+module = [
+    "sklearn.*",
+    "scipy.*",
+    "cytominer_database.*",
+    "boto3.*",
+    "botocore.*",
+    "sqlalchemy.*",
+    "fire.*"
+]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.1.0"]
