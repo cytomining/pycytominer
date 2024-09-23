@@ -192,6 +192,21 @@ exclude = [
     "tests"
 ]
 
+
+[[tool.mypy.overrides]]
+# ignore missing import errors for the following
+# packages which do not have standard type stubs
+# or experience issues with imported types.
+module = [
+    "sklearn.*",
+    "scipy.*",
+    "cytominer_database.*",
+    "fire.*",
+    "boto3.*",
+    "botocore.*"
+]
+ignore_missing_imports = true
+
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.1.0"]
 build-backend = "poetry_dynamic_versioning.backend"
