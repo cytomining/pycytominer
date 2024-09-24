@@ -41,7 +41,8 @@ def normalize(
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
-        If "infer", then assume metadata features are those prefixed with "Metadata"
+        If "infer", pycytominer will expect CellProfiler metadata features, identified by
+        metadata feature names that begin with the `Metadata_` prefix."
     samples : str
         The metadata column values to use as a normalization reference. We often use
         control samples. The function uses a pd.query() function, so you should

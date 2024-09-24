@@ -89,7 +89,9 @@ def infer_cp_features(
     compartments : list of str, default ["Cells", "Nuclei", "Cytoplasm"]
         Compartments from which Cell Painting features were extracted.
     metadata : bool, default False
-        Whether or not to infer metadata features.
+        Whether or not to infer metadata features. Whether or not to infer metadata features.
+        If metadata is set to True, pycytominer will expect CellProfiler metadata features,
+        identified by feature names that begin with the `Metadata_` prefix.
     image_features : bool, default False
         Whether or not the profiles contain image features.
 
