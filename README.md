@@ -85,7 +85,7 @@ These tools include [In Carta](https://www.moleculardevices.com/products/cellula
 Using Pycytominer with these tools requires minor modifications to function arguments, and we encourage these users to pay particularly close attention to individual function documentation.
 
 For example, to resolve potential feature issues in the `normalize()` function, you must manually specify the morphological features using the `features` [parameter](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.normalize.normalize).
-This parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate) and [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
+The `features` parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate) and [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
 
 If you are using Pycytominer with these other tools, we'd love to hear from you so that we can learn how to best support broad and multiple use-cases.
 
