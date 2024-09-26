@@ -75,6 +75,9 @@ CellProfiler-generated image-based profiles typically consist of two main compon
 - **Metadata features:** This section contains information about the experiment, such as plate ID, well position, incubation time, perturbation type, and other relevant experimental details. These feature names are prefixed with `Metadata_`, indicating that the data in these columns contain metadata information.
 - **Morphology features:** These are the quantified morphological features captured from microscopy images. Thse feature names are prefixed with the default compartments ("Cells_", "Cytoplasm_", and "Nuclei_"). Pycytominer supports non-default compartment names.
 
+Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
+Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
+
 ### Handling inputs from other image analysis tools (other than CellProfiler)
 
 Pycytominer also supports processing of raw morphological features from image analysis tools beyond [CellProfiler](https://cellprofiler.org/).
@@ -156,23 +159,6 @@ However, the initial use case was developed for processing image-based profiling
 And, more specifically than that, image-based profiling readouts from [CellProfiler](https://github.com/CellProfiler) measurements from [Cell Painting](https://www.nature.com/articles/nprot.2016.105) data.
 
 Therefore, we have included some custom tools in `pycytominer/cyto_utils` that provides other functionality:
-
-- [Data processing for image-based profiling](#data-processing-for-image-based-profiling)
-  - [Installation](#installation)
-  - [Frameworks](#frameworks)
-  - [Data structure](#data-structure)
-  - [API](#api)
-  - [Usage](#usage)
-    - [Handling Non-CellProfiler Morphological Features in Pycytominer](#handling-non-cellprofiler-morphological-features-in-pycytominer)
-    - [Pipeline orchestration](#pipeline-orchestration)
-  - [Other functionality](#other-functionality)
-    - [CellProfiler CSV collation](#cellprofiler-csv-collation)
-    - [Creating a cell locations lookup table](#creating-a-cell-locations-lookup-table)
-    - [Generating a GCT file for morpheus](#generating-a-gct-file-for-morpheus)
-  - [Citing pycytominer](#citing-pycytominer)
-
-Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
-Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
 
 ### CellProfiler CSV collation
 
