@@ -43,8 +43,9 @@ def test_feature_infer_nocp():
         infer_cp_features(population_df=non_cp_data_df)
 
     expected_message = (
-        "No features found. Pycytominer expects CellProfiler features by default. "
-        "If you're using non-CellProfiler data, please specify the feature space using the `features` parameter."
+        "No features or metadata found. Pycytominer expects CellProfiler column names by default. "
+        "If you're using non-CellProfiler data, please do not 'infer' features. "
+        "Instead, check if the function has a `features` or `meta_features` parameter, and input column names manually."
     )
     assert expected_message in str(nocp.value)
 
