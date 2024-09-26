@@ -81,7 +81,7 @@ Processing capabilities for SQLite files depends on SQLite file size and your av
 ### Handling inputs from other image analysis tools (other than CellProfiler)
 
 Pycytominer also supports processing of raw morphological features from image analysis tools beyond [CellProfiler](https://cellprofiler.org/).
-These tools include In Carta, Harmony, and others.
+These tools include [In Carta](https://www.moleculardevices.com/products/cellular-imaging-systems/high-content-analysis/in-carta-image-analysis-software), [Harmony](https://www.revvity.com/product/harmony-5-2-office-revvity-hh17000019#product-overview), and others.
 Using Pycytominer with these tools requires minor modifications to function arguments, and we encourage these users to pay particularly close attention to individual function documentation.
 
 For example, to resolve potential feature issues in the `normalize()` function, you must manually specify the morphological features using the `features` [parameter](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.normalize.normalize).
