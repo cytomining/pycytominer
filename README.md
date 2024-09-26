@@ -75,7 +75,7 @@ CellProfiler-generated image-based profiles typically consist of two main compon
 - **Metadata features:** This section contains information about the experiment, such as plate ID, well position, incubation time, perturbation type, and other relevant experimental details. These feature names are prefixed with `Metadata_`, indicating that the data in these columns contain metadata information.
 - **Morphology features:** These are the quantified morphological features prefixed with the default compartments (`Cells_`, `Cytoplasm_`, and `Nuclei_`). Pycytominer also supports non-default compartment names.
 
-Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code to interact with single-cell SQLite files, which are output from CellProfiler.
+Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code designed to interact with single-cell SQLite files exported from CellProfiler.
 Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
 
 ### Handling inputs from other image analysis tools (other than CellProfiler)
