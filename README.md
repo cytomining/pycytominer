@@ -76,7 +76,7 @@ CellProfiler-generated image-based profiles typically consist of two main compon
 - **Morphology features:** These are the quantified morphological features prefixed with the default compartments (`Cells_`, `Cytoplasm_`, and `Nuclei_`). Pycytominer also supports non-default compartment names.
 
 Note, [`pycytominer.cyto_utils.cells.SingleCells()`](pycytominer/cyto_utils/cells.py) contains code designed to interact with single-cell SQLite files exported from CellProfiler.
-Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and cores).
+Processing capabilities for SQLite files depends on SQLite file size and your available computational resources (for ex. memory and CPU).
 
 ### Handling inputs from other image analysis tools (other than CellProfiler)
 
