@@ -11,7 +11,7 @@
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
 
-<img height="800" align="center" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="./media/pipeline.png">
+<img height="700" align="center" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="./media/pipeline.png">
 
 > Figure 1. The standard image-based profiling experiment and the role of Pycytominer. (A) In the experimental phase, a scientist plates cells, often perturbing them with chemical or genetic agents and performs microscopy imaging. In image analysis, using CellProfiler for example, a scientist applies several data processing steps to generate image-based profiles. In addition, scientists can apply a more flexible approach by using deep learning models, such as DeepProfiler, to generate image-based profiles. (B) Pycytominer performs image-based profiling to process morphology features and make them ready for downstream analyses. (C) Pycytominer performs five fundamental functions, each implemented with a simple and intuitive API. Each function enables a user to implement various methods for executing operations.
 
