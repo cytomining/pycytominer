@@ -34,15 +34,15 @@ def normalize(
     features : list
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume cell painting features are those
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
         Whether the profiles contain image features.
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
-        If "infer", pycytominer will expect CellProfiler metadata features, identified by
-        metadata feature names that begin with the `Metadata_` prefix."
+        If "infer", then assume CellProfiler metadata features, identified by
+        column names that begin with the `Metadata_` prefix."
     samples : str
         The metadata column values to use as a normalization reference. We often use
         control samples. The function uses a pd.query() function, so you should
@@ -115,7 +115,7 @@ def normalize(
     normalized_df = normalize(
         profiles=data_df,
         features=["x", "y", "z", "zz"],
-        meta_features="infer",
+        meta_features=["Metadata_plate", "Metadata_treatment"],
         samples="Metadata_treatment == 'control'",
         method="standardize"
     )
