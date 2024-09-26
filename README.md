@@ -11,11 +11,11 @@
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
 
-<img height="700" align="center" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="./media/pipeline.png">
+<img height="700" align="center" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png?raw=true">
 
 > Figure 1. The standard image-based profiling experiment and the role of Pycytominer. (A) In the experimental phase, a scientist plates cells, often perturbing them with chemical or genetic agents and performs microscopy imaging. In image analysis, using CellProfiler for example, a scientist applies several data processing steps to generate image-based profiles. In addition, scientists can apply a more flexible approach by using deep learning models, such as DeepProfiler, to generate image-based profiles. (B) Pycytominer performs image-based profiling to process morphology features and make them ready for downstream analyses. (C) Pycytominer performs five fundamental functions, each implemented with a simple and intuitive API. Each function enables a user to implement various methods for executing operations.
 
-[Click here for high resolution pipeline image]("./media/pipeline.png)
+[Click here for high resolution pipeline image]("https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png")
 
 Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. [CellProfiler](https://cellprofiler.org/) or [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html)).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
