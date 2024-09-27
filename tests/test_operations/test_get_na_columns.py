@@ -72,9 +72,4 @@ def test_get_na_columns_featureinfer():
             population_df=data_df, samples="all", features="infer", cutoff=0.1
         )
 
-        expected_message = (
-            "No features or metadata found. Pycytominer expects CellProfiler column names by default. "
-            "If you're using non-CellProfiler data, please do not 'infer' features. "
-            "Instead, check if the function has a `features` or `meta_features` parameter, and input column names manually."
-        )
-        assert expected_message in str(nocp.value)
+        assert "No features found." in str(nocp.value)
