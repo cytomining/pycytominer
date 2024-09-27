@@ -155,7 +155,9 @@ def drop_outlier_features(
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
     features : list of str or str, default "infer"
-        Features present in the population dataframe. If "infer", then assume CellProfiler feature naming conventions (start with "Cells_", "Nuclei_", or "Cytoplasm_")
+        Features present in the population dataframe. If "infer",
+        then assume CellProfiler feature conventions
+        (start with "Cells_", "Nuclei_", or "Cytoplasm_")
     samples : str, default "all"
         List of samples to perform operation on. The function uses a pd.DataFrame.query()
         function, so you should  structure samples in this fashion. An example is
