@@ -80,7 +80,7 @@ def infer_cp_features(
     metadata=False,
     image_features=False,
 ):
-    """Given a CellProfiler input dataframe, output feature column names as a list.
+    """Given CellProfiler output data read as a DataFrame, output feature column names as a list.
 
     Parameters
     ----------
