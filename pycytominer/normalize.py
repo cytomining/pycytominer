@@ -34,7 +34,7 @@ def normalize(
     features : list
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume CellProfiler features are those
+        Defaults to "infer". If "infer", then assume features are from CellProfiler output and
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
         Whether the profiles contain image features.
