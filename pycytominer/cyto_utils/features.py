@@ -80,7 +80,7 @@ def infer_cp_features(
     metadata=False,
     image_features=False,
 ):
-    """Given a dataframe, output features that we expect to be Cell Painting features.
+    """Given CellProfiler output data read as a DataFrame, output feature column names as a list.
 
     Parameters
     ----------
@@ -90,6 +90,8 @@ def infer_cp_features(
         Compartments from which Cell Painting features were extracted.
     metadata : bool, default False
         Whether or not to infer metadata features.
+        If metadata is set to True, find column names that begin with the `Metadata_` prefix.
+        This convention is expected by CellProfiler defaults.
     image_features : bool, default False
         Whether or not the profiles contain image features.
 
@@ -115,9 +117,12 @@ def infer_cp_features(
             population_df.columns.str.startswith("Metadata_")
         ].tolist()
 
-    assert (  # noqa: S101
-        len(features) > 0
-    ), "No CP features found. Are you sure this dataframe is from CellProfiler?"
+    if len(features) == 0:
+        raise ValueError(
+            "No features or metadata found. Pycytominer expects CellProfiler column names by default. "
+            "If you're using non-CellProfiler data, please do not 'infer' features. "
+            "Instead, check if the function has a `features` or `meta_features` parameter, and input column names manually."
+        )
 
     return features
 
@@ -150,7 +155,9 @@ def drop_outlier_features(
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
     features : list of str or str, default "infer"
-        Features present in the population dataframe. If "infer", then assume Cell Painting features are those that start with "Cells_", "Nuclei_", or "Cytoplasm_"
+        Features present in the population dataframe. If "infer",
+        then assume CellProfiler feature conventions
+        (start with "Cells_", "Nuclei_", or "Cytoplasm_")
     samples : str, default "all"
         List of samples to perform operation on. The function uses a pd.DataFrame.query()
         function, so you should  structure samples in this fashion. An example is

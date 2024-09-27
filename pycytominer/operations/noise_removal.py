@@ -22,9 +22,10 @@ def noise_removal(
         The list of unique perturbations corresponding to the rows in population_df. For example,
         perturb1_well1 and perturb1_well2 would both be "perturb1".
     features : list, default "infer"
-         List of features present in the population dataframe [default: "infer"]
-         if "infer", then assume cell painting features are those that start with
-         "Cells_", "Nuclei_", or "Cytoplasm_".
+        A list of strings corresponding to feature measurement column names in the
+        `population_df` DataFrame. All features listed must be found in `population_df`.
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
     samples : str, default "all"
         List of samples to perform operation on. The function uses a pd.DataFrame.query()
         function, so you should  structure samples in this fashion. An example is

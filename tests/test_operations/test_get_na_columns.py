@@ -67,9 +67,9 @@ def test_get_na_columns_sample():
 
 
 def test_get_na_columns_featureinfer():
-    with pytest.raises(AssertionError) as nocp:
+    with pytest.raises(ValueError) as nocp:
         get_na_columns(
             population_df=data_df, samples="all", features="infer", cutoff=0.1
         )
 
-    assert "No CP features found." in str(nocp.value)
+        assert "No features found." in str(nocp.value)

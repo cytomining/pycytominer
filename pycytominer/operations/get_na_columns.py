@@ -14,9 +14,10 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
-         List of features present in the population dataframe [default: "infer"]
-         if "infer", then assume cell painting features are those that start with
-         "Cells_", "Nuclei_", or "Cytoplasm_".
+        A list of strings corresponding to feature measurement column names in the
+        `profiles` DataFrame. All features listed must be found in `profiles`.
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
     samples : str, default "all"
         List of samples to perform operation on. The function uses a pd.DataFrame.query()
         function, so you should  structure samples in this fashion. An example is
@@ -36,8 +37,8 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
 
     if features == "infer":
         features = infer_cp_features(population_df)
-    else:
-        population_df = population_df.loc[:, features]
+
+    population_df = population_df.loc[:, features]
 
     num_rows = population_df.shape[0]
     na_prop_df = population_df.isna().sum() / num_rows
