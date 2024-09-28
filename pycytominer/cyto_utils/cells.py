@@ -714,7 +714,7 @@ class SingleCells:
         """
 
         # Load the single cell dataframe by merging on the specific linking columns
-        sc_df = ""
+        left_compartment_loaded = False
         linking_check_cols = []
         merge_suffix_rename = []
         for left_compartment in self.compartment_linking_cols:
@@ -737,7 +737,7 @@ class SingleCells:
                     left_compartment
                 ]
 
-                if isinstance(sc_df, str):
+                if not left_compartment_loaded:
                     sc_df = self.load_compartment(compartment=left_compartment)
 
                     if compute_subsample:
@@ -751,6 +751,8 @@ class SingleCells:
                         sc_df = subset_logic_df.merge(
                             sc_df, how="left", on=subset_logic_df.columns.tolist()
                         ).reindex(sc_df.columns, axis="columns")
+
+                    left_compartment_loaded = True
 
                 sc_df = sc_df.merge(
                     self.load_compartment(compartment=right_compartment),
@@ -804,11 +806,13 @@ class SingleCells:
 
             normalize_args["features"] = features
 
-            sc_df = normalize(profiles=sc_df, **normalize_args)
+            # ignore mypy warnings below as these reference root package imports
+            sc_df = normalize(profiles=sc_df, **normalize_args)  # type: ignore[operator]
 
         # In case platemap metadata is provided, use pycytominer.annotate for metadata
         if platemap is not None:
-            sc_df = annotate(
+            # ignore mypy warnings below as these reference root package imports
+            sc_df = annotate(  # type: ignore[operator]
                 profiles=sc_df, platemap=platemap, output_file=None, **kwargs
             )
 
