@@ -75,7 +75,7 @@ def test_correlation_threshold_samples():
 
 
 def test_correlation_threshold_featureinfer():
-    with pytest.raises(AssertionError) as nocp:
+    with pytest.raises(ValueError) as nocp:
         correlation_threshold_result = correlation_threshold(
             population_df=data_df,
             features="infer",
@@ -84,7 +84,7 @@ def test_correlation_threshold_featureinfer():
             method="pearson",
         )
 
-    assert "No CP features found." in str(nocp.value)
+        assert "No features found." in str(nocp.value)
 
     data_cp_df = data_df.copy()
     data_cp_df.columns = [f"Cells_{x}" for x in data_df.columns]

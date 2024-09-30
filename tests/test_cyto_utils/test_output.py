@@ -56,6 +56,20 @@ def test_output_default():
         result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
     )
 
+    # test with an output_type of None
+    output_result = output(
+        df=DATA_DF,
+        output_filename=output_filename,
+        compression_options=TEST_COMPRESSION_OPTIONS,
+        float_format=None,
+        output_type=None,
+    )
+    result = pd.read_csv(output_result)
+
+    pd.testing.assert_frame_equal(
+        result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
+    )
+
 
 def test_output_tsv():
     # Test input filename of writing a tab separated file
