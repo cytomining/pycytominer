@@ -3268,10 +3268,7 @@ files = [
 
 [package.dependencies]
 anyascii = "*"
-astroid = [
-    {version = ">=2.7", markers = "python_version < \"3.12\""},
-    {version = ">=3.0.0a1", markers = "python_version >= \"3.12\""},
-]
+astroid = {version = ">=2.7", markers = "python_version < \"3.12\""}
 Jinja2 = "*"
 PyYAML = "*"
 sphinx = ">=6.1.0"
@@ -4054,5 +4051,5 @@ collate = ["cytominer-database"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.8,<4.0"
-content-hash = "fc4eaf105cbba065f88e875c38b39b5f9542b1d6b6984f491bf9f779137f4469"
+python-versions = ">=3.8,<3.12"
+content-hash = "57e200e1b5e21b53a1b9d388fefcdec6d92a3a8569c7190882c8774f60e96303"
