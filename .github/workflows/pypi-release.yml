@@ -2,7 +2,6 @@ name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
 on:
   release:
     # only publish to pypi when gh release is published
-    # (there are many gh release triggers).
     types: [published]
 
 env:
