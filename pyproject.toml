@@ -112,7 +112,7 @@ vcs = "git"
 files = [ "pycytominer/__about__.py" ]
 
 [tool.setuptools_scm]
-# Avoids warnings aboud missing section
+# Avoids warnings about missing section
 # see: https://setuptools-scm.readthedocs.io/en/latest/usage/
 root = "."
 
