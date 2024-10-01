@@ -64,6 +64,19 @@ def test_aggregate_median_allvar():
 
     assert aggregate_result.equals(expected_result)
 
+    # Test that ImageNumber column would be dropped before return
+    data_df_with_imagenumber = data_df.copy()
+    data_df_with_imagenumber["ImageNumber"] = "1"
+
+    aggregate_result = aggregate(
+        population_df=data_df_with_imagenumber,
+        strata=["g"],
+        features="infer",
+        operation="median",
+    )
+
+    assert aggregate_result.equals(expected_result)
+
     # Test output
     aggregate(
         population_df=data_df,

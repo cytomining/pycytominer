@@ -1,3 +1,49 @@
+## v1.2.0 (2024-09-30)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.0)
+
+### Feat
+
+- **dev**: add improved makefile with additional helper commands (#391)
+
+### Fix
+
+- **pandas**: add condition for pandas config (#415)
+- **poetry**: add tool.setuptools_scm section (#402)
+- **ci**: docker image push readme updates (#398, #395)
+- **ci**: fix errors with automated coverage (#432)
+- **ci**: add workspaceDir to git safe directories for devcontainers (#379)
+- **SQLite**: joins should be on ImageNumber, TableNumber, and not ImageNumber (#378)
+- **compartments**: avoid lowercase compartment strings (#421)
+
+### Refactor
+
+- **pd**: avoid dataframe fragmentation in agg (#407)
+- **pandas**: enable copy_on_write for pandas (#401)
+- **bandit**: apply bandit checks (#387)
+- **isort**: apply isort linting checks (#389)
+- **ruff**: update ruff to 0.3.4 (#386)
+- **dev**: add docker-in-docker feature to devcontainer (#381)
+
+### Build
+
+- **docker**: add Dockerfile and container image build tests (#362)
+- **docker**: add docker hub push capabilities (#377)
+- **deps**: various dependency updates automated by dependabot
+
+### Docs
+
+- **docker**: add docker installation instructions (#409)
+- **docs**: improve documentation for non-CellProfiler datasets in Pycytominer (#430)
+- **docs**: update error message and docs for features argument to clarify CellProfiler default expectations (#448)
+
+### CI
+
+- **ci**: update macOS version for Python (#408)
+- **ci**: specify GitHub Actions Ubuntu runner image (#411)
+- **ci**: enable GitHub Actions updates (#438)
+- **ci**: add mypy check and adjust code for types (#439)
+
 ## v1.1.0 (2024-03-05)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.1.0)

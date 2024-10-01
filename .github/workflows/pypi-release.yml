@@ -1,5 +1,8 @@
 name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
-on: [release]
+on:
+  release:
+    # only publish to pypi when gh release is published
+    types: [published]
 
 env:
   LANG: "en_US.utf-8"

@@ -7,8 +7,9 @@ import pathlib
 import pandas as pd
 import warnings
 
-from pycytominer import aggregate, normalize
-from pycytominer.cyto_utils import (
+# use mypy ignores below to avoid duplicate import warnings
+from pycytominer import aggregate, normalize  # type: ignore[no-redef]
+from pycytominer.cyto_utils import (  # type: ignore[no-redef]
     load_npz_features,
     load_npz_locations,
     infer_cp_features,

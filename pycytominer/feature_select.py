@@ -43,10 +43,10 @@ def feature_select(
     ----------
     profiles : pandas.core.frame.DataFrame or file
         DataFrame or file of profiles.
-    features : list
+    features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume cell painting features are those
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
         Whether the profiles contain image features.

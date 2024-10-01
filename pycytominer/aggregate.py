@@ -83,7 +83,7 @@ def aggregate(
     # Only extract single object column in preparation for count
     if compute_object_count:
         count_object_df = (
-            population_df.loc[:, np.union1d(strata, [object_feature])]
+            population_df.loc[:, list(np.union1d(strata, [object_feature]))]
             .groupby(strata)[object_feature]
             .count()
             .reset_index()
@@ -92,7 +92,9 @@ def aggregate(
 
     if features == "infer":
         features = infer_cp_features(population_df)
-    population_df = population_df[features]
+
+    # recast as dataframe to protect against scenarios where a series may be returned
+    population_df = pd.DataFrame(population_df[features])
 
     # Fix dtype of input features (they should all be floats!)
     population_df = population_df.astype(float)
@@ -101,7 +103,9 @@ def aggregate(
     population_df = pd.concat([strata_df, population_df], axis="columns")
 
     # Perform aggregating function
-    population_df = population_df.groupby(strata, dropna=False)
+    # Note: type ignore added below to address the change in variable types for
+    # label `population_df`.
+    population_df = population_df.groupby(strata, dropna=False)  # type: ignore[assignment]
 
     if operation == "median":
         population_df = population_df.median().reset_index()
@@ -118,10 +122,10 @@ def aggregate(
         for column in population_df.columns
         if column in ["ImageNumber", "ObjectNumber"]
     ]:
-        population_df = population_df.drop([columns_to_drop], axis="columns")
+        population_df = population_df.drop(columns=columns_to_drop, axis="columns")
 
     if output_file is not None:
-        output(
+        return output(
             df=population_df,
             output_filename=output_file,
             output_type=output_type,

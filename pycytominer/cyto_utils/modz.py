@@ -98,9 +98,10 @@ def modz(
         a string or list of column(s) in the population dataframe that
         indicate replicate level information
     features : list, default "infer"
-         List of features present in the population dataframe [default: "infer"]
-         if "infer", then assume cell painting features are those that start with
-         "Cells_", "Nuclei_", or "Cytoplasm_".
+        A list of strings corresponding to feature measurement column names in the
+        `population_df` DataFrame. All features listed must be found in `population_df`.
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
     method : str, default "spearman"
         indicating which correlation metric to use.
     min_weight : float, default 0.01
