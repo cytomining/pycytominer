@@ -1,8 +1,6 @@
 [build-system]
-# Avoids warnings aboud missing section
-# see: https://setuptools-scm.readthedocs.io/en/latest/usage/
-requires = [ "poetry-core>=1.7", "poetry-dynamic-versioning>=1.1" ]
 build-backend = "poetry_dynamic_versioning.backend"
+requires = [ "poetry-core>=1.7", "poetry-dynamic-versioning>=1.1" ]
 
 [tool.poetry]
 name = "pycytominer"
@@ -114,6 +112,9 @@ vcs = "git"
 files = [ "pycytominer/__about__.py" ]
 
 [tool.setuptools_scm]
+# Avoids warnings aboud missing section
+# see: https://setuptools-scm.readthedocs.io/en/latest/usage/
+root = "."
 
 [tool.ruff]
 target-version = "py38"
