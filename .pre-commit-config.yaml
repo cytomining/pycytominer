@@ -22,3 +22,7 @@ repos:
     rev: v2.12.1-beta
     hooks:
       - id: hadolint-docker
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "2.2.4"
+    hooks:
+      - id: pyproject-fmt
