@@ -1,4 +1,4 @@
-cff-version: 1.2.1
+cff-version: 1.2.0
 message: "If you have used pycytominer in your project, please cite us as:"
 authors:
   - family-names: Serrano

@@ -1,4 +1,5 @@
 ## v1.2.1 (2024-10-17)
+
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.1)
 
 ### Fix
