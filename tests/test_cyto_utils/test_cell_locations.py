@@ -1,7 +1,5 @@
 """This tests the output from CellLocation class"""
 
-from typing import List, Type
-
 import pandas as pd
 import pytest
 from _pytest.fixtures import FixtureRequest
@@ -38,8 +36,8 @@ def get_metadata_input_dataframe(cell_loc: CellLocation) -> pd.DataFrame:
     ],
 )
 def test_output_shape_and_required_columns(
-    cell_loc_param: List[str],
-    request: Type[FixtureRequest],
+    cell_loc_param: list[str],
+    request: type[FixtureRequest],
 ):
     """
     This tests the shape of the output from CellLocation class and verifies that the required columns are present
@@ -71,8 +69,8 @@ def test_output_shape_and_required_columns(
     ],
 )
 def test_output_value_correctness(
-    cell_loc_param: List[str],
-    request: Type[FixtureRequest],
+    cell_loc_param: list[str],
+    request: type[FixtureRequest],
 ):
     """
     This tests the correctness of the values in the output from CellLocation class by comparing the values in the output to the values in the input
