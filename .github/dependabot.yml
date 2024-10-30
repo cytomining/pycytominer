@@ -27,4 +27,11 @@ updates:
     directory: "/"
     schedule:
       # Check for updates to poetry lockfile every week
-      interval: "weekly"
+      interval: "monthly"
+    groups:
+      python-packages:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
