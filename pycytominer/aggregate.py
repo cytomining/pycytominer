@@ -2,7 +2,7 @@
 Aggregate profiles based on given grouping variables.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -16,15 +16,15 @@ from pycytominer.cyto_utils import (
 
 def aggregate(
     population_df: pd.DataFrame,
-    strata: List[str] = ["Metadata_Plate", "Metadata_Well"],
-    features: Union[List[str], str] = "infer",
+    strata: list[str] = ["Metadata_Plate", "Metadata_Well"],
+    features: Union[list[str], str] = "infer",
     operation: str = "median",
     output_file: Optional[str] = None,
     output_type: Optional[str] = "csv",
     compute_object_count: bool = False,
     object_feature: str = "Metadata_ObjectNumber",
     subset_data_df: Optional[pd.DataFrame] = None,
-    compression_options: Optional[Union[str, Dict[str, Any]]] = None,
+    compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
 ) -> Optional[pd.DataFrame]:
     """Combine population dataframe variables by strata groups using given operation.

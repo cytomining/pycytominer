@@ -4,7 +4,7 @@ Utility function to manipulate cell profiler features
 
 import os
 import pandas as pd
-from typing import Union, List
+from typing import Union
 
 blocklist_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
@@ -194,8 +194,8 @@ def drop_outlier_features(
 
 
 def convert_compartment_format_to_list(
-    compartments: Union[List[str], str],
-) -> List[str]:
+    compartments: Union[list[str], str],
+) -> list[str]:
     """Converts compartment to a list.
 
     Parameters
