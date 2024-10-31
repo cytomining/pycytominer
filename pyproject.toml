@@ -90,7 +90,7 @@ optional = true
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "*"
-sphinx = "~7.1"
+sphinx = ">=7.1,<7.5"
 sphinx-autobuild = ">=2021.3.14,<2025.0.0"
 sphinx-autoapi = "^3.0.0"
 ipython = "^8.12"
