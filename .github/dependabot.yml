@@ -38,3 +38,4 @@ updates:
         exclude-patterns:
           - "pandas"
           - "scipy"
+          - "sqlalchemy"
