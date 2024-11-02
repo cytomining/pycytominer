@@ -18,7 +18,7 @@ from pycytominer.cyto_utils import (
     output,
     provide_linking_cols_feature_name_update,
 )
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 default_compartments = get_default_compartments()
 default_linking_cols = get_default_linking_cols()
@@ -420,12 +420,12 @@ class SingleCells:
 
     def count_sql_table_rows(self, table):
         """Count total number of rows for a table."""
-        (num_rows,) = next(self.conn.execute(f"SELECT COUNT(*) FROM {table}"))
+        (num_rows,) = next(self.conn.execute(text(f"SELECT COUNT(*) FROM {table}")))
         return num_rows
 
     def get_sql_table_col_names(self, table):
         """Get column names from the database."""
-        ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
+        ptr = self.conn.execute(text(f"SELECT * FROM {table} LIMIT 1")).cursor
         col_names = [obj[0] for obj in ptr.description]
 
         return col_names
@@ -476,8 +476,7 @@ class SingleCells:
 
         # Query database for selected columns of chosen compartment
         columns = ", ".join(meta_cols + feat_cols)
-        query = f"select {columns} from {compartment}"
-        query_result = self.conn.execute(query)
+        query_result = self.conn.execute(text(f"select {columns} from {compartment}"))
 
         # Load data row by row for both meta information and features
         for i, row in enumerate(query_result):
