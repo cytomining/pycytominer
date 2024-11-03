@@ -46,8 +46,8 @@ repository = "https://github.com/cytomining/pycytominer"
 include = [ { path = "poetry.lock", format = "sdist" } ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-numpy = ">=1.16.5"
+python = ">=3.9,<3.13"
+numpy = ">=2.0.0"
 scipy = ">=1.5"
 pandas = ">=1.2.0"
 scikit-learn = ">=0.21.2"

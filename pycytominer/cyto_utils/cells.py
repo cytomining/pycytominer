@@ -273,7 +273,8 @@ class SingleCells:
             image_table_name = self.image_table_name
 
         image_query = f"select * from {image_table_name}"
-        self.image_df = pd.read_sql(sql=image_query, con=self.conn)
+        with self.conn.connect() as conn:
+            self.image_df = pd.read_sql(sql=image_query, con=conn.connection)
 
         if self.add_image_features:
             self.image_features_df = extract_image_features(
@@ -332,9 +333,10 @@ class SingleCells:
         else:
             query_cols = "TableNumber, ImageNumber, ObjectNumber"
             query = f"select {query_cols} from {compartment}"
-            count_df = self.image_df.merge(
-                pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
-            )
+            with self.conn.connect() as conn:
+                count_df = self.image_df.merge(
+                    pd.read_sql(sql=query, con=conn.connection), how="inner", on=self.merge_cols
+                )
             count_df = (
                 count_df.groupby(self.strata)["ObjectNumber"]
                 .count()
@@ -406,7 +408,8 @@ class SingleCells:
 
         # Load query and merge with image_df
         if df is None:
-            df = pd.read_sql(sql=query, con=self.conn)
+            with self.conn.connect() as conn:
+                df = pd.read_sql(sql=query, con=conn.connection)
 
         query_df = self.image_df.merge(df, how="inner", on=self.merge_cols)
 
@@ -629,19 +632,21 @@ class SingleCells:
 
         # Obtain data types of all columns of the compartment table
         cols = "*"
-        compartment_row1 = pd.read_sql(
-            sql=f"select {cols} from {compartment} limit 1",
-            con=self.conn,
-        )
+        with self.conn.connect() as conn:
+            compartment_row1 = pd.read_sql(
+                sql=f"select {cols} from {compartment} limit 1",
+                con=conn.connection,
+            )
         all_columns = compartment_row1.columns
         if self.features != "infer":  # allow to get only some features
             all_columns = [x for x in all_columns if x in self.features]
 
         typeof_str = ", ".join([f"typeof({x})" for x in all_columns])
-        compartment_dtypes = pd.read_sql(
-            sql=f"select {typeof_str} from {compartment} limit 1",
-            con=self.conn,
-        )
+        with self.conn.connect() as conn:
+            compartment_dtypes = pd.read_sql(
+                sql=f"select {typeof_str} from {compartment} limit 1",
+                con=conn.connection,
+            )
         # Strip the characters "typeof(" from the beginning and ")" from the end of
         # compartment column names returned by SQLite
         strip_typeof = lambda s: s[7:-1]
@@ -673,7 +678,8 @@ class SingleCells:
             specific_compartment_query = (
                 f"select {cols} from {compartment} where {strata_condition}"
             )
-            image_df_chunk = pd.read_sql(sql=specific_compartment_query, con=self.conn)
+            with self.conn.connect() as conn:
+                image_df_chunk = pd.read_sql(sql=specific_compartment_query, con=conn.connection)
             yield image_df_chunk
 
     def merge_single_cells(

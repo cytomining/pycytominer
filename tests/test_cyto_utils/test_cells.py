@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 
 from pycytominer import aggregate, annotate, normalize
 from pycytominer.cyto_utils import (
@@ -90,10 +89,11 @@ PLATEMAP_DF = pd.DataFrame({
 
 
 # Ingest data into temporary sqlite file
-IMAGE_DF.to_sql(name="image", con=TEST_ENGINE, index=False, if_exists="replace")
-CELLS_DF.to_sql(name="cells", con=TEST_ENGINE, index=False, if_exists="replace")
-CYTOPLASM_DF.to_sql(name="cytoplasm", con=TEST_ENGINE, index=False, if_exists="replace")
-NUCLEI_DF.to_sql(name="nuclei", con=TEST_ENGINE, index=False, if_exists="replace")
+with TEST_ENGINE.connect() as conn:
+    IMAGE_DF.to_sql(name="image", con=conn.connection, index=False, if_exists="replace")
+    CELLS_DF.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
+    CYTOPLASM_DF.to_sql(name="cytoplasm", con=conn.connection, index=False, if_exists="replace")
+    NUCLEI_DF.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
 
 # Create a new table with a fourth compartment
 NEW_FILE = f"sqlite:///{TMPDIR}/test_new.sqlite"
@@ -101,18 +101,20 @@ NEW_COMPARTMENT_DF = build_random_data(compartment="new")
 
 TEST_NEW_ENGINE = create_engine(NEW_FILE)
 
-IMAGE_DF.to_sql(name="image", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
-CELLS_DF.to_sql(name="cells", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
-NEW_CYTOPLASM_DF = CYTOPLASM_DF.assign(
-    Cytoplasm_Parent_New=(list(range(1, 51)) * 2)[::-1]
-)
-NEW_CYTOPLASM_DF.to_sql(
-    name="cytoplasm", con=TEST_NEW_ENGINE, index=False, if_exists="replace"
-)
-NUCLEI_DF.to_sql(name="nuclei", con=TEST_NEW_ENGINE, index=False, if_exists="replace")
-NEW_COMPARTMENT_DF.to_sql(
-    name="new", con=TEST_NEW_ENGINE, index=False, if_exists="replace"
-)
+with TEST_NEW_ENGINE.connect() as conn:
+    IMAGE_DF.to_sql(name="image", con=conn.connection, index=False, if_exists="replace")
+    CELLS_DF.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
+
+    NEW_CYTOPLASM_DF = CYTOPLASM_DF.assign(
+        Cytoplasm_Parent_New=(list(range(1, 51)) * 2)[::-1]
+    )
+    NEW_CYTOPLASM_DF.to_sql(
+        name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
+    )
+    NUCLEI_DF.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
+    NEW_COMPARTMENT_DF.to_sql(
+        name="new", con=conn.connection, index=False, if_exists="replace"
+    )
 
 NEW_COMPARTMENTS = ["cells", "cytoplasm", "nuclei", "new"]
 
@@ -126,32 +128,34 @@ IMAGE_FILE = f"sqlite:///{TMPDIR}/test_image.sqlite"
 
 TEST_ENGINE_IMAGE = create_engine(IMAGE_FILE)
 
-IMAGE_DF_ADDITIONAL_FEATURES.to_sql(
-    name="image", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
-)
-CELLS_DF.to_sql(name="cells", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
-CYTOPLASM_DF.to_sql(
-    name="cytoplasm", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace"
-)
-NUCLEI_DF.to_sql(name="nuclei", con=TEST_ENGINE_IMAGE, index=False, if_exists="replace")
+with TEST_ENGINE_IMAGE.connect() as conn:
+    IMAGE_DF_ADDITIONAL_FEATURES.to_sql(
+        name="image", con=conn.connection, index=False, if_exists="replace"
+    )
+    CELLS_DF.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
+    CYTOPLASM_DF.to_sql(
+        name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
+    )
+    NUCLEI_DF.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
 
 # Ingest data with different image table name
 IMAGE_DIFF_FILE = f"sqlite:///{TMPDIR}/test_image_diff_table_name.sqlite"
 
 TEST_ENGINE_IMAGE_DIFF = create_engine(IMAGE_DIFF_FILE)
 
-IMAGE_DF.to_sql(
-    name="Per_Image", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
-)
-CELLS_DF.to_sql(
-    name="cells", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
-)
-CYTOPLASM_DF.to_sql(
-    name="cytoplasm", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
-)
-NUCLEI_DF.to_sql(
-    name="nuclei", con=TEST_ENGINE_IMAGE_DIFF, index=False, if_exists="replace"
-)
+with TEST_ENGINE_IMAGE_DIFF.connect() as conn:
+    IMAGE_DF.to_sql(
+        name="Per_Image", con=conn.connection, index=False, if_exists="replace"
+    )
+    CELLS_DF.to_sql(
+        name="cells", con=conn.connection, index=False, if_exists="replace"
+    )
+    CYTOPLASM_DF.to_sql(
+        name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
+    )
+    NUCLEI_DF.to_sql(
+        name="nuclei", con=conn.connection, index=False, if_exists="replace"
+    )
 
 # Setup SingleCells Class
 AP = SingleCells(sql_file=TMP_SQLITE_FILE)
@@ -887,12 +891,13 @@ def test_aggregate_count_cells_multiple_strata():
     }).sort_values(by="Metadata_Well")
 
     # Ingest data into temporary sqlite file
-    image_df.to_sql(name="image", con=test_engine, index=False, if_exists="replace")
-    cells_df.to_sql(name="cells", con=test_engine, index=False, if_exists="replace")
-    cytoplasm_df.to_sql(
-        name="cytoplasm", con=test_engine, index=False, if_exists="replace"
-    )
-    nuclei_df.to_sql(name="nuclei", con=test_engine, index=False, if_exists="replace")
+    with test_engine.connect() as conn:
+        image_df.to_sql(name="image", con=conn.connection, index=False, if_exists="replace")
+        cells_df.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
+        cytoplasm_df.to_sql(
+            name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
+        )
+        nuclei_df.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
 
     # Setup SingleCells Class
     ap_strata = SingleCells(
@@ -1011,7 +1016,7 @@ def test_load_non_canonical_image_table():
     Loading an image table with non-canonical image table name
     """
     # test for exception loading image table with default table name "image"
-    with pytest.raises(OperationalError):
+    with pytest.raises(pd.errors.DatabaseError):
         AP_IMAGE_DIFF_NAME.load_image()
 
     AP_IMAGE_DIFF_NAME.load_image(image_table_name="Per_Image")
