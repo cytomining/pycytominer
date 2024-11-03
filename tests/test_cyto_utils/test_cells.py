@@ -92,8 +92,12 @@ PLATEMAP_DF = pd.DataFrame({
 with TEST_ENGINE.connect() as conn:
     IMAGE_DF.to_sql(name="image", con=conn.connection, index=False, if_exists="replace")
     CELLS_DF.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
-    CYTOPLASM_DF.to_sql(name="cytoplasm", con=conn.connection, index=False, if_exists="replace")
-    NUCLEI_DF.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
+    CYTOPLASM_DF.to_sql(
+        name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
+    )
+    NUCLEI_DF.to_sql(
+        name="nuclei", con=conn.connection, index=False, if_exists="replace"
+    )
 
 # Create a new table with a fourth compartment
 NEW_FILE = f"sqlite:///{TMPDIR}/test_new.sqlite"
@@ -111,7 +115,9 @@ with TEST_NEW_ENGINE.connect() as conn:
     NEW_CYTOPLASM_DF.to_sql(
         name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
     )
-    NUCLEI_DF.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
+    NUCLEI_DF.to_sql(
+        name="nuclei", con=conn.connection, index=False, if_exists="replace"
+    )
     NEW_COMPARTMENT_DF.to_sql(
         name="new", con=conn.connection, index=False, if_exists="replace"
     )
@@ -136,7 +142,9 @@ with TEST_ENGINE_IMAGE.connect() as conn:
     CYTOPLASM_DF.to_sql(
         name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
     )
-    NUCLEI_DF.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
+    NUCLEI_DF.to_sql(
+        name="nuclei", con=conn.connection, index=False, if_exists="replace"
+    )
 
 # Ingest data with different image table name
 IMAGE_DIFF_FILE = f"sqlite:///{TMPDIR}/test_image_diff_table_name.sqlite"
@@ -147,9 +155,7 @@ with TEST_ENGINE_IMAGE_DIFF.connect() as conn:
     IMAGE_DF.to_sql(
         name="Per_Image", con=conn.connection, index=False, if_exists="replace"
     )
-    CELLS_DF.to_sql(
-        name="cells", con=conn.connection, index=False, if_exists="replace"
-    )
+    CELLS_DF.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
     CYTOPLASM_DF.to_sql(
         name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
     )
@@ -892,12 +898,18 @@ def test_aggregate_count_cells_multiple_strata():
 
     # Ingest data into temporary sqlite file
     with test_engine.connect() as conn:
-        image_df.to_sql(name="image", con=conn.connection, index=False, if_exists="replace")
-        cells_df.to_sql(name="cells", con=conn.connection, index=False, if_exists="replace")
+        image_df.to_sql(
+            name="image", con=conn.connection, index=False, if_exists="replace"
+        )
+        cells_df.to_sql(
+            name="cells", con=conn.connection, index=False, if_exists="replace"
+        )
         cytoplasm_df.to_sql(
             name="cytoplasm", con=conn.connection, index=False, if_exists="replace"
         )
-        nuclei_df.to_sql(name="nuclei", con=conn.connection, index=False, if_exists="replace")
+        nuclei_df.to_sql(
+            name="nuclei", con=conn.connection, index=False, if_exists="replace"
+        )
 
     # Setup SingleCells Class
     ap_strata = SingleCells(

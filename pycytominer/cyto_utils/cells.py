@@ -335,7 +335,9 @@ class SingleCells:
             query = f"select {query_cols} from {compartment}"
             with self.conn.connect() as conn:
                 count_df = self.image_df.merge(
-                    pd.read_sql(sql=query, con=conn.connection), how="inner", on=self.merge_cols
+                    pd.read_sql(sql=query, con=conn.connection),
+                    how="inner",
+                    on=self.merge_cols,
                 )
             count_df = (
                 count_df.groupby(self.strata)["ObjectNumber"]
@@ -679,7 +681,9 @@ class SingleCells:
                 f"select {cols} from {compartment} where {strata_condition}"
             )
             with self.conn.connect() as conn:
-                image_df_chunk = pd.read_sql(sql=specific_compartment_query, con=conn.connection)
+                image_df_chunk = pd.read_sql(
+                    sql=specific_compartment_query, con=conn.connection
+                )
             yield image_df_chunk
 
     def merge_single_cells(
