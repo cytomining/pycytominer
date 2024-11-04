@@ -35,3 +35,7 @@ updates:
         update-types:
           - "minor"
           - "patch"
+        exclude-patterns:
+          - "pandas"
+          - "scipy"
+          - "sqlalchemy"
