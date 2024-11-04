@@ -91,10 +91,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OS: ${{ matrix.os }}
-      # This is needed to avoid a warning from SQLAlchemy
-      # https://sqlalche.me/e/b8d9
-      # We can remove this once we upgrade to SQLAlchemy >= 2.0
-      SQLALCHEMY_SILENCE_UBER_WARNING: "1"
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
