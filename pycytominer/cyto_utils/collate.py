@@ -85,9 +85,9 @@ def collate(
     # show a warning about collate deprecation
     warnings.warn(
         (
-            "pycytominer.cyto_utils.collate is deprecated and will be removed in future versions of Pycytominer. "
+            With the deprecation of cytominer-database, "pycytominer.cyto_utils.collate will be removed in future versions of Pycytominer. "
             "Please consider using CellProfiler's ExportToDatabase module to create single-cell "
-            "profile SQLite files or CytoTable to create similar Parquet file output."
+            "SQLite files or CytoTable to create single-cell Parquet files."
         ),
         DeprecationWarning,
     )
