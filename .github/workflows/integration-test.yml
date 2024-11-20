@@ -115,8 +115,7 @@ jobs:
           OS: ${{ matrix.os }}
           PYTHON: ${{ matrix.python-version }}
         with:
-          file: ./coverage.xml
-          files: ./coverage1.xml,./coverage2.xml
+          files: ./coverage.xml
           directory: ./coverage/reports/
           env_vars: OS,PYTHON
           fail_ci_if_error: true
