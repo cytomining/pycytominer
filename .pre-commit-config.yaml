@@ -26,7 +26,7 @@ repos:
     rev: "2.2.4"
     hooks:
       - id: pyproject-fmt
-  # validates CITATION.cff file formatting expecations
+  # validates CITATION.cff file formatting expectations
   - repo: https://github.com/citation-file-format/cffconvert
     rev: b6045d78aac9e02b039703b030588d54d53262ac
     hooks:

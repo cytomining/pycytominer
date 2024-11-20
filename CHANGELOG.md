@@ -1,3 +1,27 @@
+## v1.2.1 (2024-11-20)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.1)
+
+### Fix
+
+- **citation**: fix citation.cff file formatting (#460)
+
+### Refactor
+
+- **collate**: deprecationwarning for `collate` (#462)
+
+### Build
+
+- **python**: add python 3.12 compatibility (#475)
+- **python**: bump minimum python version to 3.9 (#464)
+
+### CI
+
+- **pre-commit**: format pyproject.toml with pyproject-fmt (#453)
+- **releases**: constrain PyPI GitHub Actions release trigger types (#458)
+- **dependencies**: update setup python action dependencies and dependabot settings (#457)
+- **dependabot**: enable auto poetry updates (#463)
+
 ## v1.2.0 (2024-09-30)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.0)
