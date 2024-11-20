@@ -3,6 +3,7 @@ import pathlib
 import subprocess
 import sys
 import sqlite3
+import warnings
 
 
 def run_check_errors(cmd):
@@ -80,6 +81,17 @@ def collate(
             Please install the `collate` optional dependency group: e.g. `pip install pycytominer[collate]`
             """
         )
+
+    # show a warning about collate deprecation
+    warnings.warn(
+        (
+            "With the deprecation of cytominer-database",
+            "pycytominer.cyto_utils.collate will be removed in future versions of Pycytominer. "
+            "Please consider using CellProfiler's ExportToDatabase module to create single-cell "
+            "SQLite files or CytoTable to create single-cell Parquet files.",
+        ),
+        DeprecationWarning,
+    )
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
     input_dir = pathlib.Path(f"{base_directory}/analysis/{batch}/{plate}/{csv_dir}")

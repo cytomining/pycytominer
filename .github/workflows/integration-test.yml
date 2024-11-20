@@ -87,14 +87,10 @@ jobs:
         os:
           - macos-13
           - ubuntu-22.04
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     runs-on: ${{ matrix.os }}
     env:
       OS: ${{ matrix.os }}
-      # This is needed to avoid a warning from SQLAlchemy
-      # https://sqlalche.me/e/b8d9
-      # We can remove this once we upgrade to SQLAlchemy >= 2.0
-      SQLALCHEMY_SILENCE_UBER_WARNING: "1"
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
@@ -114,13 +110,12 @@ jobs:
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
         if: (matrix.os == 'ubuntu-22.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           OS: ${{ matrix.os }}
           PYTHON: ${{ matrix.python-version }}
         with:
-          file: ./coverage.xml
-          files: ./coverage1.xml,./coverage2.xml
+          files: ./coverage.xml
           directory: ./coverage/reports/
           env_vars: OS,PYTHON
           fail_ci_if_error: true

@@ -1,4 +1,4 @@
-from typing import Dict, Union, Optional
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ from pycytominer.cyto_utils import (
     output,
     provide_linking_cols_feature_name_update,
 )
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 default_compartments = get_default_compartments()
 default_linking_cols = get_default_linking_cols()
@@ -40,7 +40,7 @@ class SingleCells:
     output_file : str, default None
         If specified, the location to write the file.
     compartments : list of str, default ["cells", "cytoplasm", "nuclei"]
-        List of compartments to process.
+        list of compartments to process.
     compartment_linking_cols : dict, default noted below
         Dictionary identifying how to merge columns across tables.
     merge_cols : list of str, default ["TableNumber", "ImageNumber"]
@@ -50,9 +50,9 @@ class SingleCells:
     add_image_features: bool, default False
         Whether to add image features to the profiles.
     image_feature_categories : list of str, optional
-        List of categories of features from the image table to add to the profiles.
+        list of categories of features from the image table to add to the profiles.
     features: str or list of str, default "infer"
-        List of features that should be loaded or aggregated.
+        list of features that should be loaded or aggregated.
     load_image_data : bool, default True
         Whether or not the image data should be loaded into memory.
     image_table_name : str, default "image"
@@ -64,7 +64,7 @@ class SingleCells:
     subsampling_random_state : str or int, default None
         The random state to init subsample.
     fields_of_view : list of int, str, default "all"
-        List of fields of view to aggregate.
+        list of fields of view to aggregate.
     fields_of_view_feature : str, default "Metadata_Site"
         Name of the fields of view feature.
     object_feature : str, default "Metadata_ObjectNumber"
@@ -420,12 +420,12 @@ class SingleCells:
 
     def count_sql_table_rows(self, table):
         """Count total number of rows for a table."""
-        (num_rows,) = next(self.conn.execute(f"SELECT COUNT(*) FROM {table}"))
+        (num_rows,) = next(self.conn.execute(text(f"SELECT COUNT(*) FROM {table}")))
         return num_rows
 
     def get_sql_table_col_names(self, table):
         """Get column names from the database."""
-        ptr = self.conn.execute(f"SELECT * FROM {table} LIMIT 1").cursor
+        ptr = self.conn.execute(text(f"SELECT * FROM {table} LIMIT 1")).cursor
         col_names = [obj[0] for obj in ptr.description]
 
         return col_names
@@ -476,8 +476,7 @@ class SingleCells:
 
         # Query database for selected columns of chosen compartment
         columns = ", ".join(meta_cols + feat_cols)
-        query = f"select {columns} from {compartment}"
-        query_result = self.conn.execute(query)
+        query_result = self.conn.execute(text(f"select {columns} from {compartment}"))
 
         # Load data row by row for both meta information and features
         for i, row in enumerate(query_result):
@@ -683,7 +682,7 @@ class SingleCells:
         compression_options: Optional[str] = None,
         float_format: Optional[str] = None,
         single_cell_normalize: bool = False,
-        normalize_args: Optional[Dict] = None,
+        normalize_args: Optional[dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
         **kwargs,
     ):
@@ -907,7 +906,7 @@ def _sqlite_strata_conditions(df, dtypes, n=1):
     df : pandas.core.frame.DataFrame
         A dataframe where columns are merge_cols and rows represent
         unique aggregation strata of the compartment table
-    dtypes : Dict[str, str]
+    dtypes : dict[str, str]
         Dictionary to look up SQLite datatype based on column name
     n : int
         Number of rows of the input df to combine in each output
@@ -918,7 +917,7 @@ def _sqlite_strata_conditions(df, dtypes, n=1):
 
     Returns
     -------
-    grouped_conditions : List[str]
+    grouped_conditions : list[str]
         A list of strings, each string being a valid SQLite conditional
 
     Examples
