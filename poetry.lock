@@ -3818,13 +3818,13 @@ test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,
 
 [[package]]
 name = "types-openpyxl"
-version = "3.1.5.20240918"
+version = "3.1.5.20241126"
 description = "Typing stubs for openpyxl"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-openpyxl-3.1.5.20240918.tar.gz", hash = "sha256:22a71a1b601ed8194e356e33e2bebb93dddc47915b410db14ace5a6b7b856955"},
-    {file = "types_openpyxl-3.1.5.20240918-py3-none-any.whl", hash = "sha256:e9bf3c6f7966d347a2514b48f889f272d58e9b22a762244f778a5d66aee2101e"},
+    {file = "types_openpyxl-3.1.5.20241126-py3-none-any.whl", hash = "sha256:e50ad5c2dec2c92cca521abed5c039975226e8e76389f17ab0ef813595593fbe"},
+    {file = "types_openpyxl-3.1.5.20241126.tar.gz", hash = "sha256:f599afab19f87aa11672ee675346401d82a0dac71988df9a5411cdb1e7477377"},
 ]
 
 [[package]]
