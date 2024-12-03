@@ -39,3 +39,6 @@ updates:
           - "pandas"
           - "scipy"
           - "sqlalchemy"
+    ignore:
+      # ignore cytominer-database as it is deprecated
+      - dependency-name: "cytominer-database"
