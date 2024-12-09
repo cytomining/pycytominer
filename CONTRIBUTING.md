@@ -46,6 +46,23 @@ Please report unacceptable behavior to cytodata.info@gmail.com.
 
 ## How can I contribute?
 
+### Roles and responsibilities
+
+There are two primary roles with regards to developing Pycytominer:
+
+- **Contributors**: individuals without direct commit access to the `main` branch who make contributions in the form of communication, issues, or pull requests. We welcome anyone interested in additions to the project to be a contributor.
+- **Maintainers**: individuals with direct commit access who make contributions as outlined by the contributors role and also have the ability to make commits on the `main` branch through the development process (for example, by merging pull requests).
+  Maintainers are also involved with decision-making procedures and the technical roadmap for Pycytominer.
+
+#### Becoming a maintainer
+
+Maintainers are prior contributors who receive extended privileges based on a decision by existing maintainers.
+To become a Pycytominer maintainer you must be championed by an existing maintainer.
+The championing maintainer consults with other maintainers about the addition of the new maintainer.
+After the current maintainers have considered the qualifications of the new maintainer they communicate their preferences internally.
+If there are no vetos the champion maintainer will grant maintainer access to the new maintainer.
+Maintainer access may be revoked if a maintainer does not uphold the code of conduct (in addition to other procedures specified by the code of conduct itself).
+
 ### Bug reporting
 
 We love hearing about use-cases when our software does not work.
