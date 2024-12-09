@@ -8,7 +8,7 @@ env:
   LANG: "en_US.utf-8"
   LC_ALL: "en_US.utf-8"
   PYTHONIOENCODING: "UTF-8"
-  TARGET_PYTHON_VERSION: "3.9"
+  TARGET_PYTHON_VERSION: "3.10"
 
 jobs:
   build-and-publish:
