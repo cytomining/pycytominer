@@ -61,7 +61,14 @@ To become a Pycytominer maintainer you must be championed by an existing maintai
 The championing maintainer consults with other maintainers about the addition of the new maintainer.
 After the current maintainers have considered the qualifications of the new maintainer they communicate their preferences internally.
 If there are no vetos the champion maintainer will grant maintainer access to the new maintainer.
-Maintainer access may be revoked if a maintainer does not uphold the code of conduct (in addition to other procedures specified by the code of conduct itself).
+
+#### Maintainer offboarding
+
+Maintainer access may be removed under the following circumstances:
+
+- Voluntary step-down (when a maintainer no longer wishes to remain in that role)
+- In the unfortunate event of a maintainer's passing
+- Code of conduct violations (in addition to other procedures specified by the code of conduct itself)
 
 ### Bug reporting
 
