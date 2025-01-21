@@ -169,6 +169,58 @@ def test_feature_select_noise_removal():
     pd.testing.assert_frame_equal(result4b, expected_result4b)
     pd.testing.assert_frame_equal(result5b, expected_result5b)
 
+    # testing samples query leveraging metadata
+    data_unique_test_df3 = data_unique_test_df.copy()
+    data_unique_test_df3_features = data_unique_test_df3.columns.tolist()
+
+    # adding metadata column in order to create a samples query
+    data_unique_test_df3["Metadata_sample"] = ["A", "B"] * 50
+    sample_query = "Metadata_sample == 'A'"
+
+    # adding perturb group metadata column for noise_removal operation
+    data_unique_test_df3["perturb_group"] = data_unique_test_df_groups
+
+    # establishing all operations that use "samples" parameter
+    # note that blocklist does not use samples parameter
+    all_operations = [
+        "noise_removal",
+        "drop_na_columns",
+        "variance_threshold",
+        "correlation_threshold",
+        "drop_outliers",
+    ]
+    for operation_idx, operation in enumerate(all_operations):
+        # testing single operation
+        results6a = feature_select(
+            profiles=data_unique_test_df3,
+            features=data_unique_test_df3_features,
+            operation=operation,
+            samples=sample_query,
+            noise_removal_perturb_groups="perturb_group",
+            noise_removal_stdev_cutoff=500,
+        )
+
+        # checking if no rows were not removed
+        assert (
+            results6a.shape[0] == data_unique_test_df3.shape[0]
+        ), f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {operation}"
+
+        # testing multiple operations (continually appends operations)
+        concat_operations = all_operations[: operation_idx + 1]
+        results6b = feature_select(
+            profiles=data_unique_test_df3,
+            features=data_unique_test_df3_features,
+            operation=concat_operations,
+            samples=sample_query,
+            noise_removal_perturb_groups="perturb_group",
+            noise_removal_stdev_cutoff=500,
+        )
+
+        # checking if no rows were not removed
+        assert (
+            results6b.shape[0] == data_unique_test_df3.shape[0]
+        ), f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {concat_operations}"
+
     # Test assertion errors for the user inputting the perturbation groupings
     bad_perturb_list = ["a", "a", "b", "b", "a", "a", "b"]
 
