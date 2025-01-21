@@ -33,7 +33,7 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
     """
 
     if samples != "all":
-        population_df.query(samples, inplace=True)
+        population_df = population_df.query(samples)
 
     if features == "infer":
         features = infer_cp_features(population_df)

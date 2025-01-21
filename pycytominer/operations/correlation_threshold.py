@@ -48,7 +48,7 @@ def correlation_threshold(
 
     # Subset dataframe and calculate correlation matrix across subset features
     if samples != "all":
-        population_df.query(samples, inplace=True)
+        population_df = population_df.query(samples)
 
     if features == "infer":
         features = infer_cp_features(population_df)
