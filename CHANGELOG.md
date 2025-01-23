@@ -1,3 +1,25 @@
+## v1.2.2 (2025-01-23)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.2)
+
+### Fix
+
+- **feature_select**: Fix Bug in `sample` Parameter in `feature_select()` (#495)
+- **cell_locations**: Check if downloaded file is empty (#385)
+
+### Build
+
+- **deps**: various dependency updates automated by dependabot
+
+### Docs
+
+- **maintainer**: add maintainer governance docs (#487)
+
+### CI
+
+- **pre-commit**: add pre-commit lite for auto fixes (#488)
+- **python**: bump target python for ci workflows (#486)
+
 ## v1.2.1 (2024-11-20)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.1)
