@@ -44,37 +44,57 @@ def variance_threshold(
 
     """
 
+    # check if freq_cut and unique_cut are between 0 and 1
     if not 0 <= freq_cut <= 1:
         raise ValueError("freq_cut variable must be between (0 and 1)")
     if not 0 <= unique_cut <= 1:
         raise ValueError("unique_cut variable must be between (0 and 1)")
 
-    # Subset dataframe
+    # Subset the DataFrame if specific samples are specified
+    # If "all", use the entire DataFrame without subsetting
     if samples != "all":
-        population_df.query(samples, inplace=True)
+        # Using pandas query to filter rows based on the conditions provided in the
+        # samples parameter
+        population_df = population_df.query(expr=samples)
 
+    # Infer CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
+        # Infer CellProfiler features
         features = infer_cp_features(population_df)
 
+    # Subset the DataFrame to only include the features of interest
     population_df = population_df.loc[:, features]
 
-    # Exclude features with extreme (defined by freq_cut ratio) common values
+    # Exclude features based on frequency
+    # Frequency is the ratio of the second most common value to the most common value.
+    # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
     excluded_features_freq = population_df.apply(
         lambda x: calculate_frequency(x, freq_cut), axis="rows"
     )
 
+    # Remove features with NA values
     excluded_features_freq = excluded_features_freq[
         excluded_features_freq.isna()
     ].index.tolist()
 
-    # Exclude features with too many (defined by unique_ratio) values in common
+    # Get the number of samples
     n = population_df.shape[0]
+
+    # Get the number of unique features
     num_unique_features = population_df.nunique()
 
+    # Exclude features with too many (defined by unique_ratio) values in common, where
+    # unique_ratio is defined as the number of unique features divided by the total
+    # number of samples
     unique_ratio = num_unique_features / n
     unique_ratio = unique_ratio < unique_cut
+
+    # Get the feature names that have a unique ratio less than the unique_cut
+    # This represents features that have too few unique values compared to the number
+    # of samples.
     excluded_features_unique = unique_ratio[unique_ratio].index.tolist()
 
+    # Combine the two lists of features to exclude
     excluded_features = list(set(excluded_features_freq + excluded_features_unique))
     return excluded_features
 

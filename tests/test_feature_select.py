@@ -494,3 +494,65 @@ def test_output_type():
 
     # check to make sure both dataframes are the same regardless of the output_type
     pd.testing.assert_frame_equal(csv_df, parquet_df)
+
+
+def test_samples_parameter_in_feature_select():
+    # Create a list of 100 elements with 10 replicates of 10 perturbations
+    data_unique_test_df_groups = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    data_unique_test_df_groups = [
+        elem for elem in data_unique_test_df_groups for _ in range(10)
+    ]
+
+    # Make a copy of the test DataFrame
+    data_unique_test_df3 = data_unique_test_df.copy()
+    data_unique_test_df3_features = data_unique_test_df3.columns.tolist()
+
+    # Add a metadata column for creating a sample query
+    data_unique_test_df3["Metadata_sample"] = ["A", "B"] * 50
+
+    # Define the sample query
+    sample_query = "Metadata_sample == 'A'"
+
+    # Add a perturb group metadata column for noise removal operation
+    data_unique_test_df3["perturb_group"] = data_unique_test_df_groups
+
+    # establishing all operations that use "samples" parameter
+    # note that blocklist does not use samples parameter
+    all_operations = [
+        "noise_removal",
+        "drop_na_columns",
+        "variance_threshold",
+        "correlation_threshold",
+        "drop_outliers",
+    ]
+    for operation_idx, operation in enumerate(all_operations):
+        # testing single operation
+        results6a = feature_select(
+            profiles=data_unique_test_df3,
+            features=data_unique_test_df3_features,
+            operation=operation,
+            samples=sample_query,
+            noise_removal_perturb_groups="perturb_group",
+            noise_removal_stdev_cutoff=500,
+        )
+
+        # checking if no rows were not removed
+        assert (
+            results6a.shape[0] == data_unique_test_df3.shape[0]
+        ), f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {operation}"
+
+        # testing multiple operations (continually appends operations)
+        concat_operations = all_operations[: operation_idx + 1]
+        results6b = feature_select(
+            profiles=data_unique_test_df3,
+            features=data_unique_test_df3_features,
+            operation=concat_operations,
+            samples=sample_query,
+            noise_removal_perturb_groups="perturb_group",
+            noise_removal_stdev_cutoff=500,
+        )
+
+        # checking if no rows were not removed
+        assert (
+            results6b.shape[0] == data_unique_test_df3.shape[0]
+        ), f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {concat_operations}"

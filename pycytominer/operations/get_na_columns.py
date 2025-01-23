@@ -32,16 +32,29 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
          List of features to exclude from the population_df.
     """
 
-    if samples != "all":
-        population_df.query(samples, inplace=True)
+    # Checking if the cutoff is between 0 and 1
+    if not 0 <= cutoff <= 1:
+        raise ValueError("cutoff variable must be between (0 and 1)")
 
+    # Subset the DataFrame if specific samples are specified
+    # If "all", use the entire DataFrame without subsetting
+    if samples != "all":
+        # Using pandas query to filter rows based on the conditions provided in the
+        # samples parameter
+        population_df = population_df.query(expr=samples)
+
+    # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
+        # Infer CellProfiler features
         features = infer_cp_features(population_df)
 
+    # Subset the DataFrame to only include the features of interest
     population_df = population_df.loc[:, features]
 
+    # Get the proportion of NA values for each feature
     num_rows = population_df.shape[0]
     na_prop_df = population_df.isna().sum() / num_rows
 
+    # Get the features that have more NA values than the cutoff
     na_prop_df = na_prop_df[na_prop_df > cutoff]
     return list(set(na_prop_df.index.tolist()))

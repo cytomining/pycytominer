@@ -40,19 +40,26 @@ def correlation_threshold(
          List of features to exclude from the population_df.
     """
 
-    # Check that the input method is supported
+    # Checking if the provided correlation method is supported
     method = check_correlation_method(method)
 
+    # Checking if the threshold is between 0 and 1
     if not 0 <= threshold <= 1:
         raise ValueError("threshold variable must be between (0 and 1)")
 
     # Subset dataframe and calculate correlation matrix across subset features
+    # If samples is not 'all', then subset the dataframe
     if samples != "all":
-        population_df.query(samples, inplace=True)
+        # Using pandas query to filter rows based on the conditions provided in the
+        # samples parameter
+        population_df = population_df.query(expr=samples)
 
+    # Infer CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
+        # Infer CellProfiler features
         features = infer_cp_features(population_df)
 
+    # Subset the DataFrame to only include the features of interest
     population_df = population_df.loc[:, features]
 
     # Get correlation matrix and lower triangle of pairwise correlations in long format

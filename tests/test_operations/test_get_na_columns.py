@@ -73,3 +73,18 @@ def test_get_na_columns_featureinfer():
         )
 
         assert "No features found." in str(nocp.value)
+
+
+def test_get_na_columns_cutoff_parameter():
+    # Define invalid cutoff values
+    invalid_cutoffs = [10, -0.1]
+
+    # Test cutoff parameter
+    for cutoff in invalid_cutoffs:
+        # Test if ValueError is raised with invalid cutoff values
+        with pytest.raises(
+            ValueError, match="cutoff variable must be between \\(0 and 1\\)"
+        ):
+            get_na_columns(
+                population_df=data_df, samples="all", features="infer", cutoff=cutoff
+            )

@@ -173,19 +173,29 @@ def drop_outlier_features(
         Features greater than the threshold.
     """
 
-    # Subset dataframe
+    # Subset the DataFrame if specific samples are specified
+    # If "all", use the entire DataFrame without subsetting
     if samples != "all":
-        population_df.query(samples, inplace=True)
+        # Using pandas query to filter rows based on the conditions provided in the
+        # samples parameter
+        population_df = population_df.query(expr=samples)
 
+    # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
+        # Infer CellProfiler features
         features = infer_cp_features(population_df)
+        # Subset the DataFrame to only include inferred CellProfiler features
         population_df = population_df.loc[:, features]
     else:
+        # Subset the DataFrame to only include the features of interest
+        # this would be more tailored to non-CellProfiler features
         population_df = population_df.loc[:, features]
 
+    # Get the max and min values for each feature
     max_feature_values = population_df.max().abs()
     min_feature_values = population_df.min().abs()
 
+    # Identify features with max or min values greater than the outlier cutoff
     outlier_features = max_feature_values[
         (max_feature_values > outlier_cutoff) | (min_feature_values > outlier_cutoff)
     ].index.tolist()

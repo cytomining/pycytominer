@@ -168,3 +168,6 @@ cython_debug/
 
 # Miscellaneous
 .DS_Store
+
+# removes files that are meant for prototyping
+_*
