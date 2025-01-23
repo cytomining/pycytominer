@@ -2,11 +2,15 @@
 
 # Description
 
+<!--
 Thank you for your contribution to pycytominer!
 Please _succinctly_ summarize your proposed change.
 What motivated you to make this change?
 
 Please also link to any relevant issues that your code is associated with.
+For example:
+Closes #<GitHub issue number goes here>
+-->
 
 ## What is the nature of your change?
 
