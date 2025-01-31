@@ -13,18 +13,35 @@ def get_metadata_input_dataframe(cell_loc: CellLocation) -> pd.DataFrame:
     from a CellLocation object.
     """
 
-    return (
-        pd.read_parquet(
-            cell_loc.metadata_input,
-            # set storage options if we have an s3 path
-            storage_options={"anon": True}
-            if isinstance(cell_loc.metadata_input, str)
-            and cell_loc.metadata_input.startswith("s3://")
-            else None,
+    # return a dataframe if it is already a dataframe
+    if isinstance(cell_loc.metadata_input, pd.DataFrame):
+        return cell_loc.metadata_input
+
+    # try to process a string-based path
+    if isinstance(cell_loc.metadata_input, str):
+        storage_opts = (
+            {"anon": True} if cell_loc.metadata_input.startswith("s3://") else None
         )
-        if isinstance(cell_loc.metadata_input, str)
-        else cell_loc.metadata_input
-    )
+        return (
+            # read from parquet if we have a parquet object path
+            pd.read_parquet(
+                path=cell_loc.metadata_input,
+                # set storage options if we have an s3 path
+                storage_options=storage_opts,
+            )
+            if cell_loc.metadata_input.endswith(".parquet")
+            # read from csv if we have a csv object path
+            else (
+                pd.read_csv(
+                    filepath_or_buffer=cell_loc.metadata_input,
+                    # set storage options if we have an s3 path
+                    storage_options=storage_opts,
+                )
+            )
+        )
+    else:
+        # otherwise raise an error as we don't have a supported format
+        raise ValueError("Unsupported metadata_input type")
 
 
 @pytest.mark.parametrize(
@@ -80,11 +97,15 @@ def test_output_value_correctness(
     cell_loc = cls_cell_loc.add_cell_location()
     metadata_input_dataframe = get_metadata_input_dataframe(cell_loc=cls_cell_loc)
 
+    # Cast cell_loc columns to the data types of metadata_input_dataframe columns
+    # (observed metadata_site as having different types)
+    for col in metadata_input_dataframe.columns:
+        cell_loc[col] = cell_loc[col].astype(metadata_input_dataframe[col].dtype)
+
     # if we restrict the columns of cell_loc to the ones in metadata_input_dataframe, we should get the same dataframe
-    assert (
-        cell_loc[metadata_input_dataframe.columns]
-        .reset_index(drop=True)
-        .equals(metadata_input_dataframe.reset_index(drop=True))
+    pd.testing.assert_frame_equal(
+        cell_loc[metadata_input_dataframe.columns].reset_index(drop=True),
+        metadata_input_dataframe.reset_index(drop=True),
     )
 
     # gather an engine from the cell_loc class

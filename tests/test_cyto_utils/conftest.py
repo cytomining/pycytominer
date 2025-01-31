@@ -46,7 +46,7 @@ def fixture_metadata_input_file_s3() -> str:
     """
     Provide a metadata input file for cell_locations test data
     """
-    return "s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum.parquet"
+    return "s3://cellpainting-gallery/cpg0016-jump/source_4/workspace/load_data_csv/2021_08_23_Batch12/BR00126114/load_data_with_illum.csv"
 
 
 @pytest.fixture(name="single_cell_input_file_s3")
