@@ -324,8 +324,8 @@ def test_output_type():
     parquet_df = pd.read_parquet(test_output_file_parquet)
 
     # check to make sure the files were read in corrrectly as a pd.Dataframe
-    assert type(csv_df) == pd.DataFrame
-    assert type(parquet_df) == pd.DataFrame
+    assert isinstance(csv_df, pd.DataFrame)
+    assert isinstance(parquet_df, pd.DataFrame)
 
     # check to make sure both dataframes are the same regardless of the output_type
     pd.testing.assert_frame_equal(csv_df, parquet_df)
