@@ -51,7 +51,7 @@ runs:
         path: |
           .cache
           pre-commit
-        key: cache|${{ runner.name }}|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+        key: cache|${{ env.ImageOS }}|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
     - name: Cache venv
       # The cache key for the virtual environment is a hash of the
       # operating system, PY (see above), the pyproject.toml and
@@ -64,7 +64,7 @@ runs:
           .cache
           .venv
         key:
-          cache|${{ runner.name }}|${{ env.PY }}|${{ hashFiles('pyproject.toml') }}|${{
+          cache|${{ env.ImageOS }}|${{ env.PY }}|${{ hashFiles('pyproject.toml') }}|${{
           hashFiles('poetry.lock') }}
     - name: Setup poetry and poetry-dynamic-versioning
       shell: bash
