@@ -624,7 +624,9 @@ class SingleCells:
 
         assert (  # noqa: S101
             n_aggregation_memory_strata > 0
-        ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
+        ), (
+            "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
+        )
 
         # Obtain data types of all columns of the compartment table
         cols = "*"

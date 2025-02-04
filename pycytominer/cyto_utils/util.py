@@ -159,7 +159,9 @@ def check_consensus_operation(operation):
     except AssertionError:
         assert (  # noqa: S101
             operation in avail_ops
-        ), f"operation {operation} not supported, select one of {avail_ops} or see aggregate.py"
+        ), (
+            f"operation {operation} not supported, select one of {avail_ops} or see aggregate.py"
+        )
 
     return operation
 

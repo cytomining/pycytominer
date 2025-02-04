@@ -60,7 +60,7 @@ def noise_removal(
         # Check if the column exists
         if noise_removal_perturb_groups not in population_df.columns:
             raise ValueError(
-                'f"{perturb} not found. Are you sure it is a ' "metadata column?"
+                'f"{perturb} not found. Are you sure it is a metadata column?'
             )
         # Assign the group info to the specified column
         group_info = population_df[noise_removal_perturb_groups]
