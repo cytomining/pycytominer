@@ -103,7 +103,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache-pre-commit: false
-          cache-venv: false
+          cache-venv: true
           setup-poetry: true
           install-deps: true
       - name: Run pytest and generate coverage report
