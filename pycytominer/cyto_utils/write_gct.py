@@ -81,9 +81,7 @@ def write_gct(
         nrow_metadata = feature_metadata.shape[1]
         assert (  # noqa: S101
             "id" in feature_metadata.index.tolist()
-        ), (
-            "make sure feature metadata has row named 'id' that stores feature metadata names!"
-        )
+        ), "make sure feature metadata has row named 'id' that stores feature metadata names!"
         full_df = feature_metadata.merge(
             full_df, how="right", left_index=True, right_index=True
         )

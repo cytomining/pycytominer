@@ -537,9 +537,9 @@ def test_samples_parameter_in_feature_select():
         )
 
         # checking if no rows were not removed
-        assert results6a.shape[0] == data_unique_test_df3.shape[0], (
-            f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {operation}"
-        )
+        assert (
+            results6a.shape[0] == data_unique_test_df3.shape[0]
+        ), f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {operation}"
 
         # testing multiple operations (continually appends operations)
         concat_operations = all_operations[: operation_idx + 1]
@@ -553,6 +553,6 @@ def test_samples_parameter_in_feature_select():
         )
 
         # checking if no rows were not removed
-        assert results6b.shape[0] == data_unique_test_df3.shape[0], (
-            f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {concat_operations}"
-        )
+        assert (
+            results6b.shape[0] == data_unique_test_df3.shape[0]
+        ), f"Row counts do not match: {results6a[0]} != {data_unique_test_df3.shape[0]} in operation: {concat_operations}"
