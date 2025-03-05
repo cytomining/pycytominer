@@ -6,7 +6,7 @@
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/main/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
-[![DOI](https://img.shields.io/badge/DOI-10.48550/arXiv.2311.13417-blue)](https://doi.org/10.48550/arXiv.2311.13417)
+[![DOI](https://img.shields.io/badge/DOI-10.1038/s41592-025-02611-8-blue)](https://doi.org/10.1038/s41592-025-02611-8)
 
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
