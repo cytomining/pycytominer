@@ -245,11 +245,5 @@ pycytominer.cyto_utils.write_gct(
 
 ## Citing Pycytominer
 
-If you have used `pycytominer` in your project, please use the citation below.
-You can also find the citation in the 'cite this repository' link at the top right under `about` section.
-
-APA:
-
-```text
-Serrano, E., Chandrasekaran, N., Bunten, D., Brewer, K., Tomkinson, J., Kern, R., Bornholdt, M., Fleming, S., Pei, R., Arevalo, J., Tsang, H., Rubinetti, V., Tromans-Coia, C., Becker, T., Weisbart, E., Bunne, C., Kalinin, A. A., Senft, R., Taylor, S. J., Jamali, N., Adeboye, A., Abbasi, H. S., Goodman, A., Caicedo, J., Carpenter, A. E., Cimini, B. A., Singh, S., & Way, G. P. Reproducible image-based profiling with Pycytominer. https://doi.org/10.48550/arXiv.2311.13417
-```
+If you use `pycytominer` in your project, please cite our project.
+You can see citation information in the 'cite this repository' link at the top right under `about` section.
