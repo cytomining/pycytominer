@@ -246,4 +246,5 @@ pycytominer.cyto_utils.write_gct(
 ## Citing Pycytominer
 
 If you use `pycytominer` in your project, please cite our software.
-You can see citation information in the 'cite this repository' link at the top right under `about` section.
+You can see citation information in the 'cite this repository' link at the top right under `about` section within GitHub.
+This information may also be referenced within the [`CITATION.cff`](CITATION.cff) file.
