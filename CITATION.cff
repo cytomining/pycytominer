@@ -88,4 +88,14 @@ title: "Reproducible image-based profiling with Pycytominer"
 version: "1.2.2"
 license: BSD-3-Clause
 repository-code: "https://github.com/cytomining/pycytominer"
-doi: 10.48550/arXiv.2311.13417
+doi: 10.1038/s41592-025-02611-8
+identifiers:
+  - description: Nature.com article
+    type: doi
+    value: "10.1038/s41592-025-02611-8"
+  - description: arXiv.org preprint
+    type: doi
+    value: "10.48550/arXiv.2311.13417"
+  - description: Zenodo software DOI
+    type: doi
+    value: "10.5281/zenodo.14194368"
