@@ -305,9 +305,11 @@ def test_load_compartment():
         if pd.api.types.is_float(CELLS_DF[colname].dtype)
         # check for columns which are of 'int64' type
         # note: pd.api.types.is_integer sometimes is unable to detect int64
-        or CELLS_DF[colname].dtype == "int64"
-        # avoid recasting the metadata_types
-        and colname not in metadata_types
+        or (
+            CELLS_DF[colname].dtype == "int64"
+            # avoid recasting the metadata_types
+            and colname not in metadata_types
+        )
     }
 
     # create deep copy of CELLS_DF with manually re-typed float columns as float32

@@ -76,7 +76,7 @@ def test_check_compartments_not_valid():
 
 def test_get_default_compartments():
     default_comparments = get_default_compartments()
-    assert ["cells", "cytoplasm", "nuclei"] == default_comparments
+    assert default_comparments == ["cells", "cytoplasm", "nuclei"]
 
 
 def test_load_known_metadata_dictionary():
