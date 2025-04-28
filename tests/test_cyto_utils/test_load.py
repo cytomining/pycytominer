@@ -37,9 +37,10 @@ ROOT_DIR = pathlib.Path(__file__).parents[2]
 # Example .npz file with real data
 example_npz_file = (
     ROOT_DIR
-    / "pycytominer"
-    / "data"
+    / "tests"
+    / "test_data"
     / "DeepProfiler_example_data"
+    / "Week1_22123"
     / "Week1_22123_B02_s1.npz"
 )
 
@@ -48,6 +49,7 @@ example_npz_file_locations = os.path.join(
     "..",
     "test_data",
     "DeepProfiler_example_data",
+    "SQ00014812_and_SQ00014813",
     "outputs",
     "results",
     "features",

@@ -25,7 +25,13 @@ random.seed(42)
 @pytest.fixture(scope="session")
 def deep_profiler_data(tmp_path_factory):
     """This fixture returns the DeepProfilerData object and the output folder"""
-    example_project_dir = ROOT_DIR / "tests" / "test_data" / "DeepProfiler_example_data"
+    example_project_dir = (
+        ROOT_DIR
+        / "tests"
+        / "test_data"
+        / "DeepProfiler_example_data"
+        / "SQ00014812_and_SQ00014813"
+    )
     profile_dir = example_project_dir / "outputs" / "results" / "features"
     index_file = example_project_dir / "inputs" / "metadata" / "test_index.csv"
 
