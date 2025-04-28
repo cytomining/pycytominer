@@ -45,7 +45,7 @@ data_missing_df = pd.concat([
 ]).reset_index(drop=True)
 
 features = infer_cp_features(data_df)
-dtype_convert_dict = {x: float for x in features}
+dtype_convert_dict = dict.fromkeys(features, float)
 
 
 def test_aggregate_median_allvar():
