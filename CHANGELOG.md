@@ -1,3 +1,33 @@
+## v1.2.3 (2025-05-08)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.3)
+
+### Fix
+
+- **cell_locations**: modify tests for data updates (#505)
+- **tests**: Organize DeepProfiler test data in one spot (#520)
+- **docs**: Update docs configuration for virtualenv and poetry bug (#523)
+
+### Docs
+
+- **citations** update doi for nature methods pub (#514)
+- **citations** Remove citation info (keep just pointer) in readme (#515)
+
+### Refactor
+
+- **poetry**: add plugin configuration to pyproject (#509)
+
+### Build
+
+- **python**: Enable Python 3.13 compatibility (#526)
+- **deps**: various dependency updates automated by dependabot
+
+### CI
+
+- **runners**: bump macos gh actions runner version (#506)
+- **pre-commit**: add pre-commit-update and related updates (#507)
+- **cache**: use os with arch for cache naming (#508)
+
 ## v1.2.2 (2025-01-23)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.2)

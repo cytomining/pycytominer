@@ -213,7 +213,7 @@ Creating a new release includes the following steps:
 9. Create a new release on GitHub using the [release draft](https://github.com/cytomining/pycytominer/releases/new) feature.
 10. Publish the release.
 11. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via Github Actions.
-12. Manually create the release at [conda-forge](https://anaconda.org/conda-forge/pycytominer).
+12. Approve automatically generated release under [conda-forge/pycytominer](https://anaconda.org/conda-forge/pycytominer).
 
 #### Docker Hub Image Releases
 
