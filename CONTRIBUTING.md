@@ -156,6 +156,15 @@ Poetry installs all dependencies in a virtual environment, which is activated au
 Poetry also provides a `poetry run` command to run commands in the virtual environment without activating it.
 For example, to run the test suite, you can use `poetry run pytest`.
 
+### Running tests
+
+We use [`pytest`](https://docs.pytest.org/en/stable/) to help organize, configure, and run tests for this project.
+We expect that all tests must pass in order for new contributions to be accepted into production code.
+`pytest` configuration may be found within the `pyproject.toml` file under `tool.pytest.ini_options`.
+We include the marker `large_data_tests` for tests which involve large amounts of data downloaded from the internet (these tests could take time).
+`pytest` may be invoked through the command: `poetry run pytest`. 
+You may temporarily ignore the `large_data_tests` marked tests during development using, for example: `poetry run pytest -m "not large_data_tests"`.
+
 ### Dev environments
 
 #### Local devcontainer
