@@ -64,7 +64,7 @@ def test_single_cell(single_cell_deep_profiler):
     meta_cols = [x for x in single_cells.columns if x.startswith("Location_")]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
-    assert single_cells.shape == (10132, 6417)
+    assert single_cells.shape == (10132, 6418)
     assert not single_cells.isnull().values.any()
 
     # Random value check
@@ -107,7 +107,7 @@ def test_single_cell_normalize(single_cell_deep_profiler):
         filepath_or_buffer=normalize(
             profiles=single_cells,
             features=derived_features,
-            output_file=(output_folder / "standalone_normalize.parquet"),
+            output_file=(output_folder / "standalone_normalized.csv"),
         )
     ).drop(
         # note: We drop metadata_concentration because it includes NaN values
@@ -162,7 +162,7 @@ def test_aggregate(deep_profiler_data):
     )
     df_plate = plate_class.aggregate_deep()
 
-    assert df_site.shape == (36, 6417)
+    assert df_site.shape == (36, 6418)
     assert df_well.shape == (4, 6412)
     assert df_plate.shape == (2, 6406)
 
@@ -188,7 +188,8 @@ def test_output(single_cell_deep_profiler):
 
     files = os.listdir(output_folder)
     files_should_be = [
-        "normalized.csv",
+        "sc_dp_normalized.csv",
+        "standalone_normalized.csv",
         "SQ00014812.csv",
         "SQ00014813.csv",
         "SQ00014812_A01.csv",
