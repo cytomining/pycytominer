@@ -20,7 +20,7 @@ def output(
         "mtime": 1,
     },
     **kwargs,
-):
+) -> str:
     """Given an output file and compression options, write file to disk
 
     Parameters

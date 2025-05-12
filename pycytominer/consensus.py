@@ -118,7 +118,7 @@ def consensus(
         )
 
     if output_file is not None:
-        output(
+        return output(
             df=consensus_df,
             output_filename=output_file,
             output_type=output_type,
