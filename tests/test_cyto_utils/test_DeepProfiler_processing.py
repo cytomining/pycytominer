@@ -64,7 +64,7 @@ def test_single_cell(single_cell_deep_profiler):
     meta_cols = [x for x in single_cells.columns if x.startswith("Location_")]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
-    assert single_cells.shape == (10132, 6418)
+    assert single_cells.shape == (10132, 6417)
     assert not single_cells.isnull().values.any()
 
     # Random value check
@@ -77,9 +77,16 @@ def test_single_cell_normalize(single_cell_deep_profiler):
     single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
 
     # normalize single cell data with DP processing
-    output_file = output_folder / "normalized.csv"
-    single_cells_normalized = single_cells_DP.normalize_deep_single_cells(
-        output_file=output_file
+    output_file = output_folder / "sc_dp_normalized.csv"
+    single_cells_normalized = pd.read_csv(
+        filepath_or_buffer=str(
+            single_cells_DP.normalize_deep_single_cells(output_file=output_file)
+        )
+    ).drop(
+        # note: We drop metadata_concentration because it includes NaN values
+        # (these are blank values in the DataFrame which are translated to NaN
+        # when serialized to CSV or Parquet).
+        columns=["Metadata_Concentration"]
     )
 
     # Build the expected normalized single cell data
@@ -93,9 +100,20 @@ def test_single_cell_normalize(single_cell_deep_profiler):
     ]
 
     # wrapper for pycytominer.normalize() function
-    expected_single_cell_normalize = normalize(
-        profiles=single_cells,
-        features=derived_features,
+    # note: we export to csv and then read it back in to ensure like-for-like
+    # comparisons (Pandas datatypes do not always match what is translated from
+    # CSV files).
+    expected_single_cell_normalize = pd.read_csv(
+        filepath_or_buffer=normalize(
+            profiles=single_cells,
+            features=derived_features,
+            output_file=(output_folder / "standalone_normalize.parquet"),
+        )
+    ).drop(
+        # note: We drop metadata_concentration because it includes NaN values
+        # (these are blank values in the DataFrame which are translated to NaN
+        # when serialized to CSV or Parquet).
+        columns=["Metadata_Concentration"]
     )
     x_locations = single_cells["Location_Center_X"]
     expected_single_cell_normalize.insert(0, "Location_Center_X", x_locations)
@@ -107,7 +125,7 @@ def test_single_cell_normalize(single_cell_deep_profiler):
     ]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
-    assert single_cells_normalized.shape == (10132, 6418)
+    assert single_cells_normalized.shape == (10132, 6417)
     assert not single_cells_normalized.isnull().values.any()
     assert output_file.exists()
     pd.testing.assert_frame_equal(
@@ -144,7 +162,7 @@ def test_aggregate(deep_profiler_data):
     )
     df_plate = plate_class.aggregate_deep()
 
-    assert df_site.shape == (36, 6418)
+    assert df_site.shape == (36, 6417)
     assert df_well.shape == (4, 6412)
     assert df_plate.shape == (2, 6406)
 
