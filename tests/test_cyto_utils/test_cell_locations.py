@@ -43,7 +43,7 @@ def get_metadata_input_dataframe(cell_loc: CellLocation) -> pd.DataFrame:
         # otherwise raise an error as we don't have a supported format
         raise ValueError("Unsupported metadata_input type")
 
-
+@pytest.mark.large_data_tests
 @pytest.mark.parametrize(
     "cell_loc_param",
     [
@@ -76,7 +76,7 @@ def test_output_shape_and_required_columns(
     assert "Nuclei_Location_Center_X" in cell_loc["CellCenters"][0][0]
     assert "Nuclei_Location_Center_Y" in cell_loc["CellCenters"][0][0]
 
-
+@pytest.mark.large_data_tests
 @pytest.mark.parametrize(
     "cell_loc_param",
     [
