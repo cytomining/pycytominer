@@ -181,6 +181,9 @@ testpaths = "tests"
 filterwarnings = [
   "ignore::DeprecationWarning:pycytominer.*",
 ]
+markers = [
+  "large_data_tests: tests which involve the use of large data and could involve longer time durations.",
+]
 
 [tool.mypy]
 exclude = [
