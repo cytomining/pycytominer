@@ -184,7 +184,7 @@ def feature_select(
     selected_df = profiles.drop(excluded_features, axis="columns")
 
     if output_file is not None:
-        output(
+        return output(
             df=selected_df,
             output_filename=output_file,
             output_type=output_type,

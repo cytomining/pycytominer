@@ -473,7 +473,7 @@ class SingleCellDeepProfiler:
 
         # separate code because normalize() will not return if it has an output file specified
         if output_file is not None:
-            output(
+            return output(
                 df=normalized,
                 output_filename=output_file,
                 compression_options=compression_options,

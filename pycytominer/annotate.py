@@ -136,7 +136,7 @@ def annotate(
     annotated = annotated.loc[:, meta_cols + other_cols]
 
     if output_file is not None:
-        output(
+        return output(
             df=annotated,
             output_filename=output_file,
             output_type=output_type,
