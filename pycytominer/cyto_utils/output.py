@@ -2,7 +2,7 @@
 Utility function to compress output data
 """
 
-from typing import Dict, Union, Optional
+from typing import Union, Optional, Any
 
 import pandas as pd
 
@@ -12,12 +12,15 @@ COMPRESS_OPTIONS = ["gzip", None]
 def output(
     df: pd.DataFrame,
     output_filename: str,
-    output_type: str = "csv",
+    output_type: Optional[str] = "csv",
     sep: str = ",",
     float_format: Optional[str] = None,
-    compression_options: Union[str, Dict] = {"method": "gzip", "mtime": 1},
+    compression_options: Optional[Union[str, dict[str, Any]]] = {
+        "method": "gzip",
+        "mtime": 1,
+    },
     **kwargs,
-):
+) -> str:
     """Given an output file and compression options, write file to disk
 
     Parameters
@@ -79,6 +82,10 @@ def output(
     )
     """
 
+    # ensure a default output type
+    if output_type is None:
+        output_type = "csv"
+
     if output_type == "csv":
         compression_options = set_compression_method(compression=compression_options)
 
@@ -98,7 +105,7 @@ def output(
     return output_filename
 
 
-def set_compression_method(compression: Union[str, Dict]):
+def set_compression_method(compression: Optional[Union[str, dict]]) -> dict[str, Any]:
     """Set the compression options
 
     Parameters
@@ -136,6 +143,6 @@ def check_compression_method(compression: str):
     None
         Asserts available options
     """
-    assert (
+    assert (  # noqa: S101
         compression in COMPRESS_OPTIONS
     ), f"{compression} is not supported, select one of {COMPRESS_OPTIONS}"

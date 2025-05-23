@@ -32,7 +32,7 @@ def write_gct(
     features : list
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume cell painting features are those
+        Defaults to "infer". If "infer", then assume features are from CellProfiler output and
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
@@ -49,7 +49,7 @@ def write_gct(
     """
 
     # Note, only version 1.3 is currently supported
-    assert version == "#1.3", "Only version #1.3 is currently supported."
+    assert version == "#1.3", "Only version #1.3 is currently supported."  # noqa: S101
 
     # Step 1: Create first two rows of data
     if features == "infer":
@@ -63,7 +63,7 @@ def write_gct(
 
     # Step 2: Get the sample metadata portion of the output file
     metadata_part = metadata_df.transpose()
-    metadata_part.columns = ["SAMPLE_{}".format(x) for x in metadata_part.columns]
+    metadata_part.columns = [f"SAMPLE_{x}" for x in metadata_part.columns]
     metadata_part = (
         metadata_part.transpose()
         .reset_index()
@@ -79,9 +79,11 @@ def write_gct(
     full_df = pd.concat([metadata_part, feature_df], axis="rows")
     if isinstance(feature_metadata, pd.DataFrame):
         nrow_metadata = feature_metadata.shape[1]
-        assert (
+        assert (  # noqa: S101
             "id" in feature_metadata.index.tolist()
-        ), "make sure feature metadata has row named 'id' that stores feature metadata names!"
+        ), (
+            "make sure feature metadata has row named 'id' that stores feature metadata names!"
+        )
         full_df = feature_metadata.merge(
             full_df, how="right", left_index=True, right_index=True
         )

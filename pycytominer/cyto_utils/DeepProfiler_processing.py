@@ -1,14 +1,15 @@
 """
 Utility function to load and process the output files of a DeepProfiler run.
 """
+
 import os
 import pathlib
-import numpy as np
 import pandas as pd
 import warnings
 
-from pycytominer import aggregate, normalize
-from pycytominer.cyto_utils import (
+# use mypy ignores below to avoid duplicate import warnings
+from pycytominer import aggregate, normalize  # type: ignore[no-redef]
+from pycytominer.cyto_utils import (  # type: ignore[no-redef]
     load_npz_features,
     load_npz_locations,
     infer_cp_features,
@@ -17,7 +18,6 @@ from pycytominer.cyto_utils import (
 
 
 class DeepProfilerData:
-
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
 
     Attributes
@@ -121,7 +121,6 @@ class DeepProfilerData:
 
 
 class AggregateDeepProfiler:
-
     """This class holds all functions needed to aggregate the DeepProfiler (DP) run.
 
     Attributes
@@ -169,11 +168,11 @@ class AggregateDeepProfiler:
         ---------
         See above for all parameters.
         """
-        assert aggregate_operation in [
+        assert aggregate_operation in [  # noqa: S101
             "median",
             "mean",
         ], "Input of aggregate_operation is incorrect, it must be either median or mean"
-        assert aggregate_on in [
+        assert aggregate_on in [  # noqa: S101
             "site",
             "well",
             "plate",
@@ -280,7 +279,7 @@ class AggregateDeepProfiler:
             df = pd.concat([df, meta_df], axis=1)
 
             # save metalevel file
-            if self.output_file != None:
+            if self.output_file is not None:
                 if not os.path.exists(self.output_file):
                     os.mkdir(self.output_file)
                 file_path = os.path.join(
@@ -291,7 +290,7 @@ class AggregateDeepProfiler:
 
         # Concatenate all of the above created profiles
         self.aggregated_profiles = pd.concat(
-            [x for x in self.aggregated_profiles]
+            list(self.aggregated_profiles)
         ).reset_index(drop=True)
 
         # clean and reindex columns
@@ -312,7 +311,6 @@ class AggregateDeepProfiler:
 
 
 class SingleCellDeepProfiler:
-
     """This class holds functions needed to analyze single cells from the DeepProfiler (DP) run. Only pycytominer.normalization() is implemented.
 
     Attributes
@@ -474,8 +472,8 @@ class SingleCellDeepProfiler:
         normalized.insert(1, "Location_Center_Y", y_locations)
 
         # separate code because normalize() will not return if it has an output file specified
-        if output_file != None:
-            output(
+        if output_file is not None:
+            return output(
                 df=normalized,
                 output_filename=output_file,
                 compression_options=compression_options,

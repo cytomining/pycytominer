@@ -2,7 +2,6 @@
 Functions for counting the number of fields and aggregating other images features
 """
 
-import pandas as pd
 import numpy as np
 from pycytominer import aggregate
 
@@ -32,7 +31,7 @@ def aggregate_fields_count(image_df, strata, fields_of_view_feature):
         fields_count_df.groupby(strata)[fields_of_view_feature]
         .count()
         .reset_index()
-        .rename(columns={f"{fields_of_view_feature}": f"Metadata_Site_Count"})
+        .rename(columns={f"{fields_of_view_feature}": "Metadata_Site_Count"})
     )
 
     return fields_count_df
@@ -127,7 +126,7 @@ def aggregate_image_features(
         )
 
     # Aggregate other image features
-    if not len(np.setdiff1d(image_feature_categories, [count_prefix])) == 0:
+    if len(np.setdiff1d(image_feature_categories, [count_prefix])) != 0:
         image_features_df = image_features_df.drop(
             remove_cols, axis="columns", errors="ignore"
         )

@@ -1,0 +1,42 @@
+name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+on:
+  release:
+    # only publish to pypi when gh release is published
+    types: [published]
+
+env:
+  LANG: "en_US.utf-8"
+  LC_ALL: "en_US.utf-8"
+  PYTHONIOENCODING: "UTF-8"
+  TARGET_PYTHON_VERSION: "3.10"
+
+jobs:
+  build-and-publish:
+    name: Build and publish Python 🐍 distributions
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # We do not need to fetch all the history of the repository
+          # as commit being released is guaranteed to have a tag.
+          # poetry-dynamic-versioning will use that tag use to set the
+          # build version of the package.
+          fetch-depth: 1
+      - name: Setup base environment
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: false
+          setup-poetry: true
+          install-deps: false
+      - name: Build 📦 distributions
+        run: |
+          poetry build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

@@ -3,12 +3,10 @@ Returns list of features such that no two features have a correlation greater th
 specified threshold
 """
 
-import numpy as np
-import pandas as pd
 from pycytominer.cyto_utils import (
-    infer_cp_features,
-    get_pairwise_correlation,
     check_correlation_method,
+    get_pairwise_correlation,
+    infer_cp_features,
 )
 
 
@@ -22,11 +20,15 @@ def correlation_threshold(
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
-         List of features present in the population dataframe [default: "infer"]
-         if "infer", then assume cell painting features are those that start with
-         "Cells_", "Nuclei_", or "Cytoplasm_".
-    samples : list or str, default "all"
-        List of samples to perform operation on. If "all", use all samples to calculate.
+        A list of strings corresponding to feature measurement column names in the
+        `population_df` DataFrame. All features listed must be found in `population_df`.
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
+    samples : str, default "all"
+        List of samples to perform operation on. The function uses a pd.DataFrame.query()
+        function, so you should  structure samples in this fashion. An example is
+        "Metadata_treatment == 'control'" (include all quotes).
+        If "all", use all samples to calculate.
     threshold - float, default 0.9
         Must be between (0, 1) to exclude features
     method - str, default "pearson"
@@ -38,18 +40,26 @@ def correlation_threshold(
          List of features to exclude from the population_df.
     """
 
-    # Check that the input method is supported
+    # Checking if the provided correlation method is supported
     method = check_correlation_method(method)
 
-    assert 0 <= threshold <= 1, "threshold variable must be between (0 and 1)"
+    # Checking if the threshold is between 0 and 1
+    if not 0 <= threshold <= 1:
+        raise ValueError("threshold variable must be between (0 and 1)")
 
     # Subset dataframe and calculate correlation matrix across subset features
+    # If samples is not 'all', then subset the dataframe
     if samples != "all":
-        population_df = population_df.loc[samples, :]
+        # Using pandas query to filter rows based on the conditions provided in the
+        # samples parameter
+        population_df = population_df.query(expr=samples)
 
+    # Infer CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
+        # Infer CellProfiler features
         features = infer_cp_features(population_df)
 
+    # Subset the DataFrame to only include the features of interest
     population_df = population_df.loc[:, features]
 
     # Get correlation matrix and lower triangle of pairwise correlations in long format

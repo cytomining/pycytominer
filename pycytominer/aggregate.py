@@ -2,27 +2,31 @@
 Aggregate profiles based on given grouping variables.
 """
 
+from typing import Any, Optional, Union
+
 import numpy as np
 import pandas as pd
+
 from pycytominer.cyto_utils import (
-    output,
     check_aggregate_operation,
     infer_cp_features,
+    output,
 )
 
 
 def aggregate(
-    population_df,
-    strata=["Metadata_Plate", "Metadata_Well"],
-    features="infer",
-    operation="median",
-    output_file=None,
-    compute_object_count=False,
-    object_feature="Metadata_ObjectNumber",
-    subset_data_df=None,
-    compression_options=None,
-    float_format=None,
-):
+    population_df: pd.DataFrame,
+    strata: list[str] = ["Metadata_Plate", "Metadata_Well"],
+    features: Union[list[str], str] = "infer",
+    operation: str = "median",
+    output_file: Optional[str] = None,
+    output_type: Optional[str] = "csv",
+    compute_object_count: bool = False,
+    object_feature: str = "Metadata_ObjectNumber",
+    subset_data_df: Optional[pd.DataFrame] = None,
+    compression_options: Optional[Union[str, dict[str, Any]]] = None,
+    float_format: Optional[str] = None,
+) -> Optional[Union[pd.DataFrame, str]]:
     """Combine population dataframe variables by strata groups using given operation.
 
     Parameters
@@ -38,6 +42,9 @@ def aggregate(
     output_file : str or file handle, optional
         If provided, will write aggregated profiles to file. If not specified, will return the aggregated profiles.
         We recommend naming the file based on the plate name.
+    output_type : str, optional
+        If provided, will write aggregated profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compute_object_count : bool, default False
         Whether or not to compute object counts.
     object_feature : str, default "Metadata_ObjectNumber"
@@ -71,13 +78,13 @@ def aggregate(
         ).reindex(population_df.columns, axis="columns")
 
     # Subset dataframe to only specified variables if provided
-    strata_df = population_df.loc[:, strata]
+    strata_df = population_df[strata]
 
     # Only extract single object column in preparation for count
     if compute_object_count:
-        count_object_df = population_df.loc[:, np.union1d(strata, [object_feature])]
         count_object_df = (
-            count_object_df.groupby(strata)[object_feature]
+            population_df.loc[:, list(np.union1d(strata, [object_feature]))]
+            .groupby(strata)[object_feature]
             .count()
             .reset_index()
             .rename(columns={f"{object_feature}": "Metadata_Object_Count"})
@@ -85,19 +92,20 @@ def aggregate(
 
     if features == "infer":
         features = infer_cp_features(population_df)
-        population_df = population_df.loc[:, features]
-    else:
-        population_df = population_df.loc[:, features]
+
+    # recast as dataframe to protect against scenarios where a series may be returned
+    population_df = pd.DataFrame(population_df[features])
 
     # Fix dtype of input features (they should all be floats!)
-    convert_dict = {x: float for x in features}
-    population_df = population_df.astype(convert_dict)
+    population_df = population_df.astype(float)
 
     # Merge back metadata used to aggregate by
     population_df = pd.concat([strata_df, population_df], axis="columns")
 
     # Perform aggregating function
-    population_df = population_df.groupby(strata, dropna=False)
+    # Note: type ignore added below to address the change in variable types for
+    # label `population_df`.
+    population_df = population_df.groupby(strata, dropna=False)  # type: ignore[assignment]
 
     if operation == "median":
         population_df = population_df.median().reset_index()
@@ -109,18 +117,20 @@ def aggregate(
         population_df = count_object_df.merge(population_df, on=strata, how="right")
 
     # Aggregated image number and object number do not make sense
-    for col in ["ImageNumber", "ObjectNumber"]:
-        if col in population_df.columns:
-            population_df = population_df.drop([col], axis="columns")
+    if columns_to_drop := [
+        column
+        for column in population_df.columns
+        if column in ["ImageNumber", "ObjectNumber"]
+    ]:
+        population_df = population_df.drop(columns=columns_to_drop, axis="columns")
 
-    if output_file != None:
-        output(
+    if output_file is not None:
+        return output(
             df=population_df,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )
     else:
         return population_df
-
-    return population_df

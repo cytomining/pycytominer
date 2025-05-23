@@ -4,12 +4,13 @@ Utility function to augment a metadata file with X,Y locations of cells in each 
 
 import pathlib
 import pandas as pd
+import tempfile
+from typing import Optional, Union
+
 import boto3
 import botocore
-import tempfile
 import collections
 import sqlalchemy
-from typing import Union
 
 
 class CellLocation:
@@ -52,7 +53,7 @@ class CellLocation:
         Path to the output file. If None, the metadata file is not saved to disk
 
     image_column : default = 'ImageNumber'
-        Name of the column in the metadata file that links to the single_cell file
+        Name of the column in the metadata file that links to the single_cell file, in combination with `table_column`
 
     image_key: default = ['Metadata_Plate', 'Metadata_Well', 'Metadata_Site']
         Names of the columns in the metadata file that uniquely identify each image
@@ -66,6 +67,9 @@ class CellLocation:
     cell_y_loc : default = 'Nuclei_Location_Center_Y'
         Name of the column in the single_cell file that contains the Y location of each cell
 
+    table_column : default = 'TableNumber'
+        Name of the column in the metadata file that links to the single_cell file, in combination with `image_column`
+
     Methods
     -------
     add_cell_location()
@@ -77,10 +81,11 @@ class CellLocation:
         self,
         metadata_input: Union[str, pd.DataFrame],
         single_cell_input: Union[str, sqlalchemy.engine.Engine],
-        augmented_metadata_output: str = None,
+        augmented_metadata_output: Optional[str] = None,
         overwrite: bool = False,
         image_column: str = "ImageNumber",
         object_column: str = "ObjectNumber",
+        table_column: str = "TableNumber",
         image_key: list = ["Metadata_Plate", "Metadata_Well", "Metadata_Site"],
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
@@ -91,6 +96,7 @@ class CellLocation:
         self.overwrite = overwrite
         self.image_column = image_column
         self.object_column = object_column
+        self.table_column = table_column
         self.image_key = image_key
         self.cell_x_loc = cell_x_loc
         self.cell_y_loc = cell_y_loc
@@ -100,7 +106,9 @@ class CellLocation:
             "s3", config=botocore.config.Config(signature_version=botocore.UNSIGNED)
         )
 
-    def _expanduser(self, obj: Union[str, None]):
+    def _expanduser(
+        self, obj: Union[str, pd.DataFrame, sqlalchemy.engine.Engine, None]
+    ):
         """Expand the user home directory in a path"""
         if obj is not None and isinstance(obj, str) and not obj.startswith("s3://"):
             return pathlib.Path(obj).expanduser().as_posix()
@@ -163,13 +171,19 @@ class CellLocation:
 
         bucket, key = self._parse_s3_path(uri)
 
-        tmp_file = tempfile.NamedTemporaryFile(
+        with tempfile.NamedTemporaryFile(
             delete=False, suffix=pathlib.Path(key).name
-        )
+        ) as tmp_file:
+            self.s3.download_file(bucket, key, tmp_file.name)
 
-        self.s3.download_file(bucket, key, tmp_file.name)
-
-        return tmp_file.name
+            # Check if the downloaded file exists and has a size greater than 0
+            tmp_file_path = pathlib.Path(tmp_file.name)
+            if tmp_file_path.exists() and tmp_file_path.stat().st_size > 0:
+                return tmp_file.name
+            else:
+                raise ValueError(
+                    f"Downloaded file '{tmp_file.name}' is empty or does not exist."
+                )
 
     def _load_metadata(self):
         """Load the metadata into a Pandas DataFrame
@@ -234,7 +248,7 @@ class CellLocation:
         output_df_list = collections.defaultdict(list)
 
         # iterate over each group of cells in the merged DataFrame
-        group_cols = self.image_key + [self.image_column]
+        group_cols = [*self.image_key, self.image_column, self.table_column]
 
         for group_values, cell_df in df.groupby(group_cols):
             # add the image-level information to the output dictionary
@@ -252,13 +266,11 @@ class CellLocation:
                 cell_dict[self.cell_y_loc],
             ):
                 # add the cell information to a dictionary
-                row_cell_dicts.append(
-                    {
-                        self.object_column: object_column,
-                        self.cell_x_loc: cell_x_loc,
-                        self.cell_y_loc: cell_y_loc,
-                    }
-                )
+                row_cell_dicts.append({
+                    self.object_column: object_column,
+                    self.cell_x_loc: cell_x_loc,
+                    self.cell_y_loc: cell_y_loc,
+                })
 
             # add the cell-level information to the output dictionary
             output_df_list["CellCenters"].append(row_cell_dicts)
@@ -316,6 +328,7 @@ class CellLocation:
             column_name in nuclei_columns
             for column_name in [
                 self.image_column,
+                self.table_column,
                 self.object_column,
                 self.cell_x_loc,
                 self.cell_y_loc,
@@ -329,6 +342,7 @@ class CellLocation:
 
         if not (
             self.image_column in image_columns
+            and self.table_column in image_columns
             and all(elem in image_columns for elem in self.image_key)
         ):
             raise ValueError(
@@ -350,14 +364,15 @@ class CellLocation:
         # merge the Image and Nuclei tables in SQL
 
         join_query = f"""
-        SELECT Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
+        SELECT Nuclei.{self.table_column},Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
         FROM Nuclei
         INNER JOIN Image
-        ON Nuclei.{self.image_column} = Image.{self.image_column};
+        ON Nuclei.{self.image_column} = Image.{self.image_column} and Nuclei.{self.table_column} = Image.{self.table_column};
         """
 
         column_types = {
             self.image_column: "int64",
+            self.table_column: "int64",
             self.object_column: "int64",
             self.cell_x_loc: "float",
             self.cell_y_loc: "float",
@@ -431,7 +446,7 @@ class CellLocation:
 
         # If self.augmented_metadata_output is not None, save the data
         if self.augmented_metadata_output is not None:
-            # TODO: switch to https://github.com/cytomining/pycytominer/blob/master/pycytominer/cyto_utils/output.py if we want to support more file types
+            # TODO: switch to https://github.com/cytomining/pycytominer/blob/main/pycytominer/cyto_utils/output.py if we want to support more file types
             augmented_metadata_df.to_parquet(
                 self.augmented_metadata_output, index=False
             )

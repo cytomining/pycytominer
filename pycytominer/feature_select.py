@@ -1,18 +1,19 @@
 """
 Select features to use in downstream analysis based on specified selection method
 """
-from pycytominer.operations import (
-    correlation_threshold,
-    variance_threshold,
-    get_na_columns,
-    noise_removal,
-)
+
 from pycytominer.cyto_utils import (
-    load_profiles,
-    output,
+    drop_outlier_features,
     get_blocklist_features,
     infer_cp_features,
-    drop_outlier_features,
+    load_profiles,
+    output,
+)
+from pycytominer.operations import (
+    correlation_threshold,
+    get_na_columns,
+    noise_removal,
+    variance_threshold,
 )
 
 
@@ -23,6 +24,7 @@ def feature_select(
     samples="all",
     operation="variance_threshold",
     output_file=None,
+    output_type="csv",
     na_cutoff=0.05,
     corr_threshold=0.9,
     corr_method="pearson",
@@ -41,10 +43,10 @@ def feature_select(
     ----------
     profiles : pandas.core.frame.DataFrame or file
         DataFrame or file of profiles.
-    features : list
+    features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume cell painting features are those
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
         Whether the profiles contain image features.
@@ -53,9 +55,12 @@ def feature_select(
     operation: list of str or str, default "variance_threshold
         Operations to perform on the input profiles.
     output_file : str, optional
-        If provided, will write annotated profiles to file. If not specified, will
-        return the normalized profiles as output. We recommend that this output file be
+        If provided, will write feature selected profiles to file. If not specified, will
+        return the feature selected profiles as output. We recommend that this output file be
         suffixed with "_normalized_variable_selected.csv".
+    output_type : str, optional
+        If provided, will write feature selected profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     na_cutoff : float, default 0.05
         Proportion of missing values in a column to tolerate before removing.
     corr_threshold : float, default 0.9
@@ -107,13 +112,13 @@ def feature_select(
 
     # Make sure the user provides a supported operation
     if isinstance(operation, list):
-        assert all(
-            [x in all_ops for x in operation]
-        ), "Some operation(s) {} not supported. Choose {}".format(operation, all_ops)
+        if not all(x in all_ops for x in operation):
+            raise ValueError(
+                f"Some operation(s) {operation} not supported. Choose {all_ops}"
+            )
     elif isinstance(operation, str):
-        assert operation in all_ops, "{} not supported. Choose {}".format(
-            operation, all_ops
-        )
+        if operation not in all_ops:
+            raise ValueError(f"{operation} not supported. Choose {all_ops}")
         operation = operation.split()
     else:
         return ValueError("Operation must be a list or string")
@@ -178,10 +183,11 @@ def feature_select(
 
     selected_df = profiles.drop(excluded_features, axis="columns")
 
-    if output_file != None:
-        output(
+    if output_file is not None:
+        return output(
             df=selected_df,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )

@@ -1,12 +1,16 @@
-_modified from [EmbeddedArtistry](https://embeddedartistry.com/blog/2017/08/04/a-github-pull-request-template-for-your-projects/)_
+<!-- _modified from [EmbeddedArtistry](https://embeddedartistry.com/blog/2017/08/04/a-github-pull-request-template-for-your-projects/)_ -->
 
 # Description
 
+<!--
 Thank you for your contribution to pycytominer!
 Please _succinctly_ summarize your proposed change.
 What motivated you to make this change?
 
 Please also link to any relevant issues that your code is associated with.
+For example:
+Closes #<GitHub issue number goes here>
+-->
 
 ## What is the nature of your change?
 

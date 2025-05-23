@@ -1,4 +1,6 @@
 __project__ = "pycytominer"
-__version__ = "0.2.0"
+# These version placeholders are updated during build by poetry-dynamic-versioning
+__version__ = "0.0.0"
+__version_tuple__ = (0, 0, 0)
 __license__ = "BSD 3-Clause License"
 __author__ = "Pycytominer Contributors"

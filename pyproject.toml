@@ -1,0 +1,221 @@
+[build-system]
+build-backend = "poetry_dynamic_versioning.backend"
+requires = [ "poetry-core>=1.7", "poetry-dynamic-versioning>=1.1" ]
+
+[tool.poetry]
+name = "pycytominer"
+# This version is a placeholder updated during build by poetry-dynamic-versioning
+version = "0.0.0"
+description = "Python package for processing image-based profiling data"
+authors = [
+  "Erik Serrano",
+  "Niranj Chandrasekaran",
+  "Dave Bunten",
+  "Kenneth I. Brewer",
+  "Jenna Tomkinson",
+  "Roshan Kern",
+  "Michael Bornholdt",
+  "Stephen Fleming",
+  "Ruifan Pei",
+  "John Arevalo",
+  "Hillary Tsang",
+  "Vincent Rubinetti",
+  "Erin Weisbart",
+  "Charlotte Bunne",
+  "Alexandr A. Kalinin",
+  "Rebecca Senft",
+  "Stephen J. Taylor",
+  "Nasim Jamali",
+  "Adeniyi Adeboye",
+  "Allen Goodman",
+  "Juan Caicedo",
+  "Anne E. Carpenter",
+  "Beth A. Cimini",
+  "Shantanu Singh",
+  "Gregory P. Way",
+]
+maintainers = [
+  "Gregory P. Way <gregory.way@cuanschutz.edu>",
+  "Dave Bunten <dave.bunten@cuanschutz.edu>",
+  "Kenneth I. Brewer <ken@kenbrewer.com>",
+]
+license = "BSD-3-Clause"
+readme = "README.md"
+homepage = "https://pycytominer.readthedocs.io/"
+repository = "https://github.com/cytomining/pycytominer"
+include = [ { path = "poetry.lock", format = "sdist" } ]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.14"
+numpy = ">=1.16.5"
+scipy = ">=1.5"
+pandas = ">=1.2.0"
+scikit-learn = ">=0.21.2"
+sqlalchemy = ">=1.3.6,<3"
+pyarrow = ">=8.0.0"
+
+# Extra dependencies for cell_locations 
+fsspec = { version = ">=2023.1.0", optional = true }
+s3fs = { version = ">=2023.4.0", optional = true }
+boto3 = { version = ">=1.26.79", optional = true }
+fire = { version = ">=0.5.0", optional = true }
+
+# Extra dependencies for collate
+cytominer-database = { version = "0.3.4", optional = true }
+
+[tool.poetry.extras]
+cell-locations = [ "fsspec", "s3fs", "boto3", "fire" ]
+collate = [ "cytominer-database" ]
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=5.0.1"
+codecov = ">=2.1.12"
+pytest-cov = ">=4.1,<7.0"
+pre-commit = ">=3.3.2"
+commitizen = ">=3.12,<5.0"
+ruff = ">=0.3.4,<0.12.0"
+mypy = "^1.11.2"
+types-openpyxl = "^3.1.5.20240918"
+pandas-stubs = [
+  { version = "<2.2.2.240909", python = "<3.10" },
+  { version = "^2.2.2.240909", python = ">=3.10" },
+]
+types-sqlalchemy = "^1.4.53.38"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "*"
+sphinx = ">=7.1,<7.5"
+sphinx-autobuild = ">=2021.3.14,<2025.0.0"
+sphinx-autoapi = "^3.0.0"
+ipython = "^8.12"
+groundwork-sphinx-theme = "^1.1.1"
+sphinx-copybutton = "^0.5.2"
+nbsphinx = "^0.9.3"
+m2r2 = "^0.3.3.post2"
+furo = ">=2023.9.10,<2025.0.0"
+mock = "^5.1.0"
+autodoc = "^0.5.0"
+dunamai = "^1.19.0"
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
+
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
+vcs = "git"
+
+[tool.poetry-dynamic-versioning.substitution]
+files = [ "pycytominer/__about__.py" ]
+
+[tool.setuptools_scm]
+# Avoids warnings about missing section
+# see: https://setuptools-scm.readthedocs.io/en/latest/usage/
+root = "."
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+fix = true
+
+format.preview = true
+lint.select = [
+  # flake8-builtins
+  "A",
+  # flake8-comprehensions
+  "C4",
+  # pycodestyle
+  "E",
+  # pyflakes
+  "F",
+  # isort
+  "I",
+  # pygrep-hooks
+  "PGH",
+  # ruff
+  "RUF",
+  # flake8-bandit
+  "S",
+  # flake8-simplify
+  "SIM",
+  # flake8-debugger
+  "T10",
+  # pyupgrade
+  "UP",
+  "W",
+  # flake8-2020
+  "YTT",
+  # The following checks are disabled, but we are working towards enabling them in the future.
+  # flake8-bugbear
+  # "B",
+  # mccabe
+  # "C90",
+  # tryceratops
+  # "TRY",
+]
+lint.ignore = [
+  # LineTooLong
+  "E501",
+  # DoNotAssignLambda
+  "E731",
+]
+# Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
+lint.per-file-ignores."__init__.py" = [ "E402", "F401" ]
+lint.per-file-ignores."pycytominer/cyto_utils/*" = [
+  # I (isort) is ignored due to circular dependencies in the cyto_utils module
+  "I",
+  # S608 (raw sql operations) is ignored because it is a common pattern in the cyto_utils module
+  "S608",
+]
+# Ignore assert statements in tests
+lint.per-file-ignores."tests/*" = [ "S101" ]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+filterwarnings = [
+  "ignore::DeprecationWarning:pycytominer.*",
+]
+markers = [
+  "large_data_tests: tests which involve the use of large data and could involve longer time durations.",
+]
+
+[tool.mypy]
+exclude = [
+  # ignore notebook-based walkthroughs
+  "walkthroughs",
+  # ignore tests dir
+  "tests",
+]
+
+[[tool.mypy.overrides]]
+# ignore missing import errors for the following
+# packages which do not have standard type stubs
+# or experience issues with imported types.
+module = [
+  "sklearn.*",
+  "scipy.*",
+  "cytominer_database.*",
+  "fire.*",
+  "boto3.*",
+  "botocore.*",
+]
+ignore_missing_imports = true
+
+[tool.commitizen]
+# This version is used for changelog tracking and is updated using `cz bump`
+version = "1.2.3"
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "commitizen"
+update_changelog_on_bump = true
+template = "dev_tools/commitizen/CHANGELOG.md.j2"
+version_files = [
+  "CITATION.cff",
+]

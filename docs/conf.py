@@ -12,23 +12,24 @@
 #
 import os
 import sys
-import pathlib
 from datetime import date
+
+import dunamai
 
 sys.path.insert(0, os.path.abspath(".."))
 
-import pycytominer
+# Ignore rules regarding import order which is required for sphinx build process
+import pycytominer  # noqa: E402, RUF100
 
 # -- Project information -----------------------------------------------------
 
 project = pycytominer.__about__.__project__
 author = pycytominer.__about__.__author__
-copyright = "Copyright 2019 - {date} {author}".format(
-    date=date.today().year, author=author
-)
+project_copyright = f"Copyright 2019 - {date.today().year} {author}"
 
-# The full version, including alpha/beta/rc tags
-version = pycytominer.__about__.__version__
+# Get the version from dunamai (the backend of poetry-dynamic-versioning)
+auto_version = dunamai.Version.from_git()
+version = auto_version.serialize()
 release = version
 
 # -- General configuration ---------------------------------------------------
@@ -36,7 +37,13 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx_copybutton", "m2r2"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx_copybutton",
+    "m2r2",
+    "nbsphinx",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -48,26 +55,28 @@ exclude_patterns = ["**tests**"]
 
 
 # -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-pycytominer_hex = "#88239A"
+# The theme to use for HTML and HTML Help pages.
 # Furo theme options specified here: https://pradyunsg.me/furo/
 html_theme = "furo"
+
+# colors used for styling the HTML output in light or dark mode
+pycytominer_hex_light = "#88239A"
+pycytominer_hex_dark = "#CF72DF"
+
 # Furo theme option colors specified here:
 # https://github.com/pradyunsg/furo/blob/main/src/furo/assets/styles/variables/_colors.scss
 html_theme_options = {
     "light_css_variables": {
-        "color-brand-primary": pycytominer_hex,
-        "color-brand-content": pycytominer_hex,
-        "color-api-pre-name": pycytominer_hex,
-        "color-api-name": pycytominer_hex,
+        "color-brand-primary": pycytominer_hex_light,
+        "color-brand-content": pycytominer_hex_light,
+        "color-api-pre-name": pycytominer_hex_light,
+        "color-api-name": pycytominer_hex_light,
     },
     "dark_css_variables": {
-        "color-brand-primary": pycytominer_hex,
-        "color-brand-content": pycytominer_hex,
-        "color-api-pre-name": pycytominer_hex,
-        "color-api-name": pycytominer_hex,
+        "color-brand-primary": pycytominer_hex_dark,
+        "color-brand-content": pycytominer_hex_dark,
+        "color-api-pre-name": pycytominer_hex_dark,
+        "color-api-name": pycytominer_hex_dark,
     },
 }
 
