@@ -72,13 +72,13 @@ def collate(
     printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
     append_metadata: bool, optional, default False
-        TODO
+        Whether or not to add imputed plate, well, and/or site metadata if it's missing. Metadata is imputed from the path to the CSV.
     overwrite_metadata: bool, optional, default False
-        TODO
+        Whether or not to add imputed plate, well, and/or site metadata, overwriting what's already there. Metadata is imputed from the path to the CSV.
     download_flags: list, optional, default []
-        TODO
+        A list of extra flags to pass to the AWS download command, often for passing in a profile or a no-sign request
     upload_flags: list, optional, default []
-        TODO
+        A list of extra flags to pass to the AWS upload command, often for passing in a profile or a no-sign request
     """
 
     from pycytominer.cyto_utils.cells import SingleCells
