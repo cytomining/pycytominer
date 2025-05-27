@@ -1857,22 +1857,6 @@ files = [
 lxml = "*"
 
 [[package]]
-name = "m2r2"
-version = "0.3.4"
-description = "Markdown and reStructuredText in a single file."
-optional = false
-python-versions = ">=3.7"
-groups = ["docs"]
-files = [
-    {file = "m2r2-0.3.4-py3-none-any.whl", hash = "sha256:1a445514af8a229496bfb1380c52da8dd38313e48600359ee92b2c9d2e4df34a"},
-    {file = "m2r2-0.3.4.tar.gz", hash = "sha256:e278f5f337e9aa7b2080fcc3e94b051bda9615b02e36c6fb3f23ff019872f043"},
-]
-
-[package.dependencies]
-docutils = ">=0.19"
-mistune = "0.8.4"
-
-[[package]]
 name = "markdown"
 version = "3.6"
 description = "Python implementation of John Gruber's Markdown."
@@ -4877,4 +4861,4 @@ collate = ["cytominer-database"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "a1d60acd5fc1c78d1ea2762ffc8d71ff588f25b987d3192f72658129c5e3eaac"
+content-hash = "1f71b9d00bdaa34e397f9e8cdadc564436610d39fba81f66ecdfda8521bb5210"
