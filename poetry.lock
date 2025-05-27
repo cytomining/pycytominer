@@ -1831,6 +1831,9 @@ files = [
     {file = "lxml-5.4.0.tar.gz", hash = "sha256:d12832e1dbea4be280b22fd0ea7c9b87f0d8fc51ba06e92dc62d52f804f78ebd"},
 ]
 
+[package.dependencies]
+lxml_html_clean = {version = "*", optional = true, markers = "extra == \"html-clean\""}
+
 [package.extras]
 cssselect = ["cssselect (>=0.7)"]
 html-clean = ["lxml_html_clean"]
@@ -1839,20 +1842,19 @@ htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=3.0.11,<3.1.0)"]
 
 [[package]]
-name = "m2r2"
-version = "0.3.4"
-description = "Markdown and reStructuredText in a single file."
+name = "lxml-html-clean"
+version = "0.4.2"
+description = "HTML cleaner from lxml project"
 optional = false
-python-versions = ">=3.7"
+python-versions = "*"
 groups = ["docs"]
 files = [
-    {file = "m2r2-0.3.4-py3-none-any.whl", hash = "sha256:1a445514af8a229496bfb1380c52da8dd38313e48600359ee92b2c9d2e4df34a"},
-    {file = "m2r2-0.3.4.tar.gz", hash = "sha256:e278f5f337e9aa7b2080fcc3e94b051bda9615b02e36c6fb3f23ff019872f043"},
+    {file = "lxml_html_clean-0.4.2-py3-none-any.whl", hash = "sha256:74ccfba277adcfea87a1e9294f47dd86b05d65b4da7c5b07966e3d5f3be8a505"},
+    {file = "lxml_html_clean-0.4.2.tar.gz", hash = "sha256:91291e7b5db95430abf461bc53440964d58e06cc468950f9e47db64976cebcb3"},
 ]
 
 [package.dependencies]
-docutils = ">=0.19"
-mistune = "0.8.4"
+lxml = "*"
 
 [[package]]
 name = "markdown"
@@ -4859,4 +4861,4 @@ collate = ["cytominer-database"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "b6a4b089495129369c20b397a60408afc249598d400e4b3e70d42288cf2318f0"
+content-hash = "5bf518ff73261f0c79a3ee6c1d8c3483481e6bc43ec3470d6bf3a4758752f5de"
