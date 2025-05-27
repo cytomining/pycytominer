@@ -91,6 +91,8 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event_name != 'schedule'
     steps:
+      - name: Install pandoc
+        uses: pandoc/actions/setup@v1
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup python, and check pre-commit cache
