@@ -207,6 +207,8 @@ bash .devcontainer/postCreateCommand.sh
 ### Releases
 
 Project maintainers are responsible for releasing new versions of pycytominer.
+We use [`poetry-dynamic-versioning`](https://github.com/mtkennerly/poetry-dynamic-versioning) to abide by [PEP 440](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers) for version specifications.
+Note: we use a slightly different specification for versioning our Docker image (please see the [relevant section below](#docker-hub-image-releases)).
 Creating a new release includes the following steps:
 
 1. Create a new branch from `main` for the release (e.g. `release-v1.0.0`)
