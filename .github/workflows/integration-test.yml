@@ -85,7 +85,7 @@ jobs:
   docs-build-test:
     # This job is used to check that the docs build
     name: Docs build test
-    # Avoid fail-fast to retain output
+    # Avoid fail-fast to observe gh actions output
     strategy:
       fail-fast: false
     runs-on: ubuntu-24.04
