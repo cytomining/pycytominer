@@ -82,6 +82,30 @@ jobs:
       - name: Run mypy
         run: |
           poetry run mypy .
+  docs-build-test:
+    # This job checks that the docs build
+    name: Docs build test
+    # Avoid fail-fast to observe gh actions output
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    if: github.event_name != 'schedule'
+    steps:
+      - name: Install pandoc
+        uses: pandoc/actions/setup@v1
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup python, and check pre-commit cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: true
+          setup-poetry: true
+          install-deps: true
+      - name: Run sphinx-build
+        run: |
+          poetry run sphinx-build docs/ docs-build/
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
