@@ -188,6 +188,7 @@ jobs:
           sparse-checkout: |
             build/docker/Dockerfile
             tests
+            poetry.lock
           sparse-checkout-cone-mode: false
       - name: Download sdist artifact
         uses: actions/download-artifact@v4
