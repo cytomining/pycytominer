@@ -96,7 +96,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--download-flags",
         dest="download_flags",
-        type=lambda s: [] if "," not in s else [item for item in s.split(",")],
+        type=lambda s: [] if "," not in s else list(s.split(",")),
         default="",
         help="Extra flags to pass to aws download commands. Multiple values can be passed in if comma separated with no spaces between them",
     )
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--upload-flags",
         dest="upload_flags",
-        type=lambda s: [] if "," not in s else [item for item in s.split(",")],
+        type=lambda s: [] if "," not in s else list(s.split(",")),
         default="",
         help="Extra flags to pass to aws upload commands. Multiple values can be passed in if comma separated with no spaces between them",
     )

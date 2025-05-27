@@ -41,6 +41,9 @@ def collate(
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
+    Please note: this function and cytominer-database are deprecated and will be removed
+    in future versions of Pycytominer.
+
     Parameters
     ----------
     batch : str
@@ -150,7 +153,8 @@ def collate(
                 "*/Image.csv",
                 remote_input_dir,
                 input_dir,
-            ] + download_flags
+                *download_flags,
+            ]
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
@@ -204,7 +208,8 @@ def collate(
                 "cp",
                 cache_backend_file,
                 remote_backend_file,
-            ] + upload_flags
+                *upload_flags,
+            ]
             run_check_errors(cp_cmd)
 
             if printtoscreen:
@@ -227,7 +232,7 @@ def collate(
 
         remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-        cp_cmd = ["aws", "s3", "cp", remote_backend_file, backend_file] + download_flags
+        cp_cmd = ["aws", "s3", "cp", remote_backend_file, backend_file, *download_flags]
         if printtoscreen:
             print(
                 f"Downloading SQLite files from {remote_backend_file} to {backend_file}"
@@ -259,7 +264,8 @@ def collate(
             "cp",
             aggregated_file,
             remote_aggregated_file,
-        ] + upload_flags
+            *upload_flags,
+        ]
         run_check_errors(csv_cp_cmd)
 
         if printtoscreen:
