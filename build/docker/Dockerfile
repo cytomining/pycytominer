@@ -1,4 +1,4 @@
-FROM python:3.11 as base
+FROM python:3.11 AS base
 
 # set various metadata, loosely following biocontainers standards from:
 # https://biocontainers-edu.readthedocs.io/en/latest/what_is_biocontainers.html
@@ -22,7 +22,7 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 RUN pip install --no-cache-dir poetry
 
 # create stage for production build (no dev or non-essential deps)
-FROM base as production
+FROM base AS production
 
 # copy the pycytominer source into image
 COPY README.md pyproject.toml poetry.lock ./
@@ -32,7 +32,7 @@ COPY pycytominer ./pycytominer
 RUN poetry install --all-extras -v --no-interaction
 
 # create stage for production build (no dev or non-essential deps)
-FROM production as testing
+FROM production AS testing
 
 # copy the tests dir for testing purposes
 COPY tests ./tests
