@@ -4859,4 +4859,4 @@ collate = ["cytominer-database"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "5a87fd78b5cc29fb0212c6bd7536778967b14d5968f568b5ca60ba6aab5b136a"
+content-hash = "2bd8216484e0c9ab031236124be41075efe0cf73b78d7e7d624b4f7f81d10f37"
