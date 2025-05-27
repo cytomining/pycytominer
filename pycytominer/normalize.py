@@ -3,14 +3,10 @@ Normalize observation features based on specified normalization method
 """
 
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.preprocessing import RobustScaler, StandardScaler
 
-from pycytominer.cyto_utils import (
-    output,
-    infer_cp_features,
-    load_profiles,
-)
-from pycytominer.operations import Spherize, RobustMAD
+from pycytominer.cyto_utils import infer_cp_features, load_profiles, output
+from pycytominer.operations import RobustMAD, Spherize
 
 
 def normalize(
@@ -21,6 +17,7 @@ def normalize(
     samples="all",
     method="standardize",
     output_file=None,
+    output_type="csv",
     compression_options=None,
     float_format=None,
     mad_robustize_epsilon=1e-18,
@@ -37,14 +34,15 @@ def normalize(
     features : list
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume cell painting features are those
+        Defaults to "infer". If "infer", then assume features are from CellProfiler output and
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
         Whether the profiles contain image features.
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
-        If "infer", then assume metadata features are those prefixed with "Metadata"
+        If "infer", then assume CellProfiler metadata features, identified by
+        column names that begin with the `Metadata_` prefix."
     samples : str
         The metadata column values to use as a normalization reference. We often use
         control samples. The function uses a pd.query() function, so you should
@@ -54,9 +52,12 @@ def normalize(
         How to normalize the dataframe. Defaults to "standardize". Check avail_methods
         for available normalization methods.
     output_file : str, optional
-        If provided, will write annotated profiles to file. If not specified, will
+        If provided, will write normalized profiles to file. If not specified, will
         return the normalized profiles as output. We recommend that this output file be
         suffixed with "_normalized.csv".
+    output_type : str, optional
+        If provided, will write normalized profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compression_options : str or dict, optional
         Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
@@ -114,7 +115,7 @@ def normalize(
     normalized_df = normalize(
         profiles=data_df,
         features=["x", "y", "z", "zz"],
-        meta_features="infer",
+        meta_features=["Metadata_plate", "Metadata_treatment"],
         samples="Metadata_treatment == 'control'",
         method="standardize"
     )
@@ -127,7 +128,8 @@ def normalize(
     method = method.lower()
 
     avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
-    assert method in avail_methods, "operation must be one {}".format(avail_methods)
+    if method not in avail_methods:
+        raise ValueError(f"operation must be one {avail_methods}")
 
     if method == "standardize":
         scaler = StandardScaler()
@@ -137,7 +139,10 @@ def normalize(
         scaler = RobustMAD(epsilon=mad_robustize_epsilon)
     elif method == "spherize":
         scaler = Spherize(
-            center=spherize_center, method=spherize_method, epsilon=spherize_epsilon
+            center=spherize_center,
+            method=spherize_method,
+            epsilon=spherize_epsilon,
+            return_numpy=True,
         )
 
     if features == "infer":
@@ -157,19 +162,35 @@ def normalize(
         # Subset to only the features measured in the sample query
         fitted_scaler = scaler.fit(profiles.query(samples).loc[:, features])
 
-    # Scale the feature dataframe
+    fitted_scaled = fitted_scaler.transform(feature_df)
+
+    columns = fitted_scaler.columns if method == "spherize" else feature_df.columns
+
     feature_df = pd.DataFrame(
-        fitted_scaler.transform(feature_df),
-        columns=feature_df.columns,
+        fitted_scaled,
+        columns=columns,
         index=feature_df.index,
     )
 
     normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
 
-    if output_file != None:
+    if feature_df.shape != profiles.loc[:, features].shape:
+        error_detail = "The number of rows and columns in the feature dataframe does not match the original dataframe"
+        context = f"the `{method}` method in `pycytominer.normalize`"
+        raise ValueError(f"{error_detail}. This is likely a bug in {context}")
+
+    if (normalized.shape[0] != profiles.shape[0]) or (
+        normalized.shape[1] != len(features) + len(meta_features)
+    ):
+        error_detail = "The number of rows and columns in the normalized dataframe does not match the original dataframe"
+        context = f"the `{method}` method in `pycytominer.normalize`"
+        raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
+
+    if output_file is not None:
         output(
             df=normalized,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )

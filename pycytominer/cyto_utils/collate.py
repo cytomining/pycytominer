@@ -2,13 +2,15 @@ import os
 import pathlib
 import subprocess
 import sys
+import sqlite3
+import warnings
 
 
 def run_check_errors(cmd):
     """Run a system command, and exit if an error occurred, otherwise continue"""
-    if type(cmd) == str:
+    if isinstance(cmd, str):
         cmd = cmd.split()
-    output = subprocess.run(cmd, capture_output=True, text=True)
+    output = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
     if output.stderr != "":
         print_cmd = " ".join(map(str, cmd))
         sys.exit(
@@ -27,7 +29,7 @@ def collate(
     csv_dir="analysis",
     aws_remote=None,
     aggregate_only=False,
-    tmp_dir="/tmp",
+    tmp_dir="/tmp",  # noqa: S108
     overwrite=False,
     add_image_features=True,
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
@@ -84,6 +86,28 @@ def collate(
     to_filter = ["Nuclei", "Cells", "Cytoplasm"]
     compartments = [to_filter[i] for i in [j for j in range(len(filter_compartments)) if filter_compartments[j]]]
 
+    # Check if optional dependency cytominer-database is installed
+    try:
+        import cytominer_database.ingest
+        import cytominer_database.munge
+    except ImportError:
+        raise ImportError(
+            """Optional dependency cytominer-database is not installed.
+            Please install the `collate` optional dependency group: e.g. `pip install pycytominer[collate]`
+            """
+        )
+
+    # show a warning about collate deprecation
+    warnings.warn(
+        (
+            "With the deprecation of cytominer-database",
+            "pycytominer.cyto_utils.collate will be removed in future versions of Pycytominer. "
+            "Please consider using CellProfiler's ExportToDatabase module to create single-cell "
+            "SQLite files or CytoTable to create single-cell Parquet files.",
+        ),
+        DeprecationWarning,
+    )
+
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
     input_dir = pathlib.Path(f"{base_directory}/analysis/{batch}/{plate}/{csv_dir}")
     backend_dir = pathlib.Path(f"{base_directory}/backend/{batch}/{plate}")
@@ -123,58 +147,42 @@ def collate(
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
 
-        ingest_cmd = [
-            "cytominer-database",
-            "ingest",
-            input_dir,
-            f"sqlite:///{cache_backend_file}",
-            "-c",
-            config,
-        ]
-        if not munge:
-            # munge is by default True in cytominer-database
-            ingest_cmd.append("--no-munge")
         if printtoscreen:
             print(f"Ingesting {input_dir}")
-        run_check_errors(ingest_cmd)
+        # Run cytominer-database ingest
+        if munge:
+            cytominer_database.munge.munge(config_path=config, source=input_dir)
 
-        if column:
-            if print:
-                print(f"Adding a Metadata_Plate column based on column {column}")
-            alter_cmd = [
-                "sqlite3",
-                cache_backend_file,
-                "ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;",
-            ]
-            run_check_errors(alter_cmd)
-            update_cmd = [
-                "sqlite3",
-                cache_backend_file,
-                f"UPDATE image SET Metadata_Plate ={column};",
-            ]
-            run_check_errors(update_cmd)
+        cytominer_database.ingest.seed(
+            source=input_dir,
+            target=f"sqlite:///{cache_backend_file}",
+            config_file=config,
+        )
 
-        if printtoscreen:
-            print(f"Indexing database {cache_backend_file}")
-        index_cmd_img = [
-            "sqlite3",
-            cache_backend_file,
-            "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);",
-        ]
-        run_check_errors(index_cmd_img)
-        for eachcompartment in compartments:
-            index_cmd_compartment = [
-                "sqlite3",
-                cache_backend_file,
-                f"CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);",
-            ]
-            run_check_errors(index_cmd_compartment)
-        index_cmd_metadata = [
-            "sqlite3",
-            cache_backend_file,
-            "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);",
-        ]
-        run_check_errors(index_cmd_metadata)
+        # Create a sqlite3 connection
+        with sqlite3.connect(cache_backend_file, isolation_level=None) as connection:
+            cursor = connection.cursor()
+            if column:
+                if printtoscreen:
+                    print(f"Adding a Metadata_Plate column based on column {column}")
+                cursor.execute("ALTER TABLE Image ADD COLUMN Metadata_Plate TEXT;")
+                cursor.execute(f"UPDATE image SET Metadata_Plate ={column};")
+
+            if printtoscreen:
+                print(f"Indexing database {cache_backend_file}")
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS table_image_idx ON Image(TableNumber, ImageNumber);"
+            )
+            for eachcompartment in ["Cells", "Cytoplasm", "Nuclei"]:
+                cursor.execute(
+                    f"""CREATE INDEX IF NOT EXISTS table_image_object_{eachcompartment.lower()}_idx
+                                ON {eachcompartment}(TableNumber, ImageNumber, ObjectNumber);"""
+                )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS plate_well_image_idx ON Image(Metadata_Plate, Metadata_Well);"
+            )
+            cursor.close()
+        connection.close()
 
         if aws_remote:
             if printtoscreen:

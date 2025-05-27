@@ -12,7 +12,7 @@ pycytominer.cyto\_utils.cells module
    :show-inheritance:
 
 pycytominer.cyto\_utils.collate module
-------------------------------------
+--------------------------------------
 
 .. automodule:: pycytominer.cyto_utils.collate
   :members:

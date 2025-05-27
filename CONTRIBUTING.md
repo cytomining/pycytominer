@@ -19,10 +19,14 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Your first code contribution](#your-first-code-contribution)
 - [Pull requests](#pull-requests)
 - [Documentation](#documentation)
+- [Poetry](#poetry)
 - [Dev environments](#dev-environments)
+- [Releases](#releases)
 
-[Style guides](#style-guides)
+[Code Quality](#code-quality)
 
+- [Formatting](#formatting)
+- [Linting](#linting)
 - [Git commit messages](#git-commit-messages)
 - [Python style guide](#python-style-guide)
 - [Documentation style guide](#documentation-style-guide)
@@ -38,9 +42,33 @@ Please report unacceptable behavior to cytodata.info@gmail.com.
 - Documentation: https://pycytominer.readthedocs.io/en/latest/
 - Issue tracker: https://github.com/cytomining/pycytominer/issues
 - Code coverage: https://app.codecov.io/gh/cytomining/pycytominer
-- Package requirements: https://github.com/cytomining/pycytominer/blob/master/requirements.txt
+- Package requirements (using Poetry): https://github.com/cytomining/pycytominer/blob/main/pyproject.toml
 
 ## How can I contribute?
+
+### Roles and responsibilities
+
+There are two primary roles with regards to developing Pycytominer:
+
+- **Contributors**: individuals without direct commit access to the `main` branch who make contributions in the form of communication, issues, or pull requests. We welcome anyone interested in additions to the project to be a contributor.
+- **Maintainers**: individuals with direct commit access who make contributions as outlined by the contributors role and also have the ability to make commits on the `main` branch through the development process (for example, by merging pull requests).
+  Maintainers are also involved with decision-making procedures and the technical roadmap for Pycytominer.
+
+#### Becoming a maintainer
+
+Maintainers are prior contributors who receive extended privileges based on a decision by existing maintainers.
+To become a Pycytominer maintainer you must be championed by an existing maintainer.
+The championing maintainer consults with other maintainers about the addition of the new maintainer.
+After the current maintainers have considered the qualifications of the new maintainer they communicate their preferences internally.
+If there are no vetos the champion maintainer will grant maintainer access to the new maintainer.
+
+#### Maintainer offboarding
+
+Maintainer access may be removed under the following circumstances:
+
+- Voluntary step-down (when a maintainer no longer wishes to remain in that role)
+- In the unfortunate event of a maintainer's passing
+- Code of conduct violations (in addition to other procedures specified by the code of conduct itself)
 
 ### Bug reporting
 
@@ -120,6 +148,14 @@ sphinx-build -b html docs build
 
 See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
 
+### Poetry
+
+We use [Poetry](https://python-poetry.org/) to manage dependencies and packaging.
+Changes in dependencies are managed by Poetry's `pyproject.toml` file.
+Poetry installs all dependencies in a virtual environment, which is activated automatically when you run `poetry shell`.
+Poetry also provides a `poetry run` command to run commands in the virtual environment without activating it.
+For example, to run the test suite, you can use `poetry run pytest`.
+
 ### Dev environments
 
 #### Local devcontainer
@@ -134,53 +170,88 @@ Instructions for setting up a local development environment using VSCode DevCont
 
 #### Cloud environment
 
-We've set up cloud development configurations with both [Github Codespaces](https://github.com/codespaces) and [GitPod](https://www.gitpod.io/).
-These development environments include the local copy of the repository installed in development mode along with the tools specified in `requirements-dev.txt`.
+We've set up cloud development configurations with [Github Codespaces](https://github.com/codespaces).
+These development environments include the project dependencies pre-installed via [Poetry](https://python-poetry.org/).
 Prior to commit, pre-installed git hooks auto-format any changed code.
-Using a pre-built cloud development environment is an easy way to get started contributing to pycytominer, and both Gitpod and Codespaces have generous free usage tiers.
-When you are ready to make a pull request, please use the same cloud environment to run the full test suite and ensure that your changes pass all tests.
-You can launch these cloud environments by clicking on the following links:
+When you are ready to make a pull request, use the pre-configured test suite in VSCode or run `poetry run pytest` to ensure that your changes pass all tests.
+You can create a codespace by clicking on the following link:
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://open.vscode.dev/cytomining/pycytominer)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/?repo=195106954&ref=main&devcontainer_path=.devcontainer%2Fdevcontainer.json)
 
 [Beginner's Guide to Codespaces](https://github.blog/2023-02-22-a-beginners-guide-to-learning-to-code-with-github-codespaces/)
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/cytomining/pycytominer)
-
-[Beginner's Guide to Gitpod](https://www.gitpod.io/docs/introduction/getting-started)
 
 #### Manual setup
 
 We recommend using either the local devcontainer or cloud dev environment approaches above.
-However, we also provide general guidance for setting up a local development environment in Linux here.
-We strongly recommend performing this within a virtual environment such as [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [pyenv](https://akrabat.com/creating-virtual-environments-with-pyenv/):
+However, we also provide general guidance for setting up a dev environment in Linux, MacOS, or Windows (WSL) below.
 
 ```bash
+# Install Poetry (Linux, MacOS, Windows - WSL)
+curl -sSL https://install.python-poetry.org | python3 -
 # Checkout the repository
 git clone https://github.com/cytomining/pycytominer.git
 cd pycytominer
-# Install pycytominer in development mode along with associated tools
+# Install pycytominer, dev dependencies, and pre-commit hooks
 bash .devcontainer/postCreateCommand.sh
 ```
 
-## Style guides
+### Releases
 
-Please follow all style guides to the best of your abilities.
+Project maintainers are responsible for releasing new versions of pycytominer.
+Creating a new release includes the following steps:
+
+1. Create a new branch from `main` for the release (e.g. `release-v1.0.0`)
+2. Review the [commit history](https://github.com/cytomining/pycytominer/compare) from the last release and check whether it includes commits that don't follow the [conventional commit standard](https://www.conventionalcommits.org/en/v1.0.0/#summary).
+   If all changes follow conventional commits, skip to step 5.
+3. Run the command `poetry run cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen` and generate the draft changelog.
+4. Review the changes to `CHANGELOG.md`. If necessary, add descriptions of missing changes and modify descriptions to match conventional commits standard.
+5. `git add` any manual changes and run `poetry run cz bump` to create the release commit.
+   Push the changes to the release branch.
+6. Create a pull request for the release branch into `main`.
+7. Request a review from another maintainer.
+8. Once the pull request is approved, merge it into `main`.
+9. Create a new release on GitHub using the [release draft](https://github.com/cytomining/pycytominer/releases/new) feature.
+10. Publish the release.
+11. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via Github Actions.
+12. Manually create the release at [conda-forge](https://anaconda.org/conda-forge/pycytominer).
+
+#### Docker Hub Image Releases
+
+We automate image pushes for `pycytominer` under the `cytomining` organization on [Docker Hub](https://hub.docker.com/) using GitHub Actions workflows.
+These pushes are defined within [.github/workflows/integration-test.yml](.github/workflows/integration-test.yml).
+
+- **Scheduled**: We create new Docker image releases on a weekly basis to incorporate the latest updates from external dependencies (such as OS updates, Python versions, etc.).
+  An image tag published this way may appear as `cytomining/pycytominer:1.1.0.post2.dev0_892dee2_240320`, where the dynamic version of `pycytominer` is referenced alongside a date in the format `YYMMDD`.
+- **Push (to `main`)**: We generate new Docker image releases on pushes or merges to the `main` branch.
+  An image tag published this way might appear as either `cytomining/pycytominer:1.1.0` (for a release) or `cytomining/pycytominer:1.1.0.post2.dev0_892dee2` (for a non-release).
+
+## Code Quality
+
+Please follow the below quality guides to the best of your abilities.
+If you have configured your [dev environment](#dev-environments) as described above, the formatting and linting rules will also be enforced automatically using the installed [pre-commit](https://pre-commit.com/) hooks.
+
+### Formatting
+
+We use [ruff](https://docs.astral.sh/ruff/) for formatting Python code, and [prettier](https://prettier.io/) for formatting markdown, json and yaml files.
+Ruff includes a python code formatter similar to Black.
+We include `ruff` in the poetry dev dependencies so it can be run manually using `ruff format`
+Prettier (which is not python-based) is not included in the poetry dev dependencies, but can be installed and run manually.
+Alternately, both `ruff format` and `prettier` will be run automatically at commit time with the pre-commit hooks installed.
+
+### Linting
+
+For python code linting, we also use [ruff](https://docs.astral.sh/ruff/), which can perform same linting checks as Flake8.
+You can use the command `ruff check` to check for linting errors.
+The list of linting rules and exceptions are defined in the `pyproject.toml` file under the `[tool.ruff.lint]` section.
+We also include some commented-out rules in that section that we are working towards enabling in the future.
+All linting checks will also be run automatically at commit time with the pre-commit hooks as described above.
 
 ### Git commit messages
 
-For all commit messages, please use a short phrase that describes the specific change.
-For example, “Add feature to check normalization method string” is much preferred to “change code”.
-When appropriate, reference issues (via `#` plus number) .
-
-### Python style guide
-
-For python code style, we use [black](https://github.com/psf/black).
-Please use black before committing any code.
-We will not accept code contributions that do not use black.
-If you have set up your development environment using one of the dev container options specified above, the containers will install all required formatting tools, which will run automatically on any modified files before commits (using a tool called [pre-commit](https://pre-commit.com/)).
+Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
+We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the poetry dev dependencies.
 
 ### Documentation style guide
 
 We use the [numpy documentation style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
-We also use [prettier](https://prettier.io/) for automatic formatting of markdown, json and yaml files.
+When writing markdown documentation, please also ensure that each sentence is on a new line.

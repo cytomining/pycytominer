@@ -1,0 +1,31 @@
+name: Documentation Request
+description: Report missing pycytominer documentation and/or suggest improvements.
+title: "Doc: "
+labels: [documentation]
+
+body:
+  - type: textarea
+    id: doc-location
+    attributes:
+      label: File location of the documentation
+      description: >
+        Please provide the source of the documentation that this issue is referencing.
+      placeholder: Example - https://github.com/cytomining/pycytominer/edit/main/docs/index.rst
+    validations:
+      require: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Documentation issue
+      description: >
+        Please provide a description of the missing or outdated documentation that needs to be fixed or updated.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested solution
+      description: >
+        Please provide your suggestion for what changes should be made in the documentation. If your suggestion involves modifying existing documentation, please explain why the suggested change is an improvement.
+    validations:
+      required: true

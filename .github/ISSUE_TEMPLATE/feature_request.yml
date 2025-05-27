@@ -1,0 +1,44 @@
+name: Feature Request
+description: Suggest an idea to enhance the current functionality of pycytominer.
+title: "FeatureRequest: "
+labels: [enhancement]
+
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Feature type
+      description: Please select the type of feature you would like to propose.
+      options:
+        - label: >
+            Add new functionality
+        - label: >
+            Change existing functionality
+  - type: textarea
+    id: description
+    attributes:
+      label: General description of the proposed functionality
+      description: >
+        Please provide a brief description of the proposed functionality, including whether it addresses an existing issue, and explain how it will enhance pycytominer.
+    validations:
+      required: true
+  - type: textarea
+    id: feature-example
+    attributes:
+      label: Feature example
+      description: >
+        Please provide an example of the proposed functionality (e.g., psuedocode).
+    validations:
+      required: true
+  - type: textarea
+    id: alternative-ideas
+    attributes:
+      label: Alternative Solutions
+      description: >
+        If applicable, please suggest any alternative solutions/ideas for this functionality.
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional information
+      description: >
+        Provide additional information or context.

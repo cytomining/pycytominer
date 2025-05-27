@@ -1,6 +1,4 @@
-import os
 import numpy as np
-import pandas as pd
 
 
 def annotate_cmap(
@@ -25,11 +23,11 @@ def annotate_cmap(
         CMAP annotated data
     """
     pert_opts = ["none", "chemical", "genetic"]
-    assert perturbation_mode in pert_opts, "perturbation mode must be one of {}".format(
-        pert_opts
-    )
+    assert (  # noqa: S101
+        perturbation_mode in pert_opts
+    ), f"perturbation mode must be one of {pert_opts}"
 
-    assert (
+    assert (  # noqa: S101
         "Metadata_broad_sample" in annotated.columns
     ), "Are you sure this is a CMAP file? 'Metadata_broad_sample column not found.'"
 
@@ -84,14 +82,13 @@ def annotate_cmap(
                 "Metadata_mg_per_ml",
             ] = 0
 
-    if perturbation_mode == "genetic":
-        if "Metadata_pert_name" in annotated.columns:
-            annotated = annotated.assign(
-                Metadata_broad_sample_type=[
-                    "control" if x == "EMPTY" else "trt"
-                    for x in annotated.Metadata_pert_name
-                ]
-            )
+    if perturbation_mode == "genetic" and "Metadata_pert_name" in annotated.columns:
+        annotated = annotated.assign(
+            Metadata_broad_sample_type=[
+                "control" if x == "EMPTY" else "trt"
+                for x in annotated.Metadata_pert_name
+            ]
+        )
 
     if "Metadata_broad_sample_type" in annotated.columns:
         annotated = annotated.assign(

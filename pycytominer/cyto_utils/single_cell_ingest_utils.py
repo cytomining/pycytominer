@@ -1,5 +1,5 @@
 from collections import Counter
-from pycytominer.cyto_utils import check_compartments, get_default_compartments
+from pycytominer.cyto_utils import get_default_compartments
 
 
 def get_default_linking_cols():
@@ -104,7 +104,7 @@ def provide_linking_cols_feature_name_update(linking_cols="default"):
     update_name = dict(
         zip(
             metadata_update_cols,
-            ["Metadata_{x}".format(x=y) for y in metadata_update_cols],
+            [f"Metadata_{y}" for y in metadata_update_cols],
         )
     )
     return update_name

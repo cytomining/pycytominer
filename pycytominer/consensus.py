@@ -2,15 +2,12 @@
 Acquire consensus signatures for input samples
 """
 
-import numpy as np
-import pandas as pd
-
 from pycytominer import aggregate
 from pycytominer.cyto_utils import (
-    output,
-    modz,
-    load_profiles,
     check_consensus_operation,
+    load_profiles,
+    modz,
+    output,
 )
 
 
@@ -20,6 +17,7 @@ def consensus(
     operation="median",
     features="infer",
     output_file=None,
+    output_type="csv",
     compression_options=None,
     float_format=None,
     modz_args={"method": "spearman"},
@@ -37,11 +35,14 @@ def consensus(
     features : list
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
-        Defaults to "infer". If "infer", then assume cell painting features are those
+        Defaults to "infer". If "infer", then assume features are from CellProfiler output and
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     output_file : str, optional
         If provided, will write consensus profiles to file. If not specified, will
         return the normalized profiles as output.
+    output_type : str, optional
+        If provided, will write consensus profiles as a specified file type (either CSV or parquet).
+        If not specified and output_file is provided, then the file will be outputed as CSV as default.
     compression_options : str or dict, optional
         Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
@@ -105,7 +106,7 @@ def consensus(
             population_df=profiles,
             replicate_columns=replicate_columns,
             features=features,
-            **modz_args
+            **modz_args,
         )
     else:
         consensus_df = aggregate(
@@ -116,10 +117,11 @@ def consensus(
             subset_data_df=None,
         )
 
-    if output_file != None:
+    if output_file is not None:
         output(
             df=consensus_df,
             output_filename=output_file,
+            output_type=output_type,
             compression_options=compression_options,
             float_format=float_format,
         )

@@ -3,8 +3,8 @@ import pandas as pd
 from pycytominer.cyto_utils.util import (
     get_pairwise_correlation,
     check_correlation_method,
-    infer_cp_features,
 )
+from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
@@ -32,7 +32,7 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
         modz transformed dataframe - a consensus signature of the input data
         weighted by replicate correlation
     """
-    assert population_df.shape[0] > 0, "population_df must include at least one sample"
+    assert population_df.shape[0] > 0, "population_df must include at least one sample"  # noqa: S101
 
     method = check_correlation_method(method=method)
 
@@ -44,9 +44,17 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
     # Round correlation results
     pair_df = pair_df.round(precision)
 
+    # create a copy of cor_df values for use with np.fill_diagonal
+    cor_df_values = cor_df.values.copy()
+
     # Step 2: Identify sample weights
     # Fill diagonal of correlation_matrix with np.nan
-    np.fill_diagonal(cor_df.values, np.nan)
+    np.fill_diagonal(cor_df_values, np.nan)
+
+    # reconstitute the changed data as a new dataframe to avoid read-only behavior
+    cor_df = pd.DataFrame(
+        data=cor_df_values, index=cor_df.index, columns=cor_df.columns
+    )
 
     # Remove negative values
     cor_df = cor_df.clip(lower=0)
@@ -90,9 +98,10 @@ def modz(
         a string or list of column(s) in the population dataframe that
         indicate replicate level information
     features : list, default "infer"
-         List of features present in the population dataframe [default: "infer"]
-         if "infer", then assume cell painting features are those that start with
-         "Cells_", "Nuclei_", or "Cytoplasm_".
+        A list of strings corresponding to feature measurement column names in the
+        `population_df` DataFrame. All features listed must be found in `population_df`.
+        Defaults to "infer". If "infer", then assume CellProfiler features are those
+        prefixed with "Cells", "Nuclei", or "Cytoplasm".
     method : str, default "spearman"
         indicating which correlation metric to use.
     min_weight : float, default 0.01
@@ -106,11 +115,11 @@ def modz(
         Consensus signatures with metadata for all replicates in the given DataFrame
     """
     population_features = population_df.columns.tolist()
-    assert_error = "{} not in input dataframe".format(replicate_columns)
+    assert_error = f"{replicate_columns} not in input dataframe"
     if isinstance(replicate_columns, list):
-        assert all([x in population_features for x in replicate_columns]), assert_error
+        assert all(x in population_features for x in replicate_columns), assert_error  # noqa: S101
     elif isinstance(replicate_columns, str):
-        assert replicate_columns in population_features, assert_error
+        assert replicate_columns in population_features, assert_error  # noqa: S101
         replicate_columns = replicate_columns.split()
     else:
         return ValueError("replicate_columns must be a list or string")

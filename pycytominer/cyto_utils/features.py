@@ -4,6 +4,7 @@ Utility function to manipulate cell profiler features
 
 import os
 import pandas as pd
+from typing import Union
 
 blocklist_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
@@ -28,8 +29,8 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
 
     blocklist = pd.read_csv(blocklist_file)
 
-    assert any(
-        [x == "blocklist" for x in blocklist.columns]
+    assert any(  # noqa: S101
+        x == "blocklist" for x in blocklist.columns
     ), "one column must be named 'blocklist'"
 
     blocklist_features = blocklist.blocklist.to_list()
@@ -61,14 +62,12 @@ def label_compartment(cp_features, compartment, metadata_cols):
     compartment = compartment.Title()
     avail_compartments = ["Cells", "Cytoplasm", "Nuceli", "Image", "Barcode"]
 
-    assert (
+    assert (  # noqa: S101
         compartment in avail_compartments
-    ), "provide valid compartment. One of: {}".format(avail_compartments)
+    ), f"provide valid compartment. One of: {avail_compartments}"
 
     cp_features = [
-        "Metadata_{}".format(x)
-        if x in metadata_cols
-        else "{}_{}".format(compartment, x)
+        f"Metadata_{x}" if x in metadata_cols else f"{compartment}_{x}"
         for x in cp_features
     ]
 
@@ -81,7 +80,7 @@ def infer_cp_features(
     metadata=False,
     image_features=False,
 ):
-    """Given a dataframe, output features that we expect to be Cell Painting features.
+    """Given CellProfiler output data read as a DataFrame, output feature column names as a list.
 
     Parameters
     ----------
@@ -91,6 +90,8 @@ def infer_cp_features(
         Compartments from which Cell Painting features were extracted.
     metadata : bool, default False
         Whether or not to infer metadata features.
+        If metadata is set to True, find column names that begin with the `Metadata_` prefix.
+        This convention is expected by CellProfiler defaults.
     image_features : bool, default False
         Whether or not the profiles contain image features.
 
@@ -104,11 +105,11 @@ def infer_cp_features(
     compartments = [x.title() for x in compartments]
 
     if image_features:
-        compartments = list(set(["Image"] + compartments))
+        compartments = list({"Image", *compartments})
 
     features = []
     for col in population_df.columns.tolist():
-        if any([col.startswith(x.title()) for x in compartments]):
+        if any(col.startswith(x.title()) for x in compartments):
             features.append(col)
 
     if metadata:
@@ -116,9 +117,12 @@ def infer_cp_features(
             population_df.columns.str.startswith("Metadata_")
         ].tolist()
 
-    assert (
-        len(features) > 0
-    ), "No CP features found. Are you sure this dataframe is from CellProfiler?"
+    if len(features) == 0:
+        raise ValueError(
+            "No features or metadata found. Pycytominer expects CellProfiler column names by default. "
+            "If you're using non-CellProfiler data, please do not 'infer' features. "
+            "Instead, check if the function has a `features` or `meta_features` parameter, and input column names manually."
+        )
 
     return features
 
@@ -151,9 +155,14 @@ def drop_outlier_features(
     population_df : pandas.core.frame.DataFrame
         DataFrame that includes metadata and observation features.
     features : list of str or str, default "infer"
-        Features present in the population dataframe. If "infer", then assume Cell Painting features are those that start with "Cells_", "Nuclei_", or "Cytoplasm_"
-    samples : list of str or str, default "all"
-        Samples to perform the operation on
+        Features present in the population dataframe. If "infer",
+        then assume CellProfiler feature conventions
+        (start with "Cells_", "Nuclei_", or "Cytoplasm_")
+    samples : str, default "all"
+        List of samples to perform operation on. The function uses a pd.DataFrame.query()
+        function, so you should  structure samples in this fashion. An example is
+        "Metadata_treatment == 'control'" (include all quotes).
+        If "all", use all samples to calculate.
     outlier_cutoff : int or float, default 500
     see https://github.com/cytomining/pycytominer/issues/237 for details.
         Threshold to remove features if absolute values is greater
@@ -164,19 +173,29 @@ def drop_outlier_features(
         Features greater than the threshold.
     """
 
-    # Subset dataframe
+    # Subset the DataFrame if specific samples are specified
+    # If "all", use the entire DataFrame without subsetting
     if samples != "all":
-        population_df = population_df.loc[samples, :]
+        # Using pandas query to filter rows based on the conditions provided in the
+        # samples parameter
+        population_df = population_df.query(expr=samples)
 
+    # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
+        # Infer CellProfiler features
         features = infer_cp_features(population_df)
+        # Subset the DataFrame to only include inferred CellProfiler features
         population_df = population_df.loc[:, features]
     else:
+        # Subset the DataFrame to only include the features of interest
+        # this would be more tailored to non-CellProfiler features
         population_df = population_df.loc[:, features]
 
+    # Get the max and min values for each feature
     max_feature_values = population_df.max().abs()
     min_feature_values = population_df.min().abs()
 
+    # Identify features with max or min values greater than the outlier cutoff
     outlier_features = max_feature_values[
         (max_feature_values > outlier_cutoff) | (min_feature_values > outlier_cutoff)
     ].index.tolist()
@@ -184,7 +203,9 @@ def drop_outlier_features(
     return outlier_features
 
 
-def convert_compartment_format_to_list(compartments):
+def convert_compartment_format_to_list(
+    compartments: Union[list[str], str],
+) -> list[str]:
     """Converts compartment to a list.
 
     Parameters
@@ -198,9 +219,4 @@ def convert_compartment_format_to_list(compartments):
         List of Cell Painting compartments.
     """
 
-    if isinstance(compartments, list):
-        compartments = [x.lower() for x in compartments]
-    elif isinstance(compartments, str):
-        compartments = [compartments.lower()]
-
-    return compartments
+    return compartments if isinstance(compartments, list) else [compartments]
