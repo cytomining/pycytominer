@@ -83,7 +83,7 @@ jobs:
         run: |
           poetry run mypy .
   docs-build-test:
-    # This job is used to check that the docs build
+    # This job checks that the docs build
     name: Docs build test
     # Avoid fail-fast to observe gh actions output
     strategy:
