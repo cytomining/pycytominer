@@ -5,9 +5,9 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import RobustScaler, StandardScaler
 
-from pycytominer.cyto_utils.output import output
-from pycytominer.cyto_utils.features import  infer_cp_features
+from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
+from pycytominer.cyto_utils.output import output
 from pycytominer.operations import RobustMAD, Spherize
 
 

@@ -12,7 +12,6 @@ import pandas as pd
 from pycytominer import aggregate, normalize  # type: ignore[no-redef]
 from pycytominer.cyto_utils.features import (  # type: ignore[no-redef]
     infer_cp_features,
-
 )
 from pycytominer.cyto_utils.load import load_npz_features, load_npz_locations
 from pycytominer.cyto_utils.output import output
