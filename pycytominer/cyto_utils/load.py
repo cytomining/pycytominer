@@ -1,9 +1,10 @@
 import csv
 import gzip
 import pathlib
+from typing import Union
+
 import numpy as np
 import pandas as pd
-from typing import Union
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:

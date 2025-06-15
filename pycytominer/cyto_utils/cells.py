@@ -1,7 +1,9 @@
-from typing import Union, Optional
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine, text
+
 from pycytominer import aggregate, annotate, normalize
 from pycytominer.cyto_utils import (
     aggregate_fields_count,
@@ -18,7 +20,6 @@ from pycytominer.cyto_utils import (
     output,
     provide_linking_cols_feature_name_update,
 )
-from sqlalchemy import create_engine, text
 
 default_compartments = get_default_compartments()
 default_linking_cols = get_default_linking_cols()

@@ -1,8 +1,8 @@
 import os
 import pathlib
+import sqlite3
 import subprocess
 import sys
-import sqlite3
 import warnings
 
 

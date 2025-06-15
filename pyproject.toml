@@ -168,8 +168,6 @@ lint.ignore = [
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 lint.per-file-ignores."__init__.py" = [ "E402", "F401" ]
 lint.per-file-ignores."pycytominer/cyto_utils/*" = [
-  # I (isort) is ignored due to circular dependencies in the cyto_utils module
-  "I",
   # S608 (raw sql operations) is ignored because it is a common pattern in the cyto_utils module
   "S608",
 ]

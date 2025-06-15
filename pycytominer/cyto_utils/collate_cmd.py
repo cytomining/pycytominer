@@ -1,4 +1,5 @@
 import argparse
+
 from pycytominer.cyto_utils.collate import collate
 
 if __name__ == "__main__":
