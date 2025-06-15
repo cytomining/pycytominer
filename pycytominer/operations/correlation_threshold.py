@@ -3,10 +3,10 @@ Returns list of features such that no two features have a correlation greater th
 specified threshold
 """
 
-from pycytominer.cyto_utils import (
+from pycytominer.cyto_utils.features import infer_cp_features
+from pycytominer.cyto_utils.util import (
     check_correlation_method,
     get_pairwise_correlation,
-    infer_cp_features,
 )
 
 

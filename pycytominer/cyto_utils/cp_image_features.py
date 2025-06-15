@@ -3,6 +3,7 @@ Functions for counting the number of fields and aggregating other images feature
 """
 
 import numpy as np
+
 from pycytominer import aggregate
 
 
