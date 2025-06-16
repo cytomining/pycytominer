@@ -4,17 +4,17 @@ Utility function to load and process the output files of a DeepProfiler run.
 
 import os
 import pathlib
-import pandas as pd
 import warnings
+
+import pandas as pd
 
 # use mypy ignores below to avoid duplicate import warnings
 from pycytominer import aggregate, normalize  # type: ignore[no-redef]
-from pycytominer.cyto_utils import (  # type: ignore[no-redef]
-    load_npz_features,
-    load_npz_locations,
+from pycytominer.cyto_utils.features import (  # type: ignore[no-redef]
     infer_cp_features,
-    output,
 )
+from pycytominer.cyto_utils.load import load_npz_features, load_npz_locations
+from pycytominer.cyto_utils.output import output
 
 
 class DeepProfilerData:

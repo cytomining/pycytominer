@@ -3,8 +3,9 @@ Utility function to manipulate cell profiler features
 """
 
 import os
-import pandas as pd
 from typing import Union
+
+import pandas as pd
 
 blocklist_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklist_features.txt"

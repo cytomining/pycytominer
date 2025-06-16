@@ -2,14 +2,14 @@
 Utility function to augment a metadata file with X,Y locations of cells in each image
 """
 
+import collections
 import pathlib
-import pandas as pd
 import tempfile
 from typing import Optional, Union
 
 import boto3
 import botocore
-import collections
+import pandas as pd
 import sqlalchemy
 
 
