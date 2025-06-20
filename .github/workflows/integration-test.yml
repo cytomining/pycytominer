@@ -178,7 +178,7 @@ jobs:
           install-deps: true
       - name: Build
         run: poetry build
-      - name: Get pycytominer version
+      - name: Get Pycytominer version
         id: get_version
         run: |
           echo "version=$(poetry version | cut -d' ' -f2 )" >> "$GITHUB_OUTPUT"
