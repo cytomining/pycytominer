@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: >-
-  If you have used pycytominer in your project, please cite us using the
+  If you have used Pycytominer in your project, please cite us using the
   details found within the CITATION.cff file.
 authors:
   - family-names: Serrano

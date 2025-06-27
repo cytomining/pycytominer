@@ -31,6 +31,10 @@ repos:
     rev: b6045d78aac9e02b039703b030588d54d53262ac
     hooks:
       - id: validate-cff
+  - repo: https://github.com/software-gardening/almanack
+    rev: v0.1.4
+    hooks:
+      - id: almanack-check
   - repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
     rev: v0.7.0
     hooks:

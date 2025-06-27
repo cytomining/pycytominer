@@ -1,5 +1,5 @@
 name: Documentation Request
-description: Report missing pycytominer documentation and/or suggest improvements.
+description: Report missing Pycytominer documentation and/or suggest improvements.
 title: "Doc: "
 labels: [documentation]
 
