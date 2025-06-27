@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report any errors or incorrect behaviors to help improve pycytominer.
+description: Report any errors or incorrect behaviors to help improve Pycytominer.
 title: "Bug: "
 labels: [bug]
 
@@ -39,4 +39,4 @@ body:
         Examples of other information:
           - Screenshots
           - Operating system
-          - pycytominer version
+          - Pycytominer version

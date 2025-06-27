@@ -2,7 +2,7 @@
 
 # # Single-cell Profiling Walkthrough
 #
-# Welcome to this walkthrough where we will guide you through the process of extracting single cell morphology features using the [pycytominer](https://github.com/cytomining/pycytominer) API.
+# Welcome to this walkthrough where we will guide you through the process of extracting single cell morphology features using the [Pycytominer](https://github.com/cytomining/pycytominer) API.
 #
 # For this walkthrough, we will be working with the NF1-Schwann cell morphology dataset.
 # If you would like the more information about this dataset, you can refer to this [repository](https://github.com/WayScience/nf1_cellpainting_data)

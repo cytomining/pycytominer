@@ -83,7 +83,7 @@
   <g>
     <text x="60" y="1">
       <tspan fill="#505060">Py</tspan>
-      <tspan fill="#ba68c8" dx="-10">Cytominer</tspan>
+      <tspan fill="#ba68c8" dx="-10">cytominer</tspan>
     </text>
   </g>
 </svg>

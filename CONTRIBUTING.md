@@ -1,8 +1,8 @@
-# Contributing to pycytominer
+# Contributing to Pycytominer
 
-First of all, thank you for contributing to pycytominer! :tada: :100:
+First of all, thank you for contributing to Pycytominer! :tada: :100:
 
-This document contains guidelines on how to most effectively contribute to the pycytominer codebase.
+This document contains guidelines on how to most effectively contribute to the Pycytominer codebase.
 
 If you are stuck, please feel free to ask any questions or ask for help.
 
@@ -79,7 +79,7 @@ However, in order for us to fix a bug, you need to tell us exactly what went wro
 When you report a bug, please be prepared to tell us as much pertinent information as possible.
 This information includes:
 
-- The pycytominer version you’re using
+- The Pycytominer version you’re using
 - The format of input data
 - Copy and paste two pieces of information: 1) your command and 2) the specific error message
 - What you’ve tried to overcome the bug
@@ -95,7 +95,7 @@ If you find an issue already describing your bug, please add a comment to the is
 We’re deeply committed to a simple, intuitive user experience, and to support core profiling pipeline data processing.
 This commitment requires a good relationship, and open communication, with our users.
 
-We encourage you to propose enhancements to improve the pycytominer package.
+We encourage you to propose enhancements to improve the Pycytominer package.
 
 First, figure out if your proposal is already implemented, by reading the documentation!
 Next, check the issues (https://github.com/cytomining/pycytominer/issues) to see if someone else has already proposed the enhancement you have in mind.
@@ -120,10 +120,10 @@ Plus, it’s possible that your contribution belongs in a different code base, a
 
 After you’ve decided to contribute code and have written it up, now it is time to file a pull request.
 We specifically follow a [forked pull request model](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork).
-Please create a fork of the pycytominer repository, clone the fork, and then create a new, feature-specific branch.
-Once you make the necessary changes on this branch, you should file a pull request to incorporate your changes into the main pycytominer repository.
+Please create a fork of the Pycytominer repository, clone the fork, and then create a new, feature-specific branch.
+Once you make the necessary changes on this branch, you should file a pull request to incorporate your changes into the main Pycytominer repository.
 
-The content and description of your pull request are directly related to the speed at which we are able to review, approve, and merge your contribution into pycytominer.
+The content and description of your pull request are directly related to the speed at which we are able to review, approve, and merge your contribution into Pycytominer.
 To ensure an efficient review process please perform the following steps:
 
 1. Follow all instructions in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md)
@@ -206,7 +206,7 @@ bash .devcontainer/postCreateCommand.sh
 
 ### Releases
 
-Project maintainers are responsible for releasing new versions of pycytominer.
+Project maintainers are responsible for releasing new versions of Pycytominer.
 We use [`poetry-dynamic-versioning`](https://github.com/mtkennerly/poetry-dynamic-versioning) to abide by [PEP 440](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers) for version specifications.
 Note: we use a slightly different specification for versioning our Docker image (please see the [relevant section below](#docker-hub-image-releases)).
 Creating a new release includes the following steps:

@@ -3,7 +3,7 @@
 # Description
 
 <!--
-Thank you for your contribution to pycytominer!
+Thank you for your contribution to Pycytominer!
 Please _succinctly_ summarize your proposed change.
 What motivated you to make this change?
 
