@@ -101,7 +101,7 @@ furo = ">=2023.9.10,<2025.0.0"
 mock = "^5.1.0"
 autodoc = "^0.5.0"
 dunamai = "^1.19.0"
-lxml = { extras = [ "html-clean" ], version = "^5.4.0" }
+lxml = { extras = [ "html-clean" ], version = ">=5.4,<7.0" }
 
 [tool.poetry.requires-plugins]
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
