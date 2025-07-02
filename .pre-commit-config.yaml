@@ -37,7 +37,7 @@ repos:
     hooks:
     -   id: almanack-check
 -   repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
-    rev: v0.7.0
+    rev: v0.8.0
     hooks:
     -   id: pre-commit-update
         args: ["--keep", "cffconvert"]
