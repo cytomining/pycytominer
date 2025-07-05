@@ -84,7 +84,10 @@ Processing capabilities for SQLite files depends on SQLite file size and your av
 
 ### Handling inputs from other image analysis tools (other than CellProfiler)
 
-Pycytominer also supports processing of raw morphological features from image analysis tools beyond [CellProfiler](https://cellprofiler.org/).
+We recommend pre-harmonizing data using [CytoTable](https://github.com/cytomining/CytoTable) when working with data from image analysis tools such as [CellProfiler](https://cellprofiler.org/), [In Carta](https://www.moleculardevices.com/products/cellular-imaging-systems/high-content-analysis/in-carta-image-analysis-software), or legacy data systems such as cytominer-database.
+CytoTable is purpose-built to help prepare data for Pycytominer and includes many presets to help you get started with your work (please also check out our [CytoTable preprint](https://doi.org/10.1101/2025.06.19.660613)).
+
+Pycytominer also directly supports processing of raw morphological features from image analysis tools beyond [CellProfiler](https://cellprofiler.org/).
 These tools include [In Carta](https://www.moleculardevices.com/products/cellular-imaging-systems/high-content-analysis/in-carta-image-analysis-software), [Harmony](https://www.revvity.com/product/harmony-5-2-office-revvity-hh17000019#product-overview), and others.
 Using Pycytominer with these tools requires minor modifications to function arguments, and we encourage these users to pay particularly close attention to individual function documentation.
 
