@@ -46,7 +46,7 @@ repository = "https://github.com/cytomining/pycytominer"
 include = [ { path = "poetry.lock", format = "sdist" } ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.14"
 numpy = ">=1.16.5"
 scipy = ">=1.5"
 pandas = ">=1.2.0"
@@ -76,7 +76,7 @@ codecov = ">=2.1.12"
 pytest-cov = ">=4.1,<7.0"
 pre-commit = ">=3.3.2"
 commitizen = ">=3.12,<5.0"
-ruff = ">=0.3.4,<0.10.0"
+ruff = ">=0.3.4,<0.13.0"
 mypy = "^1.11.2"
 types-openpyxl = "^3.1.5.20240918"
 pandas-stubs = [
@@ -97,11 +97,14 @@ ipython = "^8.12"
 groundwork-sphinx-theme = "^1.1.1"
 sphinx-copybutton = "^0.5.2"
 nbsphinx = "^0.9.3"
-m2r2 = "^0.3.3.post2"
 furo = ">=2023.9.10,<2025.0.0"
 mock = "^5.1.0"
 autodoc = "^0.5.0"
 dunamai = "^1.19.0"
+lxml = { extras = [ "html-clean" ], version = ">=5.4,<7.0" }
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -165,8 +168,6 @@ lint.ignore = [
 # Ignore `E402` and `F401` (unusued imports) in all `__init__.py` files
 lint.per-file-ignores."__init__.py" = [ "E402", "F401" ]
 lint.per-file-ignores."pycytominer/cyto_utils/*" = [
-  # I (isort) is ignored due to circular dependencies in the cyto_utils module
-  "I",
   # S608 (raw sql operations) is ignored because it is a common pattern in the cyto_utils module
   "S608",
 ]
@@ -177,6 +178,9 @@ lint.per-file-ignores."tests/*" = [ "S101" ]
 testpaths = "tests"
 filterwarnings = [
   "ignore::DeprecationWarning:pycytominer.*",
+]
+markers = [
+  "large_data_tests: tests which involve the use of large data and could involve longer time durations.",
 ]
 
 [tool.mypy]
@@ -203,7 +207,7 @@ ignore_missing_imports = true
 
 [tool.commitizen]
 # This version is used for changelog tracking and is updated using `cz bump`
-version = "1.2.2"
+version = "1.2.3"
 name = "cz_conventional_commits"
 tag_format = "v$version"
 version_scheme = "pep440"

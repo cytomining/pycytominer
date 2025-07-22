@@ -5,7 +5,7 @@ Modified from caret::nearZeroVar()
 
 import numpy as np
 
-from pycytominer.cyto_utils import infer_cp_features
+from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def variance_threshold(

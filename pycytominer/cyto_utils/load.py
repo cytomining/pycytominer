@@ -1,9 +1,10 @@
 import csv
 import gzip
 import pathlib
+from typing import Union
+
 import numpy as np
 import pandas as pd
-from typing import Union
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
@@ -38,11 +39,9 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
     except FileNotFoundError as e:
         print("load_profiles() didn't find the path.", e, sep="\n")
 
-    # Check if file path is a parquet file
-    if file.suffix.lower() == ".parquet":
-        return True
-
-    return False
+    # return boolean based on whether
+    # file path is a parquet file
+    return file.suffix.lower() == ".parquet"
 
 
 def infer_delim(file: str):

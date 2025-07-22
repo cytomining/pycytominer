@@ -1,5 +1,6 @@
 from collections import Counter
-from pycytominer.cyto_utils import get_default_compartments
+
+from pycytominer.cyto_utils.util import get_default_compartments
 
 
 def get_default_linking_cols():

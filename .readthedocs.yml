@@ -5,6 +5,10 @@ build:
   tools:
     python: "3.11"
   jobs:
+    pre_install:
+      # Avoid a bug with virtualenv and pip
+      # Reference: https://github.com/python-poetry/poetry/issues/10056
+      - pip install "virtualenv<20.28.1" -U
     post_checkout:
       # Full history is required for dunamai to calculate the version
       - git fetch --unshallow || true

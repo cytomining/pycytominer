@@ -25,7 +25,13 @@ random.seed(42)
 @pytest.fixture(scope="session")
 def deep_profiler_data(tmp_path_factory):
     """This fixture returns the DeepProfilerData object and the output folder"""
-    example_project_dir = ROOT_DIR / "tests" / "test_data" / "DeepProfiler_example_data"
+    example_project_dir = (
+        ROOT_DIR
+        / "tests"
+        / "test_data"
+        / "DeepProfiler_example_data"
+        / "SQ00014812_and_SQ00014813"
+    )
     profile_dir = example_project_dir / "outputs" / "results" / "features"
     index_file = example_project_dir / "inputs" / "metadata" / "test_index.csv"
 
@@ -71,9 +77,16 @@ def test_single_cell_normalize(single_cell_deep_profiler):
     single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
 
     # normalize single cell data with DP processing
-    output_file = output_folder / "normalized.csv"
-    single_cells_normalized = single_cells_DP.normalize_deep_single_cells(
-        output_file=output_file
+    output_file = output_folder / "sc_dp_normalized.csv"
+    single_cells_normalized = pd.read_csv(
+        filepath_or_buffer=str(
+            single_cells_DP.normalize_deep_single_cells(output_file=output_file)
+        )
+    ).drop(
+        # note: We drop metadata_concentration because it includes NaN values
+        # (these are blank values in the DataFrame which are translated to NaN
+        # when serialized to CSV or Parquet).
+        columns=["Metadata_Concentration"]
     )
 
     # Build the expected normalized single cell data
@@ -87,9 +100,20 @@ def test_single_cell_normalize(single_cell_deep_profiler):
     ]
 
     # wrapper for pycytominer.normalize() function
-    expected_single_cell_normalize = normalize(
-        profiles=single_cells,
-        features=derived_features,
+    # note: we export to csv and then read it back in to ensure like-for-like
+    # comparisons (Pandas datatypes do not always match what is translated from
+    # CSV files).
+    expected_single_cell_normalize = pd.read_csv(
+        filepath_or_buffer=normalize(
+            profiles=single_cells,
+            features=derived_features,
+            output_file=(output_folder / "standalone_normalized.csv"),
+        )
+    ).drop(
+        # note: We drop metadata_concentration because it includes NaN values
+        # (these are blank values in the DataFrame which are translated to NaN
+        # when serialized to CSV or Parquet).
+        columns=["Metadata_Concentration"]
     )
     x_locations = single_cells["Location_Center_X"]
     expected_single_cell_normalize.insert(0, "Location_Center_X", x_locations)
@@ -101,7 +125,7 @@ def test_single_cell_normalize(single_cell_deep_profiler):
     ]
     assert meta_cols.index("Location_Center_X") == 0
     assert meta_cols.index("Location_Center_Y") == 1
-    assert single_cells_normalized.shape == (10132, 6418)
+    assert single_cells_normalized.shape == (10132, 6417)
     assert not single_cells_normalized.isnull().values.any()
     assert output_file.exists()
     pd.testing.assert_frame_equal(
@@ -164,7 +188,8 @@ def test_output(single_cell_deep_profiler):
 
     files = os.listdir(output_folder)
     files_should_be = [
-        "normalized.csv",
+        "sc_dp_normalized.csv",
+        "standalone_normalized.csv",
         "SQ00014812.csv",
         "SQ00014813.csv",
         "SQ00014812_A01.csv",

@@ -26,7 +26,7 @@ def aggregate(
     subset_data_df: Optional[pd.DataFrame] = None,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
-) -> Optional[pd.DataFrame]:
+) -> Optional[Union[pd.DataFrame, str]]:
     """Combine population dataframe variables by strata groups using given operation.
 
     Parameters

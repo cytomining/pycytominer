@@ -23,7 +23,7 @@ import pycytominer  # noqa: E402, RUF100
 
 # -- Project information -----------------------------------------------------
 
-project = pycytominer.__about__.__project__
+project = "Pycytominer"
 author = pycytominer.__about__.__author__
 project_copyright = f"Copyright 2019 - {date.today().year} {author}"
 
@@ -41,7 +41,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx_copybutton",
-    "m2r2",
     "nbsphinx",
 ]
 

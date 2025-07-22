@@ -5,7 +5,9 @@ Normalize observation features based on specified normalization method
 import pandas as pd
 from sklearn.preprocessing import RobustScaler, StandardScaler
 
-from pycytominer.cyto_utils import infer_cp_features, load_profiles, output
+from pycytominer.cyto_utils.features import infer_cp_features
+from pycytominer.cyto_utils.load import load_profiles
+from pycytominer.cyto_utils.output import output
 from pycytominer.operations import RobustMAD, Spherize
 
 
@@ -187,7 +189,7 @@ def normalize(
         raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
     if output_file is not None:
-        output(
+        return output(
             df=normalized,
             output_filename=output_file,
             output_type=output_type,

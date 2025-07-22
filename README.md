@@ -6,19 +6,19 @@
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/main/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
-[![DOI](https://img.shields.io/badge/DOI-10.48550/arXiv.2311.13417-blue)](https://doi.org/10.48550/arXiv.2311.13417)
+[![DOI](https://img.shields.io/badge/DOI-10.1038/s41592--025--02611--8-blue)](https://doi.org/10.1038/s41592-025-02611-8)
 
 Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput cell experiments.
 The tool is most often used for processing data through the following pipeline:
 
-<img height="700" align="center" alt="Description of the pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png?raw=true">
+<img height="700" align="center" alt="Description of the Pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png?raw=true">
 
 > Figure 1. The standard image-based profiling experiment and the role of Pycytominer. (A) In the experimental phase, a scientist plates cells, often perturbing them with chemical or genetic agents and performs microscopy imaging. In image analysis, using CellProfiler for example, a scientist applies several data processing steps to generate image-based profiles. In addition, scientists can apply a more flexible approach by using deep learning models, such as DeepProfiler, to generate image-based profiles. (B) Pycytominer performs image-based profiling to process morphology features and make them ready for downstream analyses. (C) Pycytominer performs five fundamental functions, each implemented with a simple and intuitive API. Each function enables a user to implement various methods for executing operations.
 
 [Click here for high resolution pipeline image](https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png)
 
 Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. [CellProfiler](https://cellprofiler.org/) or [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html)) (**Figure 1A**).
-From here, additional single cell processing tools curate the single cell readouts into a form manageable for pycytominer input.
+From here, additional single cell processing tools curate the single cell readouts into a form manageable for Pycytominer input.
 For [CellProfiler](https://cellprofiler.org/), we use [cytominer-database](https://github.com/cytomining/cytominer-database) or [CytoTable](https://github.com/cytomining/CytoTable).
 For [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html), we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
 
@@ -31,7 +31,7 @@ Please see our [`CONTRIBUTING.md`](https://github.com/cytomining/pycytominer/blo
 
 ## Installation
 
-You can install pycytominer using the following platforms.
+You can install Pycytominer using the following platforms.
 This project follows a `<major>.<minor>.<patch>` semantic versioning scheme which is used for every release with small variations per platform.
 
 **pip** ([link](https://pypi.org/project/pycytominer/)):
@@ -44,20 +44,20 @@ pip install pycytominer
 **conda** ([link](https://anaconda.org/conda-forge/pycytominer)):
 
 ```bash
-# install pycytominer from conda-forge
+# install Pycytominer from conda-forge
 conda install -c conda-forge pycytominer
 ```
 
 **Docker Hub** ([link](https://hub.docker.com/r/cytomining/pycytominer)):
 
-Container images of pycytominer are made available through Docker Hub.
+Container images of Pycytominer are made available through Docker Hub.
 These images follow a tagging scheme that extends our release sematic versioning which may be found within our [`CONTRIBUTING.md` Docker Hub Image Releases](https://github.com/cytomining/pycytominer/blob/main/CONTRIBUTING.md#docker-hub-image-releases) documentation.
 
 ```bash
-# pull the latest pycytominer image and run a module
+# pull the latest Pycytominer image and run a module
 docker run --platform=linux/amd64 cytomining/pycytominer:latest python -m pycytominer.<modules go here>
 
-# pull a commit-based version of pycytominer (b1bb292) and run an interactive bash session within the container
+# pull a commit-based version of Pycytominer (b1bb292) and run an interactive bash session within the container
 docker run -it --platform=linux/amd64 cytomining/pycytominer:pycytominer-1.1.0.post16.dev0_b1bb292 bash
 
 # pull a scheduled update of pycytominer, map the present working directory to /opt within the container, and run a python script.
@@ -123,7 +123,7 @@ Each processing function has unique arguments, see our [documentation](https://p
 
 ## Usage
 
-The default way to use pycytominer is within python scripts, and using pycytominer is simple and fun.
+The default way to use Pycytominer is within python scripts, and using Pycytominer is simple and fun.
 
 The example below demonstrates how to perform normalization with a dataset generated by [CellProfiler](https://cellprofiler.org/).
 
@@ -147,9 +147,9 @@ normalized_df = pycytominer.normalize(
 ### Pipeline orchestration
 
 Pycytominer is a collection of different functions with no explicit link between steps.
-However, some options exist to use pycytominer within a pipeline framework.
+However, some options exist to use Pycytominer within a pipeline framework.
 
-| Project                                                                          | Format    | Environment          | pycytominer usage       |
+| Project                                                                          | Format    | Environment          | Pycytominer usage       |
 | :------------------------------------------------------------------------------- | :-------- | :------------------- | :---------------------- |
 | [Profiling-recipe](https://github.com/cytomining/profiling-recipe)               | yaml      | agnostic             | full pipeline support   |
 | [CellProfiler-on-Terra](https://github.com/broadinstitute/cellprofiler-on-Terra) | WDL       | google cloud / Terra | single-cell aggregation |
@@ -171,7 +171,7 @@ If running your images on a cluster, unless you have a MySQL or similar large da
 In order to look at full plates, therefore, we first need to collate all of these CSVs into a single file (currently SQLite) per plate.
 We currently do this with a library called [cytominer-database](https://github.com/cytomining/cytominer-database).
 
-If you want to perform this data collation inside pycytominer using the `cyto_utils` function `collate` (and/or you want to be able to run the tests and have them all pass!), you will need `cytominer-database==0.3.4`; this will change your installation commands slightly:
+If you want to perform this data collation inside Pycytominer using the `cyto_utils` function `collate` (and/or you want to be able to run the tests and have them all pass!), you will need `cytominer-database==0.3.4`; this will change your installation commands slightly:
 
 ```bash
 # Example for general case commit:
@@ -245,11 +245,6 @@ pycytominer.cyto_utils.write_gct(
 
 ## Citing Pycytominer
 
-If you have used `pycytominer` in your project, please use the citation below.
-You can also find the citation in the 'cite this repository' link at the top right under `about` section.
-
-APA:
-
-```text
-Serrano, E., Chandrasekaran, N., Bunten, D., Brewer, K., Tomkinson, J., Kern, R., Bornholdt, M., Fleming, S., Pei, R., Arevalo, J., Tsang, H., Rubinetti, V., Tromans-Coia, C., Becker, T., Weisbart, E., Bunne, C., Kalinin, A. A., Senft, R., Taylor, S. J., Jamali, N., Adeboye, A., Abbasi, H. S., Goodman, A., Caicedo, J., Carpenter, A. E., Cimini, B. A., Singh, S., & Way, G. P. Reproducible image-based profiling with Pycytominer. https://doi.org/10.48550/arXiv.2311.13417
-```
+If you use `pycytominer` in your project, please cite our software.
+You can see citation information in the 'cite this repository' link at the top right under `about` section within GitHub.
+This information may also be referenced within the [`CITATION.cff`](CITATION.cff) file.

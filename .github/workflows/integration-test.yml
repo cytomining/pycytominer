@@ -36,7 +36,7 @@ jobs:
     # This job doesn't fail fast to ensure that feedback on function is still provided
     strategy:
       fail-fast: false
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
@@ -54,18 +54,19 @@ jobs:
           install-deps: false
       - name: Run pre-commit checks on all files
         uses: pre-commit/action@v3.0.1
+        id: pre_commit
         with:
           extra_args: --all-files
       # run pre-commit ci lite for automated fixes
       - uses: pre-commit-ci/lite-action@v1.1.0
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.pre_commit.outcome == 'failure' }}
   python-type-checks:
     # This job is used to check Python types
     name: Python type checks
     # Avoid fail-fast to retain output
     strategy:
       fail-fast: false
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
@@ -81,6 +82,30 @@ jobs:
       - name: Run mypy
         run: |
           poetry run mypy .
+  docs-build-test:
+    # This job checks that the docs build
+    name: Docs build test
+    # Avoid fail-fast to observe gh actions output
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    if: github.event_name != 'schedule'
+    steps:
+      - name: Install pandoc
+        uses: pandoc/actions/setup@v1
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup python, and check pre-commit cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: true
+          setup-poetry: true
+          install-deps: true
+      - name: Run sphinx-build
+        run: |
+          poetry run sphinx-build docs/ docs-build/
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
@@ -88,9 +113,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13
-          - ubuntu-22.04
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+          - macos-14
+          - ubuntu-24.04
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     env:
       OS: ${{ matrix.os }}
@@ -108,11 +133,11 @@ jobs:
           install-deps: true
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
-        if: (matrix.os == 'ubuntu-22.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
+        if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
         run: poetry run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
-        if: (matrix.os == 'ubuntu-22.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
         uses: codecov/codecov-action@v5
         env:
           OS: ${{ matrix.os }}
@@ -129,13 +154,13 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
-        if: (matrix.os != 'ubuntu-22.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
+        if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
         run: poetry run pytest ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
     # See https://github.com/actions/upload-artifact?tab=readme-ov-file#where-does-the-upload-go
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -153,7 +178,7 @@ jobs:
           install-deps: true
       - name: Build
         run: poetry build
-      - name: Get pycytominer version
+      - name: Get Pycytominer version
         id: get_version
         run: |
           echo "version=$(poetry version | cut -d' ' -f2 )" >> "$GITHUB_OUTPUT"
@@ -172,7 +197,7 @@ jobs:
           if-no-files-found: error
           retention-days: 90
   docker-image-test-and-push:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # set a dependency sequence to occur after build job completion
     needs: build
     env:
