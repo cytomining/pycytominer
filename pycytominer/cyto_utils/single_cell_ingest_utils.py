@@ -52,29 +52,32 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
 
     comp_err = "compartment not found. Check the specified compartments"
 
-    linking_check = []
-    unique_linking_cols = []
-    for x in linking_cols:
-        unique_linking_cols.append(x)
-        assert x in compartments, f"{x} {comp_err}"  # noqa: S101
-        for y in linking_cols[x]:
-            unique_linking_cols.append(y)
-            assert y in compartments, f"{y} {comp_err}"  # noqa: S101
-            linking_check.append("-".join(sorted([x, y])))
+    if not len(compartments) == 1:
+        linking_check = []
+        unique_linking_cols = []
+        for x in linking_cols:
+            unique_linking_cols.append(x)
+            assert x in compartments, "{com} {err}".format(com=x, err=comp_err)
+            for y in linking_cols[x]:
+                unique_linking_cols.append(y)
+                assert y in compartments, "{com} {err}".format(com=y, err=comp_err)
+                linking_check.append("-".join(sorted([x, y])))
 
-    # Make sure that each combination has been specified exactly twice
-    linking_counter = Counter(linking_check)
-    for combo in linking_counter:
-        assert linking_counter[combo] == 2, f"Missing column identifier between {combo}"  # noqa: S101
+        # Make sure that each combination has been specified exactly twice
+        linking_counter = Counter(linking_check)
+        for combo in linking_counter:
+            assert (
+                linking_counter[combo] == 2
+            ), "Missing column identifier between {combo}".format(combo=combo)
 
-    # Confirm that every compartment has been specified in the linking_cols
-    unique_linking_cols = sorted(set(unique_linking_cols))
-    diff_column = set(compartments).difference(unique_linking_cols)
-    assert (  # noqa: S101
-        unique_linking_cols == sorted(compartments)
-    ), (
-        f"All compartments must be specified in the linking_cols, {diff_column} is missing"
-    )
+        # Confirm that every compartment has been specified in the linking_cols
+        unique_linking_cols = sorted(list(set(unique_linking_cols)))
+        diff_column = set(compartments).difference(unique_linking_cols)
+        assert unique_linking_cols == sorted(
+            compartments
+        ), "All compartments must be specified in the linking_cols, {miss} is missing".format(
+            miss=diff_column
+        )
 
 
 def provide_linking_cols_feature_name_update(linking_cols="default"):
