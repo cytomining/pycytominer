@@ -26,6 +26,24 @@ def get_default_linking_cols():
     return linking_cols
 
 
+def get_alternative_linking_cols():
+    alternative_linking_cols = {
+        "cells": {
+            "cytoplasm": "ObjectNumber",
+            "nuclei": "Cells_Parent_Nuclei",
+        },
+        "cytoplasm": {
+            "cells": "Cytoplasm_Parent_Cells",
+            "nuclei": "Cytoplasm_Parent_Nuclei",
+        },
+        "nuclei": {
+            "cytoplasm": "ObjectNumber",
+            "cells": "ObjectNumber",
+        },
+    }
+    return alternative_linking_cols
+
+
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
     """Confirm that the linking cols and compartments are compatible
 
@@ -49,6 +67,18 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
 
     if compartments == "default":
         compartments = get_default_compartments()
+    elif len(compartments) == 1:
+        linking_cols = {compartments[0]: {compartments[0]: "ObjectNumber"}}
+    elif len(compartments) == 2:
+        default_comps = get_default_compartments()
+        if all(c in default_comps for c in compartments):
+            alt = get_alternative_linking_cols()
+            linking_cols = {}
+            for comp in compartments:
+                subdict = {k: v for k, v in alt[comp].items() if k in compartments}
+                if subdict:
+                    linking_cols[comp] = subdict
+                    print(linking_cols)
 
     comp_err = "compartment not found. Check the specified compartments"
 
