@@ -87,9 +87,6 @@ Processing capabilities for SQLite files depends on SQLite file size and your av
 We recommend pre-harmonizing data using [CytoTable](https://github.com/cytomining/CytoTable) when working with data from image analysis tools such as [CellProfiler](https://cellprofiler.org/), [In Carta](https://www.moleculardevices.com/products/cellular-imaging-systems/high-content-analysis/in-carta-image-analysis-software), or legacy data systems such as cytominer-database.
 CytoTable is purpose-built to help prepare data for Pycytominer and includes many presets to help you get started with your work (please also check out our [CytoTable preprint](https://doi.org/10.1101/2025.06.19.660613)).
 
-Pycytominer also directly supports processing of raw morphological features from image analysis tools beyond [CellProfiler](https://cellprofiler.org/).
-These tools include [In Carta](https://www.moleculardevices.com/products/cellular-imaging-systems/high-content-analysis/in-carta-image-analysis-software), [Harmony](https://www.revvity.com/product/harmony-5-2-office-revvity-hh17000019#product-overview), and others.
-Using Pycytominer with these tools requires minor modifications to function arguments, and we encourage these users to pay particularly close attention to individual function documentation.
 
 For example, to resolve potential feature issues in the `normalize()` function, you must manually specify the morphological features using the `features` [parameter](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.normalize.normalize).
 The `features` parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate) and [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
