@@ -16,6 +16,7 @@ from pycytominer.cyto_utils import (
     extract_image_features,
     get_default_compartments,
     get_default_linking_cols,
+    get_linking_cols_from_compartments,
     infer_cp_features,
     output,
     provide_linking_cols_feature_name_update,
@@ -91,11 +92,11 @@ class SingleCells:
             "cells": {"cytoplasm": "ObjectNumber"},
             "nuclei": {"cytoplasm": "ObjectNumber"},
         }.
-        
+
         The compartment_linking_cols dictionary template is: {
-            "child": 
+            "child":
                 {"parent":"child_Parent_parent"},
-            "parent": 
+            "parent":
                 {"child":"ObjectNumber"}
             }
     """
@@ -158,6 +159,12 @@ class SingleCells:
         self.object_feature = object_feature
         self.default_datatype_float = default_datatype_float
 
+        if compartment_linking_cols == default_linking_cols:
+            linking_cols = get_linking_cols_from_compartments(self.compartments)
+        else:
+            linking_cols = compartment_linking_cols
+
+        self.compartment_linking_cols = linking_cols
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
             compartments=self.compartments, linking_cols=self.compartment_linking_cols
@@ -329,8 +336,12 @@ class SingleCells:
         check_compartments(compartment)
 
         if count_subset:
-            assert self.is_aggregated, "Make sure to aggregate_profiles() first!"  # noqa: S101
-            assert self.is_subset_computed, "Make sure to get_subsample() first!"  # noqa: S101
+            assert (
+                self.is_aggregated
+            ), "Make sure to aggregate_profiles() first!"  # noqa: S101
+            assert (
+                self.is_subset_computed
+            ), "Make sure to get_subsample() first!"  # noqa: S101
             count_df = (
                 self.subset_data_df.groupby(self.strata)["Metadata_ObjectNumber"]
                 .count()
@@ -632,9 +643,7 @@ class SingleCells:
 
         assert (  # noqa: S101
             n_aggregation_memory_strata > 0
-        ), (
-            "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
-        )
+        ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
 
         # Obtain data types of all columns of the compartment table
         cols = "*"
@@ -726,6 +735,7 @@ class SingleCells:
         left_compartment_loaded = False
         linking_check_cols = []
         merge_suffix_rename = []
+
         for left_compartment in self.compartment_linking_cols:
             for right_compartment in self.compartment_linking_cols[left_compartment]:
                 # Make sure only one merge per combination occurs
@@ -796,8 +806,9 @@ class SingleCells:
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")
             # pandas rename performance may be improved using copy=False, inplace=False
             # reference: https://ryanlstevens.github.io/2022-05-06-pandasColumnRenaming/
-            .rename(self.linking_col_rename, axis="columns", copy=False, inplace=False)
             .rename(
+                self.linking_col_rename, axis="columns", copy=False, inplace=False
+            ).rename(
                 self.full_merge_suffix_rename, axis="columns", copy=False, inplace=False
             )
         )

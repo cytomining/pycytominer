@@ -25,6 +25,7 @@ from .output import output
 from .single_cell_ingest_utils import (
     assert_linking_cols_complete,
     get_default_linking_cols,
+    get_linking_cols_from_compartments,
     provide_linking_cols_feature_name_update,
 )
 from .util import (

@@ -27,6 +27,27 @@ def get_default_linking_cols():
 
 
 def get_alternative_linking_cols():
+    """
+    Returns a dictionary defining alternative linking columns between compartments
+    for single cell morphological profiles.
+
+    The returned dictionary specifies, for each compartment, the linking columns
+    used to connect to other compartments (typically as used in CellProfiler output).
+
+    Returns
+    -------
+    dict
+        Dictionary with compartment names as keys and sub-dictionaries indicating
+        the linking columns to other compartments.
+        Example:
+            {
+                "cells": {
+                    "cytoplasm": "ObjectNumber",
+                    "nuclei": "Cells_Parent_Nuclei",
+                },
+                ...
+            }
+    """
     alternative_linking_cols = {
         "cells": {
             "cytoplasm": "ObjectNumber",
@@ -42,6 +63,38 @@ def get_alternative_linking_cols():
         },
     }
     return alternative_linking_cols
+
+
+def get_linking_cols_from_compartments(compartments):
+    """
+    Given a list of compartments, returns an appropriate linking columns dictionary.
+
+    For single compartment, links to itself via "ObjectNumber".
+    For two compartments, uses alternative linking columns. Only if they belong to default_compartments.
+    For three or more compartments, falls back to the default linking cols.
+
+    Parameters
+    ----------
+    compartments : list of str
+        List of compartment names to link (e.g., ["cells"], ["cells", "nuclei"], etc.)
+
+    Returns
+    -------
+    dict
+        Dictionary mapping compartments to their linking columns.
+    """
+    if len(compartments) == 1:
+        return {compartments[0]: {compartments[0]: "ObjectNumber"}}
+    elif len(compartments) == 2:
+        alt = get_alternative_linking_cols()
+        linking_cols = {}
+        for comp in compartments:
+            subdict = {k: v for k, v in alt[comp].items() if k in compartments}
+            if subdict:
+                linking_cols[comp] = subdict
+        return linking_cols
+    else:
+        return get_default_linking_cols()
 
 
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
@@ -67,18 +120,6 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
 
     if compartments == "default":
         compartments = get_default_compartments()
-    elif len(compartments) == 1:
-        linking_cols = {compartments[0]: {compartments[0]: "ObjectNumber"}}
-    elif len(compartments) == 2:
-        default_comps = get_default_compartments()
-        if all(c in default_comps for c in compartments):
-            alt = get_alternative_linking_cols()
-            linking_cols = {}
-            for comp in compartments:
-                subdict = {k: v for k, v in alt[comp].items() if k in compartments}
-                if subdict:
-                    linking_cols[comp] = subdict
-                    print(linking_cols)
 
     comp_err = "compartment not found. Check the specified compartments"
 
