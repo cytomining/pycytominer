@@ -84,7 +84,7 @@ def get_linking_cols_from_compartments(compartments):
         Dictionary mapping compartments to their linking columns.
     """
     if len(compartments) == 1:
-        return {compartments[0]: {compartments[0]: "ObjectNumber"}}
+        return {}
     elif len(compartments) == 2:
         alt = get_alternative_linking_cols()
         linking_cols = {}
