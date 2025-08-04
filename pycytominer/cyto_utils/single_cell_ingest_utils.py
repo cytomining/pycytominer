@@ -26,6 +26,77 @@ def get_default_linking_cols():
     return linking_cols
 
 
+def get_alternative_linking_cols():
+    """
+    Returns a dictionary defining alternative linking columns between compartments
+    for single cell morphological profiles.
+
+    The returned dictionary specifies, for each compartment, the linking columns
+    used to connect to other compartments (typically as used in CellProfiler output).
+
+    Returns
+    -------
+    dict
+        Dictionary with compartment names as keys and sub-dictionaries indicating
+        the linking columns to other compartments.
+        Example:
+            {
+                "cells": {
+                    "cytoplasm": "ObjectNumber",
+                    "nuclei": "Cells_Parent_Nuclei",
+                },
+                ...
+            }
+    """
+    alternative_linking_cols = {
+        "cells": {
+            "cytoplasm": "ObjectNumber",
+            "nuclei": "Cells_Parent_Nuclei",
+        },
+        "cytoplasm": {
+            "cells": "Cytoplasm_Parent_Cells",
+            "nuclei": "Cytoplasm_Parent_Nuclei",
+        },
+        "nuclei": {
+            "cytoplasm": "ObjectNumber",
+            "cells": "ObjectNumber",
+        },
+    }
+    return alternative_linking_cols
+
+
+def get_linking_cols_from_compartments(compartments):
+    """
+    Given a list of compartments, returns an appropriate linking columns dictionary.
+
+    For single compartment, links to itself via "ObjectNumber".
+    For two compartments, uses alternative linking columns. Only if they belong to default_compartments.
+    For three or more compartments, falls back to the default linking cols.
+
+    Parameters
+    ----------
+    compartments : list of str
+        List of compartment names to link (e.g., ["cells"], ["cells", "nuclei"], etc.)
+
+    Returns
+    -------
+    dict
+        Dictionary mapping compartments to their linking columns.
+    """
+    if len(compartments) == 1:
+        return {}
+    elif len(compartments) == 2:
+        alt = get_alternative_linking_cols()
+        linking_cols = {}
+        for comp in compartments:
+            subdict = {k: v for k, v in alt[comp].items() if k in compartments}
+            if subdict:
+                linking_cols[comp] = subdict
+        return linking_cols
+    else:
+        return get_default_linking_cols()
+
+
 def assert_linking_cols_complete(linking_cols="default", compartments="default"):
     """Confirm that the linking cols and compartments are compatible
 
@@ -52,29 +123,32 @@ def assert_linking_cols_complete(linking_cols="default", compartments="default")
 
     comp_err = "compartment not found. Check the specified compartments"
 
-    linking_check = []
-    unique_linking_cols = []
-    for x in linking_cols:
-        unique_linking_cols.append(x)
-        assert x in compartments, f"{x} {comp_err}"  # noqa: S101
-        for y in linking_cols[x]:
-            unique_linking_cols.append(y)
-            assert y in compartments, f"{y} {comp_err}"  # noqa: S101
-            linking_check.append("-".join(sorted([x, y])))
+    if not len(compartments) == 1:
+        linking_check = []
+        unique_linking_cols = []
+        for x in linking_cols:
+            unique_linking_cols.append(x)
+            assert x in compartments, "{com} {err}".format(com=x, err=comp_err)
+            for y in linking_cols[x]:
+                unique_linking_cols.append(y)
+                assert y in compartments, "{com} {err}".format(com=y, err=comp_err)
+                linking_check.append("-".join(sorted([x, y])))
 
-    # Make sure that each combination has been specified exactly twice
-    linking_counter = Counter(linking_check)
-    for combo in linking_counter:
-        assert linking_counter[combo] == 2, f"Missing column identifier between {combo}"  # noqa: S101
+        # Make sure that each combination has been specified exactly twice
+        linking_counter = Counter(linking_check)
+        for combo in linking_counter:
+            assert (
+                linking_counter[combo] == 2
+            ), "Missing column identifier between {combo}".format(combo=combo)
 
-    # Confirm that every compartment has been specified in the linking_cols
-    unique_linking_cols = sorted(set(unique_linking_cols))
-    diff_column = set(compartments).difference(unique_linking_cols)
-    assert (  # noqa: S101
-        unique_linking_cols == sorted(compartments)
-    ), (
-        f"All compartments must be specified in the linking_cols, {diff_column} is missing"
-    )
+        # Confirm that every compartment has been specified in the linking_cols
+        unique_linking_cols = sorted(list(set(unique_linking_cols)))
+        diff_column = set(compartments).difference(unique_linking_cols)
+        assert unique_linking_cols == sorted(
+            compartments
+        ), "All compartments must be specified in the linking_cols, {miss} is missing".format(
+            miss=diff_column
+        )
 
 
 def provide_linking_cols_feature_name_update(linking_cols="default"):

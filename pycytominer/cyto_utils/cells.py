@@ -16,6 +16,7 @@ from pycytominer.cyto_utils import (
     extract_image_features,
     get_default_compartments,
     get_default_linking_cols,
+    get_linking_cols_from_compartments,
     infer_cp_features,
     output,
     provide_linking_cols_feature_name_update,
@@ -43,7 +44,7 @@ class SingleCells:
     compartments : list of str, default ["cells", "cytoplasm", "nuclei"]
         list of compartments to process.
     compartment_linking_cols : dict, default noted below
-        Dictionary identifying how to merge columns across tables.
+        Dictionary identifying how to merge columns across tables. For examples see note below.
     merge_cols : list of str, default ["TableNumber", "ImageNumber"]
         Columns indicating how to merge image and compartment data.
     image_cols : list of str, default ["TableNumber", "ImageNumber", "Metadata_Site"]
@@ -90,7 +91,14 @@ class SingleCells:
             },
             "cells": {"cytoplasm": "ObjectNumber"},
             "nuclei": {"cytoplasm": "ObjectNumber"},
-        }
+        }.
+
+        The compartment_linking_cols dictionary template is: {
+            "child":
+                {"parent":"child_Parent_parent"},
+            "parent":
+                {"child":"ObjectNumber"}
+            }
     """
 
     def __init__(
@@ -151,6 +159,12 @@ class SingleCells:
         self.object_feature = object_feature
         self.default_datatype_float = default_datatype_float
 
+        if compartment_linking_cols == default_linking_cols:
+            linking_cols = get_linking_cols_from_compartments(self.compartments)
+        else:
+            linking_cols = compartment_linking_cols
+
+        self.compartment_linking_cols = linking_cols
         # Confirm that the compartments and linking cols are formatted properly
         assert_linking_cols_complete(
             compartments=self.compartments, linking_cols=self.compartment_linking_cols
@@ -322,8 +336,12 @@ class SingleCells:
         check_compartments(compartment)
 
         if count_subset:
-            assert self.is_aggregated, "Make sure to aggregate_profiles() first!"  # noqa: S101
-            assert self.is_subset_computed, "Make sure to get_subsample() first!"  # noqa: S101
+            assert (
+                self.is_aggregated
+            ), "Make sure to aggregate_profiles() first!"  # noqa: S101
+            assert (
+                self.is_subset_computed
+            ), "Make sure to get_subsample() first!"  # noqa: S101
             count_df = (
                 self.subset_data_df.groupby(self.strata)["Metadata_ObjectNumber"]
                 .count()
@@ -625,9 +643,7 @@ class SingleCells:
 
         assert (  # noqa: S101
             n_aggregation_memory_strata > 0
-        ), (
-            "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
-        )
+        ), "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
 
         # Obtain data types of all columns of the compartment table
         cols = "*"
@@ -719,51 +735,55 @@ class SingleCells:
         left_compartment_loaded = False
         linking_check_cols = []
         merge_suffix_rename = []
-        for left_compartment in self.compartment_linking_cols:
-            for right_compartment in self.compartment_linking_cols[left_compartment]:
-                # Make sure only one merge per combination occurs
-                linking_check = "-".join(sorted([left_compartment, right_compartment]))
-                if linking_check in linking_check_cols:
-                    continue
+        if len(self.compartments) == 1:
+            sc_df = self.load_compartment(compartment=self.compartments[0])
+            merge_suffix_rename = []
+        else:
+            for left_compartment in self.compartment_linking_cols:
+                for right_compartment in self.compartment_linking_cols[left_compartment]:
+                    # Make sure only one merge per combination occurs
+                    linking_check = "-".join(sorted([left_compartment, right_compartment]))
+                    if linking_check in linking_check_cols:
+                        continue
 
-                # Specify how to indicate merge suffixes
-                merge_suffix = [
-                    f"_{left_compartment}",
-                    f"_{right_compartment}",
-                ]
-                merge_suffix_rename += merge_suffix
-                left_link_col = self.compartment_linking_cols[left_compartment][
-                    right_compartment
-                ]
-                right_link_col = self.compartment_linking_cols[right_compartment][
-                    left_compartment
-                ]
+                    # Specify how to indicate merge suffixes
+                    merge_suffix = [
+                        f"_{left_compartment}",
+                        f"_{right_compartment}",
+                    ]
+                    merge_suffix_rename += merge_suffix
+                    left_link_col = self.compartment_linking_cols[left_compartment][
+                        right_compartment
+                    ]
+                    right_link_col = self.compartment_linking_cols[right_compartment][
+                        left_compartment
+                    ]
 
-                if not left_compartment_loaded:
-                    sc_df = self.load_compartment(compartment=left_compartment)
+                    if not left_compartment_loaded:
+                        sc_df = self.load_compartment(compartment=left_compartment)
 
-                    if compute_subsample:
-                        # Sample cells proportionally by self.strata
-                        self.get_subsample(df=sc_df, rename_col=False)
+                        if compute_subsample:
+                            # Sample cells proportionally by self.strata
+                            self.get_subsample(df=sc_df, rename_col=False)
 
-                        subset_logic_df = self.subset_data_df.drop(
-                            self.image_df.columns, axis="columns"
-                        )
+                            subset_logic_df = self.subset_data_df.drop(
+                                self.image_df.columns, axis="columns"
+                            )
 
-                        sc_df = subset_logic_df.merge(
-                            sc_df, how="left", on=subset_logic_df.columns.tolist()
-                        ).reindex(sc_df.columns, axis="columns")
+                            sc_df = subset_logic_df.merge(
+                                sc_df, how="left", on=subset_logic_df.columns.tolist()
+                            ).reindex(sc_df.columns, axis="columns")
 
-                    left_compartment_loaded = True
+                        left_compartment_loaded = True
 
-                sc_df = sc_df.merge(
-                    self.load_compartment(compartment=right_compartment),
-                    left_on=[*self.merge_cols, left_link_col],
-                    right_on=[*self.merge_cols, right_link_col],
-                    suffixes=merge_suffix,
-                )
+                    sc_df = sc_df.merge(
+                        self.load_compartment(compartment=right_compartment),
+                        left_on=[*self.merge_cols, left_link_col],
+                        right_on=[*self.merge_cols, right_link_col],
+                        suffixes=merge_suffix,
+                    )
 
-                linking_check_cols.append(linking_check)
+                    linking_check_cols.append(linking_check)
 
         # Add metadata prefix to merged suffixes
         full_merge_suffix_rename = []
@@ -789,8 +809,9 @@ class SingleCells:
             self.image_df.merge(sc_df, on=self.merge_cols, how="right")
             # pandas rename performance may be improved using copy=False, inplace=False
             # reference: https://ryanlstevens.github.io/2022-05-06-pandasColumnRenaming/
-            .rename(self.linking_col_rename, axis="columns", copy=False, inplace=False)
             .rename(
+                self.linking_col_rename, axis="columns", copy=False, inplace=False
+            ).rename(
                 self.full_merge_suffix_rename, axis="columns", copy=False, inplace=False
             )
         )

@@ -34,6 +34,9 @@ def collate(
     add_image_features=True,
     image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
     printtoscreen=True,
+    no_nuclei=True,
+    no_cells=True,
+    no_cytoplasm=True
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -67,9 +70,21 @@ def collate(
         The list of image feature groups to be used by add_image_features during aggregation
     printtoscreen: bool, optional, default True
         Whether or not to print output to the terminal
+    no_nuclei: bool, optional, default True
+        Whether or not the nuclei object is available. Set to False if there is no nuclei object.
+    no_cells: bool, optional, default True
+        Whether or not the cells object is available. Set to False if there is no cells object.
+    no_cytoplasm: bool, optional, default True
+        Whether or not the cytoplasm object is available. Set to False if there is no cytoplasm object.
     """
 
     from pycytominer.cyto_utils.cells import SingleCells
+    
+
+    # Set up comparments based on the flags. If all True, all compartments will be used
+    filter_compartments = [no_nuclei, no_cells, no_cytoplasm]
+    to_filter = ["Nuclei", "Cells", "Cytoplasm"]
+    compartments = [to_filter[i] for i in [j for j in range(len(filter_compartments)) if filter_compartments[j]]]
 
     # Check if optional dependency cytominer-database is installed
     try:
@@ -121,8 +136,13 @@ def collate(
             remote_backend_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.sqlite"
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
+            
+            include_list = []
+            for eachcompartment in compartments:
+                include = "--include */" + eachcompartment + ".csv"
+                include_list.append(include)
+            sync_cmd = f"aws s3 sync --exclude * {(' '.join(include_list))} --include */Image.csv {remote_input_dir} {input_dir}"
 
-            sync_cmd = f"aws s3 sync --exclude * --include */Cells.csv --include */Nuclei.csv --include */Cytoplasm.csv --include */Image.csv {remote_input_dir} {input_dir}"
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
@@ -210,6 +230,7 @@ def collate(
         aggregation_operation="mean",
         add_image_features=add_image_features,
         image_feature_categories=image_feature_categories,
+        compartments=[cmp.lower() for cmp in compartments]
     )
     database.aggregate_profiles(output_file=aggregated_file)
 
