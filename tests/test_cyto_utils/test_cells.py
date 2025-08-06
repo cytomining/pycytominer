@@ -249,7 +249,7 @@ def test_SingleCells_reset_variables():
     ap_switch.set_subsample_random_state(42)
     assert ap_switch.subsampling_random_state == 42
 
-    with pytest.raises(AssertionError) as errorinfo:
+    with pytest.raises(ValueError) as errorinfo:
         ap_switch.set_subsample_frac(0.8)
     assert "Do not set both subsample_frac and subsample_n" in str(
         errorinfo.value.args[0]
@@ -817,7 +817,7 @@ def test_n_aggregation_memory_strata():
 
 def test_invalid_n_aggregation_memory_strata():
     # expect an AssertionError when an invalid parameter value is specified
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         AP.aggregate_profiles(n_aggregation_memory_strata=0)
 
 

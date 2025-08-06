@@ -108,9 +108,11 @@ def check_correlation_method(method):
 
     method = method.lower()
     avail_methods = ["pearson", "spearman", "kendall"]
-    assert (  # noqa: S101
-        method in avail_methods
-    ), f"method {method} not supported, select one of {avail_methods}"
+
+    if method not in avail_methods:
+        raise ValueError(
+            f"method {method} not supported, select one of {avail_methods}"
+        )
 
     return method
 
@@ -132,9 +134,11 @@ def check_aggregate_operation(operation):
 
     operation = operation.lower()
     avail_ops = ["mean", "median"]
-    assert (  # noqa: S101
-        operation in avail_ops
-    ), f"operation {operation} not supported, select one of {avail_ops}"
+
+    if operation not in avail_ops:
+        raise ValueError(
+            f"operation {operation} not supported, select one of {avail_ops}"
+        )
 
     return operation
 
@@ -156,14 +160,15 @@ def check_consensus_operation(operation):
 
     operation = operation.lower()
     avail_ops = ["modz"]  # All aggregation operations are also supported
+
     try:
         operation = check_aggregate_operation(operation)
-    except AssertionError:
-        assert (  # noqa: S101
-            operation in avail_ops
-        ), (
-            f"operation {operation} not supported, select one of {avail_ops} or see aggregate.py"
-        )
+
+    except ValueError:
+        if operation not in avail_ops:
+            raise ValueError(
+                f"operation {operation} not supported, select one of {avail_ops} or see aggregate.py"
+            )
 
     return operation
 
@@ -219,11 +224,9 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
 
     """
 
-    try:
-        assert len(  # noqa: S101
-            list(np.intersect1d(data_fields_of_view, input_fields_of_view))
-        ) == len(input_fields_of_view)
-    except AssertionError:
+    if not len(list(np.intersect1d(data_fields_of_view, input_fields_of_view))) == len(
+        input_fields_of_view
+    ):
         raise ValueError(
             "Some of the input fields of view are not present in the image table."
         )
@@ -252,12 +255,10 @@ def check_image_features(image_features, image_columns):
     else:
         level = 0
 
-    try:
-        assert all(  # noqa: S101
-            feature in list({img_col.split("_")[level] for img_col in image_columns})
-            for feature in image_features
-        )
-    except AssertionError:
+    if not all(
+        feature in list({img_col.split("_")[level] for img_col in image_columns})
+        for feature in image_features
+    ):
         raise ValueError(
             "Some of the input image features are not present in the image table."
         )

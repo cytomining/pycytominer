@@ -140,8 +140,9 @@ def test_output_exception():
 def test_check_set_compression():
     check_compression_method(compression="gzip")
 
-    with pytest.raises(AssertionError) as e:
+    with pytest.raises(ValueError) as e:
         check_compression_method(compression="THIS WILL NOT WORK")
+
     assert "not supported" in str(e.value)
 
     compression = set_compression_method(compression="gzip")
@@ -156,14 +157,16 @@ def test_check_set_compression():
     compression = set_compression_method(compression={"method": None, "mtime": 1})
     assert compression == {"method": None, "mtime": 1}
 
-    with pytest.raises(AssertionError) as e:
+    with pytest.raises(ValueError) as e:
         compression = set_compression_method(compression="THIS WILL NOT WORK")
+
     assert "not supported" in str(e.value)
 
-    with pytest.raises(AssertionError) as e:
+    with pytest.raises(ValueError) as e:
         compression = set_compression_method(
             compression={"method": "THIS WILL NOT WORK"}
         )
+
     assert "not supported" in str(e.value)
 
 

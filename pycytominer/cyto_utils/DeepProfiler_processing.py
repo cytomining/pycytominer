@@ -168,15 +168,22 @@ class AggregateDeepProfiler:
         ---------
         See above for all parameters.
         """
-        assert aggregate_operation in [  # noqa: S101
+        if aggregate_operation not in [
             "median",
             "mean",
-        ], "Input of aggregate_operation is incorrect, it must be either median or mean"
-        assert aggregate_on in [  # noqa: S101
+        ]:
+            raise ValueError(
+                "Input of aggregate_operation is incorrect, it must be either median or mean"
+            )
+
+        if aggregate_on not in [
             "site",
             "well",
             "plate",
-        ], "Input of aggregate_on is incorrect, it must be either site or well or plate"
+        ]:
+            raise ValueError(
+                "Input of aggregate_on is incorrect, it must be either site or well or plate"
+            )
 
         self.deep_data = deep_data
         self.aggregate_operation = aggregate_operation
