@@ -30,7 +30,7 @@
 
 ### Chore
 
-* consistent project title casing (#547)
+- consistent project title casing (#547)
 
 ## v1.2.3 (2025-05-08)
 
