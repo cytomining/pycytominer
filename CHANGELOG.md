@@ -1,3 +1,37 @@
+## v1.2.4 (2025-08-06)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.4)
+
+### Feat
+
+- Return output filepath when `output_file` is used by core functions (#530)
+
+### Docs
+
+- **citations** add CytoTable guidance to readme (#556)
+- Alleviate `nbsphinx` dependency bug for docs builds (#536)
+
+### Refactor
+
+- transition asserts for production code (#564)
+
+### Build
+
+- **deps**: various dependency updates automated by dependabot
+
+### CI
+
+- add Almanack to pre-commit checks (#548)
+- fix poetry install for devcontainer (#550)
+- Add `isort` to linting checks, apply formatting, and resolve circular imports (#545)
+- Use trusted publishing for PyPI package deployment (#532)
+- Update pre-commit-lite conditions (#528)
+- Add `large_data_tests` marker to help deselect time intensive tests for development (#529)
+
+### Chore
+
+* consistent project title casing (#547)
+
 ## v1.2.3 (2025-05-08)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.3)
