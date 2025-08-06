@@ -87,7 +87,7 @@ authors:
     orcid: https://orcid.org/0000-0002-0503-9348
 title: "Reproducible image-based profiling with Pycytominer"
 # This version is updated using `cz bump` command
-version: "1.2.3"
+version: "1.2.4"
 license: BSD-3-Clause
 repository-code: "https://github.com/cytomining/pycytominer"
 doi: 10.1038/s41592-025-02611-8
