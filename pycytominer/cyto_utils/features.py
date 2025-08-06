@@ -30,9 +30,8 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
 
     blocklist = pd.read_csv(blocklist_file)
 
-    assert any(  # noqa: S101
-        x == "blocklist" for x in blocklist.columns
-    ), "one column must be named 'blocklist'"
+    if not any(x == "blocklist" for x in blocklist.columns):
+        raise ValueError("one column must be named 'blocklist'")
 
     blocklist_features = blocklist.blocklist.to_list()
     if isinstance(population_df, pd.DataFrame):
@@ -63,9 +62,8 @@ def label_compartment(cp_features, compartment, metadata_cols):
     compartment = compartment.Title()
     avail_compartments = ["Cells", "Cytoplasm", "Nuceli", "Image", "Barcode"]
 
-    assert (  # noqa: S101
-        compartment in avail_compartments
-    ), f"provide valid compartment. One of: {avail_compartments}"
+    if compartment not in avail_compartments:
+        raise ValueError(f"provide valid compartment. One of: {avail_compartments}")
 
     cp_features = [
         f"Metadata_{x}" if x in metadata_cols else f"{compartment}_{x}"

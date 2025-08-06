@@ -23,13 +23,14 @@ def annotate_cmap(
         CMAP annotated data
     """
     pert_opts = ["none", "chemical", "genetic"]
-    assert (  # noqa: S101
-        perturbation_mode in pert_opts
-    ), f"perturbation mode must be one of {pert_opts}"
 
-    assert (  # noqa: S101
-        "Metadata_broad_sample" in annotated.columns
-    ), "Are you sure this is a CMAP file? 'Metadata_broad_sample column not found.'"
+    if perturbation_mode not in pert_opts:
+        raise ValueError(f"perturbation mode must be one of {pert_opts}")
+
+    if "Metadata_broad_sample" not in annotated.columns:
+        raise ValueError(
+            "Are you sure this is a CMAP file? 'Metadata_broad_sample column not found.'"
+        )
 
     annotated = annotated.assign(
         Metadata_pert_id=annotated.Metadata_broad_sample.str.extract(

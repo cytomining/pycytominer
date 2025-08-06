@@ -124,9 +124,8 @@ class SingleCells:
         aggregation_operation = check_aggregate_operation(aggregation_operation)
 
         # Check that the subsample_frac is between 0 and 1
-        assert (  # noqa: S101
-            subsample_frac > 0 and subsample_frac <= 1
-        ), "subsample_frac must be between 0 and 1"
+        if not subsample_frac > 0 and subsample_frac <= 1:
+            raise ValueError("subsample_frac must be between 0 and 1")
 
         self.sql_file = sql_file
         self.strata = strata
@@ -189,9 +188,8 @@ class SingleCells:
         """
 
         # Check that the user didn't specify both subset frac and subsample all
-        assert (  # noqa: S101
-            self.subsample_frac == 1 or self.subsample_n == "all"
-        ), "Do not set both subsample_frac and subsample_n"
+        if not (self.subsample_frac == 1 or self.subsample_n == "all"):
+            raise ValueError("Do not set both subsample_frac and subsample_n")
 
     def set_output_file(self, output_file):
         """Setting operation to conveniently rename output file.
@@ -322,8 +320,12 @@ class SingleCells:
         check_compartments(compartment)
 
         if count_subset:
-            assert self.is_aggregated, "Make sure to aggregate_profiles() first!"  # noqa: S101
-            assert self.is_subset_computed, "Make sure to get_subsample() first!"  # noqa: S101
+            if not self.is_aggregated:
+                raise RuntimeError("Make sure to aggregate_profiles() first!")
+
+            if not self.is_subset_computed:
+                raise RuntimeError("Make sure to get_subsample() first!")
+
             count_df = (
                 self.subset_data_df.groupby(self.strata)["Metadata_ObjectNumber"]
                 .count()
@@ -623,11 +625,10 @@ class SingleCells:
 
         """
 
-        assert (  # noqa: S101
-            n_aggregation_memory_strata > 0
-        ), (
-            "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
-        )
+        if not (n_aggregation_memory_strata > 0):
+            raise ValueError(
+                "Number of strata to pull into memory at once (n_aggregation_memory_strata) must be > 0"
+            )
 
         # Obtain data types of all columns of the compartment table
         cols = "*"

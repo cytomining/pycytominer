@@ -29,7 +29,7 @@ def test_assert_linking_cols_complete():
         linking_cols=default_linking_cols, compartments=default_compartments
     )
 
-    with pytest.raises(AssertionError) as err:
+    with pytest.raises(ValueError) as err:
         assert_linking_cols_complete(
             linking_cols=default_linking_cols, compartments=["cells", "cytoplasm"]
         )
@@ -41,13 +41,13 @@ def test_assert_linking_cols_complete():
         "cells": {"cytoplasm": "ObjectNumber"},
         "nuclei": {"cytoplasm": "ObjectNumber"},
     }
-    with pytest.raises(AssertionError) as err:
+    with pytest.raises(ValueError) as err:
         assert_linking_cols_complete(
             linking_cols=error_linking_cols, compartments=default_compartments
         )
     assert "Missing column identifier between cytoplasm-nuclei" in str(err.value)
 
-    with pytest.raises(AssertionError) as err:
+    with pytest.raises(ValueError) as err:
         assert_linking_cols_complete(
             linking_cols=default_linking_cols,
             compartments=["cells", "cytoplasm", "nuclei", "sandwich"],

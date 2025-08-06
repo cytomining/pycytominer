@@ -56,7 +56,7 @@ broad_platemap_df = platemap_df.assign(Metadata_broad_sample=example_broad_sampl
 
 
 def test_annotate_cmap_assert():
-    with pytest.raises(AssertionError) as nocmap:
+    with pytest.raises(ValueError) as nocmap:
         annotate(
             profiles=data_df,
             platemap=platemap_df,

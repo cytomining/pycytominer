@@ -196,7 +196,7 @@ def test_write_gct_with_feature_metadata():
 
 
 def test_write_gct_assert_error():
-    with pytest.raises(AssertionError) as ae:
+    with pytest.raises(ValueError) as ae:
         output_filename = os.path.join(tmpdir, "test_gct_feature_meta_fail.gct")
         feature_metadata = pd.DataFrame({
             "Cells_x": ["blue", "triangle"],

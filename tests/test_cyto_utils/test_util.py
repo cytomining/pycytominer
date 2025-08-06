@@ -105,7 +105,7 @@ def test_check_correlation_method():
 
     assert method == expected_method
 
-    with pytest.raises(AssertionError) as nomethod:
+    with pytest.raises(ValueError) as nomethod:
         method = check_correlation_method(method="DOES NOT EXIST")
 
     assert "not supported, select one of" in str(nomethod.value)
@@ -117,7 +117,7 @@ def test_check_aggregate_operation_method():
 
     assert operation == expected_op
 
-    with pytest.raises(AssertionError) as nomethod:
+    with pytest.raises(ValueError) as nomethod:
         check_aggregate_operation(operation="DOES NOT EXIST")
 
     assert "not supported, select one of" in str(nomethod.value)
@@ -130,7 +130,7 @@ def test_check_consensus_operation_method():
 
         assert operation == expected_op
 
-    with pytest.raises(AssertionError) as nomethod:
+    with pytest.raises(ValueError) as nomethod:
         check_consensus_operation(operation="DOES NOT EXIST")
 
     assert "not supported, select one of" in str(nomethod.value)
