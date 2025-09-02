@@ -5,7 +5,7 @@ Module for loading profiles from files or dataframes.
 import csv
 import gzip
 import pathlib
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import anndata as ad
 import numpy as np
@@ -79,7 +79,7 @@ def infer_delim(file: str):
 
 def is_anndata(
     path: Union[str, pathlib.Path, ad._core.anndata.AnnData],
-) -> Tuple[bool, Optional[str]]:
+) -> tuple[bool, Optional[str]]:
     """Return True if ``path`` contains an AnnData dataset (H5AD or Zarr).
 
     This function prefers using the AnnData readers directly:
