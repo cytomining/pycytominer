@@ -25,6 +25,8 @@ tmpdir = tempfile.gettempdir()
 output_data_file = os.path.join(tmpdir, "test_data.csv")
 output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
 output_data_parquet = os.path.join(tmpdir, "test_parquet.parquet")
+output_data_adata_hda5 = os.path.join(tmpdir, "test_adata.h5ad")
+output_data_adata_zarr = os.path.join(tmpdir, "test_adata.zarr")
 output_data_gzip_file = f"{output_data_file}.gz"
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
@@ -87,6 +89,22 @@ data_df.to_csv(output_data_comma_file, sep=",", index=False)
 data_df.to_csv(output_data_gzip_file, sep="\t", index=False, compression="gzip")
 data_df.to_parquet(output_data_parquet, engine="pyarrow")
 
+# create the anndata object with numeric features
+adata = ad.AnnData(X=(numeric_features := data_df.select_dtypes(include=["number"])))
+
+# Set the X column names for numeric features.
+# Within anndata, X is an abstraction
+# which represents a numeric data matrix
+# of observations (rows) and variables (columns).
+adata.var_names = numeric_features.columns
+
+# add the non-numeric features as obs
+adata.obs = data_df.select_dtypes(exclude=["number"])
+
+# serialize the file to disk
+adata.write_h5ad(output_data_adata_hda5)
+adata.write_zarr(output_data_adata_zarr)
+
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
 platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
@@ -128,6 +146,16 @@ def test_load_profiles():
 
     profiles_from_parquet = load_profiles(output_data_parquet)
     pd.testing.assert_frame_equal(data_df, profiles_from_parquet)
+
+    # loading anndata h5ad
+    adata_profile_test = load_profiles(output_data_adata_hda5)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
+    # loading anndata zarr
+    adata_profile_test = load_profiles(output_data_adata_zarr)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
+    # loading in-memory anndata
+    adata_profile_test = load_profiles(adata)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
 
 
 def test_load_platemap():
@@ -255,27 +283,16 @@ def test_load_profiles_file_path_input():
 
     # Testing non-existing file paths should result in expected behavior
     data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
-    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+    with pytest.raises(FileNotFoundError, match="didn't find the path"):
         load_profiles(data_file_not_exist)
 
 
-def _tiny_adata(n_obs: int = 3, n_vars: int = 2) -> ad.AnnData:
-    """
-    Create a tiny AnnData object for tests.
-    """
-    x = np.arange(n_obs * n_vars, dtype=float).reshape(n_obs, n_vars)
-    obs = pd.DataFrame(index=[f"c{i}" for i in range(n_obs)])
-    var = pd.DataFrame(index=[f"g{j}" for j in range(n_vars)])
-    return ad.AnnData(X=x, obs=obs, var=var)
-
-
-def test_is_anndata(tmp_path) -> None:
+def test_is_anndata(tmp_path: pathlib.Path) -> None:
     """
     Tests for test_is_anndata
     """
     # 1) In-memory AnnData passthrough
-    a = _tiny_adata()
-    ok, kind = is_anndata(a)
+    ok, kind = is_anndata(adata)
     assert ok is True
     assert kind == "in-memory"
 
@@ -293,16 +310,12 @@ def test_is_anndata(tmp_path) -> None:
     assert kind is None
 
     # 4) H5AD file
-    h5ad_path = tmp_path / "sample.h5ad"
-    a.write_h5ad(h5ad_path)
-    ok, kind = is_anndata(h5ad_path)
+    ok, kind = is_anndata(output_data_adata_hda5)
     assert ok is True
     assert kind == "h5ad"
 
     # 5) Zarr directory
-    zarr_dir = tmp_path / "store.zarr"
-    a.write_zarr(zarr_dir)
-    ok, kind = is_anndata(zarr_dir)
+    ok, kind = is_anndata(output_data_adata_zarr)
     assert ok is True
     assert kind == "zarr"
 

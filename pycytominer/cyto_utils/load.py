@@ -37,12 +37,15 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
         Raised if the provided path in the `file` does not exist
     """
 
-    file = pathlib.PurePath(file)
     try:
+        file = pathlib.PurePath(file)
         # strict=true tests if path exists
         file = pathlib.Path(file).resolve(strict=True)
-    except FileNotFoundError as e:
-        print("load_profiles() didn't find the path.", e, sep="\n")
+    except FileNotFoundError:
+        raise FileNotFoundError("load_profiles() didn't find the path.")
+    except TypeError:
+        print("Detected a non-str or non-path object in the `file` parameter.")
+        return False
 
     # return boolean based on whether
     # file path is a parquet file
@@ -74,7 +77,9 @@ def infer_delim(file: str):
     return dialect.delimiter
 
 
-def is_anndata(path: Union[str, pathlib.Path]) -> Tuple[bool, Optional[str]]:
+def is_anndata(
+    path: Union[str, pathlib.Path, ad._core.anndata.AnnData],
+) -> Tuple[bool, Optional[str]]:
     """Return True if ``path`` contains an AnnData dataset (H5AD or Zarr).
 
     This function prefers using the AnnData readers directly:
@@ -126,13 +131,16 @@ def is_anndata(path: Union[str, pathlib.Path]) -> Tuple[bool, Optional[str]]:
             return False, None
 
 
-def load_profiles(profiles):
+def load_profiles(
+    profiles: Union[str, pathlib.Path, pd.DataFrame, ad._core.anndata.AnnData],
+) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
 
     Parameters
     ----------
-    profiles : {str, pathlib.Path, pandas.DataFrame}
+    profiles :
+        {str, pathlib.Path, pandas.DataFrame, ad._core.anndata.AnnData}
         file location or actual pandas dataframe of profiles
 
     Return
