@@ -3,6 +3,7 @@ import pathlib
 import random
 import tempfile
 
+import anndata as ad
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,7 +14,7 @@ from pycytominer.cyto_utils import (
     load_platemap,
     load_profiles,
 )
-from pycytominer.cyto_utils.load import infer_delim, is_path_a_parquet_file
+from pycytominer.cyto_utils.load import infer_delim, is_anndata, is_path_a_parquet_file
 
 random.seed(123)
 
@@ -256,3 +257,58 @@ def test_load_profiles_file_path_input():
     data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
     with pytest.raises(FileNotFoundError, match="No such file or directory"):
         load_profiles(data_file_not_exist)
+
+
+def _tiny_adata(n_obs: int = 3, n_vars: int = 2) -> ad.AnnData:
+    """
+    Create a tiny AnnData object for tests.
+    """
+    x = np.arange(n_obs * n_vars, dtype=float).reshape(n_obs, n_vars)
+    obs = pd.DataFrame(index=[f"c{i}" for i in range(n_obs)])
+    var = pd.DataFrame(index=[f"g{j}" for j in range(n_vars)])
+    return ad.AnnData(X=x, obs=obs, var=var)
+
+
+def test_is_anndata(tmp_path) -> None:
+    """
+    Tests for test_is_anndata
+    """
+    # 1) In-memory AnnData passthrough
+    a = _tiny_adata()
+    ok, kind = is_anndata(a)
+    assert ok is True
+    assert kind == "in-memory"
+
+    # 2) Nonexistent path
+    missing = tmp_path / "does_not_exist.h5ad"
+    ok, kind = is_anndata(missing)
+    assert ok is False
+    assert kind is None
+
+    # 3) Plain text file (not AnnData)
+    txt = tmp_path / "not_anndata.txt"
+    txt.write_text("hello")
+    ok, kind = is_anndata(txt)
+    assert ok is False
+    assert kind is None
+
+    # 4) H5AD file
+    h5ad_path = tmp_path / "sample.h5ad"
+    a.write_h5ad(h5ad_path)
+    ok, kind = is_anndata(h5ad_path)
+    assert ok is True
+    assert kind == "h5ad"
+
+    # 5) Zarr directory
+    zarr_dir = tmp_path / "store.zarr"
+    a.write_zarr(zarr_dir)
+    ok, kind = is_anndata(zarr_dir)
+    assert ok is True
+    assert kind == "zarr"
+
+    # 6) Empty directory (should not be detected as AnnData)
+    empty_dir = tmp_path / "empty_dir"
+    empty_dir.mkdir()
+    ok, kind = is_anndata(empty_dir)
+    assert ok is False
+    assert kind is None
