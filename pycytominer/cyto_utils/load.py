@@ -5,7 +5,7 @@ Module for loading profiles from files or dataframes.
 import csv
 import gzip
 import pathlib
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import anndata as ad
 import numpy as np
@@ -52,7 +52,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
     return file.suffix.lower() == ".parquet"
 
 
-def infer_delim(file: str):
+def infer_delim(file: Union[str, pathlib.Path, Any]):
     """
     Sniff the delimiter in the given file
 
