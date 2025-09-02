@@ -119,16 +119,12 @@ def is_anndata(
         except Exception:
             return False, None
 
-    # File path: first try H5AD (backed), then fall back to Zarr.
+    # File path: first try H5AD (backed)
     try:
         ad.read_h5ad(p, backed="r")
         return True, "h5ad"
     except Exception:
-        try:
-            ad.read_zarr(p)
-            return True, "zarr"
-        except Exception:
-            return False, None
+        return False, None
 
 
 def load_profiles(
