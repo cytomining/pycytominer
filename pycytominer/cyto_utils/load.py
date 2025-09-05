@@ -6,14 +6,14 @@ import csv
 import gzip
 import os
 import pathlib
-from typing import Any, Optional, Union
 from importlib.metadata import version
-from packaging.version import Version
-import zarr
+from typing import Any, Optional, Union
 
 import anndata as ad
 import numpy as np
 import pandas as pd
+import zarr
+from packaging.version import Version
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
@@ -138,7 +138,7 @@ def is_anndata(
             # check the group encoding-type attribute for anndata
             if group.attrs.get("encoding-type") == "anndata":
                 return "zarr"
-            
+
         # if we run into any error while attempting a read for zarr
         # return None
         except Exception:
