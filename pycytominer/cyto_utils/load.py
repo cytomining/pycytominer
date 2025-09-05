@@ -4,6 +4,7 @@ Module for loading profiles from files or dataframes.
 
 import csv
 import gzip
+import os
 import pathlib
 from typing import Any, Optional, Union
 
@@ -79,8 +80,12 @@ def infer_delim(file: Union[str, pathlib.Path, Any]):
 
 def is_anndata(
     path_or_anndata_object: Union[str, pathlib.Path, ad.AnnData],
-) -> tuple[bool, Optional[str]]:
-    """Return True if ``path`` contains an AnnData dataset (H5AD or Zarr).
+) -> Optional[str]:
+    """
+    Return anndata type as str if
+    path_or_anndata_object contains an AnnData dataset
+    or object (H5AD, Zarr, or in-memory object).
+
 
     This function prefers using the AnnData readers directly:
     - in-memory AnnData objects are recognized directly.
@@ -89,42 +94,45 @@ def is_anndata(
       via :func:`anndata.read_zarr`.
 
     The function is conservative: on any read error (or if AnnData is not
-    installed), it returns ``False``.
+    installed), it returns None.
 
     Args:
-        path: File or directory to inspect.
+        path_or_anndata_object:
+            File or directory to inspect.
 
     Returns:
-        Tuple containing:
-        - Bool: True if the path appears to contain an AnnData dataset; otherwise
-        False.
-        - Str: If the path is an AnnData dataset, the type of store
+        Str:
+            If the path is an AnnData dataset, the type of store
+            Otherwise, None.
     """
 
     # passthrough check if anndata in-memory object
     if isinstance(path_or_anndata_object, ad.AnnData):
-        return True, "in-memory"
+        return "in-memory"
 
-    # check that the path exists
-    p = pathlib.Path(path)
-    if not p.exists():
-        return False, None
+    # Expand user tilde and environment variables
+    path = pathlib.Path(os.path.expandvars(path_or_anndata_object)).expanduser()
+    try:
+        # check that the path exists
+        path.resolve(strict=True)
+    except FileNotFoundError:
+        return None
 
     # Zarr stores can be directories (common) or files (e.g., zipped stores).
     # Try Zarr first for directories; for files, try H5AD then Zarr.
-    if p.is_dir():
+    if path.is_dir():
         try:
-            ad.read_zarr(p)
-            return True, "zarr"
+            ad.read_zarr(path)
+            return "zarr"
         except Exception:
-            return False, None
+            return None
 
     # File path: first try H5AD (backed)
     try:
-        ad.read_h5ad(p, backed="r")
-        return True, "h5ad"
+        ad.read_h5ad(path, backed="r")
+        return "h5ad"
     except Exception:
-        return False, None
+        return None
 
 
 def load_profiles(
@@ -158,8 +166,8 @@ def load_profiles(
         return pd.read_parquet(profiles, engine="pyarrow")
 
     # Check if path is an AnnData file
-    anndata, anndata_type = is_anndata(profiles)
-    if anndata:
+    anndata_type = is_anndata(profiles)
+    if anndata_type:
         if anndata_type == "h5ad":
             adata = ad.read_h5ad(profiles, backed="r")
         elif anndata_type == "zarr":

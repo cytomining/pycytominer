@@ -2,6 +2,7 @@ import os
 import pathlib
 import random
 import tempfile
+from typing import Union
 
 import anndata as ad
 import numpy as np
@@ -287,41 +288,37 @@ def test_load_profiles_file_path_input():
         load_profiles(data_file_not_exist)
 
 
-def test_is_anndata(tmp_path: pathlib.Path) -> None:
+@pytest.mark.parametrize(
+    "path_or_anndata_object, expected_result",
+    [
+        # 1) In-memory AnnData passthrough
+        (adata, "in-memory"),
+        # 2) Nonexistent path
+        ("does_not_exist.h5ad", None),
+        # 3) a non-Anndata file
+        (output_data_parquet, None),
+        # 4) H5AD file
+        (output_data_adata_hda5, "h5ad"),
+        # 5) Zarr anndata directory
+        (output_data_adata_zarr, "zarr"),
+        # 6) Empty directory
+        ("empty_dir", None),
+    ],
+)
+def test_is_anndata(
+    path_or_anndata_object: Union[str, ad.AnnData],
+    expected_result: Union[str, None],
+    tmp_path: pathlib.Path,
+) -> None:
     """
-    Tests for test_is_anndata
+    Tests for is_anndata
     """
-    # 1) In-memory AnnData passthrough
-    ok, kind = is_anndata(adata)
-    assert ok is True
-    assert kind == "in-memory"
 
-    # 2) Nonexistent path
-    missing = tmp_path / "does_not_exist.h5ad"
-    ok, kind = is_anndata(missing)
-    assert ok is False
-    assert kind is None
-
-    # 3) Plain text file (not AnnData)
-    txt = tmp_path / "not_anndata.txt"
-    txt.write_text("hello")
-    ok, kind = is_anndata(txt)
-    assert ok is False
-    assert kind is None
-
-    # 4) H5AD file
-    ok, kind = is_anndata(output_data_adata_hda5)
-    assert ok is True
-    assert kind == "h5ad"
-
-    # 5) Zarr directory
-    ok, kind = is_anndata(output_data_adata_zarr)
-    assert ok is True
-    assert kind == "zarr"
-
-    # 6) Empty directory (should not be detected as AnnData)
-    empty_dir = tmp_path / "empty_dir"
-    empty_dir.mkdir()
-    ok, kind = is_anndata(empty_dir)
-    assert ok is False
-    assert kind is None
+    if output_data_adata_zarr == "empty_dir":
+        empty_dir = tmp_path / "empty_dir"
+        empty_dir.mkdir()
+        kind = is_anndata(empty_dir)
+        assert kind is expected_result
+    else:
+        kind = is_anndata(path_or_anndata_object)
+        assert kind == expected_result
