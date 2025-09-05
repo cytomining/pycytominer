@@ -78,7 +78,7 @@ def infer_delim(file: Union[str, pathlib.Path, Any]):
 
 
 def is_anndata(
-    path: Union[str, pathlib.Path, ad._core.anndata.AnnData],
+    path_or_anndata_object: Union[str, pathlib.Path, ad._core.anndata.AnnData],
 ) -> tuple[bool, Optional[str]]:
     """Return True if ``path`` contains an AnnData dataset (H5AD or Zarr).
 
