@@ -78,7 +78,7 @@ def infer_delim(file: Union[str, pathlib.Path, Any]):
 
 
 def is_anndata(
-    path_or_anndata_object: Union[str, pathlib.Path, ad._core.anndata.AnnData],
+    path_or_anndata_object: Union[str, pathlib.Path, ad.AnnData],
 ) -> tuple[bool, Optional[str]]:
     """Return True if ``path`` contains an AnnData dataset (H5AD or Zarr).
 
@@ -102,7 +102,7 @@ def is_anndata(
     """
 
     # passthrough check if anndata in-memory object
-    if isinstance(path_or_anndata_object, ad._core.anndata.AnnData):
+    if isinstance(path_or_anndata_object, ad.AnnData):
         return True, "in-memory"
 
     # check that the path exists
@@ -128,7 +128,7 @@ def is_anndata(
 
 
 def load_profiles(
-    profiles: Union[str, pathlib.Path, pd.DataFrame, ad._core.anndata.AnnData],
+    profiles: Union[str, pathlib.Path, pd.DataFrame, ad.AnnData],
 ) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
@@ -136,7 +136,7 @@ def load_profiles(
     Parameters
     ----------
     profiles :
-        {str, pathlib.Path, pandas.DataFrame, ad._core.anndata.AnnData}
+        {str, pathlib.Path, pandas.DataFrame, ad.AnnData}
         file location or actual pandas dataframe of profiles
 
     Return
