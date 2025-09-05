@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 
-def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
+def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """Checks if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions.
@@ -21,7 +21,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Parameters
     ----------
-    file : Union[str, pathlib.PurePath]
+    file : Union[str, pathlib.Path]
         path to parquet file
 
     Returns
@@ -32,16 +32,15 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Raises
     ------
-    TypeError
-        Raised if a non str or non-path object is passed in the `file` parameter
     FileNotFoundError
         Raised if the provided path in the `file` does not exist
     """
 
     try:
-        file = pathlib.PurePath(file)
+        # expand user tilde and environment variables
+        path = pathlib.Path(os.path.expandvars(file)).expanduser()
         # strict=true tests if path exists
-        file = pathlib.Path(file).resolve(strict=True)
+        path.resolve(strict=True)
     except FileNotFoundError:
         raise FileNotFoundError("load_profiles() didn't find the path.")
     except TypeError:
@@ -50,7 +49,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     # return boolean based on whether
     # file path is a parquet file
-    return file.suffix.lower() == ".parquet"
+    return path.suffix.lower() == ".parquet"
 
 
 def infer_delim(file: Union[str, pathlib.Path, Any]):
@@ -189,7 +188,10 @@ def load_profiles(
 
     # otherwise, assume its a csv/tsv file and infer the delimiter
     delim = infer_delim(profiles)
-    return pd.read_csv(profiles, sep=delim)
+    # also expand user tilde and environment variables in order to load the file
+    return pd.read_csv(
+        pathlib.Path(os.path.expandvars(profiles)).expanduser(), sep=delim
+    )
 
 
 def load_platemap(platemap, add_metadata_id=True):
