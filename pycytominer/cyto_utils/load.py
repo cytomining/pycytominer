@@ -7,6 +7,9 @@ import gzip
 import os
 import pathlib
 from typing import Any, Optional, Union
+from importlib.metadata import version
+from packaging.version import Version
+import zarr
 
 import anndata as ad
 import numpy as np
@@ -119,10 +122,25 @@ def is_anndata(
 
     # Zarr stores can be directories (common) or files (e.g., zipped stores).
     # Try Zarr first for directories; for files, try H5AD then Zarr.
-    if path.is_dir():
+    # Note: we use a zarr-based approach for now but in the future
+    # we should explore the use of lazy loading zarr stores via
+    # anndata.experimental.read_lazy and/or anndata.io.sparse_dataset.
+    if path.is_dir() or path.suffix == ".zip":
         try:
-            ad.read_zarr(path)
-            return "zarr"
+            zarr_store = path
+            # account for zipped zarr stores if zarr >= 3.0.0
+            if path.suffix == ".zip" and Version(version("zarr")) >= Version("3"):
+                zarr_store = zarr.storage.ZipStore(path)
+
+            # try to open the zarr store
+            group = zarr.open_group(zarr_store, mode="r")
+
+            # check the group encoding-type attribute for anndata
+            if group.attrs.get("encoding-type") == "anndata":
+                return "zarr"
+            
+        # if we run into any error while attempting a read for zarr
+        # return None
         except Exception:
             return None
 
