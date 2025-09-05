@@ -101,8 +101,8 @@ def is_anndata(
         - Str: If the path is an AnnData dataset, the type of store
     """
 
-    # passthrough for anndata in-memory objects
-    if isinstance(path, ad._core.anndata.AnnData):
+    # passthrough check if anndata in-memory object
+    if isinstance(path_or_anndata_object, ad._core.anndata.AnnData):
         return True, "in-memory"
 
     # check that the path exists
