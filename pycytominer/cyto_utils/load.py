@@ -92,6 +92,8 @@ def is_anndata(
     This function prefers using the AnnData readers directly:
     - in-memory AnnData objects are recognized directly.
     - H5AD files are opened in backed mode to avoid loading data into memory.
+    (note:  anndata.experimental.read_lazy is likely to be a better option
+    in the future once stable)
     - Zarr stores (directories or files like ``.zarr`` or ``.zip``) are read
       via :func:`anndata.read_zarr`.
 
@@ -192,7 +194,7 @@ def load_profiles(
         elif anndata_type == "in-memory":
             adata = profiles
         else:
-            raise ValueError("Unrecognized AnnData type")
+            raise AssertionError("Unrecognized AnnData type")
 
         # Convert to dataframe
         if adata.isbacked:
