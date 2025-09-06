@@ -216,6 +216,7 @@ module = [
   "boto3.*",
   "botocore.*",
   "anndata.*",
+  "zarr.*",
 ]
 ignore_missing_imports = true
 
