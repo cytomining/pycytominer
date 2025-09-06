@@ -308,7 +308,7 @@ description = "Annotated data."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version == \"3.9\""
+markers = "python_version == \"3.9\" and extra == \"anndata\""
 files = [
     {file = "anndata-0.10.9-py3-none-any.whl", hash = "sha256:e16c259bfd06c0f9ba7fdc9c2208828f5ef5f174356596c33206bb3f015b053a"},
     {file = "anndata-0.10.9.tar.gz", hash = "sha256:fe36f2f3f8040ffed866c4932253407f594cfe34d420fe5b7854986cb6bb7178"},
@@ -339,7 +339,7 @@ description = "Annotated data."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version == \"3.10\""
+markers = "python_version == \"3.10\" and extra == \"anndata\""
 files = [
     {file = "anndata-0.11.3-py3-none-any.whl", hash = "sha256:2ce220c4c03b7dba31fab0540d3d64f6811bc343cd3f273d7bdeed50a5cd6367"},
     {file = "anndata-0.11.3.tar.gz", hash = "sha256:986e626b62108e8db7034db2f391fd160c11d4b4e3af9c31183c82862297f7f6"},
@@ -373,7 +373,7 @@ description = "Annotated data."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
+markers = "python_version >= \"3.11\" and extra == \"anndata\""
 files = [
     {file = "anndata-0.12.2-py3-none-any.whl", hash = "sha256:aa3c28b77e53a004b584780ca76652aa51694ca2ad32d27ce22e07227254a62a"},
     {file = "anndata-0.12.2.tar.gz", hash = "sha256:ecb3e0613585f5b464d0d3cfb0043a981b2eb92efaa90aae9042dd3e289c4a0a"},
@@ -447,7 +447,7 @@ description = "A wrapper around NumPy and other array libraries to make them com
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version == \"3.9\""
+markers = "python_version == \"3.9\" and extra == \"anndata\""
 files = [
     {file = "array_api_compat-1.11.2-py3-none-any.whl", hash = "sha256:b1d0059714a4153b3ae37c989e47b07418f727be5b22908dd3cf9d19bdc2c547"},
     {file = "array_api_compat-1.11.2.tar.gz", hash = "sha256:a3b7f7b6af18f4c42e79423b1b2479798998b6a74355069d77a01a5282755b5d"},
@@ -468,7 +468,7 @@ description = "A wrapper around NumPy and other array libraries to make them com
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.10\""
+markers = "python_version >= \"3.10\" and extra == \"anndata\""
 files = [
     {file = "array_api_compat-1.12.0-py3-none-any.whl", hash = "sha256:a0b4795b6944a9507fde54679f9350e2ad2b1e2acf4a2408a098cdc27f890a8b"},
     {file = "array_api_compat-1.12.0.tar.gz", hash = "sha256:585bc615f650de53ac24b7c012baecfcdd810f50df3573be47e6dd9fa20df974"},
@@ -492,7 +492,7 @@ description = "Draws ASCII trees."
 optional = false
 python-versions = "*"
 groups = ["main"]
-markers = "python_version < \"3.11\""
+markers = "extra == \"anndata\" and python_version < \"3.11\""
 files = [
     {file = "asciitree-0.3.3.tar.gz", hash = "sha256:4aa4b9b649f85e3fcb343363d97564aa1fb62e249677f2e18a96765145cc0f6e"},
 ]
@@ -1077,7 +1077,7 @@ description = "A python package implementing the crc32c algorithm in hardware an
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
+markers = "python_version >= \"3.11\" and extra == \"anndata\""
 files = [
     {file = "crc32c-2.7.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1fd1f9c6b50d7357736676278a1b8c8986737b8a1c76d7eab4baa71d0b6af67f"},
     {file = "crc32c-2.7.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:805c2be1bc0e251c48439a62b0422385899c15289483692bc70e78473c1039f1"},
@@ -1315,7 +1315,7 @@ description = "Python package for configuring a python package"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
+markers = "python_version >= \"3.11\" and extra == \"anndata\""
 files = [
     {file = "donfig-0.8.1.post1-py3-none-any.whl", hash = "sha256:2a3175ce74a06109ff9307d90a230f81215cbac9a751f4d1c6194644b8204f9d"},
     {file = "donfig-0.8.1.post1.tar.gz", hash = "sha256:3bef3413a4c1c601b585e8d297256d0c1470ea012afa6e8461dc28bfb7c23f52"},
@@ -1375,11 +1375,11 @@ description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev", "docs"]
-markers = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.0-py3-none-any.whl", hash = "sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14"},
     {file = "exceptiongroup-1.2.0.tar.gz", hash = "sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68"},
 ]
+markers = {main = "extra == \"anndata\" and python_version < \"3.11\"", dev = "python_version < \"3.11\"", docs = "python_version < \"3.11\""}
 
 [package.extras]
 test = ["pytest (>=6)"]
@@ -1406,7 +1406,7 @@ description = "A python package that provides useful locks"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "sys_platform != \"emscripten\" and python_version < \"3.11\""
+markers = "extra == \"anndata\" and sys_platform != \"emscripten\" and python_version < \"3.11\""
 files = [
     {file = "fasteners-0.20-py3-none-any.whl", hash = "sha256:9422c40d1e350e4259f509fb2e608d6bc43c0136f79a00db1b49046029d0b3b7"},
     {file = "fasteners-0.20.tar.gz", hash = "sha256:55dce8792a41b56f727ba6e123fcaee77fd87e638a6863cec00007bfea84c8d8"},
@@ -1729,6 +1729,7 @@ description = "Read and write HDF5 files from Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"anndata\""
 files = [
     {file = "h5py-3.14.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:24df6b2622f426857bda88683b16630014588a0e4155cba44e872eb011c4eaed"},
     {file = "h5py-3.14.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:6ff2389961ee5872de697054dd5a033b04284afc3fb52dc51d94561ece2c10c6"},
@@ -2072,7 +2073,7 @@ description = ""
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
+markers = "python_version >= \"3.11\" and extra == \"anndata\""
 files = [
     {file = "legacy_api_wrap-1.4.1-py3-none-any.whl", hash = "sha256:8ba214242e836cebfd3b64c1a1653fce955abb0f9e4c7dffb51f2ad014def0eb"},
     {file = "legacy_api_wrap-1.4.1.tar.gz", hash = "sha256:9c40d67aa8312fec8763e87cbf28fea4b67710c79ca7a18137b573d150f3b2b4"},
@@ -2607,6 +2608,7 @@ description = "Simple yet flexible natural sorting in Python."
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
+markers = "extra == \"anndata\""
 files = [
     {file = "natsort-8.4.0-py3-none-any.whl", hash = "sha256:4732914fb471f56b5cce04d7bae6f164a592c7712e1c85f9ef585e197299521c"},
     {file = "natsort-8.4.0.tar.gz", hash = "sha256:45312c4a0e5507593da193dedd04abb1469253b601ecaf63445ad80f0a1ea581"},
@@ -2741,7 +2743,7 @@ description = "A Python package providing buffer compression and transformation 
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version == \"3.9\""
+markers = "python_version == \"3.9\" and extra == \"anndata\""
 files = [
     {file = "numcodecs-0.12.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d37f628fe92b3699e65831d5733feca74d2e33b50ef29118ffd41c13c677210e"},
     {file = "numcodecs-0.12.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:941b7446b68cf79f089bcfe92edaa3b154533dcbcd82474f994b28f2eedb1c60"},
@@ -2783,7 +2785,7 @@ description = "A Python package providing buffer compression and transformation 
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version == \"3.10\""
+markers = "python_version == \"3.10\" and extra == \"anndata\""
 files = [
     {file = "numcodecs-0.13.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:96add4f783c5ce57cc7e650b6cac79dd101daf887c479a00a29bc1487ced180b"},
     {file = "numcodecs-0.13.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:237b7171609e868a20fd313748494444458ccd696062f67e198f7f8f52000c15"},
@@ -2822,7 +2824,7 @@ description = "A Python package providing buffer compression and transformation 
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
+markers = "python_version >= \"3.11\" and extra == \"anndata\""
 files = [
     {file = "numcodecs-0.16.2-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:4c1f1357896cfc5451157fd90a2858aa0f6a66409f91f3016d257b76c4c244c1"},
     {file = "numcodecs-0.16.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:d88aa4f82bb8fe3fa2e9c19fd44b6c268acec6fc7bcff59c92e169830d09531a"},
@@ -2954,6 +2956,7 @@ files = [
     {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
     {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
 ]
+markers = {main = "extra == \"anndata\""}
 
 [[package]]
 name = "pandas"
@@ -3621,7 +3624,7 @@ files = [
     {file = "PyYAML-6.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:510c9deebc5c0225e8c96813043e62b680ba2f9c50a08d3724c7f28a747d1486"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
 ]
-markers = {main = "python_version >= \"3.11\""}
+markers = {main = "python_version >= \"3.11\" and extra == \"anndata\""}
 
 [[package]]
 name = "pyyaml-env-tag"
@@ -5426,7 +5429,7 @@ description = "An implementation of chunked, compressed, N-dimensional arrays fo
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version == \"3.9\""
+markers = "python_version == \"3.9\" and extra == \"anndata\""
 files = [
     {file = "zarr-2.18.2-py3-none-any.whl", hash = "sha256:a638754902f97efa99b406083fdc807a0e2ccf12a949117389d2a4ba9b05df38"},
     {file = "zarr-2.18.2.tar.gz", hash = "sha256:9bb393b8a0a38fb121dbb913b047d75db28de9890f6d644a217a73cf4ae74f47"},
@@ -5449,7 +5452,7 @@ description = "An implementation of chunked, compressed, N-dimensional arrays fo
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version == \"3.10\""
+markers = "python_version == \"3.10\" and extra == \"anndata\""
 files = [
     {file = "zarr-2.18.3-py3-none-any.whl", hash = "sha256:b1f7dfd2496f436745cdd4c7bcf8d3b4bc1dceef5fdd0d589c87130d842496dd"},
     {file = "zarr-2.18.3.tar.gz", hash = "sha256:2580d8cb6dd84621771a10d31c4d777dca8a27706a1a89b29f42d2d37e2df5ce"},
@@ -5472,7 +5475,7 @@ description = "An implementation of chunked, compressed, N-dimensional arrays fo
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
+markers = "python_version >= \"3.11\" and extra == \"anndata\""
 files = [
     {file = "zarr-3.1.2-py3-none-any.whl", hash = "sha256:c3e180f53ee0ef91b86f7feff6f9dd381ddd1b512d1a46580530966a493387b6"},
     {file = "zarr-3.1.2.tar.gz", hash = "sha256:688e4eb79045c110128cd16f301f2f58fa19507b1803dcbea0ea894e66e06274"},
@@ -5515,10 +5518,11 @@ test = ["big-O", "importlib-resources ; python_version < \"3.9\"", "jaraco.funct
 type = ["pytest-mypy"]
 
 [extras]
+anndata = ["anndata", "anndata", "zarr", "zarr"]
 cell-locations = ["boto3", "fire", "fsspec", "s3fs"]
 collate = ["cytominer-database"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "bbf48502ba5aea37124811f617951094eb80b0460a87363eeffd3a664671adda"
+content-hash = "605c9d67969711d24221127d4f4d51a43a50e95b9d0ab849496a825eaf383cf3"

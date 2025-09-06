@@ -6,14 +6,24 @@ import csv
 import gzip
 import os
 import pathlib
-from importlib.metadata import version
-from typing import Any, Optional, Union
+from typing import Any, Optional, TypeVar, Union
 
-import anndata as ad
 import numpy as np
 import pandas as pd
-import zarr
-from packaging.version import Version
+
+
+class AnnDataLike:
+    """
+    An interface for objects that behave like AnnData objects
+    without loading the actual AnnData package.
+    """
+
+    X: Any
+    obs: Any
+    var: Any
+
+
+Type_AnnDataLike = TypeVar("Type_AnnDataLike", bound=AnnDataLike)
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
@@ -81,7 +91,7 @@ def infer_delim(file: Union[str, pathlib.Path, Any]):
 
 
 def is_anndata(
-    path_or_anndata_object: Union[str, pathlib.Path, ad.AnnData],
+    path_or_anndata_object: Union[str, pathlib.Path, AnnDataLike],
 ) -> Optional[str]:
     """
     Return anndata type as str if
@@ -109,6 +119,11 @@ def is_anndata(
             If the path is an AnnData dataset, the type of store
             Otherwise, None.
     """
+    from importlib.metadata import version
+
+    import anndata as ad
+    import zarr
+    from packaging.version import Version
 
     # passthrough check if anndata in-memory object
     if isinstance(path_or_anndata_object, ad.AnnData):
@@ -155,7 +170,7 @@ def is_anndata(
 
 
 def load_profiles(
-    profiles: Union[str, pathlib.Path, pd.DataFrame, ad.AnnData],
+    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike],
 ) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
@@ -184,9 +199,26 @@ def load_profiles(
     if is_path_a_parquet_file(profiles):
         return pd.read_parquet(profiles, engine="pyarrow")
 
-    # Check if path is an AnnData file
-    anndata_type = is_anndata(profiles)
-    if anndata_type:
+    # Check if path is an AnnData file or object
+    if (
+        # do a check for anndata-like object
+        all(hasattr(profiles, name) for name in ("X", "obs", "var"))
+        or (
+            # otherwise check for anndata file paths
+            isinstance(profiles, (str, pathlib.Path, pathlib.PurePath))
+            and pathlib.Path(profiles).suffix in [".zarr", ".zip", ".h5ad"]
+        )
+    ) and (anndata_type := is_anndata(profiles)):
+        # attempt an import of anndata and raise an error if not installed
+        try:
+            import anndata as ad
+        except ImportError:
+            raise ImportError(
+                """Optional dependency `anndata` is not installed.
+                Please install the `collate` optional dependency group:
+                e.g. `pip install pycytominer[anndata]`
+                """
+            )
         if anndata_type == "h5ad":
             adata = ad.read_h5ad(profiles, backed="r")
         elif anndata_type == "zarr":
