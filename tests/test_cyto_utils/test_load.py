@@ -1,8 +1,11 @@
 import os
 import pathlib
 import random
+import shutil
 import tempfile
+from typing import Union
 
+import anndata as ad
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,7 +16,7 @@ from pycytominer.cyto_utils import (
     load_platemap,
     load_profiles,
 )
-from pycytominer.cyto_utils.load import infer_delim, is_path_a_parquet_file
+from pycytominer.cyto_utils.load import infer_delim, is_anndata, is_path_a_parquet_file
 
 random.seed(123)
 
@@ -24,6 +27,9 @@ tmpdir = tempfile.gettempdir()
 output_data_file = os.path.join(tmpdir, "test_data.csv")
 output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
 output_data_parquet = os.path.join(tmpdir, "test_parquet.parquet")
+output_data_adata_hda5 = os.path.join(tmpdir, "test_adata.h5ad")
+output_data_adata_zarr = os.path.join(tmpdir, "test_adata.zarr")
+output_data_adata_zarr_zip = os.path.join(tmpdir, "test_adata.zarr.zip")
 output_data_gzip_file = f"{output_data_file}.gz"
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
@@ -86,6 +92,24 @@ data_df.to_csv(output_data_comma_file, sep=",", index=False)
 data_df.to_csv(output_data_gzip_file, sep="\t", index=False, compression="gzip")
 data_df.to_parquet(output_data_parquet, engine="pyarrow")
 
+# create the anndata object with numeric features
+adata = ad.AnnData(X=(numeric_features := data_df.select_dtypes(include=["number"])))
+
+# Set the X column names for numeric features.
+# Within anndata, X is an abstraction
+# which represents a numeric data matrix
+# of observations (rows) and variables (columns).
+adata.var_names = numeric_features.columns
+
+# add the non-numeric features as obs
+adata.obs = data_df.select_dtypes(exclude=["number"])
+
+# serialize the file to disk
+adata.write_h5ad(output_data_adata_hda5)
+adata.write_zarr(output_data_adata_zarr)
+# create a zipped version of the zarr directory
+shutil.make_archive(output_data_adata_zarr, "zip", output_data_adata_zarr)
+
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
 platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
@@ -127,6 +151,16 @@ def test_load_profiles():
 
     profiles_from_parquet = load_profiles(output_data_parquet)
     pd.testing.assert_frame_equal(data_df, profiles_from_parquet)
+
+    # loading anndata h5ad
+    adata_profile_test = load_profiles(output_data_adata_hda5)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
+    # loading anndata zarr
+    adata_profile_test = load_profiles(output_data_adata_zarr)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
+    # loading in-memory anndata
+    adata_profile_test = load_profiles(adata)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
 
 
 def test_load_platemap():
@@ -254,5 +288,46 @@ def test_load_profiles_file_path_input():
 
     # Testing non-existing file paths should result in expected behavior
     data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
-    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+    with pytest.raises(FileNotFoundError, match="didn't find the path"):
         load_profiles(data_file_not_exist)
+
+
+@pytest.mark.parametrize(
+    "path_or_anndata_object, expected_result",
+    [
+        # 1) In-memory AnnData passthrough
+        (adata, "in-memory"),
+        # 2) Nonexistent path
+        ("does_not_exist.h5ad", None),
+        # 3) a non-Anndata file
+        (output_data_parquet, None),
+        # 4) H5AD file
+        (output_data_adata_hda5, "h5ad"),
+        # 5) Zarr anndata directory
+        (output_data_adata_zarr, "zarr"),
+        # 5b) Zarr anndata zipped directory
+        (output_data_adata_zarr_zip, "zarr"),
+        # 6) Empty directory
+        ("empty_dir", None),
+    ],
+)
+def test_is_anndata(
+    path_or_anndata_object: Union[str, ad.AnnData],
+    expected_result: Union[str, None],
+    tmp_path: pathlib.Path,
+) -> None:
+    """
+    Tests for is_anndata
+    """
+
+    if (
+        isinstance(path_or_anndata_object, str)
+        and path_or_anndata_object == "empty_dir"
+    ):
+        empty_dir = tmp_path / "empty_dir"
+        empty_dir.mkdir()
+        kind = is_anndata(empty_dir)
+        assert kind is expected_result
+    else:
+        kind = is_anndata(path_or_anndata_object)
+        assert kind == expected_result

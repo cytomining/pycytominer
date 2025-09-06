@@ -1,13 +1,22 @@
+"""
+Module for loading profiles from files or dataframes.
+"""
+
 import csv
 import gzip
+import os
 import pathlib
-from typing import Union
+from importlib.metadata import version
+from typing import Any, Optional, Union
 
+import anndata as ad
 import numpy as np
 import pandas as pd
+import zarr
+from packaging.version import Version
 
 
-def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
+def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """Checks if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions.
@@ -15,7 +24,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Parameters
     ----------
-    file : Union[str, pathlib.PurePath]
+    file : Union[str, pathlib.Path]
         path to parquet file
 
     Returns
@@ -26,25 +35,27 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Raises
     ------
-    TypeError
-        Raised if a non str or non-path object is passed in the `file` parameter
     FileNotFoundError
         Raised if the provided path in the `file` does not exist
     """
 
-    file = pathlib.PurePath(file)
     try:
+        # expand user tilde and environment variables
+        path = pathlib.Path(os.path.expandvars(file)).expanduser()
         # strict=true tests if path exists
-        file = pathlib.Path(file).resolve(strict=True)
-    except FileNotFoundError as e:
-        print("load_profiles() didn't find the path.", e, sep="\n")
+        path.resolve(strict=True)
+    except FileNotFoundError:
+        raise FileNotFoundError("load_profiles() didn't find the path.")
+    except TypeError:
+        print("Detected a non-str or non-path object in the `file` parameter.")
+        return False
 
     # return boolean based on whether
     # file path is a parquet file
-    return file.suffix.lower() == ".parquet"
+    return path.suffix.lower() == ".parquet"
 
 
-def infer_delim(file: str):
+def infer_delim(file: Union[str, pathlib.Path, Any]):
     """
     Sniff the delimiter in the given file
 
@@ -69,13 +80,90 @@ def infer_delim(file: str):
     return dialect.delimiter
 
 
-def load_profiles(profiles):
+def is_anndata(
+    path_or_anndata_object: Union[str, pathlib.Path, ad.AnnData],
+) -> Optional[str]:
+    """
+    Return anndata type as str if
+    path_or_anndata_object contains an AnnData dataset
+    or object (H5AD, Zarr, or in-memory object).
+
+
+    This function prefers using the AnnData readers directly:
+    - in-memory AnnData objects are recognized directly.
+    - H5AD files are opened in backed mode to avoid loading data into memory.
+    (note:  anndata.experimental.read_lazy is likely to be a better option
+    in the future once stable)
+    - Zarr stores (directories or files like ``.zarr`` or ``.zip``) are read
+      via :func:`anndata.read_zarr`.
+
+    The function is conservative: on any read error (or if AnnData is not
+    installed), it returns None.
+
+    Args:
+        path_or_anndata_object:
+            File or directory to inspect.
+
+    Returns:
+        Str:
+            If the path is an AnnData dataset, the type of store
+            Otherwise, None.
+    """
+
+    # passthrough check if anndata in-memory object
+    if isinstance(path_or_anndata_object, ad.AnnData):
+        return "in-memory"
+
+    # Expand user tilde and environment variables
+    path = pathlib.Path(os.path.expandvars(path_or_anndata_object)).expanduser()
+    try:
+        # check that the path exists
+        path.resolve(strict=True)
+    except FileNotFoundError:
+        return None
+
+    # Zarr stores can be directories (common) or files (e.g., zipped stores).
+    # Try Zarr first for directories; for files, try H5AD then Zarr.
+    # Note: we use a zarr-based approach for now but in the future
+    # we should explore the use of lazy loading zarr stores via
+    # anndata.experimental.read_lazy and/or anndata.io.sparse_dataset.
+    if path.is_dir() or path.suffix == ".zip":
+        try:
+            zarr_store = path
+            # account for zipped zarr stores if zarr >= 3.0.0
+            if path.suffix == ".zip" and Version(version("zarr")) >= Version("3"):
+                zarr_store = zarr.storage.ZipStore(path)
+
+            # try to open the zarr store
+            group = zarr.open_group(zarr_store, mode="r")
+
+            # check the group encoding-type attribute for anndata
+            if group.attrs.get("encoding-type") == "anndata":
+                return "zarr"
+
+        # if we run into any error while attempting a read for zarr
+        # return None
+        except Exception:
+            return None
+
+    # File path: first try H5AD (backed)
+    try:
+        ad.read_h5ad(path, backed="r")
+        return "h5ad"
+    except Exception:
+        return None
+
+
+def load_profiles(
+    profiles: Union[str, pathlib.Path, pd.DataFrame, ad.AnnData],
+) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
 
     Parameters
     ----------
-    profiles : {str, pathlib.Path, pandas.DataFrame}
+    profiles :
+        {str, pathlib.Path, pandas.DataFrame, ad.AnnData}
         file location or actual pandas dataframe of profiles
 
     Return
@@ -87,16 +175,43 @@ def load_profiles(profiles):
     FileNotFoundError
         Raised if the provided profile does not exists
     """
-    if not isinstance(profiles, pd.DataFrame):
-        # Check if path exists and load depending on file type
-        if is_path_a_parquet_file(profiles):
-            return pd.read_parquet(profiles, engine="pyarrow")
 
+    # If already a dataframe, return it
+    if isinstance(profiles, pd.DataFrame):
+        return profiles
+
+    # Check if path exists and load depending on file type
+    if is_path_a_parquet_file(profiles):
+        return pd.read_parquet(profiles, engine="pyarrow")
+
+    # Check if path is an AnnData file
+    anndata_type = is_anndata(profiles)
+    if anndata_type:
+        if anndata_type == "h5ad":
+            adata = ad.read_h5ad(profiles, backed="r")
+        elif anndata_type == "zarr":
+            adata = ad.read_zarr(profiles)
+        elif anndata_type == "in-memory":
+            adata = profiles
         else:
-            delim = infer_delim(profiles)
-            return pd.read_csv(profiles, sep=delim)
+            raise AssertionError("Unrecognized AnnData type")
 
-    return profiles
+        # Convert to dataframe
+        if adata.isbacked:
+            # if we're backed by a file, just read it directly
+            df = adata.obs.join(adata.to_df(), how="left")
+        else:
+            # if we're working with an adata in-memory object, copy it
+            df = adata.obs.join(adata.to_df().copy(), how="left")
+
+        return df.reset_index(drop=True)
+
+    # otherwise, assume its a csv/tsv file and infer the delimiter
+    delim = infer_delim(profiles)
+    # also expand user tilde and environment variables in order to load the file
+    return pd.read_csv(
+        pathlib.Path(os.path.expandvars(profiles)).expanduser(), sep=delim
+    )
 
 
 def load_platemap(platemap, add_metadata_id=True):
