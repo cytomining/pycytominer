@@ -1,6 +1,7 @@
 import os
 import pathlib
 import random
+import shutil
 import tempfile
 from typing import Union
 
@@ -28,6 +29,7 @@ output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
 output_data_parquet = os.path.join(tmpdir, "test_parquet.parquet")
 output_data_adata_hda5 = os.path.join(tmpdir, "test_adata.h5ad")
 output_data_adata_zarr = os.path.join(tmpdir, "test_adata.zarr")
+output_data_adata_zarr_zip = os.path.join(tmpdir, "test_adata.zarr.zip")
 output_data_gzip_file = f"{output_data_file}.gz"
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
@@ -105,6 +107,8 @@ adata.obs = data_df.select_dtypes(exclude=["number"])
 # serialize the file to disk
 adata.write_h5ad(output_data_adata_hda5)
 adata.write_zarr(output_data_adata_zarr)
+# create a zipped version of the zarr directory
+shutil.make_archive(output_data_adata_zarr, "zip", output_data_adata_zarr)
 
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
@@ -301,6 +305,8 @@ def test_load_profiles_file_path_input():
         (output_data_adata_hda5, "h5ad"),
         # 5) Zarr anndata directory
         (output_data_adata_zarr, "zarr"),
+        # 5b) Zarr anndata zipped directory
+        (output_data_adata_zarr_zip, "zarr"),
         # 6) Empty directory
         ("empty_dir", None),
     ],
@@ -314,7 +320,10 @@ def test_is_anndata(
     Tests for is_anndata
     """
 
-    if output_data_adata_zarr == "empty_dir":
+    if (
+        isinstance(path_or_anndata_object, str)
+        and path_or_anndata_object == "empty_dir"
+    ):
         empty_dir = tmp_path / "empty_dir"
         empty_dir.mkdir()
         kind = is_anndata(empty_dir)
