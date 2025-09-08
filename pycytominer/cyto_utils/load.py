@@ -130,7 +130,7 @@ def is_anndata(
         return "in-memory"
 
     # Expand user tilde and environment variables
-    path = pathlib.Path(os.path.expandvars(path_or_anndata_object)).expanduser()
+    path = pathlib.Path(os.path.expandvars(str(path_or_anndata_object))).expanduser()
     try:
         # check that the path exists
         path.resolve(strict=True)
@@ -196,7 +196,9 @@ def load_profiles(
         return profiles
 
     # Check if path exists and load depending on file type
-    if is_path_a_parquet_file(profiles):
+    if isinstance(
+        profiles, (str, pathlib.Path, pathlib.PurePath)
+    ) and is_path_a_parquet_file(profiles):
         return pd.read_parquet(profiles, engine="pyarrow")
 
     # Check if path is an AnnData file or object
@@ -242,7 +244,7 @@ def load_profiles(
     delim = infer_delim(profiles)
     # also expand user tilde and environment variables in order to load the file
     return pd.read_csv(
-        pathlib.Path(os.path.expandvars(profiles)).expanduser(), sep=delim
+        pathlib.Path(os.path.expandvars(str(profiles))).expanduser(), sep=delim
     )
 
 
