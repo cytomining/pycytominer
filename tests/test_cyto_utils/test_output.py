@@ -121,7 +121,9 @@ def test_output_parquet():
         ("parquet", "example.parquet", None),
     ],
 )
-def test_output_anndata(tmp_path: pathlib.Path, output_type: str, output_filename: str, expected_result: str):
+def test_output_anndata(
+    tmp_path: pathlib.Path, output_type: str, output_filename: str, expected_result: str
+):
     """
     Tests using output function with anndata type
     """
@@ -136,8 +138,8 @@ def test_output_anndata(tmp_path: pathlib.Path, output_type: str, output_filenam
         output_type=output_type,
     )
 
-    assert pathlib.Path(output_path).exists()
-    assert is_anndata(output_path) == expected_result
+    assert pathlib.Path(output_result).exists()
+    assert is_anndata(output_result) == expected_result
 
 
 def test_output_none():
