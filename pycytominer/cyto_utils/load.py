@@ -133,7 +133,7 @@ def load_profiles(
     # otherwise, assume its a csv/tsv file and infer the delimiter
     delim = infer_delim(profiles)
     # also expand user tilde and environment variables in order to load the file
-    return pd.read_csv(profiles, sep=delim)
+    return pd.read_csv(str(profiles), sep=delim)
 
 
 def load_platemap(platemap, add_metadata_id=True):

@@ -3,7 +3,7 @@ Utilities for working with AnnData objects and files.
 """
 
 import pathlib
-from typing import Any, Literal, Optional, TypeVar, Union
+from typing import Any, Literal, Optional, TypeVar, Union, cast
 
 import pandas as pd
 
@@ -64,7 +64,7 @@ def is_anndata(
 
     try:
         # check that the path exists
-        path = pathlib.Path(path_or_anndata_object).resolve(strict=True)
+        path = pathlib.Path(str(path_or_anndata_object)).resolve(strict=True)
     except FileNotFoundError:
         return None
 
@@ -75,10 +75,10 @@ def is_anndata(
     # anndata.experimental.read_lazy and/or anndata.io.sparse_dataset.
     if path.is_dir() or path.suffix == ".zip":
         try:
-            zarr_store = path
+            zarr_store: Union[pathlib.Path, zarr.storage.ZipStore] = path
             # account for zipped zarr stores if zarr >= 3.0.0
             if path.suffix == ".zip" and Version(version("zarr")) >= Version("3"):
-                zarr_store = zarr.storage.ZipStore(path)
+                zarr_store = zarr.storage.ZipStore(str(path))
 
             # try to open the zarr store
             group = zarr.open_group(zarr_store, mode="r")
@@ -131,19 +131,29 @@ def read_anndata(
         # 0.10.x
         from anndata.experimental import read_elem
 
+    # conditional import for ZarrGroup because the
+    # location changed between zarr versions
+    # note: used for typing only
+    try:
+        from zarr.hierarchy import Group as ZarrGroup  # zarr < 3
+    except Exception:
+        from zarr import Group as ZarrGroup  # zarr >= 3
+
     if anndata_type == "h5ad":
         with h5py.File(profiles, "r") as f:
             obs = read_elem(f["obs"])
             var = read_elem(f["var"])
             X = read_elem(f["X"])
     elif anndata_type == "zarr":
-        z = zarr.open(profiles, mode="r")
+        z = cast(ZarrGroup, zarr.open(profiles, mode="r"))
         obs = read_elem(z["obs"])
         var = read_elem(z["var"])
         X = read_elem(z["X"])
     elif anndata_type == "in-memory":
         adata: ad.AnnData = profiles
-        return adata.obs.join(adata.to_df(), how="left")
+        df_out = adata.obs.join(adata.to_df(), how="left")
+        df_out.index = df_out.index.astype(int)
+        return df_out
     else:
         raise ValueError("Unrecognized AnnData type.")
 
@@ -155,7 +165,12 @@ def read_anndata(
     X_df = pd.DataFrame(X, index=obs.index, columns=var.index)
 
     # join obs and X_df
-    return obs.join(X_df, how="left")
+    df_out = obs.join(X_df, how="left")
+
+    # ensure the index lines up with pandas default behavior
+    df_out.index = df_out.index.astype(int)
+
+    return df_out
 
 
 def write_anndata(

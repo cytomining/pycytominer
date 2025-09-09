@@ -221,6 +221,7 @@ module = [
   "botocore.*",
   "anndata.*",
   "zarr.*",
+  "h5py.*",
 ]
 ignore_missing_imports = true
 
