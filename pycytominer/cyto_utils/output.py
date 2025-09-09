@@ -102,6 +102,14 @@ def output(
         # raising errors and tested through Pandas, PyArrow, etc. as necessary.
         df.to_parquet(path=output_filename, compression="snappy")
 
+    # anndata branch for `anndata_h5ad` and `anndata_zarr`
+    elif "anndata" in output_type:
+        from pycytominer.cyto_utils.anndata_utils import write_anndata
+
+        output_filename = write_anndata(
+            df=df, output_filename=output_filename, output_type=output_type
+        )
+
     return output_filename
 
 

@@ -3,7 +3,7 @@ Utilities for working with AnnData objects and files.
 """
 
 import pathlib
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, Literal, Optional, TypeVar, Union
 
 import pandas as pd
 
@@ -156,3 +156,82 @@ def read_anndata(
 
     # join obs and X_df
     return obs.join(X_df, how="left")
+
+
+def write_anndata(
+    df: pd.DataFrame,
+    output_filename: str,
+    output_type: Literal["anndata_h5ad", "anndata_zarr"] = "anndata_h5ad",
+) -> str:
+    """
+    Construct an AnnData object from a single DataFrame and write it to disk.
+
+    Numeric columns are stored in ``X`` (observations x variables).
+    Non-numeric columns are stored in ``.obs``.
+
+    Args:
+        df:
+            Input table with mixed dtypes (numeric + non-numeric).
+            Index becomes observation names; numeric columns
+            become variables.
+        output_filename:
+            Destination path for the AnnDat aobject.
+        output_type:
+            One of ``"anndata_h5ad"``  (default)
+            or ``"anndata_zarr"``.
+
+    Returns:
+        The ``output_filename`` path (as a string).
+    """
+    import anndata as ad
+    import numpy as np
+
+    # Split numeric vs non-numeric
+    numeric_cols = df.select_dtypes(include="number").columns
+    nonnumeric_cols = df.columns.difference(numeric_cols)
+
+    # Build X explicitly (handle zero-variable case)
+    if len(numeric_cols):
+        X = df[numeric_cols].to_numpy(dtype=float)
+        var_names = numeric_cols.astype(str)
+    else:
+        X = np.empty((len(df), 0), dtype=float)
+        var_names = pd.Index([], dtype=object)
+
+    # Prepare obs
+    df_nonnumeric = df[nonnumeric_cols].copy()
+
+    # Make all string-like columns categorical (robust for NA/None)
+    for c in df_nonnumeric.columns:
+        col = df_nonnumeric[c]
+        if pd.api.types.is_string_dtype(col.dtype) or col.dtype == object:
+            # Convert to object first so pd.NA stays as missing,
+            # then to categorical (AnnData writes these nicely)
+            df_nonnumeric[c] = pd.Categorical(col.astype("object"))
+
+    # For any remaining object columns that aren't strings (e.g., mixed),
+    # replace pd.NA with None to avoid h5py issues.
+    for c in df_nonnumeric.columns:
+        if df_nonnumeric[c].dtype == object and not isinstance(
+            df_nonnumeric[c].dtype, pd.CategoricalDtype
+        ):
+            df_nonnumeric[c] = df_nonnumeric[c].where(~pd.isna(df_nonnumeric[c]), None)
+
+    # Build AnnData
+    adata = ad.AnnData(X=X)
+    adata.var_names = var_names
+    adata.obs = df_nonnumeric
+    adata.obs_names = df.index.astype(str)
+
+    # Write
+    path = str(pathlib.Path(output_filename))
+    if output_type == "anndata_h5ad":
+        adata.write_h5ad(path)
+    elif output_type == "anndata_zarr":
+        adata.write_zarr(path)
+    else:
+        raise ValueError(
+            f'Unsupported output_type="{output_type}". '
+            'Use "anndata_h5ad" or "anndata_zarr".'
+        )
+    return path
