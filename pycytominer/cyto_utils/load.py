@@ -50,10 +50,8 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """
 
     try:
-        # expand user tilde and environment variables
-        path = pathlib.Path(os.path.expandvars(file)).expanduser()
         # strict=true tests if path exists
-        path.resolve(strict=True)
+        path = pathlib.Path(file).resolve(strict=True)
     except FileNotFoundError:
         raise FileNotFoundError("load_profiles() didn't find the path.")
     except TypeError:
@@ -129,11 +127,9 @@ def is_anndata(
     if isinstance(path_or_anndata_object, ad.AnnData):
         return "in-memory"
 
-    # Expand user tilde and environment variables
-    path = pathlib.Path(os.path.expandvars(str(path_or_anndata_object))).expanduser()
     try:
         # check that the path exists
-        path.resolve(strict=True)
+        path = pathlib.Path(path_or_anndata_object).resolve(strict=True)
     except FileNotFoundError:
         return None
 
@@ -217,7 +213,7 @@ def load_profiles(
         except ImportError:
             raise ImportError(
                 """Optional dependency `anndata` is not installed.
-                Please install the `collate` optional dependency group:
+                Please install the `anndata` optional dependency group:
                 e.g. `pip install pycytominer[anndata]`
                 """
             )
@@ -243,9 +239,7 @@ def load_profiles(
     # otherwise, assume its a csv/tsv file and infer the delimiter
     delim = infer_delim(profiles)
     # also expand user tilde and environment variables in order to load the file
-    return pd.read_csv(
-        pathlib.Path(os.path.expandvars(str(profiles))).expanduser(), sep=delim
-    )
+    return pd.read_csv(profiles, sep=delim)
 
 
 def load_platemap(platemap, add_metadata_id=True):
