@@ -3,9 +3,10 @@ Utilities for working with AnnData objects and files.
 """
 
 import pathlib
-
 from typing import Any, Optional, TypeVar, Union
+
 import pandas as pd
+
 
 class AnnDataLike:
     """
@@ -17,8 +18,10 @@ class AnnDataLike:
     obs: Any
     var: Any
 
+
 # create an anntada-like type variable
 Type_AnnDataLike = TypeVar("Type_AnnDataLike", bound=AnnDataLike)
+
 
 def is_anndata(
     path_or_anndata_object: Union[str, pathlib.Path, AnnDataLike],
@@ -51,8 +54,8 @@ def is_anndata(
     """
     from importlib.metadata import version
 
-    import zarr
     import anndata as ad
+    import zarr
     from packaging.version import Version
 
     # passthrough check if anndata in-memory object
@@ -95,9 +98,11 @@ def is_anndata(
         return "h5ad"
     except Exception:
         return None
-    
 
-def read_anndata(profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike], anndata_type: str) -> pd.DataFrame:
+
+def read_anndata(
+    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike], anndata_type: str
+) -> pd.DataFrame:
     """
     Read an AnnData object or file and return a pandas DataFrame.
 
@@ -114,22 +119,40 @@ def read_anndata(profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike], 
     pandas DataFrame of profiles
     """
     import anndata as ad
+    import h5py
+    import zarr
+
+    # conditional import for read_elem because the
+    # location changed between anndata versions
+    try:
+        # 0.12+
+        from anndata.io import read_elem
+    except Exception:
+        # 0.10.x
+        from anndata.experimental import read_elem
 
     if anndata_type == "h5ad":
-        adata = ad.read_h5ad(profiles, backed="r")
+        with h5py.File(profiles, "r") as f:
+            obs = read_elem(f["obs"])
+            var = read_elem(f["var"])
+            X = read_elem(f["X"])
     elif anndata_type == "zarr":
-        adata = ad.read_zarr(profiles)
+        z = zarr.open(profiles, mode="r")
+        obs = read_elem(z["obs"])
+        var = read_elem(z["var"])
+        X = read_elem(z["X"])
     elif anndata_type == "in-memory":
-        adata = profiles
+        adata: ad.AnnData = profiles
+        return adata.obs.join(adata.to_df(), how="left")
     else:
-        raise AssertionError("Unrecognized AnnData type")
+        raise ValueError("Unrecognized AnnData type.")
 
-    # Convert to dataframe
-    if adata.isbacked:
-        # if we're backed by a file, just read it directly
-        df = adata.obs.join(adata.to_df(), how="left")
-    else:
-        # if we're working with an adata in-memory object, copy it
-        df = adata.obs.join(adata.to_df().copy(), how="left")
+    # Normalize X to a dense ndarray if needed
+    if hasattr(X, "toarray"):  # works for scipy sparse and others
+        X = X.toarray()
 
-    return df.reset_index(drop=True)
+    # Convert to DataFrame using obs and var for indices and columns
+    X_df = pd.DataFrame(X, index=obs.index, columns=var.index)
+
+    # join obs and X_df
+    return obs.join(X_df, how="left")

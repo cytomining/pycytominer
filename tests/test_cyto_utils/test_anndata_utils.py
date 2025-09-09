@@ -2,13 +2,21 @@
 Tests for cyto_utils/anndata_utils.py
 """
 
-import anndata as ad
-from typing import Union
 import pathlib
+from typing import Union
+
+import anndata as ad
 import pytest
+from test_load import (
+    adata,
+    output_data_adata_hda5,
+    output_data_adata_zarr,
+    output_data_adata_zarr_zip,
+    output_data_parquet,
+)
 
 from pycytominer.cyto_utils.anndata_utils import is_anndata
-from test_load import adata, output_data_adata_hda5, output_data_adata_zarr, output_data_adata_zarr_zip, output_data_parquet
+
 
 @pytest.mark.parametrize(
     "path_or_anndata_object, expected_result",
