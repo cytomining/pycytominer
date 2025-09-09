@@ -3,7 +3,6 @@ import pathlib
 import random
 import shutil
 import tempfile
-from typing import Union
 
 import anndata as ad
 import numpy as np
@@ -16,7 +15,7 @@ from pycytominer.cyto_utils import (
     load_platemap,
     load_profiles,
 )
-from pycytominer.cyto_utils.load import infer_delim, is_anndata, is_path_a_parquet_file
+from pycytominer.cyto_utils.load import infer_delim, is_path_a_parquet_file
 
 random.seed(123)
 
@@ -290,44 +289,3 @@ def test_load_profiles_file_path_input():
     data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
     with pytest.raises(FileNotFoundError, match="didn't find the path"):
         load_profiles(data_file_not_exist)
-
-
-@pytest.mark.parametrize(
-    "path_or_anndata_object, expected_result",
-    [
-        # 1) In-memory AnnData passthrough
-        (adata, "in-memory"),
-        # 2) Nonexistent path
-        ("does_not_exist.h5ad", None),
-        # 3) a non-Anndata file
-        (output_data_parquet, None),
-        # 4) H5AD file
-        (output_data_adata_hda5, "h5ad"),
-        # 5) Zarr anndata directory
-        (output_data_adata_zarr, "zarr"),
-        # 5b) Zarr anndata zipped directory
-        (output_data_adata_zarr_zip, "zarr"),
-        # 6) Empty directory
-        ("empty_dir", None),
-    ],
-)
-def test_is_anndata(
-    path_or_anndata_object: Union[str, ad.AnnData],
-    expected_result: Union[str, None],
-    tmp_path: pathlib.Path,
-) -> None:
-    """
-    Tests for is_anndata
-    """
-
-    if (
-        isinstance(path_or_anndata_object, str)
-        and path_or_anndata_object == "empty_dir"
-    ):
-        empty_dir = tmp_path / "empty_dir"
-        empty_dir.mkdir()
-        kind = is_anndata(empty_dir)
-        assert kind is expected_result
-    else:
-        kind = is_anndata(path_or_anndata_object)
-        assert kind == expected_result

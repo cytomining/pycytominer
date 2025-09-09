@@ -4,26 +4,13 @@ Module for loading profiles from files or dataframes.
 
 import csv
 import gzip
-import os
 import pathlib
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
 
-
-class AnnDataLike:
-    """
-    An interface for objects that behave like AnnData objects
-    without loading the actual AnnData package.
-    """
-
-    X: Any
-    obs: Any
-    var: Any
-
-
-Type_AnnDataLike = TypeVar("Type_AnnDataLike", bound=AnnDataLike)
+from pycytominer.cyto_utils.anndata_utils import AnnDataLike
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
@@ -88,83 +75,6 @@ def infer_delim(file: Union[str, pathlib.Path, Any]):
     return dialect.delimiter
 
 
-def is_anndata(
-    path_or_anndata_object: Union[str, pathlib.Path, AnnDataLike],
-) -> Optional[str]:
-    """
-    Return anndata type as str if
-    path_or_anndata_object contains an AnnData dataset
-    or object (H5AD, Zarr, or in-memory object).
-
-
-    This function prefers using the AnnData readers directly:
-    - in-memory AnnData objects are recognized directly.
-    - H5AD files are opened in backed mode to avoid loading data into memory.
-    (note:  anndata.experimental.read_lazy is likely to be a better option
-    in the future once stable)
-    - Zarr stores (directories or files like ``.zarr`` or ``.zip``) are read
-      via :func:`anndata.read_zarr`.
-
-    The function is conservative: on any read error (or if AnnData is not
-    installed), it returns None.
-
-    Args:
-        path_or_anndata_object:
-            File or directory to inspect.
-
-    Returns:
-        Str:
-            If the path is an AnnData dataset, the type of store
-            Otherwise, None.
-    """
-    from importlib.metadata import version
-
-    import anndata as ad
-    import zarr
-    from packaging.version import Version
-
-    # passthrough check if anndata in-memory object
-    if isinstance(path_or_anndata_object, ad.AnnData):
-        return "in-memory"
-
-    try:
-        # check that the path exists
-        path = pathlib.Path(path_or_anndata_object).resolve(strict=True)
-    except FileNotFoundError:
-        return None
-
-    # Zarr stores can be directories (common) or files (e.g., zipped stores).
-    # Try Zarr first for directories; for files, try H5AD then Zarr.
-    # Note: we use a zarr-based approach for now but in the future
-    # we should explore the use of lazy loading zarr stores via
-    # anndata.experimental.read_lazy and/or anndata.io.sparse_dataset.
-    if path.is_dir() or path.suffix == ".zip":
-        try:
-            zarr_store = path
-            # account for zipped zarr stores if zarr >= 3.0.0
-            if path.suffix == ".zip" and Version(version("zarr")) >= Version("3"):
-                zarr_store = zarr.storage.ZipStore(path)
-
-            # try to open the zarr store
-            group = zarr.open_group(zarr_store, mode="r")
-
-            # check the group encoding-type attribute for anndata
-            if group.attrs.get("encoding-type") == "anndata":
-                return "zarr"
-
-        # if we run into any error while attempting a read for zarr
-        # return None
-        except Exception:
-            return None
-
-    # File path: first try H5AD (backed)
-    try:
-        ad.read_h5ad(path, backed="r")
-        return "h5ad"
-    except Exception:
-        return None
-
-
 def load_profiles(
     profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike],
 ) -> pd.DataFrame:
@@ -206,10 +116,10 @@ def load_profiles(
             isinstance(profiles, (str, pathlib.Path, pathlib.PurePath))
             and pathlib.Path(profiles).suffix in [".zarr", ".zip", ".h5ad"]
         )
-    ) and (anndata_type := is_anndata(profiles)):
+    ):
         # attempt an import of anndata and raise an error if not installed
         try:
-            import anndata as ad
+            from pycytominer.cyto_utils.anndata_utils import is_anndata, read_anndata
         except ImportError:
             raise ImportError(
                 """Optional dependency `anndata` is not installed.
@@ -217,24 +127,8 @@ def load_profiles(
                 e.g. `pip install pycytominer[anndata]`
                 """
             )
-        if anndata_type == "h5ad":
-            adata = ad.read_h5ad(profiles, backed="r")
-        elif anndata_type == "zarr":
-            adata = ad.read_zarr(profiles)
-        elif anndata_type == "in-memory":
-            adata = profiles
-        else:
-            raise AssertionError("Unrecognized AnnData type")
-
-        # Convert to dataframe
-        if adata.isbacked:
-            # if we're backed by a file, just read it directly
-            df = adata.obs.join(adata.to_df(), how="left")
-        else:
-            # if we're working with an adata in-memory object, copy it
-            df = adata.obs.join(adata.to_df().copy(), how="left")
-
-        return df.reset_index(drop=True)
+        if anndata_type := is_anndata(profiles):
+            return read_anndata(profiles, anndata_type)
 
     # otherwise, assume its a csv/tsv file and infer the delimiter
     delim = infer_delim(profiles)
