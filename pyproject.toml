@@ -60,14 +60,14 @@ pyarrow = ">=8.0.0"
 
 # Extra dependencies for anndata
 anndata = [
-  { version = "<0.12.2", python = "<3.11" },
-  { version = ">=0.12.2", python = ">=3.11" },
+  { version = "<0.12.2", python = "<3.11", optional = true },
+  { version = ">=0.12.2", python = ">=3.11", optional = true },
 ]
 # Explicit zarr dependency for
 # anndata <0.12.2 and Python <3.11
 zarr = [
-  { version = "<3.1.1", python = "<3.11" },
-  { version = ">=3.1.1", python = ">=3.11" },
+  { version = "<3.1.1", python = "<3.11", optional = true },
+  { version = ">=3.1.1", python = ">=3.11", optional = true },
 ]
 
 # Extra dependencies for cell_locations 

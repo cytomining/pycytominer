@@ -305,7 +305,7 @@ files = [
 name = "anndata"
 version = "0.10.9"
 description = "Annotated data."
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version == \"3.9\" and extra == \"anndata\""
@@ -336,7 +336,7 @@ test = ["awkward (>=2.3)", "boltons", "dask[array,distributed] (>=2022.09.2,<202
 name = "anndata"
 version = "0.11.4"
 description = "Annotated data."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
 markers = "python_version == \"3.10\" and extra == \"anndata\""
@@ -369,7 +369,7 @@ test = ["awkward (>=2.3)", "boltons", "dask[array] (>=2022.09.2,<2024.8.dev0 || 
 name = "anndata"
 version = "0.12.2"
 description = "Annotated data."
-optional = false
+optional = true
 python-versions = ">=3.11"
 groups = ["main"]
 markers = "python_version >= \"3.11\" and extra == \"anndata\""
@@ -443,7 +443,7 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 name = "array-api-compat"
 version = "1.11.2"
 description = "A wrapper around NumPy and other array libraries to make them compatible with the Array API standard"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version == \"3.9\" and extra == \"anndata\""
@@ -464,7 +464,7 @@ sparse = ["sparse (>=0.15.1)"]
 name = "array-api-compat"
 version = "1.12.0"
 description = "A wrapper around NumPy and other array libraries to make them compatible with the Array API standard"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
 markers = "python_version >= \"3.10\" and extra == \"anndata\""
@@ -488,7 +488,7 @@ sparse = ["sparse (>=0.15.1)"]
 name = "asciitree"
 version = "0.3.3"
 description = "Draws ASCII trees."
-optional = false
+optional = true
 python-versions = "*"
 groups = ["main"]
 markers = "extra == \"anndata\" and python_version < \"3.11\""
@@ -1073,7 +1073,7 @@ toml = ["tomli ; python_full_version <= \"3.11.0a6\""]
 name = "crc32c"
 version = "2.7.1"
 description = "A python package implementing the crc32c algorithm in hardware and software"
-optional = false
+optional = true
 python-versions = ">=3.7"
 groups = ["main"]
 markers = "python_version >= \"3.11\" and extra == \"anndata\""
@@ -1311,7 +1311,7 @@ files = [
 name = "donfig"
 version = "0.8.1.post1"
 description = "Python package for configuring a python package"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
 markers = "python_version >= \"3.11\" and extra == \"anndata\""
@@ -1402,7 +1402,7 @@ tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipyth
 name = "fasteners"
 version = "0.20"
 description = "A python package that provides useful locks"
-optional = false
+optional = true
 python-versions = ">=3.6"
 groups = ["main"]
 markers = "extra == \"anndata\" and sys_platform != \"emscripten\" and python_version < \"3.11\""
@@ -1725,7 +1725,7 @@ files = [
 name = "h5py"
 version = "3.14.0"
 description = "Read and write HDF5 files from Python"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"anndata\""
@@ -2069,7 +2069,7 @@ test = ["cssselect (>=0.9.1)", "lxml (>=3.6.0)", "pytest", "pytest-cov"]
 name = "legacy-api-wrap"
 version = "1.4.1"
 description = ""
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
 markers = "python_version >= \"3.11\" and extra == \"anndata\""
@@ -2604,7 +2604,7 @@ files = [
 name = "natsort"
 version = "8.4.0"
 description = "Simple yet flexible natural sorting in Python."
-optional = false
+optional = true
 python-versions = ">=3.7"
 groups = ["main"]
 markers = "extra == \"anndata\""
@@ -2739,7 +2739,7 @@ setuptools = "*"
 name = "numcodecs"
 version = "0.12.1"
 description = "A Python package providing buffer compression and transformation codecs for use in data storage and communication applications."
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
 markers = "python_version == \"3.9\" and extra == \"anndata\""
@@ -2781,7 +2781,7 @@ zfpy = ["zfpy (>=1.0.0)"]
 name = "numcodecs"
 version = "0.13.1"
 description = "A Python package providing buffer compression and transformation codecs for use in data storage and communication applications."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
 markers = "python_version == \"3.10\" and extra == \"anndata\""
@@ -2820,7 +2820,7 @@ zfpy = ["numpy (<2.0.0)", "zfpy (>=1.0.0)"]
 name = "numcodecs"
 version = "0.16.2"
 description = "A Python package providing buffer compression and transformation codecs for use in data storage and communication applications."
-optional = false
+optional = true
 python-versions = ">=3.11"
 groups = ["main"]
 markers = "python_version >= \"3.11\" and extra == \"anndata\""
@@ -5425,7 +5425,7 @@ propcache = ">=0.2.0"
 name = "zarr"
 version = "2.18.2"
 description = "An implementation of chunked, compressed, N-dimensional arrays for Python"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version == \"3.9\" and extra == \"anndata\""
@@ -5448,7 +5448,7 @@ jupyter = ["ipytree (>=0.2.2)", "ipywidgets (>=8.0.0)", "notebook"]
 name = "zarr"
 version = "2.18.3"
 description = "An implementation of chunked, compressed, N-dimensional arrays for Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
 markers = "python_version == \"3.10\" and extra == \"anndata\""
@@ -5471,7 +5471,7 @@ jupyter = ["ipytree (>=0.2.2)", "ipywidgets (>=8.0.0)", "notebook"]
 name = "zarr"
 version = "3.1.2"
 description = "An implementation of chunked, compressed, N-dimensional arrays for Python"
-optional = false
+optional = true
 python-versions = ">=3.11"
 groups = ["main"]
 markers = "python_version >= \"3.11\" and extra == \"anndata\""
@@ -5524,4 +5524,4 @@ collate = ["cytominer-database"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "605c9d67969711d24221127d4f4d51a43a50e95b9d0ab849496a825eaf383cf3"
+content-hash = "dca8b14f50d53f012af8dd08255a1a9b2b5c161129eff38bfc04efb8902fc29d"
