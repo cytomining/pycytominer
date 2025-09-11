@@ -93,7 +93,6 @@ def is_anndata(
 
     # File path: first try H5AD (backed)
     try:
-        # ad.read_h5ad(path, backed="r")
         with h5py.File(path, "r") as f:
             # check the file encoding-type attribute for anndata
             if "anndata" in f.attrs.get("encoding-type", ""):
