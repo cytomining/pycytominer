@@ -53,8 +53,8 @@ def is_anndata(
     from importlib.metadata import version
 
     import anndata as ad
-    import zarr
     import h5py
+    import zarr
     from packaging.version import Version
 
     # passthrough check if anndata in-memory object
@@ -142,7 +142,6 @@ def read_anndata(
         from zarr import Group as ZarrGroup  # zarr >= 3
     except Exception:
         from zarr.hierarchy import Group as ZarrGroup  # zarr < 3
-        
 
     if anndata_category == "h5ad":
         with h5py.File(profiles, "r") as f:
@@ -204,7 +203,6 @@ def write_anndata(
         The ``output_filename`` path (as a string).
     """
     import anndata as ad
-    import numpy as np
 
     # Split numeric vs non-numeric
     numeric_cols = df.select_dtypes(include="number").columns
@@ -215,7 +213,9 @@ def write_anndata(
         X = df[numeric_cols].to_numpy(dtype=float)
         var_names = numeric_cols.astype(str)
     else:
-        X = np.empty((len(df), 0), dtype=float)
+        # Use a zero-width, initialized array to match n_obs and
+        # avoid shape errors at write time.
+        X = None
         var_names = pd.Index([], dtype=object)
 
     # Prepare obs
@@ -238,9 +238,10 @@ def write_anndata(
             df_nonnumeric[c] = df_nonnumeric[c].where(~pd.isna(df_nonnumeric[c]), None)
 
     # Build AnnData
-    adata = ad.AnnData(X=X)
+    # important: X and obs should be set at the same time to avoid
+    # potential shape misalignment issues at write time.
+    adata = ad.AnnData(X=X, obs=df_nonnumeric)
     adata.var_names = var_names
-    adata.obs = df_nonnumeric
     adata.obs_names = df.index.astype(str)
 
     # Write
