@@ -133,9 +133,10 @@ def read_anndata(
     # location changed between zarr versions
     # note: used for typing only
     try:
-        from zarr.hierarchy import Group as ZarrGroup  # zarr < 3
-    except Exception:
         from zarr import Group as ZarrGroup  # zarr >= 3
+    except Exception:
+        from zarr.hierarchy import Group as ZarrGroup  # zarr < 3
+        
 
     if anndata_type == "h5ad":
         with h5py.File(profiles, "r") as f:
