@@ -59,7 +59,7 @@ def single_cell_deep_profiler(deep_profiler_data):
 
 def test_single_cell(single_cell_deep_profiler):
     """Test output from SingleCellDeepProfiler.get_single_cells()"""
-    single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
+    single_cells, _, _ = single_cell_deep_profiler
 
     meta_cols = [x for x in single_cells.columns if x.startswith("Location_")]
     assert meta_cols.index("Location_Center_X") == 0
@@ -184,7 +184,7 @@ def test_aggregate(deep_profiler_data):
 
 
 def test_output(single_cell_deep_profiler):
-    single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
+    _, _, output_folder = single_cell_deep_profiler
 
     files = os.listdir(output_folder)
     files_should_be = [
