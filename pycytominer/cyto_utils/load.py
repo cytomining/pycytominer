@@ -132,7 +132,6 @@ def load_profiles(
 
     # otherwise, assume its a csv/tsv file and infer the delimiter
     delim = infer_delim(profiles)
-    # also expand user tilde and environment variables in order to load the file
     return pd.read_csv(str(profiles), sep=delim)
 
 

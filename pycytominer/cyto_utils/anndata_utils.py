@@ -19,7 +19,7 @@ class AnnDataLike:
     var: Any
 
 
-# create an anntada-like type variable
+# create a custom type variable for anndata-like objects
 Type_AnnDataLike = TypeVar("Type_AnnDataLike", bound=AnnDataLike)
 
 
@@ -27,9 +27,10 @@ def is_anndata(
     path_or_anndata_object: Union[str, pathlib.Path, AnnDataLike],
 ) -> Optional[str]:
     """
-    Return anndata type as str if
-    path_or_anndata_object contains an AnnData dataset
-    or object (H5AD, Zarr, or in-memory object).
+    Return AnnData category as str if
+    path_or_anndata_object contains an AnnData dataset,
+    AnnData object (H5AD, Zarr, or in-memory object) or
+    path to an AnnData dataset.
 
 
     This function prefers using the AnnData readers directly:
@@ -101,7 +102,7 @@ def is_anndata(
 
 
 def read_anndata(
-    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike], anndata_type: str
+    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike], anndata_category: str
 ) -> pd.DataFrame:
     """
     Read an AnnData object or file and return a pandas DataFrame.
