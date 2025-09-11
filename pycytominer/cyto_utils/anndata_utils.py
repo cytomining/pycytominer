@@ -54,6 +54,7 @@ def is_anndata(
 
     import anndata as ad
     import zarr
+    import h5py
     from packaging.version import Version
 
     # passthrough check if anndata in-memory object
@@ -92,8 +93,14 @@ def is_anndata(
 
     # File path: first try H5AD (backed)
     try:
-        ad.read_h5ad(path, backed="r")
-        return "h5ad"
+        # ad.read_h5ad(path, backed="r")
+        with h5py.File(path, "r") as f:
+            # check the file encoding-type attribute for anndata
+            if "anndata" in f.attrs.get("encoding-type", ""):
+                return "h5ad"
+            # raise an error if not anndata
+            raise ValueError("Not an AnnData H5AD file.")
+    # if we run into any error while attempting a read for h5ad
     except Exception:
         return None
 
@@ -138,17 +145,17 @@ def read_anndata(
         from zarr.hierarchy import Group as ZarrGroup  # zarr < 3
         
 
-    if anndata_type == "h5ad":
+    if anndata_category == "h5ad":
         with h5py.File(profiles, "r") as f:
             obs = read_elem(f["obs"])
             var = read_elem(f["var"])
             X = read_elem(f["X"])
-    elif anndata_type == "zarr":
+    elif anndata_category == "zarr":
         z = cast(ZarrGroup, zarr.open(profiles, mode="r"))
         obs = read_elem(z["obs"])
         var = read_elem(z["var"])
         X = read_elem(z["X"])
-    elif anndata_type == "in-memory":
+    elif anndata_category == "in-memory":
         adata: ad.AnnData = profiles
         df_out = adata.obs.join(adata.to_df(), how="left")
         df_out.index = df_out.index.astype(int)
