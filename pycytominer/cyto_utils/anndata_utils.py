@@ -41,9 +41,6 @@ def is_anndata(
     - Zarr stores (directories or files like ``.zarr`` or ``.zip``) are read
       via :func:`anndata.read_zarr`.
 
-    The function is conservative: on any read error (or if AnnData is not
-    installed), it returns None.
-
     Args:
         path_or_anndata_object:
             File or directory to inspect.
