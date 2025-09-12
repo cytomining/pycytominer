@@ -71,6 +71,7 @@ def test_single_cell(single_cell_deep_profiler):
     npt.assert_almost_equal(single_cells.efficientnet_5.loc[5], -0.2235049)
 
 
+@pytest.mark.large_data_tests
 def test_single_cell_normalize(single_cell_deep_profiler):
     """Test output from SingleCellDeepProfiler.normalize_deep_single_cells()"""
 
@@ -183,6 +184,7 @@ def test_aggregate(deep_profiler_data):
     npt.assert_almost_equal(df_site.efficientnet_2.loc[14], -0.14057332277297974)
 
 
+@pytest.mark.large_data_tests
 def test_output(single_cell_deep_profiler):
     single_cells, single_cells_DP, output_folder = single_cell_deep_profiler
 
