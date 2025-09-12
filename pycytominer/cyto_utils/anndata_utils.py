@@ -124,7 +124,10 @@ def read_anndata(
     """
     import anndata as ad
     import h5py
+    import numpy as np
     import zarr
+    from pandas.core.arrays.sparse.accessor import SparseFrameAccessor
+    from scipy.sparse import issparse
 
     # conditional import for read_elem because the
     # location changed between anndata versions
@@ -163,9 +166,14 @@ def read_anndata(
     else:
         raise ValueError("Unrecognized AnnData type.")
 
-    # Normalize X to a dense ndarray if needed
-    if hasattr(X, "toarray"):  # works for scipy sparse and others
-        X = X.toarray()
+    # handle sparse vs dense X
+    if issparse(X):
+        # if we have a sparse matrix, use from_spmatrix
+        sparse_accessor = cast(SparseFrameAccessor, pd.DataFrame.sparse)
+        X_df = sparse_accessor.from_spmatrix(X, index=obs.index, columns=var.index)
+    else:
+        # otherwise, use np.asarray to ensure we have a dense array
+        X_df = pd.DataFrame(np.asarray(X), index=obs.index, columns=var.index)
 
     # Convert to DataFrame using obs and var for indices and columns
     X_df = pd.DataFrame(X, index=obs.index, columns=var.index)
