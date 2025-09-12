@@ -250,8 +250,7 @@ def write_anndata(
     # Build AnnData
     # important: X and obs should be set at the same time to avoid
     # potential shape misalignment issues at write time.
-    adata = ad.AnnData(X=X, obs=df_nonnumeric)
-    adata.var_names = var_names
+    adata = ad.AnnData(X=X, obs=df_nonnumeric, var=pd.DataFrame(index=var_names))
     adata.obs_names = df.index.astype(str)
 
     # Write
