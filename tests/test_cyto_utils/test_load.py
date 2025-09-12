@@ -1,8 +1,10 @@
 import os
 import pathlib
 import random
+import shutil
 import tempfile
 
+import anndata as ad
 import numpy as np
 import pandas as pd
 import pytest
@@ -24,6 +26,9 @@ tmpdir = tempfile.gettempdir()
 output_data_file = os.path.join(tmpdir, "test_data.csv")
 output_data_comma_file = os.path.join(tmpdir, "test_data_comma.csv")
 output_data_parquet = os.path.join(tmpdir, "test_parquet.parquet")
+output_data_adata_hda5 = os.path.join(tmpdir, "test_adata.h5ad")
+output_data_adata_zarr = os.path.join(tmpdir, "test_adata.zarr")
+output_data_adata_zarr_zip = os.path.join(tmpdir, "test_adata.zarr.zip")
 output_data_gzip_file = f"{output_data_file}.gz"
 output_platemap_file = os.path.join(tmpdir, "test_platemap.csv")
 output_platemap_comma_file = os.path.join(tmpdir, "test_platemap_comma.csv")
@@ -86,6 +91,24 @@ data_df.to_csv(output_data_comma_file, sep=",", index=False)
 data_df.to_csv(output_data_gzip_file, sep="\t", index=False, compression="gzip")
 data_df.to_parquet(output_data_parquet, engine="pyarrow")
 
+# create the anndata object with numeric features
+adata = ad.AnnData(X=(numeric_features := data_df.select_dtypes(include=["number"])))
+
+# Set the X column names for numeric features.
+# Within anndata, X is an abstraction
+# which represents a numeric data matrix
+# of observations (rows) and variables (columns).
+adata.var_names = numeric_features.columns
+
+# add the non-numeric features as obs
+adata.obs = data_df.select_dtypes(exclude=["number"])
+
+# serialize the file to disk
+adata.write_h5ad(output_data_adata_hda5)
+adata.write_zarr(output_data_adata_zarr)
+# create a zipped version of the zarr directory
+shutil.make_archive(output_data_adata_zarr, "zip", output_data_adata_zarr)
+
 platemap_df.to_csv(output_platemap_file, sep="\t", index=False)
 platemap_df.to_csv(output_platemap_comma_file, sep=",", index=False)
 platemap_df.to_csv(output_platemap_file_gzip, sep="\t", index=False, compression="gzip")
@@ -127,6 +150,16 @@ def test_load_profiles():
 
     profiles_from_parquet = load_profiles(output_data_parquet)
     pd.testing.assert_frame_equal(data_df, profiles_from_parquet)
+
+    # loading anndata h5ad
+    adata_profile_test = load_profiles(output_data_adata_hda5)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
+    # loading anndata zarr
+    adata_profile_test = load_profiles(output_data_adata_zarr)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
+    # loading in-memory anndata
+    adata_profile_test = load_profiles(adata)
+    pd.testing.assert_frame_equal(adata_profile_test, data_df)
 
 
 def test_load_platemap():
@@ -254,5 +287,5 @@ def test_load_profiles_file_path_input():
 
     # Testing non-existing file paths should result in expected behavior
     data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
-    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+    with pytest.raises(FileNotFoundError, match="didn't find the path"):
         load_profiles(data_file_not_exist)

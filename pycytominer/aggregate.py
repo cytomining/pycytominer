@@ -2,7 +2,7 @@
 Aggregate profiles based on given grouping variables.
 """
 
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -20,7 +20,9 @@ def aggregate(
     features: Union[list[str], str] = "infer",
     operation: str = "median",
     output_file: Optional[str] = None,
-    output_type: Optional[str] = "csv",
+    output_type: Literal[
+        "csv", "parquet", "anndata_h5ad", "anndata_zarr", None
+    ] = "csv",
     compute_object_count: bool = False,
     object_feature: str = "Metadata_ObjectNumber",
     subset_data_df: Optional[pd.DataFrame] = None,

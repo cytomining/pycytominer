@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import pytest
 
+from pycytominer.cyto_utils.anndata_utils import is_anndata
 from pycytominer.cyto_utils.output import (
     check_compression_method,
     output,
@@ -107,6 +108,38 @@ def test_output_parquet():
     pd.testing.assert_frame_equal(
         result, DATA_DF, check_names=False, check_exact=False, atol=1e-3
     )
+
+
+@pytest.mark.parametrize(
+    "output_type,output_filename,expected_result",
+    [
+        # anndata h5ad
+        ("anndata_h5ad", "example.h5ad", "h5ad"),
+        # anndata zarr
+        ("anndata_zarr", "example.zarr", "zarr"),
+        # parquet
+        ("parquet", "example.parquet", None),
+    ],
+)
+def test_output_anndata(
+    tmp_path: pathlib.Path, output_type: str, output_filename: str, expected_result: str
+):
+    """
+    Tests using output function with anndata type
+    """
+
+    output_path = tmp_path / "test_output_anndata"
+
+    # test with base output arguments and
+    # kwargs output arguments for pd.DataFrame.to_parquet
+    output_result = output(
+        df=DATA_DF,
+        output_filename=output_path,
+        output_type=output_type,
+    )
+
+    assert pathlib.Path(output_result).exists()
+    assert is_anndata(output_result) == expected_result
 
 
 def test_output_none():
