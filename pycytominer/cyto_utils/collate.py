@@ -1,12 +1,17 @@
+"""
+Collate CellProfiler CSVs into SQLite files using cytominer-database
+"""
+
 import os
 import pathlib
 import sqlite3
 import subprocess
 import sys
 import warnings
+from typing import Optional, Union
 
 
-def run_check_errors(cmd):
+def run_check_errors(cmd: Union[str, list]):
     """Run a system command, and exit if an error occurred, otherwise continue"""
     if isinstance(cmd, str):
         cmd = cmd.split()
@@ -20,20 +25,25 @@ def run_check_errors(cmd):
 
 
 def collate(
-    batch,
-    config,
-    plate,
-    base_directory="../..",
-    column=None,
-    munge=False,
-    csv_dir="analysis",
-    aws_remote=None,
-    aggregate_only=False,
-    tmp_dir="/tmp",  # noqa: S108
-    overwrite=False,
-    add_image_features=True,
-    image_feature_categories=["Granularity", "Texture", "ImageQuality", "Threshold"],
-    printtoscreen=True,
+    batch: str,
+    config: str,
+    plate: str,
+    base_directory: str = "../..",
+    column: Optional[str] = None,
+    munge: bool = False,
+    csv_dir: str = "analysis",
+    aws_remote: Optional[str] = None,
+    aggregate_only: bool = False,
+    tmp_dir: str = "/tmp",  # noqa: S108
+    overwrite: bool = False,
+    add_image_features: bool = True,
+    image_feature_categories: Optional[list[str]] = [
+        "Granularity",
+        "Texture",
+        "ImageQuality",
+        "Threshold",
+    ],
+    printtoscreen: bool = True,
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
@@ -85,12 +95,13 @@ def collate(
     # show a warning about collate deprecation
     warnings.warn(
         (
-            "With the deprecation of cytominer-database",
+            "With the deprecation of cytominer-database, "
             "pycytominer.cyto_utils.collate will be removed in future versions of Pycytominer. "
             "Please consider using CellProfiler's ExportToDatabase module to create single-cell "
-            "SQLite files or CytoTable to create single-cell Parquet files.",
+            "SQLite files or CytoTable to create single-cell Parquet files."
         ),
-        DeprecationWarning,
+        category=DeprecationWarning,
+        stacklevel=2,  # points at the caller of your function
     )
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
@@ -211,7 +222,7 @@ def collate(
         add_image_features=add_image_features,
         image_feature_categories=image_feature_categories,
     )
-    database.aggregate_profiles(output_file=aggregated_file)
+    database.aggregate_profiles(output_file=str(aggregated_file))
 
     if aws_remote:
         if printtoscreen:
