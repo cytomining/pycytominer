@@ -1,14 +1,22 @@
+"""
+Custom annotation functions for CMAP specific data
+"""
+
 import numpy as np
+import pandas as pd
 
 
 def annotate_cmap(
-    annotated, annotate_join_on, cell_id="unknown", perturbation_mode="none"
-):
+    annotated: pd.DataFrame,
+    annotate_join_on: str,
+    cell_id: str = "unknown",
+    perturbation_mode: str = "none",
+) -> pd.DataFrame:
     """Annotates data frame with custom options according to CMAP specifications
 
     Parameters
     ----------
-    annotated : pandas.core.frame.DataFrame
+    annotated : pd.DataFrame
         DataFrame of profiles.
     annotate_join_on : str
         Typically the well metadata, but how to join external data
@@ -19,7 +27,7 @@ def annotate_cmap(
 
     Returns
     -------
-    annotated
+    annotated: pd.DataFrame
         CMAP annotated data
     """
     pert_opts = ["none", "chemical", "genetic"]
