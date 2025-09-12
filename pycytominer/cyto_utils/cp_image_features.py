@@ -10,7 +10,7 @@ from pycytominer import aggregate
 
 def aggregate_fields_count(
     image_df: pd.DataFrame, strata: list[str], fields_of_view_feature: str
-):
+) -> pd.DataFrame:
     """Compute the number of fields per well and create a new column called Metadata_Site_Count
 
     Parameters
