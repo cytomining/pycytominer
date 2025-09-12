@@ -145,7 +145,7 @@ class SingleCells:
         self.features = features
         self.subsample_frac = subsample_frac
         self.subsample_n = subsample_n
-        self.subset_data_df = None
+        self.subset_data_df: Optional[pd.DataFrame] = None
         self.subsampling_random_state = subsampling_random_state
         self.is_aggregated = False
         self.is_subset_computed = False
@@ -306,7 +306,9 @@ class SingleCells:
 
         self.image_data_loaded = True
 
-    def count_cells(self, compartment: str = "cells", count_subset: bool = False):
+    def count_cells(
+        self, compartment: str = "cells", count_subset: bool = False
+    ) -> pd.DataFrame:
         """Determine how many cells are measured per well.
 
         Parameters
@@ -318,7 +320,7 @@ class SingleCells:
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pd.DataFrame
             DataFrame of cell counts in the experiment.
         """
 
@@ -356,19 +358,21 @@ class SingleCells:
 
         return count_df
 
-    def subsample_profiles(self, df: pd.DataFrame, rename_col: bool = True):
+    def subsample_profiles(
+        self, df: pd.DataFrame, rename_col: bool = True
+    ) -> pd.DataFrame:
         """Sample a Pandas DataFrame given subsampling information.
 
         Parameters
         ----------
-        df : pandas.core.frame.DataFrame
+        df : pd.DataFrame
             DataFrame of a single cell profile.
         rename_col : bool, default True
             Whether or not to rename the columns.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pd.DataFrame
             A subsampled pandas dataframe of single cell profiles.
         """
 
@@ -409,7 +413,7 @@ class SingleCells:
 
         Parameters
         ----------
-        df : pandas.core.frame.DataFrame
+        df : pd.DataFrame
             DataFrame of a single cell profile.
         compartment : str, default "cells"
             The compartment to process.
@@ -469,7 +473,7 @@ class SingleCells:
 
         return meta_cols, feat_cols
 
-    def load_compartment(self, compartment: str):
+    def load_compartment(self, compartment: str) -> pd.DataFrame:
         """Creates the compartment dataframe.
 
         Note: makes use of default_datatype_float attribute
@@ -482,7 +486,7 @@ class SingleCells:
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pd.DataFrame
             Compartment dataframe.
         """
 
@@ -520,7 +524,7 @@ class SingleCells:
         compute_counts: bool = False,
         add_image_features: bool = False,
         n_aggregation_memory_strata: int = 1,
-    ):
+    ) -> pd.DataFrame:
         """Aggregate morphological profiles. Uses pycytominer.aggregate()
 
         Parameters
@@ -543,7 +547,7 @@ class SingleCells:
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pd.DataFrame
             DataFrame of aggregated profiles.
         """
 
@@ -606,6 +610,14 @@ class SingleCells:
                         self.aggregation_operation,
                     )
 
+                # check that aggregate_image_features returned a dataframe
+                if not isinstance(fields_count_df, pd.DataFrame):
+                    raise RuntimeError(
+                        "aggregate_image_features() did not return a DataFrame"
+                    )
+                if not isinstance(partial_object_df, pd.DataFrame):
+                    raise RuntimeError("aggregate() did not return a DataFrame")
+
                 partial_object_df = fields_count_df.merge(
                     partial_object_df,
                     on=self.strata,
@@ -654,7 +666,7 @@ class SingleCells:
 
         Returns
         -------
-        image_df : Iterator[pandas.core.frame.DataFrame]
+        image_df : Iterator[pd.DataFrame]
             A generator whose __next__() call returns a chunk of the compartment
             table, where rows comprising a unique aggregation stratum are not split
             between chunks, and thus groupby aggregations are valid
@@ -725,7 +737,7 @@ class SingleCells:
         normalize_args: Optional[dict] = None,
         platemap: Optional[Union[str, pd.DataFrame]] = None,
         **kwargs,
-    ):
+    ) -> Union[pd.DataFrame, str]:
         """Given the linking columns, merge single cell data. Normalization is also supported.
 
         Parameters
@@ -747,7 +759,7 @@ class SingleCells:
 
         Returns
         -------
-        pandas.core.frame.DataFrame or str
+        pd.DataFrame or str
             if output_file=None returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
@@ -764,11 +776,11 @@ class SingleCells:
                     continue
 
                 # Specify how to indicate merge suffixes
-                merge_suffix = [
+                merge_suffix: tuple[Optional[str], Optional[str]] = (
                     f"_{left_compartment}",
                     f"_{right_compartment}",
-                ]
-                merge_suffix_rename += merge_suffix
+                )
+                merge_suffix_rename += list(merge_suffix)
                 left_link_col = self.compartment_linking_cols[left_compartment][
                     right_compartment
                 ]
@@ -903,7 +915,7 @@ class SingleCells:
 
         Returns
         -------
-        pandas.core.frame.DataFrame or str
+        pd.DataFrame or str
             if output_file=None) returns a Pandas dataframe
             else will write to file and return the filepath of the file
         """
@@ -951,7 +963,7 @@ def _sqlite_strata_conditions(df: pd.DataFrame, dtypes: dict[str, str], n: int =
 
     Parameters
     ----------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         A dataframe where columns are merge_cols and rows represent
         unique aggregation strata of the compartment table
     dtypes : dict[str, str]
