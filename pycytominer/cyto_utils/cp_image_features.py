@@ -3,16 +3,19 @@ Functions for counting the number of fields and aggregating other images feature
 """
 
 import numpy as np
+import pandas as pd
 
 from pycytominer import aggregate
 
 
-def aggregate_fields_count(image_df, strata, fields_of_view_feature):
+def aggregate_fields_count(
+    image_df: pd.DataFrame, strata: list[str], fields_of_view_feature: str
+):
     """Compute the number of fields per well and create a new column called Metadata_Site_Count
 
     Parameters
     ----------
-    image_df : pandas.core.frame.DataFrame
+    image_df : pd.DataFrame
         Image table dataframe which includes the strata and fields of view feature as columns.
     strata :  list of str
         The columns to groupby and aggregate single cells.
@@ -21,7 +24,7 @@ def aggregate_fields_count(image_df, strata, fields_of_view_feature):
 
     Returns
     -------
-    fields_count_df: pandas.core.frame.DataFrame
+    fields_count_df: pd.DataFrame
         DataFrame with the Metadata_Site_Count column.
 
     """
@@ -39,15 +42,19 @@ def aggregate_fields_count(image_df, strata, fields_of_view_feature):
 
 
 def aggregate_image_count_features(
-    df, image_features_df, image_cols, strata, count_prefix="Count"
+    df: pd.DataFrame,
+    image_features_df: pd.DataFrame,
+    image_cols: list[str],
+    strata: list[str],
+    count_prefix: str = "Count",
 ):
     """Aggregate the Count features in the Image table.
 
     Parameters
     ----------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         Dataframe of aggregated profiles.
-    image_features_df : pandas.core.frame.DataFrame
+    image_features_df : pd.DataFrame
         Image table dataframe with Count features
     image_cols : list of str
         Columns to select from the image table.
@@ -58,7 +65,7 @@ def aggregate_image_count_features(
 
     Returns
     -------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         DataFrame with aggregated Count features in the Image table.
     remove_cols : list of str
         Columns to remove from the image table before aggregating using aggregate_image_features()
@@ -80,21 +87,21 @@ def aggregate_image_count_features(
 
 
 def aggregate_image_features(
-    df,
-    image_features_df,
-    image_feature_categories,
-    image_cols,
-    strata,
-    aggregation_operation,
-    count_prefix="Count",
+    df: pd.DataFrame,
+    image_features_df: pd.DataFrame,
+    image_feature_categories: list[str],
+    image_cols: list[str],
+    strata: list[str],
+    aggregation_operation: str,
+    count_prefix: str = "Count",
 ):
     """Aggregate the non-Count image features.
 
     Parameters
     ----------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         Dataframe of aggregated profiles.
-    image_features_df : pandas.core.frame.DataFrame
+    image_features_df : pd.DataFrame
         Image table dataframe with all the image_feature_category features.
     image_feature_categories : list of str
         List of categories of features from the image table to add to the profiles.
@@ -109,7 +116,7 @@ def aggregate_image_features(
 
     Returns
     -------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         DataFrame of aggregated image features.
 
     """
@@ -132,13 +139,17 @@ def aggregate_image_features(
             remove_cols, axis="columns", errors="ignore"
         )
         features = list(np.setdiff1d(list(image_features_df.columns), strata))
-        image_features_df = aggregate.aggregate(
+        result = aggregate.aggregate(
             population_df=image_features_df,
             strata=strata,
             features=features,
             operation=aggregation_operation,
         )
 
-        df = df.merge(image_features_df, on=strata, how="left")
+        # check that aggregate returned a dataframe
+        if not isinstance(result, pd.DataFrame):
+            raise RuntimeError("aggregate() did not return a DataFrame")
+
+        df = df.merge(result, on=strata, how="left")
 
     return df

@@ -591,6 +591,12 @@ class SingleCells:
                 )
 
                 if add_image_features:
+                    # ensure image features are loaded
+                    if self.image_feature_categories is None:
+                        raise ValueError(
+                            "image_feature_categories must be specified if add_image_features is True"
+                        )
+
                     fields_count_df = aggregate_image_features(
                         fields_count_df,
                         self.image_features_df,
