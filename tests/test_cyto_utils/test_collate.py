@@ -84,6 +84,7 @@ def test_base_case_with_image_features():
     cleanup()
 
 
+@pytest.mark.large_data_tests
 def test_overwrite():
     cleanup()
 
