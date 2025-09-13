@@ -1,13 +1,19 @@
+"""
+Module for loading profiles from files or dataframes.
+"""
+
 import csv
 import gzip
 import pathlib
-from typing import Union
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
 
+from pycytominer.cyto_utils.anndata_utils import AnnDataLike
 
-def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
+
+def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """Checks if the provided file path is a parquet file.
 
     Identify parquet files by inspecting the file extensions.
@@ -15,7 +21,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Parameters
     ----------
-    file : Union[str, pathlib.PurePath]
+    file : Union[str, pathlib.Path]
         path to parquet file
 
     Returns
@@ -26,25 +32,25 @@ def is_path_a_parquet_file(file: Union[str, pathlib.PurePath]) -> bool:
 
     Raises
     ------
-    TypeError
-        Raised if a non str or non-path object is passed in the `file` parameter
     FileNotFoundError
         Raised if the provided path in the `file` does not exist
     """
 
-    file = pathlib.PurePath(file)
     try:
         # strict=true tests if path exists
-        file = pathlib.Path(file).resolve(strict=True)
-    except FileNotFoundError as e:
-        print("load_profiles() didn't find the path.", e, sep="\n")
+        path = pathlib.Path(file).resolve(strict=True)
+    except FileNotFoundError:
+        raise FileNotFoundError("load_profiles() didn't find the path.")
+    except TypeError:
+        print("Detected a non-str or non-path object in the `file` parameter.")
+        return False
 
     # return boolean based on whether
     # file path is a parquet file
-    return file.suffix.lower() == ".parquet"
+    return path.suffix.lower() == ".parquet"
 
 
-def infer_delim(file: str):
+def infer_delim(file: Union[str, pathlib.Path, Any]):
     """
     Sniff the delimiter in the given file
 
@@ -69,13 +75,16 @@ def infer_delim(file: str):
     return dialect.delimiter
 
 
-def load_profiles(profiles):
+def load_profiles(
+    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike],
+) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string
 
     Parameters
     ----------
-    profiles : {str, pathlib.Path, pandas.DataFrame}
+    profiles :
+        {str, pathlib.Path, pandas.DataFrame, ad.AnnData}
         file location or actual pandas dataframe of profiles
 
     Return
@@ -87,16 +96,43 @@ def load_profiles(profiles):
     FileNotFoundError
         Raised if the provided profile does not exists
     """
-    if not isinstance(profiles, pd.DataFrame):
-        # Check if path exists and load depending on file type
-        if is_path_a_parquet_file(profiles):
-            return pd.read_parquet(profiles, engine="pyarrow")
 
-        else:
-            delim = infer_delim(profiles)
-            return pd.read_csv(profiles, sep=delim)
+    # If already a dataframe, return it
+    if isinstance(profiles, pd.DataFrame):
+        return profiles
 
-    return profiles
+    # Check if path exists and load depending on file type
+    if isinstance(
+        profiles, (str, pathlib.Path, pathlib.PurePath)
+    ) and is_path_a_parquet_file(profiles):
+        return pd.read_parquet(profiles, engine="pyarrow")
+
+    # Check if path is an AnnData file or object
+    if (
+        # do a check for anndata-like object
+        all(hasattr(profiles, name) for name in ("X", "obs", "var"))
+        or (
+            # otherwise check for anndata file paths
+            isinstance(profiles, (str, pathlib.Path, pathlib.PurePath))
+            and pathlib.Path(profiles).suffix in [".zarr", ".zip", ".h5ad"]
+        )
+    ):
+        # attempt an import of anndata and raise an error if not installed
+        try:
+            from pycytominer.cyto_utils.anndata_utils import is_anndata, read_anndata
+        except ImportError:
+            raise ImportError(
+                """Optional dependency `anndata` is not installed.
+                Please install the `anndata` optional dependency group:
+                e.g. `pip install pycytominer[anndata]`
+                """
+            )
+        if anndata_type := is_anndata(profiles):
+            return read_anndata(profiles, anndata_type)
+
+    # otherwise, assume its a csv/tsv file and infer the delimiter
+    delim = infer_delim(profiles)
+    return pd.read_csv(str(profiles), sep=delim)
 
 
 def load_platemap(platemap, add_metadata_id=True):

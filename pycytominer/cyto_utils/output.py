@@ -2,7 +2,7 @@
 Utility function to compress output data
 """
 
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import pandas as pd
 
@@ -12,7 +12,9 @@ COMPRESS_OPTIONS = ["gzip", None]
 def output(
     df: pd.DataFrame,
     output_filename: str,
-    output_type: Optional[str] = "csv",
+    output_type: Literal[
+        "csv", "parquet", "anndata_h5ad", "anndata_zarr", None
+    ] = "csv",
     sep: str = ",",
     float_format: Optional[str] = None,
     compression_options: Optional[Union[str, dict[str, Any]]] = {
@@ -101,6 +103,14 @@ def output(
         # note: compression options will be validated against pd.DataFrame.to_parquet options
         # raising errors and tested through Pandas, PyArrow, etc. as necessary.
         df.to_parquet(path=output_filename, compression="snappy")
+
+    # anndata branch for `anndata_h5ad` and `anndata_zarr`
+    elif "anndata" in output_type:
+        from pycytominer.cyto_utils.anndata_utils import write_anndata
+
+        output_filename = write_anndata(
+            df=df, output_filename=output_filename, output_type=output_type
+        )
 
     return output_filename
 
