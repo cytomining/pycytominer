@@ -5,7 +5,7 @@ Utility function to load and process the output files of a DeepProfiler run.
 import os
 import pathlib
 import warnings
-from typing import Optional
+from typing import Optional, Union
 
 import pandas as pd
 
@@ -430,7 +430,7 @@ class SingleCellDeepProfiler:
         spherize_center: bool = True,
         spherize_method: str = "ZCA-cor",
         spherize_epsilon: float = 1e-6,
-    ):
+    ) -> Union[pd.DataFrame, str]:
         """
         Normalizes all cells into a pandas dataframe.
 
