@@ -5,6 +5,7 @@ Utility function to load and process the output files of a DeepProfiler run.
 import os
 import pathlib
 import warnings
+from typing import Optional
 
 import pandas as pd
 
@@ -44,10 +45,10 @@ class DeepProfilerData:
 
     def __init__(
         self,
-        index_file,
-        profile_dir,
-        filename_delimiter="_",
-        file_extension=".npz",
+        index_file: str,
+        profile_dir: str,
+        filename_delimiter: str = "_",
+        file_extension: str = ".npz",
     ):
         """
         __init__ function for this class.
@@ -78,7 +79,7 @@ class DeepProfilerData:
             pathlib.PurePath(f"{self.profile_dir}/{x}") for x in self.filenames
         ]
 
-    def build_filename_from_index(self, row):
+    def build_filename_from_index(self, row: pd.Series) -> str:
         """
         Builds the name of the profile files
         """
@@ -89,7 +90,9 @@ class DeepProfilerData:
         filename = f"{plate}/{well}{self.filename_delimiter}{site}{self.file_extension}"
         return filename
 
-    def extract_filename_metadata(self, npz_file, delimiter="_"):
+    def extract_filename_metadata(
+        self, npz_file: str, delimiter: str = "_"
+    ) -> dict[str, str]:
         """
         Extract metadata (site, well and plate) from the filename.
         The input format of the file: path/plate/well{delimiter}site.npz
@@ -157,9 +160,9 @@ class AggregateDeepProfiler:
     def __init__(
         self,
         deep_data: DeepProfilerData,
-        aggregate_operation="median",
-        aggregate_on="well",
-        output_file=None,
+        aggregate_operation: str = "median",
+        aggregate_on: str = "well",
+        output_file: Optional[str] = None,
     ):
         """
         __init__ function for this class.
@@ -366,8 +369,11 @@ class SingleCellDeepProfiler:
         self.deep_data = deep_data
 
     def get_single_cells(
-        self, output=False, location_x_col_index=0, location_y_col_index=1
-    ):
+        self,
+        output: bool = False,
+        location_x_col_index: int = 0,
+        location_y_col_index: int = 1,
+    ) -> Optional[pd.DataFrame]:
         """
         Sets up the single_cells attribute or output as a variable. This is a helper function to normalize_deep_single_cells().
         single_cells is a pandas dataframe in the format expected by pycytominer.normalize().
@@ -403,26 +409,27 @@ class SingleCellDeepProfiler:
             total_df.append(detailed_df)
 
         sc_df = pd.concat(total_df).reset_index(drop=True)
-        if output:
-            return sc_df
-        else:
+
+        if not output:
             self.single_cells = sc_df
+
+        return sc_df
 
     def normalize_deep_single_cells(
         self,
-        location_x_col_index=0,
-        location_y_col_index=1,
-        image_features=False,  # not implemented with DeepProfiler
-        meta_features="infer",
-        samples="all",
-        method="standardize",
-        output_file=None,
-        compression_options=None,
-        float_format=None,
-        mad_robustize_epsilon=1e-18,
-        spherize_center=True,
-        spherize_method="ZCA-cor",
-        spherize_epsilon=1e-6,
+        location_x_col_index: int = 0,
+        location_y_col_index: int = 1,
+        image_features: bool = False,  # not implemented with DeepProfiler
+        meta_features: str = "infer",
+        samples: str = "all",
+        method: str = "standardize",
+        output_file: Optional[str] = None,
+        compression_options: Optional[str] = None,
+        float_format: Optional[str] = None,
+        mad_robustize_epsilon: float = 1e-18,
+        spherize_center: bool = True,
+        spherize_method: str = "ZCA-cor",
+        spherize_epsilon: float = 1e-6,
     ):
         """
         Normalizes all cells into a pandas dataframe.
