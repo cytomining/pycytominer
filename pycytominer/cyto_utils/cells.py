@@ -573,7 +573,7 @@ class SingleCells:
             ).rename(self.linking_col_rename, axis="columns")
 
             if self.features == "infer":
-                aggregate_features = infer_cp_features(
+                aggregate_features: Union[str, list[str]] = infer_cp_features(
                     population_df, compartments=compartment
                 )
             else:

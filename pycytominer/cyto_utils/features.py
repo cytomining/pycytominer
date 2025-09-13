@@ -3,7 +3,8 @@ Utility function to manipulate cell profiler features
 """
 
 import os
-from typing import Union
+import pathlib
+from typing import Optional, Union
 
 import pandas as pd
 
@@ -12,14 +13,17 @@ blocklist_file = os.path.join(
 )
 
 
-def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
+def get_blocklist_features(
+    blocklist_file: Union[str, pathlib.Path] = blocklist_file,
+    population_df: Optional[pd.DataFrame] = None,
+) -> list[str]:
     """Get a list of blocklist features.
 
     Parameters
     ----------
     blocklist_file : path-like object
         Location of the dataframe with features to exclude.
-    population_df : pandas.core.frame.DataFrame, optional
+    population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
     Returns
@@ -41,7 +45,9 @@ def get_blocklist_features(blocklist_file=blocklist_file, population_df=None):
     return blocklist_features
 
 
-def label_compartment(cp_features, compartment, metadata_cols):
+def label_compartment(
+    cp_features: list[str], compartment: str, metadata_cols: list[str]
+) -> list[str]:
     """Assign compartment label to each features as a prefix.
 
     Parameters
@@ -59,7 +65,7 @@ def label_compartment(cp_features, compartment, metadata_cols):
         Recoded column names with appropriate metadata and compartment labels.
     """
 
-    compartment = compartment.Title()
+    compartment = compartment.title()
     avail_compartments = ["Cells", "Cytoplasm", "Nuceli", "Image", "Barcode"]
 
     if compartment not in avail_compartments:
@@ -74,16 +80,16 @@ def label_compartment(cp_features, compartment, metadata_cols):
 
 
 def infer_cp_features(
-    population_df,
-    compartments=["Cells", "Nuclei", "Cytoplasm"],
-    metadata=False,
-    image_features=False,
-):
+    population_df: pd.DataFrame,
+    compartments: Union[str, list[str]] = ["Cells", "Nuclei", "Cytoplasm"],
+    metadata: bool = False,
+    image_features: bool = False,
+) -> list[str]:
     """Given CellProfiler output data read as a DataFrame, output feature column names as a list.
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame from which features are to be inferred.
     compartments : list of str, default ["Cells", "Nuclei", "Cytoplasm"]
         Compartments from which Cell Painting features were extracted.
@@ -126,12 +132,12 @@ def infer_cp_features(
     return features
 
 
-def count_na_features(population_df, features):
+def count_na_features(population_df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     """Given a population dataframe and features, count how many nas per feature.
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame of profiles.
     features : list of str
         Features present in the population dataframe.
@@ -145,13 +151,16 @@ def count_na_features(population_df, features):
 
 
 def drop_outlier_features(
-    population_df, features="infer", samples="all", outlier_cutoff=500
-):
+    population_df: pd.DataFrame,
+    features: Union[str, list[str]] = "infer",
+    samples: str = "all",
+    outlier_cutoff: Union[int, float] = 500,
+) -> list[str]:
     """Exclude a feature if its min or max absolute value is greater than the threshold.
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame that includes metadata and observation features.
     features : list of str or str, default "infer"
         Features present in the population dataframe. If "infer",
@@ -182,13 +191,14 @@ def drop_outlier_features(
     # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        features = infer_cp_features(population_df)
-        # Subset the DataFrame to only include inferred CellProfiler features
-        population_df = population_df.loc[:, features]
+        feature_list: list[str] = infer_cp_features(population_df)
+
     else:
         # Subset the DataFrame to only include the features of interest
         # this would be more tailored to non-CellProfiler features
-        population_df = population_df.loc[:, features]
+        feature_list = [features] if isinstance(features, str) else list(features)
+
+    population_df = population_df.loc[:, feature_list]
 
     # Get the max and min values for each feature
     max_feature_values = population_df.max().abs()
