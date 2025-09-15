@@ -136,13 +136,15 @@ def load_profiles(
     return pd.read_csv(str(profiles), sep=delim)
 
 
-def load_platemap(platemap: pd.DataFrame, add_metadata_id=True) -> pd.DataFrame:
+def load_platemap(
+    platemap: Union[str, pd.DataFrame], add_metadata_id=True
+) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given platemap dataframe from path or string
 
     Parameters
     ----------
-    platemap : pd.DataFrame
+    platemap : pd.DataFrame or str
         location or actual pd.DataFrame of platemap file
 
     add_metadata_id : bool
