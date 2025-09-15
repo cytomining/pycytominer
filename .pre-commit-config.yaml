@@ -12,7 +12,7 @@ repos:
     -   id: prettier
         exclude: .pre-commit-config.yaml
 -   repo: https://github.com/python-poetry/poetry
-    rev: "2.1.4"
+    rev: "2.2.0"
     hooks:
     -   id: poetry-check
 -   repo: https://github.com/rhysd/actionlint
