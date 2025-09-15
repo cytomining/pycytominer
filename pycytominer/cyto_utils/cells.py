@@ -116,7 +116,7 @@ class SingleCells:
         subsample_frac: float = 1.0,
         subsample_n: Union[str, int] = "all",
         subsampling_random_state: Optional[Union[str, int]] = None,
-        fields_of_view: Union[str, list[Union[str, int]]] = "all",
+        fields_of_view: Union[str, list[Union[int]]] = "all",
         fields_of_view_feature: str = "Metadata_Site",
         object_feature: str = "Metadata_ObjectNumber",
         default_datatype_float: type[np.generic] = np.float64,
@@ -280,6 +280,11 @@ class SingleCells:
         self.image_df = pd.read_sql(sql=image_query, con=self.conn)
 
         if self.add_image_features:
+            if self.image_feature_categories is None:
+                raise ValueError(
+                    "If add_image_features is True, image_feature_categories must be specified"
+                )
+
             self.image_features_df = extract_image_features(
                 self.image_feature_categories,
                 self.image_df,
@@ -291,6 +296,9 @@ class SingleCells:
         self.image_df = self.image_df[image_features]
 
         if self.fields_of_view != "all":
+            if not isinstance(self.fields_of_view, list):
+                raise ValueError("fields_of_view must be a list of integers or 'all'")
+
             check_fields_of_view(
                 list(np.unique(self.image_df[self.fields_of_view_feature])),
                 list(self.fields_of_view),
@@ -324,7 +332,7 @@ class SingleCells:
             DataFrame of cell counts in the experiment.
         """
 
-        check_compartments(compartment)
+        check_compartments([compartment])
 
         if count_subset:
             if not self.is_aggregated:
