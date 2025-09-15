@@ -2,21 +2,25 @@
 Remove noisy features, as defined by features with excessive standard deviation within the same perturbation group.
 """
 
+from typing import Union
+
+import pandas as pd
+
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def noise_removal(
-    population_df,
-    noise_removal_perturb_groups,
-    features="infer",
-    samples="all",
-    noise_removal_stdev_cutoff=0.8,
-):
+    population_df: pd.DataFrame,
+    noise_removal_perturb_groups: Union[str, list[str]],
+    features: Union[str, list[str]] = "infer",
+    samples: str = "all",
+    noise_removal_stdev_cutoff: float = 0.8,
+) -> list[str]:
     """
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame that includes metadata and observation features.
     noise_removal_perturb_groups : list or array of str
         The list of unique perturbations corresponding to the rows in population_df. For example,
@@ -52,8 +56,10 @@ def noise_removal(
     # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(population_df)
         # Subset the DataFrame to only include inferred CellProfiler features
+    elif isinstance(features, list):
+        inferred_features = features
 
     # if a Metadata columns name is specified, use that as the perturb groups
     if isinstance(noise_removal_perturb_groups, str):
@@ -75,7 +81,7 @@ def noise_removal(
                 f"data: {population_df.shape[0]}"
             )
         # Assign the group info to the the noise_removal_perturb_groups
-        group_info = noise_removal_perturb_groups
+        group_info = pd.Series(noise_removal_perturb_groups)
     else:
         # Raise an error if the input is not a list or a string
         raise TypeError(
@@ -84,7 +90,7 @@ def noise_removal(
         )
 
     # Subset and df and assign each row with the identity of its perturbation group
-    population_df = population_df.loc[:, features]
+    population_df = population_df.loc[:, inferred_features]
     population_df = population_df.assign(group_id=group_info)
 
     # Get the standard deviations of features within each group then calculate the mean
