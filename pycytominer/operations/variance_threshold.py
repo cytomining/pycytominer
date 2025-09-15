@@ -3,14 +3,21 @@ Remove variables with near-zero variance.
 Modified from caret::nearZeroVar()
 """
 
+from typing import Union
+
 import numpy as np
+import pandas as pd
 
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
 def variance_threshold(
-    population_df, features="infer", samples="all", freq_cut=0.05, unique_cut=0.01
-):
+    population_df: pd.DataFrame,
+    features: Union[str, list[str]] = "infer",
+    samples: str = "all",
+    freq_cut: float = 0.05,
+    unique_cut: float = 0.01,
+) -> list[str]:
     """Exclude features that have low variance (low information content)
 
     Parameters
@@ -60,20 +67,22 @@ def variance_threshold(
     # Infer CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(population_df)
+    elif isinstance(features, list):
+        inferred_features = features
 
     # Subset the DataFrame to only include the features of interest
-    population_df = population_df.loc[:, features]
+    population_df = population_df.loc[:, inferred_features]
 
     # Exclude features based on frequency
     # Frequency is the ratio of the second most common value to the most common value.
     # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
     excluded_features_freq = population_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
+        lambda x: calculate_frequency(x, freq_cut), axis=1
     )
 
     # Remove features with NA values
-    excluded_features_freq = excluded_features_freq[
+    excluded_features_freq_index_list = excluded_features_freq[
         excluded_features_freq.isna()
     ].index.tolist()
 
@@ -95,19 +104,23 @@ def variance_threshold(
     excluded_features_unique = unique_ratio[unique_ratio].index.tolist()
 
     # Combine the two lists of features to exclude
-    excluded_features = list(set(excluded_features_freq + excluded_features_unique))
+    excluded_features = list(
+        set(excluded_features_freq_index_list + excluded_features_unique)
+    )
     return excluded_features
 
 
-def calculate_frequency(feature_column, freq_cut):
+def calculate_frequency(
+    feature_column: pd.Series, freq_cut: float
+) -> Union[str, float]:
     """Calculate frequency of second most common to most common feature.
     Used in pandas.apply()
 
     Parameters
     ----------
-    feature_column : pandas.core.series.series
+    feature_column : pd.Series
         Pandas series of the specific feature in the population_df
-    freq_cut : float, default 0.05
+    freq_cut : float, (suggested but unenforced default of 0.05)
         Ratio (2nd most common feature val / most common). Must range between 0 and 1.
         Remove features lower than freq_cut. A low freq_cut will remove features
         that have large difference between the most common feature and second most
@@ -115,8 +128,8 @@ def calculate_frequency(feature_column, freq_cut):
 
     Returns
     -------
-    Feature name if it passes threshold, "NA" otherwise
-
+    Union[str, float]
+        Feature name if it passes threshold, "NA" otherwise
     """
 
     val_count = feature_column.value_counts()
@@ -134,4 +147,4 @@ def calculate_frequency(feature_column, freq_cut):
     if freq < freq_cut:
         return np.nan
     else:
-        return feature_column.name
+        return str(feature_column.name)
