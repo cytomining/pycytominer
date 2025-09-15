@@ -78,7 +78,7 @@ def variance_threshold(
     # Frequency is the ratio of the second most common value to the most common value.
     # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
     excluded_features_freq = population_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis=1
+        lambda x: calculate_frequency(x, freq_cut), axis=0
     )
 
     # Remove features with NA values

@@ -113,7 +113,9 @@ class Spherize(BaseEstimator, TransformerMixin):
                 self.mean_centerer = StandardScaler(with_mean=True, with_std=False).fit(
                     X_vals
                 )
-                X_transformed = self.mean_centerer.transform(X)
+                X_transformed = self.mean_centerer.transform(X_vals)
+            else:
+                X_transformed = X_vals
 
         # Get the number of observations and variables
         n, d = X_transformed.shape
@@ -263,6 +265,8 @@ class Spherize(BaseEstimator, TransformerMixin):
         else:
             if self.center:
                 X_transformed = self.mean_centerer.transform(X_vals)
+            else:
+                X_transformed = X_vals
 
         if self.method in ["PCA", "PCA-cor"]:
             columns = pd.Index([
