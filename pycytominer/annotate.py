@@ -28,7 +28,7 @@ def annotate(
     add_metadata_id_to_platemap: bool = True,
     format_broad_cmap: bool = False,
     clean_cellprofiler: bool = True,
-    external_metadata: Optional[str] = None,
+    external_metadata: Optional[Union[str, pd.DataFrame]] = None,
     external_join_left: Optional[bool] = None,
     external_join_right: Optional[bool] = None,
     compression_options: Optional[Union[str, dict[str, str]]] = None,
@@ -100,38 +100,35 @@ def annotate(
         annotated = annotate_cmap(
             annotated,
             annotate_join_on=join_on[1],
-            cell_id="unknown" if not cmap_args else cmap_args["cell_id"],
+            cell_id="unknown" if not cmap_args else cmap_args.get("cell_id", "unknown"),
             perturbation_mode="none"
             if not cmap_args
-            else cmap_args["perturbation_mode"],
+            else cmap_args.get("perturbation_mode", "none"),
         )
 
     if clean_cellprofiler:
         annotated = cp_clean(annotated)
 
-    if not isinstance(external_metadata, pd.DataFrame):
-        if external_metadata is not None:
-            if not os.path.exists(external_metadata):
-                raise FileNotFoundError(
-                    f"external metadata at {external_metadata} does not exist"
-                )
+    if isinstance(external_metadata, str):
+        if not os.path.exists(external_metadata):
+            raise FileNotFoundError(
+                f"external metadata at {external_metadata} does not exist"
+            )
 
-            loaded_external_metadata = pd.read_csv(external_metadata)
-    else:
-        # Make a copy of the external metadata to avoid modifying the original column names
-        loaded_external_metadata = external_metadata.copy()
+        external_metadata = pd.read_csv(external_metadata)
 
     if isinstance(external_metadata, pd.DataFrame):
-        loaded_external_metadata = external_metadata
+        # Make a copy of the external metadata to avoid modifying the original dataframe
+        external_metadata = external_metadata.copy()
 
         external_metadata.columns = pd.Index([
             f"Metadata_{x}" if not x.startswith("Metadata_") else x
-            for x in loaded_external_metadata.columns
+            for x in external_metadata.columns
         ])
 
         annotated = (
             annotated.merge(
-                loaded_external_metadata,
+                external_metadata,
                 left_on=external_join_left,
                 right_on=external_join_right,
                 how="left",
