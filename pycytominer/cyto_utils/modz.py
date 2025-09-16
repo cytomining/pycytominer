@@ -1,3 +1,9 @@
+"""
+Module for performing MODZ (modified z-score) transformations
+"""
+
+from typing import Union
+
 import numpy as np
 import pandas as pd
 
@@ -8,7 +14,12 @@ from pycytominer.cyto_utils.util import (
 )
 
 
-def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
+def modz_base(
+    population_df: pd.DataFrame,
+    method: str = "spearman",
+    min_weight: float = 0.01,
+    precision: int = 4,
+) -> pd.Series:
     """Perform a modified z score transformation.
 
     This code is modified from cmapPy.
@@ -18,7 +29,7 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame that includes metadata and observation features.
     method : str, default "spearman"
         indicating which correlation metric to use.
@@ -29,8 +40,8 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
 
     Returns
     -------
-    modz_df : pandas.core.frame.DataFrame
-        modz transformed dataframe - a consensus signature of the input data
+    modz_df : pd.Series
+        modz transformed pd.Series - a consensus signature of the input data
         weighted by replicate correlation
     """
     if not population_df.shape[0] > 0:
@@ -83,18 +94,18 @@ def modz_base(population_df, method="spearman", min_weight=0.01, precision=4):
 
 
 def modz(
-    population_df,
-    replicate_columns,
-    features="infer",
-    method="spearman",
-    min_weight=0.01,
-    precision=4,
-):
+    population_df: pd.DataFrame,
+    replicate_columns: Union[str, list[str]],
+    features: Union[str, list[str]] = "infer",
+    method: str = "spearman",
+    min_weight: float = 0.01,
+    precision: int = 4,
+) -> pd.DataFrame:
     """Collapse replicates into a consensus signature using a weighted transformation
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame that includes metadata and observation features.
     replicate_columns : str, list
         a string or list of column(s) in the population dataframe that
@@ -113,7 +124,7 @@ def modz(
 
     Returns
     -------
-    modz_df : pandas.core.frame.DataFrame
+    modz_df : pd.DataFrame
         Consensus signatures with metadata for all replicates in the given DataFrame
     """
     population_features = population_df.columns.tolist()
@@ -130,6 +141,10 @@ def modz(
 
     if features == "infer":
         features = infer_cp_features(population_df)
+
+    # Ensure features conform as list for processing below
+    if isinstance(features, str):
+        features = [features]
 
     subset_features = list(set(replicate_columns + features))
     population_df = population_df.loc[:, subset_features]

@@ -4,6 +4,7 @@ Miscellaneous utility functions
 
 import os
 import warnings
+from typing import Literal, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ default_metadata_file = os.path.join(
 )
 
 
-def get_default_compartments():
+def get_default_compartments() -> list[str]:
     """Returns default compartments.
 
     Returns
@@ -30,7 +31,7 @@ def get_default_compartments():
     return ["cells", "cytoplasm", "nuclei"]
 
 
-def check_compartments(compartments):
+def check_compartments(compartments: Union[str, list[str]]):
     """Checks if the input compartments are noncanonical compartments.
 
     Parameters
@@ -61,13 +62,15 @@ def check_compartments(compartments):
         warnings.warn(warn_str)
 
 
-def load_known_metadata_dictionary(metadata_file=default_metadata_file):
+def load_known_metadata_dictionary(
+    metadata_file: str = default_metadata_file,
+) -> dict[str, list[str]]:
     """From a tab separated text file (two columns: ["compartment", "feature"]), load
     previously known metadata columns per compartment.
 
     Parameters
     ----------
-    metadata_file : str, optional
+    metadata_file : str
         File location of the metadata text file. Uses a default dictionary if you do not specify.
 
     Returns
@@ -77,7 +80,7 @@ def load_known_metadata_dictionary(metadata_file=default_metadata_file):
 
     """
 
-    metadata_dict = {}
+    metadata_dict: dict[str, list[str]] = {}
     with open(metadata_file) as meta_fh:
         next(meta_fh)
         for line in meta_fh:
@@ -91,7 +94,7 @@ def load_known_metadata_dictionary(metadata_file=default_metadata_file):
     return metadata_dict
 
 
-def check_correlation_method(method):
+def check_correlation_method(method: str) -> Literal["pearson", "kendall", "spearman"]:
     """Confirm that the input method is currently supported.
 
     Parameters
@@ -114,10 +117,10 @@ def check_correlation_method(method):
             f"method {method} not supported, select one of {avail_methods}"
         )
 
-    return method
+    return cast(Literal["pearson", "kendall", "spearman"], method)
 
 
-def check_aggregate_operation(operation):
+def check_aggregate_operation(operation: str) -> str:
     """Confirm that the input operation for aggregation is currently supported.
 
     Parameters
@@ -143,7 +146,7 @@ def check_aggregate_operation(operation):
     return operation
 
 
-def check_consensus_operation(operation):
+def check_consensus_operation(operation: str) -> str:
     """Confirm that the input operation for consensus is currently supported.
 
     Parameters
@@ -173,7 +176,9 @@ def check_consensus_operation(operation):
     return operation
 
 
-def check_fields_of_view_format(fields_of_view):
+def check_fields_of_view_format(
+    fields_of_view: Union[str, list[int]],
+) -> Union[str, list[int]]:
     """Confirm that the input fields of view is valid.
 
     Parameters
@@ -207,7 +212,9 @@ def check_fields_of_view_format(fields_of_view):
         return fields_of_view
 
 
-def check_fields_of_view(data_fields_of_view, input_fields_of_view):
+def check_fields_of_view(
+    data_fields_of_view: list[int], input_fields_of_view: list[int]
+):
     """Confirm that the input list of fields of view is a subset of the list of fields of view in the image table.
 
     Parameters
@@ -232,7 +239,7 @@ def check_fields_of_view(data_fields_of_view, input_fields_of_view):
         )
 
 
-def check_image_features(image_features, image_columns):
+def check_image_features(image_features: list[str], image_columns: list[str]):
     """Confirm that the input list of image features are present in the image table
 
     Parameters
@@ -264,14 +271,19 @@ def check_image_features(image_features, image_columns):
         )
 
 
-def extract_image_features(image_feature_categories, image_df, image_cols, strata):
+def extract_image_features(
+    image_feature_categories: list[str],
+    image_df: pd.DataFrame,
+    image_cols: list[str],
+    strata: list[str],
+) -> pd.DataFrame:
     """Confirm that the input list of image features categories are present in the image table and then extract those features.
 
     Parameters
     ----------
     image_feature_categories : list of str
         Input image feature groups to extract from the image table.
-    image_df : pandas.core.frame.DataFrame
+    image_df : pd.DataFrame
         Image dataframe.
     image_cols : list of str
         Columns to select from the image table.
@@ -280,10 +292,8 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
 
     Returns
     -------
-    image_features_df : pandas.core.frame.DataFrame
+    image_features_df : pd.DataFrame
         Dataframe with extracted image features.
-    image_feature_categories : list of str
-        Correctly formatted image feature categories.
 
     """
 
@@ -299,14 +309,14 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
 
     image_features_df = image_df[image_features]
 
-    image_features_df.columns = [
+    image_features_df.columns = pd.Index([
         f"Image_{x}"
         if not x.startswith("Image_") and not x.startswith("Count_")
         else f"Metadata_{x}"
         if x.startswith("Count_")
         else x
         for x in image_features_df.columns
-    ]
+    ])
 
     # Add image_cols and strata to the dataframe
     image_features_df = pd.concat(
@@ -316,34 +326,39 @@ def extract_image_features(image_feature_categories, image_df, image_cols, strat
     return image_features_df
 
 
-def get_pairwise_correlation(population_df, method="pearson"):
+def get_pairwise_correlation(
+    population_df: pd.DataFrame, method: str = "pearson"
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Given a population dataframe, calculate all pairwise correlations.
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         Includes metadata and observation features.
     method : str, default "pearson"
         Which correlation matrix to use to test cutoff.
     Returns
     -------
-    list of str
-        Features to exclude from the population_df.
-
+    tuple of (pd.DataFrame, pd.DataFrame)
+        A tuple of two DataFrames. The first is a symmetrical correlation matrix.
+        The second is a long format DataFrame of pairwise correlations.
     """
 
     # Check that the input method is supported
-    method = check_correlation_method(method)
+    corrected_method: Literal["pearson", "kendall", "spearman"] = (
+        check_correlation_method(method)
+    )
 
     # Get a symmetrical correlation matrix. Use numpy for non NaN/Inf matrices.
     has_nan = np.any(np.isnan(population_df.values))
     has_inf = np.any(np.isinf(population_df.values))
-    if method == "pearson" and not (has_nan or has_inf):
+    if corrected_method == "pearson" and not (has_nan or has_inf):
         pop_names = population_df.columns
-        data_cor_df = np.corrcoef(population_df.transpose())
-        data_cor_df = pd.DataFrame(data_cor_df, index=pop_names, columns=pop_names)
+        data_cor_df = pd.DataFrame(
+            np.corrcoef(population_df.transpose()), index=pop_names, columns=pop_names
+        )
     else:
-        data_cor_df = population_df.corr(method=method)
+        data_cor_df = population_df.corr(method=corrected_method)
 
     # Create a copy of the dataframe to generate upper triangle of zeros
     data_cor_natri_df = data_cor_df.copy()
@@ -356,6 +371,6 @@ def get_pairwise_correlation(population_df, method="pearson"):
     # Acquire pairwise correlations in a long format
     # Note that we are using the NaN upper triangle DataFrame
     pairwise_df = data_cor_natri_df.stack().reset_index()
-    pairwise_df.columns = ["pair_a", "pair_b", "correlation"]
+    pairwise_df.columns = pd.Index(["pair_a", "pair_b", "correlation"])
 
     return data_cor_df, pairwise_df

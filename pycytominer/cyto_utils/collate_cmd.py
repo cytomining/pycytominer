@@ -1,3 +1,7 @@
+"""
+Build a CLI for collate function
+"""
+
 import argparse
 
 from pycytominer.cyto_utils.collate import collate

@@ -28,12 +28,12 @@ def aggregate(
     subset_data_df: Optional[pd.DataFrame] = None,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
-) -> Optional[Union[pd.DataFrame, str]]:
+) -> Union[pd.DataFrame, str]:
     """Combine population dataframe variables by strata groups using given operation.
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame to group and aggregate.
     strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
         Columns to groupby and aggregate.
@@ -51,7 +51,7 @@ def aggregate(
         Whether or not to compute object counts.
     object_feature : str, default "Metadata_ObjectNumber"
         Object number feature. Only used if compute_object_count=True.
-    subset_data_df : pandas.core.frame.DataFrame
+    subset_data_df : pd.DataFrame
         How to subset the input.
     compression_options : str or dict, optional
         Contains compression options as input to
@@ -63,11 +63,14 @@ def aggregate(
 
     Returns
     -------
-    population_df : pandas.core.frame.DataFrame, optional
-        DataFrame of aggregated features. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
-
+    str or pd.DataFrame
+        pd.DataFrame:
+            DataFrame of aggregated features. If output_file=None, then return the
+            DataFrame. If you specify output_file, then write to file and do not return
+            data.
+        str:
+            If output_file is provided, then the function returns the path to the
+            output file.
     """
 
     # Check that the operation is supported

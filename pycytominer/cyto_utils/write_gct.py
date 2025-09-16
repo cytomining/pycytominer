@@ -8,6 +8,7 @@ https://github.com/broadinstitute/cytominer_scripts/blob/master/write_gct.R
 """
 
 import csv
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -16,18 +17,18 @@ from pycytominer.cyto_utils import infer_cp_features
 
 
 def write_gct(
-    profiles,
-    output_file,
-    features="infer",
-    meta_features="infer",
-    feature_metadata=None,
-    version="#1.3",
+    profiles: pd.DataFrame,
+    output_file: str,
+    features: Union[str, list[str]] = "infer",
+    meta_features: Union[str, list[str]] = "infer",
+    feature_metadata: Optional[pd.DataFrame] = None,
+    version: str = "#1.3",
 ):
     """Convert profiles to a .gct file
 
     Parameters
     ----------
-    profiles : pandas.core.frame.DataFrame
+    profiles : pd.DataFrame
         DataFrame of profiles.
     output_file : str
         If provided, will write gct to file.
@@ -40,7 +41,7 @@ def write_gct(
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
         If "infer", then assume metadata features are those prefixed with "Metadata"
-    feature_metadata : pandas.core.frame.DataFrame, default None
+    feature_metadata : pd.DataFrame, default None
     version : str, default "#1.3"
         Important for gct loading into Morpheus
 
@@ -56,30 +57,38 @@ def write_gct(
 
     # Step 1: Create first two rows of data
     if features == "infer":
-        features = infer_cp_features(profiles)
-    feature_df = profiles.loc[:, features].reset_index(drop=True).transpose()
+        inferred_features: list[str] = infer_cp_features(profiles)
+    elif isinstance(features, list):
+        inferred_features = features
+
+    feature_df = profiles.loc[:, inferred_features].reset_index(drop=True).transpose()
 
     # Separate out metadata features
     if meta_features == "infer":
-        meta_features = infer_cp_features(profiles, metadata=True)
-    metadata_df = profiles.loc[:, meta_features]
+        inferred_meta_features = infer_cp_features(profiles, metadata=True)
+    elif isinstance(meta_features, list):
+        inferred_meta_features = meta_features
+
+    metadata_df = profiles.loc[:, inferred_meta_features]
 
     # Step 2: Get the sample metadata portion of the output file
     metadata_part = metadata_df.transpose()
-    metadata_part.columns = [f"SAMPLE_{x}" for x in metadata_part.columns]
+    metadata_part.columns = pd.Index([f"SAMPLE_{x}" for x in metadata_part.columns])
     metadata_part = (
         metadata_part.transpose()
         .reset_index()
         .rename({"index": "id"}, axis="columns")
         .transpose()
     )
-    metadata_part.index = [x.replace("Metadata_", "") for x in metadata_part.index]
+    metadata_part.index = pd.Index([
+        x.replace("Metadata_", "") for x in metadata_part.index
+    ])
 
     nrow_feature, ncol_features = feature_df.shape
     _, ncol_metadata = metadata_df.shape
 
     # Step 3: Compile feature metadata
-    full_df = pd.concat([metadata_part, feature_df], axis="rows")
+    full_df = pd.concat([metadata_part, feature_df], axis=0)
     if isinstance(feature_metadata, pd.DataFrame):
         nrow_metadata = feature_metadata.shape[1]
 
@@ -92,11 +101,11 @@ def write_gct(
             full_df, how="right", left_index=True, right_index=True
         )
     else:
-        feature_metadata = (
+        full_feature_metadata = (
             ["cp_feature_name"] + [np.nan] * ncol_metadata + feature_df.index.tolist()
         )
         nrow_metadata = 1
-        full_df.insert(0, column="feature_metadata", value=feature_metadata)
+        full_df.insert(0, column="feature_metadata", value=full_feature_metadata)
     full_df = full_df.reset_index()
 
     # Step 4: Compile all data dimensions
@@ -107,5 +116,5 @@ def write_gct(
         gctwriter = csv.writer(gctfile, delimiter="\t")
         gctwriter.writerow([version])
         gctwriter.writerow(data_dimensions)
-        for feature, row in full_df.iterrows():
+        for _, row in full_df.iterrows():
             gctwriter.writerow(row)

@@ -3,15 +3,24 @@ Remove variables with specified threshold of NA values
 Note: This was called `drop_na_columns` in cytominer for R
 """
 
+from typing import Union
+
+import pandas as pd
+
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
-def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
+def get_na_columns(
+    population_df: pd.DataFrame,
+    features: Union[str, list[str]] = "infer",
+    samples: str = "all",
+    cutoff: float = 0.05,
+) -> list[str]:
     """Get features that have more NA values than cutoff defined
 
     Parameters
     ----------
-    population_df : pandas.core.frame.DataFrame
+    population_df : pd.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
@@ -46,10 +55,12 @@ def get_na_columns(population_df, features="infer", samples="all", cutoff=0.05):
     # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(population_df)
+    elif isinstance(features, list):
+        inferred_features = features
 
     # Subset the DataFrame to only include the features of interest
-    population_df = population_df.loc[:, features]
+    population_df = population_df.loc[:, inferred_features]
 
     # Get the proportion of NA values for each feature
     num_rows = population_df.shape[0]

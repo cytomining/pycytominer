@@ -2,6 +2,8 @@
 Normalize observation features based on specified normalization method
 """
 
+from typing import Any, Literal, Optional, Union
+
 import pandas as pd
 from sklearn.preprocessing import RobustScaler, StandardScaler
 
@@ -12,26 +14,28 @@ from pycytominer.operations import RobustMAD, Spherize
 
 
 def normalize(
-    profiles,
-    features="infer",
-    image_features=False,
-    meta_features="infer",
-    samples="all",
-    method="standardize",
-    output_file=None,
-    output_type="csv",
-    compression_options=None,
-    float_format=None,
-    mad_robustize_epsilon=1e-18,
-    spherize_center=True,
-    spherize_method="ZCA-cor",
-    spherize_epsilon=1e-6,
-):
+    profiles: Union[str, pd.DataFrame],
+    features: Union[str, list[str]] = "infer",
+    image_features: bool = False,
+    meta_features: Union[str, list[str]] = "infer",
+    samples: str = "all",
+    method: str = "standardize",
+    output_file: Optional[str] = None,
+    output_type: Optional[
+        Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
+    ] = "csv",
+    compression_options: Optional[Union[str, dict[str, Any]]] = None,
+    float_format: Optional[str] = None,
+    mad_robustize_epsilon: Optional[float] = 1e-18,
+    spherize_center: bool = True,
+    spherize_method: str = "ZCA-cor",
+    spherize_epsilon: float = 1e-6,
+) -> Union[pd.DataFrame, str]:
     """Normalize profiling features
 
     Parameters
     ----------
-    profiles : pandas.core.frame.DataFrame or path
+    profiles : pd.DataFrame or path
         Either a pandas DataFrame or a file that stores profile data
     features : list
         A list of strings corresponding to feature measurement column names in the
@@ -84,10 +88,14 @@ def normalize(
 
     Returns
     -------
-    normalized : pandas.core.frame.DataFrame, optional
-        The normalized profile DataFrame. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
+    str or pd.DataFrame
+        pd.DataFrame:
+            The normalized profile DataFrame. If output_file=None, then return the
+            DataFrame. If you specify output_file, then write to file and do not return
+            data.
+        str:
+            If output_file is provided, then the function returns the path to the
+            output file.
 
     Examples
     --------
@@ -138,6 +146,8 @@ def normalize(
     elif method == "robustize":
         scaler = RobustScaler()
     elif method == "mad_robustize":
+        if mad_robustize_epsilon is None:
+            raise ValueError("mad_robustize_epsilon must be a float")
         scaler = RobustMAD(epsilon=mad_robustize_epsilon)
     elif method == "spherize":
         scaler = Spherize(
@@ -150,10 +160,16 @@ def normalize(
     if features == "infer":
         features = infer_cp_features(profiles, image_features=image_features)
 
+    if isinstance(features, str):
+        raise ValueError("features must be a list of strings, not a single string")
+
     # Separate out the features and meta
     feature_df = profiles.loc[:, features]
     if meta_features == "infer":
         meta_features = infer_cp_features(profiles, metadata=True)
+
+    if isinstance(meta_features, str):
+        raise ValueError("meta_features must be a list of strings, not a single string")
 
     meta_df = profiles.loc[:, meta_features]
 

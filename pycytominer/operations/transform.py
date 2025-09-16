@@ -5,11 +5,16 @@ References
 .. [1] Kessy et al. 2016 "Optimal Whitening and Decorrelation" arXiv: https://arxiv.org/abs/1512.00809
 """
 
+from typing import Optional, TypeVar
+
 import numpy as np
 import pandas as pd
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
+
+Spherize_type = TypeVar("Spherize_type", bound="Spherize")
+RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
 
 
 class Spherize(BaseEstimator, TransformerMixin):
@@ -32,7 +37,13 @@ class Spherize(BaseEstimator, TransformerMixin):
         a string indicating which class of sphering to perform
     """
 
-    def __init__(self, epsilon=1e-6, center=True, method="ZCA", return_numpy=False):
+    def __init__(
+        self,
+        epsilon: float = 1e-6,
+        center: bool = True,
+        method: str = "ZCA",
+        return_numpy: bool = False,
+    ):
         """
         Parameters
         ----------
@@ -64,13 +75,17 @@ class Spherize(BaseEstimator, TransformerMixin):
         if self.method in ["PCA-cor", "ZCA-cor"] and not self.center:
             raise ValueError("PCA-cor and ZCA-cor require center=True")
 
-    def fit(self, X, y=None):
+    def fit(
+        self: Spherize_type, X: pd.DataFrame, y: Optional[np.typing.ArrayLike] = None
+    ) -> Spherize_type:
         """Identify the sphering transform given self.X
 
         Parameters
         ----------
-        X : pandas.core.frame.DataFrame
+        X : pd.DataFrame
             dataframe to fit sphering transform
+        y : None
+            Has no effect; only used for consistency in sklearn transform API
 
         Returns
         -------
@@ -78,33 +93,35 @@ class Spherize(BaseEstimator, TransformerMixin):
             With computed weights attribute
         """
         # Get Numpy representation of the DataFrame
-        X = X.values
+        X_vals = X.values
 
         if self.method in ["PCA-cor", "ZCA-cor"]:
             # The projection matrix for PCA-cor and ZCA-cor is the same as the
             # projection matrix for PCA and ZCA, respectively, on the standardized
             # data. So, we first standardize the data, then compute the projection
 
-            self.standard_scaler = StandardScaler().fit(X)
+            self.standard_scaler = StandardScaler().fit(X_vals)
             variances = self.standard_scaler.var_
             if np.any(variances == 0):
                 raise ValueError(
                     "Divide by zero error, make sure low variance columns are removed"
                 )
 
-            X = self.standard_scaler.transform(X)
+            X_transformed = self.standard_scaler.transform(X_vals)
         else:
             if self.center:
                 self.mean_centerer = StandardScaler(with_mean=True, with_std=False).fit(
-                    X
+                    X_vals
                 )
-                X = self.mean_centerer.transform(X)
+                X_transformed = self.mean_centerer.transform(X_vals)
+            else:
+                X_transformed = X_vals
 
         # Get the number of observations and variables
-        n, d = X.shape
+        n, d = X_transformed.shape
 
         # Checking the rank of matrix X considering the number of samples (n) and features (d).
-        r = np.linalg.matrix_rank(X)
+        r = np.linalg.matrix_rank(X_transformed)
 
         # Case 1: More features than samples (n < d).
         # If centered (mean of each feature subtracted), one dimension becomes dependent, reducing rank to n - 1.
@@ -205,54 +222,60 @@ class Spherize(BaseEstimator, TransformerMixin):
             self.W = self.W @ Vt
 
         # number of columns of self.W should be equal to that of X
-        if not (self.W.shape[1] == X.shape[1]):
+        if not (self.W.shape[1] == X_transformed.shape[1]):
             raise ValueError(
-                f"Error: W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
+                f"Error: W has {self.W.shape[1]} columns, X has {X_transformed.shape[1]} columns"
             )
 
-        if self.W.shape[1] != X.shape[1]:
+        if self.W.shape[1] != X_transformed.shape[1]:
             error_detail = (
                 f"The number of columns of W should be equal to that of X."
-                f"However, W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
+                f"However, W has {self.W.shape[1]} columns, X has {X_transformed.shape[1]} columns"
             )
             context = "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
             raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self, X: pd.DataFrame, y: Optional[np.typing.ArrayLike] = None
+    ) -> pd.DataFrame:
         """Perform the sphering transform
 
         Parameters
         ----------
-        X : pd.core.frame.DataFrame
+        X : pd.DataFrame
             Profile dataframe to be transformed using the precompiled weights
         y : None
             Has no effect; only used for consistency in sklearn transform API
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pd.DataFrame
             Spherized dataframe
         """
 
         columns = X.columns
 
         # Get Numpy representation of the DataFrame
-        X = X.values
+        X_vals = X.values
 
         if self.method in ["PCA-cor", "ZCA-cor"]:
-            X = self.standard_scaler.transform(X)
+            X_transformed = self.standard_scaler.transform(X_vals)
         else:
             if self.center:
-                X = self.mean_centerer.transform(X)
+                X_transformed = self.mean_centerer.transform(X_vals)
+            else:
+                X_transformed = X_vals
 
         if self.method in ["PCA", "PCA-cor"]:
-            columns = ["PC" + str(i) for i in range(1, X.shape[1] + 1)]
+            columns = pd.Index([
+                "PC" + str(i) for i in range(1, X_transformed.shape[1] + 1)
+            ])
 
         self.columns = columns
 
-        XW = X @ self.W
+        XW = X_transformed @ self.W
 
         if self.return_numpy:
             return XW
@@ -271,16 +294,20 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         fudge factor parameter
     """
 
-    def __init__(self, epsilon=1e-18):
+    def __init__(self, epsilon: float = 1e-18):
         self.epsilon = epsilon
 
-    def fit(self, X, y=None):
+    def fit(
+        self: RobustMAD_type, X: pd.DataFrame, y: Optional[np.typing.ArrayLike] = None
+    ) -> RobustMAD_type:
         """Compute the median and mad to be used for later scaling.
 
         Parameters
         ----------
-        X : pandas.core.frame.DataFrame
+        X : pd.DataFrame
             dataframe to fit RobustMAD transform
+        y : None
+            Has no effect; only used for consistency in sklearn transform API
 
         Returns
         -------
@@ -297,17 +324,17 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         )
         return self
 
-    def transform(self, X, copy=None):
+    def transform(self, X: pd.DataFrame, copy: Optional[bool] = None) -> pd.DataFrame:
         """Apply the RobustMAD calculation
 
         Parameters
         ----------
-        X : pandas.core.frame.DataFrame
+        X : pd.DataFrame
             dataframe to fit RobustMAD transform
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pd.DataFrame
             RobustMAD transformed dataframe
         """
         return (X - self.median) / (self.mad + self.epsilon)

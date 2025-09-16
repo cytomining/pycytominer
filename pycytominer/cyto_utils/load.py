@@ -50,7 +50,7 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     return path.suffix.lower() == ".parquet"
 
 
-def infer_delim(file: Union[str, pathlib.Path, Any]):
+def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     """
     Sniff the delimiter in the given file
 
@@ -61,7 +61,8 @@ def infer_delim(file: Union[str, pathlib.Path, Any]):
 
     Return
     ------
-    the delimiter used in the dataframe (typically either tab or commas)
+    str
+        the delimiter used in the dataframe (typically either tab or commas)
     """
     try:
         with open(file) as csvfile:
@@ -135,21 +136,23 @@ def load_profiles(
     return pd.read_csv(str(profiles), sep=delim)
 
 
-def load_platemap(platemap, add_metadata_id=True):
+def load_platemap(
+    platemap: Union[str, pd.DataFrame], add_metadata_id=True
+) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given platemap dataframe from path or string
 
     Parameters
     ----------
-    platemap : pandas dataframe
-        location or actual pandas dataframe of platemap file
+    platemap : pd.DataFrame or str
+        location or actual pd.DataFrame of platemap file
 
     add_metadata_id : bool
         boolean if "Metadata_" should be appended to all platemap columns
 
     Return
     ------
-    platemap : pandas.core.frame.DataFrame
+    platemap : pd.DataFrame
         pandas DataFrame of profiles
     """
     if not isinstance(platemap, pd.DataFrame):
@@ -163,14 +166,19 @@ def load_platemap(platemap, add_metadata_id=True):
         platemap = platemap.copy()
 
     if add_metadata_id:
-        platemap.columns = [
-            f"Metadata_{x}" if not x.startswith("Metadata_") else x
+        platemap.columns = pd.Index([
+            f"Metadata_{x}"
+            if isinstance(x, str) and not x.startswith("Metadata_")
+            else x
             for x in platemap.columns
-        ]
+        ])
+
     return platemap
 
 
-def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
+def load_npz_features(
+    npz_file: str, fallback_feature_prefix: str = "DP", metadata: bool = True
+) -> pd.DataFrame:
     """
     Load an npz file storing features and, sometimes, metadata.
 
@@ -186,10 +194,12 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
         file path to the compressed output (typically DeepProfiler output)
     fallback_feature_prefix :str
         a string to prefix all features [default: "DP"].
+    metadata : bool
+        whether or not to load metadata [default: True]
 
     Return
     ------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         pandas DataFrame of profiles
     """
     try:
@@ -207,11 +217,12 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
 
     # Load metadata
     if "metadata" in files:
-        metadata = npz["metadata"].item()
-        metadata_df = pd.DataFrame(metadata, index=range(0, df.shape[0]), dtype=str)
-        metadata_df.columns = [
-            f"Metadata_{x}" if not x.startswith("Metadata_") else x for x in metadata_df
-        ]
+        metadata_arr = npz["metadata"].item()
+        metadata_df = pd.DataFrame(metadata_arr, index=range(0, df.shape[0]), dtype=str)
+        metadata_df.columns = pd.Index([
+            f"Metadata_{x}" if not x.startswith("Metadata_") else x
+            for x in metadata_df.columns
+        ])
 
         # Determine the appropriate metadata prefix
         if "Metadata_Model" in metadata_df.columns:
@@ -222,10 +233,10 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
         feature_prefix = fallback_feature_prefix
 
     # Append feature prefix
-    df.columns = [
+    df.columns = pd.Index([
         f"{feature_prefix}_{x}" if not str(x).startswith(feature_prefix) else x
-        for x in df
-    ]
+        for x in df.columns
+    ])
 
     # Append metadata with features
     if "metadata" in files:
@@ -234,7 +245,9 @@ def load_npz_features(npz_file, fallback_feature_prefix="DP", metadata=True):
     return df
 
 
-def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1):
+def load_npz_locations(
+    npz_file: str, location_x_col_index: int = 0, location_y_col_index: int = 1
+) -> pd.DataFrame:
     """
     Load an npz file storing locations and, sometimes, metadata.
 
@@ -255,7 +268,7 @@ def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1)
 
     Return
     ------
-    df : pandas.core.frame.DataFrame
+    df : pd.DataFrame
         pandas DataFrame of profiles
     """
     try:
@@ -273,5 +286,5 @@ def load_npz_locations(npz_file, location_x_col_index=0, location_y_col_index=1)
 
     df = pd.DataFrame(npz["locations"])
     df = df[[location_x_col_index, location_y_col_index]]
-    df.columns = ["Location_Center_X", "Location_Center_Y"]
+    df.columns = pd.Index(["Location_Center_X", "Location_Center_Y"])
     return df
