@@ -5,7 +5,7 @@ Utility function to load and process the output files of a DeepProfiler run.
 import os
 import pathlib
 import warnings
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 import pandas as pd
 
@@ -463,20 +463,24 @@ class SingleCellDeepProfiler:
         ]
 
         # wrapper for pycytominer.normalize() function
-        normalized = normalize.normalize(
-            profiles=self.single_cells,
-            features=derived_features,
-            image_features=image_features,
-            meta_features=meta_features,
-            samples=samples,
-            method=method,
-            output_file=None,
-            compression_options=compression_options,
-            float_format=float_format,
-            mad_robustize_epsilon=mad_robustize_epsilon,
-            spherize_center=spherize_center,
-            spherize_method=spherize_method,
-            spherize_epsilon=spherize_epsilon,
+        # note: normalize will return a dataframe when output_file is None
+        normalized = cast(
+            pd.DataFrame,
+            normalize.normalize(
+                profiles=self.single_cells,
+                features=derived_features,
+                image_features=image_features,
+                meta_features=meta_features,
+                samples=samples,
+                method=method,
+                output_file=None,
+                compression_options=compression_options,
+                float_format=float_format,
+                mad_robustize_epsilon=mad_robustize_epsilon,
+                spherize_center=spherize_center,
+                spherize_method=spherize_method,
+                spherize_epsilon=spherize_epsilon,
+            ),
         )
 
         # move x locations and y locations to metadata columns of normalized df

@@ -2,6 +2,10 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
+from typing import Any, Literal, Optional, Union
+
+import pandas as pd
+
 from pycytominer.cyto_utils import (
     drop_outlier_features,
     get_blocklist_features,
@@ -18,30 +22,32 @@ from pycytominer.operations import (
 
 
 def feature_select(
-    profiles,
-    features="infer",
-    image_features=False,
-    samples="all",
-    operation="variance_threshold",
-    output_file=None,
-    output_type="csv",
-    na_cutoff=0.05,
-    corr_threshold=0.9,
-    corr_method="pearson",
-    freq_cut=0.05,
-    unique_cut=0.01,
-    compression_options=None,
-    float_format=None,
-    blocklist_file=None,
-    outlier_cutoff=500,
-    noise_removal_perturb_groups=None,
-    noise_removal_stdev_cutoff=None,
-):
+    profiles: Union[str, pd.DataFrame],
+    features: Union[str, list[str]] = "infer",
+    image_features: bool = False,
+    samples: str = "all",
+    operation: Union[str, list[str]] = "variance_threshold",
+    output_file: Optional[str] = None,
+    output_type: Optional[
+        Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
+    ] = "csv",
+    na_cutoff: float = 0.05,
+    corr_threshold: float = 0.9,
+    corr_method: str = "pearson",
+    freq_cut: float = 0.05,
+    unique_cut: float = 0.01,
+    compression_options: Optional[Union[str, dict[str, Any]]] = None,
+    float_format: Optional[str] = None,
+    blocklist_file: Optional[str] = None,
+    outlier_cutoff: float = 500.0,
+    noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
+    noise_removal_stdev_cutoff: Optional[float] = None,
+) -> Optional[Union[pd.DataFrame, str]]:
     """Performs feature selection based on the given operation.
 
     Parameters
     ----------
-    profiles : pandas.core.frame.DataFrame or file
+    profiles : pd.DataFrame or file
         DataFrame or file of profiles.
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
@@ -50,7 +56,7 @@ def feature_select(
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
         Whether the profiles contain image features.
-    samples : list or str, default "all"
+    samples : str, default "all"
         Samples to provide operation on.
     operation: list of str or str, default "variance_threshold
         Operations to perform on the input profiles.
@@ -94,7 +100,7 @@ def feature_select(
 
     Returns
     -------
-    selected_df : pandas.core.frame.DataFrame, optional
+    selected_df : pd.DataFrame, optional
         The feature selected profile DataFrame. If output_file=None, then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
@@ -169,6 +175,14 @@ def feature_select(
                 outlier_cutoff=outlier_cutoff,
             )
         elif op == "noise_removal":
+            if (
+                noise_removal_perturb_groups is None
+                or noise_removal_stdev_cutoff is None
+            ):
+                raise ValueError(
+                    "If using noise_removal, must provide both noise_removal_perturb_groups and noise_removal_stdev_cutoff"
+                )
+
             exclude = noise_removal(
                 population_df=profiles,
                 features=features,
