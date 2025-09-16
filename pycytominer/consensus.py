@@ -2,7 +2,11 @@
 Acquire consensus signatures for input samples
 """
 
-from pycytominer import aggregate
+from typing import Any, Literal, Optional, Union
+
+import pandas as pd
+
+from pycytominer.aggregate import aggregate
 from pycytominer.cyto_utils import (
     check_consensus_operation,
     load_profiles,
@@ -12,21 +16,23 @@ from pycytominer.cyto_utils import (
 
 
 def consensus(
-    profiles,
-    replicate_columns=["Metadata_Plate", "Metadata_Well"],
-    operation="median",
-    features="infer",
-    output_file=None,
-    output_type="csv",
-    compression_options=None,
-    float_format=None,
-    modz_args={"method": "spearman"},
-):
+    profiles: pd.DataFrame,
+    replicate_columns: list[str] = ["Metadata_Plate", "Metadata_Well"],
+    operation: str = "median",
+    features: Union[str, list[str]] = "infer",
+    output_file: Optional[str] = None,
+    output_type: Optional[
+        Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
+    ] = "csv",
+    compression_options: Optional[Union[str, dict[str, Any]]] = None,
+    float_format: Optional[str] = None,
+    modz_args: Optional[dict[str, Union[int, float, str]]] = {"method": "spearman"},
+) -> Optional[Union[pd.DataFrame, str]]:
     """Form level 5 consensus profile data.
 
     Parameters
     ----------
-    profiles : pandas.core.frame.DataFrame or file
+    profiles : pd.DataFrame or file
         DataFrame or file of profiles.
     replicate_columns : list, defaults to ["Metadata_Plate", "Metadata_Well"]
         Metadata columns indicating which replicates to collapse
@@ -56,7 +62,7 @@ def consensus(
 
     Returns
     -------
-    consensus_df : pandas.core.frame.DataFrame, optional
+    consensus_df : pd.DataFrame, optional
         The consensus profile DataFrame. If output_file=None, then return the
         DataFrame. If you specify output_file, then write to file and do not return
         data.
@@ -102,11 +108,17 @@ def consensus(
     profiles = load_profiles(profiles)
 
     if operation == "modz":
-        consensus_df = modz(
+        consensus_df: Union[pd.DataFrame, str, None] = modz(
             population_df=profiles,
             replicate_columns=replicate_columns,
             features=features,
-            **modz_args,
+            method="spearman"
+            if not modz_args
+            else str(modz_args.get("method", "spearman")),
+            min_weight=0.01
+            if not modz_args
+            else float(modz_args.get("min_weight", 0.01)),
+            precision=4 if not modz_args else int(modz_args.get("precision", 4)),
         )
     else:
         consensus_df = aggregate(
@@ -117,7 +129,7 @@ def consensus(
             subset_data_df=None,
         )
 
-    if output_file is not None:
+    if output_file is not None and isinstance(consensus_df, pd.DataFrame):
         return output(
             df=consensus_df,
             output_filename=output_file,
