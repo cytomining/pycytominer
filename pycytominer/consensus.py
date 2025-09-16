@@ -2,7 +2,7 @@
 Acquire consensus signatures for input samples
 """
 
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union, cast
 
 import pandas as pd
 
@@ -27,7 +27,7 @@ def consensus(
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
     modz_args: Optional[dict[str, Union[int, float, str]]] = {"method": "spearman"},
-) -> Optional[Union[pd.DataFrame, str]]:
+) -> Union[pd.DataFrame, str]:
     """Form level 5 consensus profile data.
 
     Parameters
@@ -62,10 +62,14 @@ def consensus(
 
     Returns
     -------
-    consensus_df : pd.DataFrame, optional
-        The consensus profile DataFrame. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
+    str or pd.DataFrame
+        pd.DataFrame:
+            The consensus profile DataFrame. If output_file=None, then return the
+            DataFrame. If you specify output_file, then write to file and do not return
+            data.
+        str:
+            If output_file is provided, then the function returns the path to the
+            output file.
 
     Examples
     --------
@@ -108,7 +112,7 @@ def consensus(
     profiles = load_profiles(profiles)
 
     if operation == "modz":
-        consensus_df: Union[pd.DataFrame, str, None] = modz(
+        consensus_df = modz(
             population_df=profiles,
             replicate_columns=replicate_columns,
             features=features,
@@ -121,12 +125,15 @@ def consensus(
             precision=4 if not modz_args else int(modz_args.get("precision", 4)),
         )
     else:
-        consensus_df = aggregate(
-            population_df=profiles,
-            strata=replicate_columns,
-            features=features,
-            operation=operation,
-            subset_data_df=None,
+        consensus_df = cast(
+            pd.DataFrame,
+            aggregate(
+                population_df=profiles,
+                strata=replicate_columns,
+                features=features,
+                operation=operation,
+                subset_data_df=None,
+            ),
         )
 
     if output_file is not None and isinstance(consensus_df, pd.DataFrame):

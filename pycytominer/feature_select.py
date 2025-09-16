@@ -42,7 +42,7 @@ def feature_select(
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
-) -> Optional[Union[pd.DataFrame, str]]:
+) -> Union[pd.DataFrame, str]:
     """Performs feature selection based on the given operation.
 
     Parameters
@@ -100,10 +100,14 @@ def feature_select(
 
     Returns
     -------
-    selected_df : pd.DataFrame, optional
-        The feature selected profile DataFrame. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
+    str or pd.DataFrame
+        pd.DataFrame:
+            The feature selected profile DataFrame. If output_file=None, then return the
+            DataFrame. If you specify output_file, then write to file and do not return
+            data.
+        str:
+            If output_file is provided, then the function returns the path to the
+            output file.
 
     """
 

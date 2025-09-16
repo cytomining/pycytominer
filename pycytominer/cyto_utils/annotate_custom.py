@@ -111,12 +111,12 @@ def annotate_cmap(
     return annotated
 
 
-def cp_clean(profiles):
+def cp_clean(profiles: pd.DataFrame) -> pd.DataFrame:
     """Specifically clean certain column names derived from different CellProfiler versions
 
     Parameters
     ----------
-    profiles : pandas.core.frame.DataFrame
+    profiles : pd.DataFrame
         DataFrame of profiles.
 
     Returns

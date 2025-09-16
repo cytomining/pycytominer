@@ -30,7 +30,7 @@ def normalize(
     spherize_center: bool = True,
     spherize_method: str = "ZCA-cor",
     spherize_epsilon: float = 1e-6,
-) -> Optional[Union[pd.DataFrame, str]]:
+) -> Union[pd.DataFrame, str]:
     """Normalize profiling features
 
     Parameters
@@ -88,10 +88,14 @@ def normalize(
 
     Returns
     -------
-    normalized : pd.DataFrame, optional
-        The normalized profile DataFrame. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
+    str or pd.DataFrame
+        pd.DataFrame:
+            The normalized profile DataFrame. If output_file=None, then return the
+            DataFrame. If you specify output_file, then write to file and do not return
+            data.
+        str:
+            If output_file is provided, then the function returns the path to the
+            output file.
 
     Examples
     --------

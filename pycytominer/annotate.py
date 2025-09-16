@@ -35,7 +35,7 @@ def annotate(
     float_format: Optional[str] = None,
     cmap_args: Optional[dict[str, Union[str]]] = None,
     **kwargs,
-):
+) -> Union[pd.DataFrame, str]:
     """Add metadata to aggregated profiles.
 
     Parameters
@@ -75,10 +75,13 @@ def annotate(
 
     Returns
     -------
-    annotated : pd.DataFrame, optional
-        DataFrame of annotated features. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
+    str or pd.DataFrame
+        pd.DataFrame:
+            DataFrame of annotated features. If output_file=None, then return the
+            DataFrame. If you specify output_file, then write to file and do not return
+            data.
+        str:
+            If output_file is provided, then the function returns the path to the
     """
 
     # Load Data
