@@ -1,3 +1,23 @@
+## v1.3.0 (2025-09-16)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.3.0)
+
+### Feat
+
+- Enable anndata input and output (#573)
+
+### Refactor
+
+- Add type hints for all production code (#580)
+
+### Build
+
+- **deps**: various dependency updates automated by dependabot
+
+### CI
+
+- Decrease "small" pytest testing duration time (#579)
+
 ## v1.2.4 (2025-08-06)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.2.4)
