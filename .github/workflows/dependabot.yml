@@ -1,0 +1,66 @@
+name: dependabot jobs
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  pre-commit:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      # checks out the repo
+      - uses: actions/checkout@v5
+        with:
+          # fetch tags for versioning details
+          fetch-depth: 0
+          # Check out the branch that Dependabot’s PR is coming from
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: true
+      - name: Fetch tags
+        run: git fetch --all --tags
+      - name: Python setup
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Setup for poetry
+        run: |
+          python -m pip install poetry
+          poetry self add "poetry-dynamic-versioning[plugin]"
+      - name: Install environment
+        run: poetry install --no-interaction --no-ansi
+      # run pre-commit
+      - uses: pre-commit/action@v3.0.1
+        id: pre_commit
+        continue-on-error: true
+      - name: Check for changes
+        if: ${{ steps.pre_commit.outcome == 'failure' }}
+        id: check_changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "changes_detected=true" >> "$GITHUB_ENV"
+          else
+            echo "changes_detected=false" >> "$GITHUB_ENV"
+          fi
+      - name: Commit and push changes
+        if: ${{ env.changes_detected == 'true' &&
+          steps.pre_commit.outcome == 'failure' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email \
+            "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: auto-apply pre-commit fixes"
+          git push
+      # raise error if there were no changes and pre-commit failed
+      - name: Errors detected
+        if: ${{ env.changes_detected == 'false' &&
+          steps.pre_commit.outcome == 'failure' }}
+        run: |
+          echo 'Pre-commit failed and was unable to make changes'
+          exit 1
