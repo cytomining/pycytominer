@@ -47,7 +47,7 @@ include = [ { path = "poetry.lock", format = "sdist" } ]
 
 [tool.poetry.dependencies]
 # pycytominer core dependencies
-python = ">=3.9,<3.14"
+python = ">=3.10,<3.14"
 numpy = ">=1.16.5"
 scipy = [
   { version = ">=1.5", python = "<3.13" },
