@@ -183,14 +183,14 @@ jobs:
         run: |
           echo "version=$(poetry version | cut -d' ' -f2 )" >> "$GITHUB_OUTPUT"
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheel
           path: dist/*.whl
           if-no-files-found: error
           retention-days: 90
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sdist
           path: dist/*.tar.gz
