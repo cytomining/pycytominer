@@ -40,7 +40,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # Full history required for branch-based pre-commit checks
           fetch-depth: 0
@@ -70,7 +70,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup python, and check pre-commit cache
         uses: ./.github/actions/setup-env
         with:
@@ -94,7 +94,7 @@ jobs:
       - name: Install pandoc
         uses: pandoc/actions/setup@v1
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup python, and check pre-commit cache
         uses: ./.github/actions/setup-env
         with:
@@ -122,7 +122,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup python, and load cache
         uses: ./.github/actions/setup-env
         with:
@@ -165,7 +165,7 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup python, and load cache
@@ -207,7 +207,7 @@ jobs:
     steps:
       # checks out selected files for docker image build testing
       - name: Checkout selected files
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             build/docker/Dockerfile

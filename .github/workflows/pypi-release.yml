@@ -20,7 +20,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # We do not need to fetch all the history of the repository
           # as commit being released is guaranteed to have a tag.
