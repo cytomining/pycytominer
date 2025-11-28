@@ -9,10 +9,11 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
-from pycytominer.cyto_utils.output import output
+from pycytominer.cyto_utils.util import maybe_write_to_file
 from pycytominer.operations import RobustMAD, Spherize
 
 
+@maybe_write_to_file
 def normalize(
     profiles: Union[str, pd.DataFrame],
     features: Union[str, list[str]] = "infer",
@@ -204,13 +205,4 @@ def normalize(
         context = f"the `{method}` method in `pycytominer.normalize`"
         raise ValueError(f"{error_detail}. This is likely a bug in {context}.")
 
-    if output_file is not None:
-        return output(
-            df=normalized,
-            output_filename=output_file,
-            output_type=output_type,
-            compression_options=compression_options,
-            float_format=float_format,
-        )
-    else:
-        return normalized
+    return normalized

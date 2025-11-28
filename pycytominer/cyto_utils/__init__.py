@@ -39,5 +39,6 @@ from .util import (
     get_default_compartments,
     get_pairwise_correlation,
     load_known_metadata_dictionary,
+    maybe_write_to_file,
 )
 from .write_gct import write_gct
