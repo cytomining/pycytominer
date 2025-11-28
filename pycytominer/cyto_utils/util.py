@@ -178,7 +178,7 @@ def check_consensus_operation(operation: str) -> str:
 
 
 def maybe_write_to_file(
-    func: Callable[..., pd.DataFrame],
+    func: Callable[..., Union[pd.DataFrame, str]]
 ) -> Callable[..., Union[pd.DataFrame, str]]:
     """Decorate a function to optionally write its output to disk.
 
@@ -193,13 +193,15 @@ def maybe_write_to_file(
     signature = inspect.signature(func)
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Union[pd.DataFrame, str]:
         bound_arguments = signature.bind_partial(*args, **kwargs)
         bound_arguments.apply_defaults()
 
         output_file = bound_arguments.arguments.pop("output_file", None)
         output_type = bound_arguments.arguments.pop("output_type", None)
-        compression_options = bound_arguments.arguments.pop("compression_options", None)
+        compression_options = bound_arguments.arguments.pop(
+            "compression_options", None
+        )
         float_format = bound_arguments.arguments.pop("float_format", None)
 
         result = func(**bound_arguments.arguments)
