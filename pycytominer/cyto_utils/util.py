@@ -6,7 +6,7 @@ import inspect
 import os
 import warnings
 from functools import wraps
-from typing import Any, Callable, Literal, Optional, Union, cast
+from typing import Callable, Literal, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -178,7 +178,7 @@ def check_consensus_operation(operation: str) -> str:
 
 
 def maybe_write_to_file(
-    func: Callable[..., pd.DataFrame]
+    func: Callable[..., pd.DataFrame],
 ) -> Callable[..., Union[pd.DataFrame, str]]:
     """Decorate a function to optionally write its output to disk.
 
@@ -199,9 +199,7 @@ def maybe_write_to_file(
 
         output_file = bound_arguments.arguments.pop("output_file", None)
         output_type = bound_arguments.arguments.pop("output_type", None)
-        compression_options = bound_arguments.arguments.pop(
-            "compression_options", None
-        )
+        compression_options = bound_arguments.arguments.pop("compression_options", None)
         float_format = bound_arguments.arguments.pop("float_format", None)
 
         result = func(**bound_arguments.arguments)
