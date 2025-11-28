@@ -38,6 +38,7 @@ from .util import (
     extract_image_features,
     get_default_compartments,
     get_pairwise_correlation,
+    maybe_write_to_file,
     load_known_metadata_dictionary,
 )
 from .write_gct import write_gct

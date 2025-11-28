@@ -2,16 +2,17 @@
 Miscellaneous utility functions
 """
 
+import inspect
 import os
 import warnings
-from typing import Literal, Union, cast
+from functools import wraps
+from typing import Any, Callable, Literal, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
 
-from pycytominer.cyto_utils.features import (
-    convert_compartment_format_to_list,
-)
+from pycytominer.cyto_utils.features import convert_compartment_format_to_list
+from pycytominer.cyto_utils.output import output
 
 default_metadata_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "metadata_feature_dictionary.txt"
@@ -174,6 +175,54 @@ def check_consensus_operation(operation: str) -> str:
             )
 
     return operation
+
+
+def maybe_write_to_file(
+    func: Callable[..., pd.DataFrame]
+) -> Callable[..., Union[pd.DataFrame, str]]:
+    """Decorate a function to optionally write its output to disk.
+
+    The decorator intercepts common output-related keyword arguments
+    (``output_file``, ``output_type``, ``compression_options``, ``float_format``)
+    from the decorated function call. The wrapped function should return a
+    :class:`pandas.DataFrame`; when ``output_file`` is provided, the DataFrame is
+    written using :func:`pycytominer.cyto_utils.output` and the resulting path is
+    returned instead.
+    """
+
+    signature = inspect.signature(func)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        bound_arguments = signature.bind_partial(*args, **kwargs)
+        bound_arguments.apply_defaults()
+
+        output_file = bound_arguments.arguments.pop("output_file", None)
+        output_type = bound_arguments.arguments.pop("output_type", None)
+        compression_options = bound_arguments.arguments.pop(
+            "compression_options", None
+        )
+        float_format = bound_arguments.arguments.pop("float_format", None)
+
+        result = func(**bound_arguments.arguments)
+
+        if output_file is None:
+            return result
+
+        if not isinstance(result, pd.DataFrame):
+            raise TypeError(
+                "Decorated function must return a pandas DataFrame when output_file is provided"
+            )
+
+        return output(
+            df=result,
+            output_filename=output_file,
+            output_type=output_type,
+            compression_options=compression_options,
+            float_format=float_format,
+        )
+
+    return wrapper
 
 
 def check_fields_of_view_format(
