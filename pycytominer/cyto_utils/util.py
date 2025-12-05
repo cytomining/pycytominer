@@ -177,7 +177,7 @@ def check_consensus_operation(operation: str) -> str:
     return operation
 
 
-def maybe_write_to_file(
+def write_to_file_if_user_specifies_output_details(
     func: Callable[..., Union[pd.DataFrame, str]],
 ) -> Callable[..., Union[pd.DataFrame, str]]:
     """Decorate a function to optionally write its output to disk.
@@ -185,7 +185,7 @@ def maybe_write_to_file(
     The decorator intercepts common output-related keyword arguments
     (``output_file``, ``output_type``, ``compression_options``, ``float_format``)
     from the decorated function call. The wrapped function should return a
-    :class:`pandas.DataFrame`; when ``output_file`` is provided, the DataFrame is
+    :class:`pandas.DataFrame` when ``output_file`` is provided; the DataFrame is
     written using :func:`pycytominer.cyto_utils.output` and the resulting path is
     returned instead.
     """
