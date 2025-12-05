@@ -5,6 +5,8 @@ import warnings
 import pandas as pd
 import pytest
 
+from typing import Any, Union, Optional
+
 from pycytominer.cyto_utils.util import (
     check_aggregate_operation,
     check_compartments,
@@ -17,6 +19,7 @@ from pycytominer.cyto_utils.util import (
     get_default_compartments,
     get_pairwise_correlation,
     load_known_metadata_dictionary,
+    write_to_file_if_user_specifies_output_details
 )
 
 tmpdir = tempfile.gettempdir()
@@ -319,3 +322,37 @@ def test_pairwise_corr_with_inf_and_nan():
 
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)
+
+def test_write_to_file_if_user_specifies_output_details(tmpdir):
+    """
+    Test for write_to_file_if_user_specifies_output_details
+    """
+
+    @write_to_file_if_user_specifies_output_details
+    def sample_function(
+        data: pd.DataFrame,
+        output_file: Optional[str] = None,
+        output_type: Optional[str] = "csv",
+        compression_options: Optional[Union[str, dict[str, Any]]] = None,
+        float_format: Optional[str] = None,
+    ) -> pd.DataFrame:
+        # Simple function that returns the input DataFrame
+        return data
+
+    # Create a sample DataFrame
+    sample_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+
+    # Test case 1: No output file specified, should return DataFrame
+    result_df = sample_function(data=sample_df)
+    pd.testing.assert_frame_equal(result_df, sample_df)
+
+    # Test case 2: Output file specified, should write to file and return file path
+    output_file_path = os.path.join(tmpdir, "output.csv")
+    returned_path = sample_function(data=sample_df, output_file=output_file_path)
+
+    assert returned_path == output_file_path
+    assert os.path.exists(output_file_path)
+
+    # Read back the file and check contents
+    written_df = pd.read_csv(output_file_path)
+    pd.testing.assert_frame_equal(written_df, sample_df)
