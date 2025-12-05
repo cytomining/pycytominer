@@ -1,11 +1,10 @@
 import os
 import tempfile
 import warnings
+from typing import Any, Optional, Union
 
 import pandas as pd
 import pytest
-
-from typing import Any, Union, Optional
 
 from pycytominer.cyto_utils.util import (
     check_aggregate_operation,
@@ -19,7 +18,7 @@ from pycytominer.cyto_utils.util import (
     get_default_compartments,
     get_pairwise_correlation,
     load_known_metadata_dictionary,
-    write_to_file_if_user_specifies_output_details
+    write_to_file_if_user_specifies_output_details,
 )
 
 tmpdir = tempfile.gettempdir()
@@ -322,6 +321,7 @@ def test_pairwise_corr_with_inf_and_nan():
 
     expected_result = -0.8
     _assert_pairwise_corr_helper(data_df, expected_result)
+
 
 def test_write_to_file_if_user_specifies_output_details(tmpdir):
     """
