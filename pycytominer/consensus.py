@@ -7,14 +7,11 @@ from typing import Any, Literal, Optional, Union, cast
 import pandas as pd
 
 from pycytominer.aggregate import aggregate
-from pycytominer.cyto_utils import (
-    check_consensus_operation,
-    load_profiles,
-    modz,
-    output,
-)
+from pycytominer.cyto_utils import check_consensus_operation, load_profiles, modz
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 
 
+@write_to_file_if_user_specifies_output_details
 def consensus(
     profiles: pd.DataFrame,
     replicate_columns: list[str] = ["Metadata_Plate", "Metadata_Well"],
@@ -136,13 +133,4 @@ def consensus(
             ),
         )
 
-    if output_file is not None and isinstance(consensus_df, pd.DataFrame):
-        return output(
-            df=consensus_df,
-            output_filename=output_file,
-            output_type=output_type,
-            compression_options=compression_options,
-            float_format=float_format,
-        )
-    else:
-        return consensus_df
+    return consensus_df
