@@ -1,0 +1,11 @@
+# CODEOWNERS file
+# This file is used to define individuals or teams
+# that are responsible for code in a repository.
+# When PR's are opened, these individuals will be
+# added as reviewers automatically (except if they
+# are authors of the work). Each line is a file
+# pattern followed by one or more owners.
+# For more information, see:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+*   @gwaybio @d33bs
