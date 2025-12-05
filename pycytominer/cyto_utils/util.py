@@ -215,7 +215,9 @@ def write_to_file_if_user_specifies_output_details(
 
         # write the DataFrame to file and return the file path
         return output(
-            df=result,
+            # note: we cast here because mypy cannot
+            # infer that result is a DataFrame (not str)
+            df=cast(pd.DataFrame, result),
             output_filename=output_file,
             output_type=output_type,
             compression_options=compression_options,
