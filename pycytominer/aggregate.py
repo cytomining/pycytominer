@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 
 from pycytominer.cyto_utils import check_aggregate_operation, infer_cp_features
-from pycytominer.cyto_utils.util import maybe_write_to_file
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 
 
-@maybe_write_to_file
+@write_to_file_if_user_specifies_output_details
 def aggregate(
     population_df: pd.DataFrame,
     strata: list[str] = ["Metadata_Plate", "Metadata_Well"],

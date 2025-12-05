@@ -12,7 +12,7 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
     load_profiles,
 )
-from pycytominer.cyto_utils.util import maybe_write_to_file
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 from pycytominer.operations import (
     correlation_threshold,
     get_na_columns,
@@ -21,7 +21,7 @@ from pycytominer.operations import (
 )
 
 
-@maybe_write_to_file
+@write_to_file_if_user_specifies_output_details
 def feature_select(
     profiles: Union[str, pd.DataFrame],
     features: Union[str, list[str]] = "infer",

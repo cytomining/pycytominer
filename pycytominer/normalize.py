@@ -9,11 +9,11 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
-from pycytominer.cyto_utils.util import maybe_write_to_file
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 from pycytominer.operations import RobustMAD, Spherize
 
 
-@maybe_write_to_file
+@write_to_file_if_user_specifies_output_details
 def normalize(
     profiles: Union[str, pd.DataFrame],
     features: Union[str, list[str]] = "infer",

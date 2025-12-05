@@ -8,10 +8,10 @@ import pandas as pd
 
 from pycytominer.aggregate import aggregate
 from pycytominer.cyto_utils import check_consensus_operation, load_profiles, modz
-from pycytominer.cyto_utils.util import maybe_write_to_file
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 
 
-@maybe_write_to_file
+@write_to_file_if_user_specifies_output_details
 def consensus(
     profiles: pd.DataFrame,
     replicate_columns: list[str] = ["Metadata_Plate", "Metadata_Well"],

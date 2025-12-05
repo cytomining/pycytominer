@@ -14,10 +14,10 @@ from pycytominer.cyto_utils import (
     load_platemap,
     load_profiles,
 )
-from pycytominer.cyto_utils.util import maybe_write_to_file
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 
 
-@maybe_write_to_file
+@write_to_file_if_user_specifies_output_details
 def annotate(
     profiles: Union[str, pd.DataFrame],
     platemap: Union[str, pd.DataFrame],
