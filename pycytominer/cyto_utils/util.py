@@ -192,26 +192,28 @@ def write_to_file_if_user_specifies_output_details(
 
     signature = inspect.signature(func)
 
+    # wraps the function to preserve docstring and function name
     @wraps(func)
     def wrapper(*args, **kwargs) -> Union[pd.DataFrame, str]:
+        # bind the passed arguments to the function's signature
         bound_arguments = signature.bind_partial(*args, **kwargs)
+        # fill in default values for missing arguments
         bound_arguments.apply_defaults()
 
+        # extract output-related arguments
         output_file = bound_arguments.arguments.pop("output_file", None)
         output_type = bound_arguments.arguments.pop("output_type", None)
         compression_options = bound_arguments.arguments.pop("compression_options", None)
         float_format = bound_arguments.arguments.pop("float_format", None)
 
+        # call the original function with the remaining arguments
         result = func(**bound_arguments.arguments)
 
+        # if no output file is specified, return the DataFrame directly
         if output_file is None:
             return result
 
-        if not isinstance(result, pd.DataFrame):
-            raise TypeError(
-                "Decorated function must return a pandas DataFrame when output_file is provided"
-            )
-
+        # write the DataFrame to file and return the file path
         return output(
             df=result,
             output_filename=output_file,
