@@ -45,7 +45,8 @@ def test_annotate():
     # create expected result prior to annotate to distinguish modifications
     # performed by annotate to provided dataframes.
     expected_result = (
-        PLATEMAP_DF.merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
+        PLATEMAP_DF
+        .merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
         .rename(columns={"gene": "Metadata_gene"})
         .drop("well_position", axis="columns")
     )
@@ -105,7 +106,8 @@ def test_annotate_merge():
 def test_annotate_external():
     # Test that the external_metadata
     expected_result = (
-        DATA_DF.merge(
+        DATA_DF
+        .merge(
             PLATEMAP_DF, left_on="Metadata_Well", right_on="well_position", how="left"
         )
         .merge(EXTERNAL_METADATA_DF, left_on="gene", right_on="gene", how="left")

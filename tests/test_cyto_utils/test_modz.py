@@ -132,7 +132,8 @@ def test_modz_multiple_columns_one_metadata_column():
         data_replicate_multi_df, replicate_columns, min_weight=1, precision=precision
     )
     expected_result = (
-        data_replicate_multi_df.groupby(replicate_columns)
+        data_replicate_multi_df
+        .groupby(replicate_columns)
         .mean(numeric_only=True)
         .round(4)
     )

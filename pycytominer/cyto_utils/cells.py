@@ -346,7 +346,8 @@ class SingleCells:
                 raise RuntimeError("count_cells() did not set subset_data_df")
 
             count_df = (
-                self.subset_data_df.groupby(self.strata)["Metadata_ObjectNumber"]
+                self.subset_data_df
+                .groupby(self.strata)["Metadata_ObjectNumber"]
                 .count()
                 .reset_index()
                 .rename({"Metadata_ObjectNumber": "cell_count"}, axis="columns")
@@ -358,7 +359,8 @@ class SingleCells:
                 pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
             )
             count_df = (
-                count_df.groupby(self.strata)["ObjectNumber"]
+                count_df
+                .groupby(self.strata)["ObjectNumber"]
                 .count()
                 .reset_index()
                 .rename({"ObjectNumber": "cell_count"}, axis="columns")
@@ -446,7 +448,8 @@ class SingleCells:
         query_df = self.image_df.merge(df, how="inner", on=self.merge_cols)
 
         self.subset_data_df = (
-            query_df.groupby(self.strata)
+            query_df
+            .groupby(self.strata)
             .apply(
                 lambda x: self.subsample_profiles(
                     pd.DataFrame(x), rename_col=rename_col
@@ -713,7 +716,8 @@ class SingleCells:
 
         # Obtain all valid strata combinations, and their merge_cols values
         df_unique_mergecols = (
-            self.image_df[self.strata + self.merge_cols]
+            self
+            .image_df[self.strata + self.merge_cols]
             .groupby(self.strata)
             .agg(lambda s: np.unique(s).tolist())
             .reset_index(drop=True)
@@ -851,7 +855,8 @@ class SingleCells:
             self.load_image(image_table_name=self.image_table_name)
 
         sc_df = (
-            self.image_df.merge(sc_df, on=self.merge_cols, how="right")
+            self.image_df
+            .merge(sc_df, on=self.merge_cols, how="right")
             # pandas rename performance may be improved using copy=False, inplace=False
             # reference: https://ryanlstevens.github.io/2022-05-06-pandasColumnRenaming/
             .rename(self.linking_col_rename, axis="columns", copy=False, inplace=False)
