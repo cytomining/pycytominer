@@ -150,7 +150,8 @@ def modz(
     population_df = population_df.loc[:, subset_features]
 
     modz_df = (
-        population_df.groupby(replicate_columns)
+        population_df
+        .groupby(replicate_columns)
         .apply(
             lambda x: modz_base(
                 x.loc[:, features],

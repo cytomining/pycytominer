@@ -32,7 +32,8 @@ def aggregate_fields_count(
     fields_count_df = image_df.loc[:, list(np.union1d(strata, fields_of_view_feature))]
 
     fields_count_df = (
-        fields_count_df.groupby(strata)[fields_of_view_feature]
+        fields_count_df
+        .groupby(strata)[fields_of_view_feature]
         .count()
         .reset_index()
         .rename(columns={f"{fields_of_view_feature}": "Metadata_Site_Count"})

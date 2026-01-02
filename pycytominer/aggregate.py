@@ -88,7 +88,8 @@ def aggregate(
     # Only extract single object column in preparation for count
     if compute_object_count:
         count_object_df = (
-            population_df.loc[:, list(np.union1d(strata, [object_feature]))]
+            population_df
+            .loc[:, list(np.union1d(strata, [object_feature]))]
             .groupby(strata)[object_feature]
             .count()
             .reset_index()
