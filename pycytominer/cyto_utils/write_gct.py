@@ -75,7 +75,8 @@ def write_gct(
     metadata_part = metadata_df.transpose()
     metadata_part.columns = pd.Index([f"SAMPLE_{x}" for x in metadata_part.columns])
     metadata_part = (
-        metadata_part.transpose()
+        metadata_part
+        .transpose()
         .reset_index()
         .rename({"index": "id"}, axis="columns")
         .transpose()

@@ -452,9 +452,8 @@ def test_normalize_spherize():
                     spherize_center=spherize_center,
                 )
                 result_cov = (
-                    pd.DataFrame(
-                        np.cov(np.transpose(result.drop("id", axis="columns")))
-                    )
+                    pd
+                    .DataFrame(np.cov(np.transpose(result.drop("id", axis="columns"))))
                     .round()
                     .sum()
                     .clip(1)
@@ -473,7 +472,8 @@ def test_normalize_spherize():
                     spherize_center=spherize_center,
                 )
                 result_cov = (
-                    np.cov(
+                    np
+                    .cov(
                         np.transpose(
                             result.query("id == 'control'").drop("id", axis="columns")
                         )
@@ -488,7 +488,8 @@ def test_normalize_spherize():
                 assert result_cov < expected_result
 
                 non_spherize_result_cov = (
-                    np.cov(
+                    np
+                    .cov(
                         np.transpose(
                             result.query("id == 'treatment'").drop("id", axis="columns")
                         )
