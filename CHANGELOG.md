@@ -1,3 +1,19 @@
+## v1.3.1 (2026-01-06)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.3.1)
+
+### CI
+
+- Add codeowners file for reviewer assignments (#601)
+
+### Refactor
+
+- Enable Python 3.14 compatibility (#609)
+
+### Build
+
+- **deps**: various dependency updates automated by dependabot
+
 ## v1.3.0 (2025-09-16)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.3.0)
