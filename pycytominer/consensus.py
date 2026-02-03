@@ -16,7 +16,7 @@ from pycytominer.cyto_utils import (
 
 
 def consensus(
-    profiles: pd.DataFrame,
+    profiles: Union[str, pd.DataFrame],
     replicate_columns: list[str] = ["Metadata_Plate", "Metadata_Well"],
     operation: str = "median",
     features: Union[str, list[str]] = "infer",
