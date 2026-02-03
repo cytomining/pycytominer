@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Literal, Optional, Union
 
 import fire
 

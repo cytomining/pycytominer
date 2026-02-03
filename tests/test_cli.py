@@ -19,15 +19,13 @@ def _write_profiles(tmp_path: pathlib.Path) -> tuple[pd.DataFrame, pathlib.Path]
     Returns:
         The dataframe and the path to the saved CSV.
     """
-    df = pd.DataFrame(
-        {
-            "Metadata_Plate": ["P1", "P1", "P1", "P1"],
-            "Metadata_Well": ["A01", "A01", "A02", "A02"],
-            "Feature_1": [1.0, 2.0, 3.0, 4.0],
-            "Feature_2": [5.0, 6.0, 7.0, 8.0],
-            "Feature_3": [1.0, 1.0, 1.0, 1.0],
-        }
-    )
+    df = pd.DataFrame({
+        "Metadata_Plate": ["P1", "P1", "P1", "P1"],
+        "Metadata_Well": ["A01", "A01", "A02", "A02"],
+        "Feature_1": [1.0, 2.0, 3.0, 4.0],
+        "Feature_2": [5.0, 6.0, 7.0, 8.0],
+        "Feature_3": [1.0, 1.0, 1.0, 1.0],
+    })
     path = tmp_path / "profiles.csv"
     df.to_csv(path, index=False)
     return df, path
@@ -49,19 +47,21 @@ def test_cli_aggregate(tmp_path: pathlib.Path) -> None:
 
     result = pd.read_csv(output_path)
     assert result.shape[0] == 2
-    assert np.isclose(result.loc[result["Metadata_Well"] == "A01", "Feature_1"].item(), 1.5)
-    assert np.isclose(result.loc[result["Metadata_Well"] == "A02", "Feature_2"].item(), 7.5)
+    assert np.isclose(
+        result.loc[result["Metadata_Well"] == "A01", "Feature_1"].item(), 1.5
+    )
+    assert np.isclose(
+        result.loc[result["Metadata_Well"] == "A02", "Feature_2"].item(), 7.5
+    )
 
 
 def test_cli_annotate(tmp_path: pathlib.Path) -> None:
     """Ensure CLI annotate merges platemap metadata and writes output."""
     _, profiles_path = _write_profiles(tmp_path)
-    platemap = pd.DataFrame(
-        {
-            "well_position": ["A01", "A02"],
-            "Treatment": ["control", "drug"],
-        }
-    )
+    platemap = pd.DataFrame({
+        "well_position": ["A01", "A02"],
+        "Treatment": ["control", "drug"],
+    })
     platemap_path = tmp_path / "platemap.csv"
     platemap.to_csv(platemap_path, index=False)
 
@@ -131,4 +131,6 @@ def test_cli_consensus(tmp_path: pathlib.Path) -> None:
 
     result = pd.read_csv(output_path)
     assert result.shape[0] == 2
-    assert np.isclose(result.loc[result["Metadata_Well"] == "A01", "Feature_2"].item(), 5.5)
+    assert np.isclose(
+        result.loc[result["Metadata_Well"] == "A01", "Feature_2"].item(), 5.5
+    )
