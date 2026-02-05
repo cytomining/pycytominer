@@ -7,13 +7,11 @@ from typing import Any, Literal, Optional, Union
 import numpy as np
 import pandas as pd
 
-from pycytominer.cyto_utils import (
-    check_aggregate_operation,
-    infer_cp_features,
-    output,
-)
+from pycytominer.cyto_utils import check_aggregate_operation, infer_cp_features
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 
 
+@write_to_file_if_user_specifies_output_details
 def aggregate(
     population_df: pd.DataFrame,
     strata: list[str] = ["Metadata_Plate", "Metadata_Well"],
@@ -130,13 +128,4 @@ def aggregate(
     ]:
         population_df = population_df.drop(columns=columns_to_drop, axis="columns")
 
-    if output_file is not None:
-        return output(
-            df=population_df,
-            output_filename=output_file,
-            output_type=output_type,
-            compression_options=compression_options,
-            float_format=float_format,
-        )
-    else:
-        return population_df
+    return population_df

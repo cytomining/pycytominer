@@ -11,8 +11,8 @@ from pycytominer.cyto_utils import (
     get_blocklist_features,
     infer_cp_features,
     load_profiles,
-    output,
 )
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 from pycytominer.operations import (
     correlation_threshold,
     get_na_columns,
@@ -21,6 +21,7 @@ from pycytominer.operations import (
 )
 
 
+@write_to_file_if_user_specifies_output_details
 def feature_select(
     profiles: Union[str, pd.DataFrame],
     features: Union[str, list[str]] = "infer",
@@ -201,13 +202,4 @@ def feature_select(
 
     selected_df = profiles.drop(excluded_features, axis="columns")
 
-    if output_file is not None:
-        return output(
-            df=selected_df,
-            output_filename=output_file,
-            output_type=output_type,
-            compression_options=compression_options,
-            float_format=float_format,
-        )
-    else:
-        return selected_df
+    return selected_df
