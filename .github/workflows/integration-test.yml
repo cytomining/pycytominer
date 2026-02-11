@@ -48,7 +48,7 @@ jobs:
         uses: ./.github/actions/setup-env
         with:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
-          cache-pre-commit: true
+          cache-pre-commit: false
           cache-venv: false
           setup-poetry: false
           install-deps: false
