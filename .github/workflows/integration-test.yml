@@ -52,8 +52,6 @@ jobs:
           cache-venv: false
           setup-poetry: false
           install-deps: false
-      - name: Clear pre-commit cache
-        run: pre-commit clean
       - name: Run pre-commit checks on all files (with prek)
         uses: j178/prek-action@v1
         id: pre_commit
