@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.14"
+    rev: "v0.15.0"
     hooks:
     -   id: ruff-check
         exclude: tutorials/nbconverted/
@@ -33,11 +33,12 @@ repos:
     hooks:
     -   id: validate-cff
 -   repo: https://github.com/software-gardening/almanack
-    rev: v0.1.13
+    rev: v0.1.15
     hooks:
     -   id: almanack-check
+        args: ["--verbose"]
 -   repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
     rev: v0.9.0
     hooks:
     -   id: pre-commit-update
-        args: ["--keep", "cffconvert"]
+        args: ["--keep", "cffconvert", "--keep", "pyproject-fmt"]

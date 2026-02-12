@@ -52,11 +52,9 @@ jobs:
           cache-venv: false
           setup-poetry: false
           install-deps: false
-      - name: Run pre-commit checks on all files
-        uses: pre-commit/action@v3.0.1
+      - name: Run pre-commit checks on all files (with prek)
+        uses: j178/prek-action@v1
         id: pre_commit
-        with:
-          extra_args: --all-files
       # run pre-commit ci lite for automated fixes
       - uses: pre-commit-ci/lite-action@v1.1.0
         if: ${{ !cancelled() && steps.pre_commit.outcome == 'failure' }}
