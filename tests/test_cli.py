@@ -1,4 +1,4 @@
-"""Tests for the Pycytominer CLI helpers."""
+"""Tests for the Pycytominer CLI."""
 
 from __future__ import annotations
 

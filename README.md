@@ -143,10 +143,10 @@ normalized_df = pycytominer.normalize(
 )
 ```
 
-### CLI usage (file-based workflows)
+### Command Line Interface (CLI) usage
 
-Pycytominer also provides a simple CLI for file-based workflows. These commands read
-profiles from disk and write outputs to disk.
+Pycytominer also provides a simple CLI for file-based workflows. 
+The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
 
 ```bash
 # Aggregate profiles (parquet output)
@@ -164,7 +164,7 @@ python -m pycytominer annotate \
   --output_file path/to/profiles_augmented.csv.gz \
   --join_on Metadata_well_position,Metadata_Well
 
-# Normalize profiles (parquet output)
+# Normalize profiles
 python -m pycytominer normalize \
   --profiles path/to/profiles_augmented.csv.gz \
   --output_file path/to/profiles_normalized.parquet \
@@ -174,14 +174,15 @@ python -m pycytominer normalize \
   --samples "Metadata_treatment == 'control'" \
   --method standardize
 
-# Feature selection (compressed CSV output)
+# Feature selection
 python -m pycytominer feature_select \
   --profiles path/to/profiles_normalized.parquet \
-  --output_file path/to/profiles_feature_selected.csv.gz \
+  --output_file path/to/profiles_feature_selected.parquet \
+  --output_type parquet
   --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area \
   --operation variance_threshold,correlation_threshold
 
-# Consensus profiling (parquet output)
+# Form consensus profiles
 python -m pycytominer consensus \
   --profiles path/to/profiles_feature_selected.csv.gz \
   --output_file path/to/profiles_consensus.parquet \
