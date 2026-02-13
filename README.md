@@ -149,19 +149,20 @@ Pycytominer also provides a simple CLI for file-based workflows.
 The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
 
 ```bash
-# Aggregate profiles (parquet output)
-python -m pycytominer aggregate \
+# Aggregate profiles (note the parquet output type)
+pycytominer aggregate \
   --profiles path/to/profiles.csv.gz \
   --output_file path/to/profiles_aggregated.parquet \
   --output_type parquet \
   --strata Metadata_Plate,Metadata_Well \
   --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area
 
-# Annotate profiles with a platemap (compressed CSV output)
+# Annotate profiles with platemap metadata
 python -m pycytominer annotate \
   --profiles path/to/profiles_aggregated.parquet \
   --platemap path/to/platemap.csv \
-  --output_file path/to/profiles_augmented.csv.gz \
+  --output_type parquet \
+  --output_file path/to/profiles_augmented.parquet \
   --join_on Metadata_well_position,Metadata_Well
 
 # Normalize profiles
