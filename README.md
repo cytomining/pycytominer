@@ -145,6 +145,9 @@ normalized_df = pycytominer.normalize(
 
 ### Command Line Interface (CLI) usage
 
+Pycytominer also provides a simple CLI for file-based workflows.
+The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
+
 Before using the CLI, keep in mind the following conventions:
 
 - The CLI is intended for file-based execution of the core processing functions:
@@ -156,9 +159,6 @@ Before using the CLI, keep in mind the following conventions:
   disk. For full pipeline orchestration, chain commands in your workflow manager.
 - Output format is controlled by `--output_type` (for example `parquet`); this is
   not inferred from the filename extension.
-
-Pycytominer also provides a simple CLI for file-based workflows.
-The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
 
 ```bash
 # Aggregate profiles (note the parquet output type)
