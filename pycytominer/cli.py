@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any, Literal
 
 import fire
@@ -43,6 +44,16 @@ def _parse_list_or_str(value: str | None) -> str | list[str] | None:
     if "," in value:
         return _split_csv_arg(value)
     return value
+
+
+def _announce_output_file(output_path: str) -> None:
+    """Print a user-friendly output location message.
+
+    Args:
+        output_path: Returned output path from a core Pycytominer function.
+    """
+    resolved_path = str(Path(output_path).expanduser().resolve())
+    print(f"Wrote output file: {resolved_path}")
 
 
 class PycytominerCLI:
@@ -105,6 +116,7 @@ class PycytominerCLI:
             float_format=float_format,
         )
         if isinstance(result, str):
+            _announce_output_file(result)
             return result
         raise PycytominerCLIError(
             "aggregate() returned a DataFrame when a file path was expected."
@@ -167,6 +179,7 @@ class PycytominerCLI:
             float_format=float_format,
         )
         if isinstance(result, str):
+            _announce_output_file(result)
             return result
         raise PycytominerCLIError(
             "annotate() returned a DataFrame when a file path was expected."
@@ -237,6 +250,7 @@ class PycytominerCLI:
             spherize_epsilon=spherize_epsilon,
         )
         if isinstance(result, str):
+            _announce_output_file(result)
             return result
         raise PycytominerCLIError(
             "normalize() returned a DataFrame when a file path was expected."
@@ -324,6 +338,7 @@ class PycytominerCLI:
             noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
         )
         if isinstance(result, str):
+            _announce_output_file(result)
             return result
         raise PycytominerCLIError(
             "feature_select() returned a DataFrame when a file path was expected."
@@ -388,6 +403,7 @@ class PycytominerCLI:
             modz_args=modz_args,
         )
         if isinstance(result, str):
+            _announce_output_file(result)
             return result
         raise PycytominerCLIError(
             "consensus() returned a DataFrame when a file path was expected."
