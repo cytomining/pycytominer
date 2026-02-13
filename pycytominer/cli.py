@@ -48,7 +48,7 @@ class PycytominerCLI:
         self,
         profiles: str,
         output_file: str,
-        strata: str = "Metadata_Plate,Metadata_Well",
+        strata: str | Sequence[str] = "Metadata_Plate,Metadata_Well",
         features: str | Sequence[str] = "infer",
         operation: str = "median",
         output_type: Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
@@ -64,7 +64,7 @@ class PycytominerCLI:
         Args:
             profiles: Path to the input profiles file.
             output_file: Path to the output file to write.
-            strata: Comma-delimited metadata columns to aggregate by.
+            strata: Metadata columns to aggregate by.
             features: Feature list or "infer" to infer CellProfiler features.
             operation: Aggregation operation ("median" or "mean").
             output_type: Output type to write.
@@ -109,7 +109,7 @@ class PycytominerCLI:
         profiles: str,
         platemap: str,
         output_file: str,
-        join_on: str = "Metadata_well_position,Metadata_Well",
+        join_on: str | Sequence[str] = "Metadata_well_position,Metadata_Well",
         output_type: Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
         | None = "csv",
         add_metadata_id_to_platemap: bool = True,
@@ -127,7 +127,7 @@ class PycytominerCLI:
             profiles: Path to the input profiles file.
             platemap: Path to the platemap file.
             output_file: Path to the output file to write.
-            join_on: Comma-delimited join keys (platemap, profiles).
+            join_on: Join keys (platemap, profiles).
             output_type: Output type to write.
             add_metadata_id_to_platemap: Whether to prefix platemap columns.
             format_broad_cmap: Whether to format Broad CMAP metadata.
@@ -327,7 +327,7 @@ class PycytominerCLI:
         self,
         profiles: str,
         output_file: str,
-        replicate_columns: str = "Metadata_Plate,Metadata_Well",
+        replicate_columns: str | Sequence[str] = "Metadata_Plate,Metadata_Well",
         operation: str = "median",
         features: str | Sequence[str] = "infer",
         output_type: Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
@@ -343,7 +343,7 @@ class PycytominerCLI:
         Args:
             profiles: Path to the input profiles file.
             output_file: Path to the output file to write.
-            replicate_columns: Comma-delimited metadata columns to aggregate by.
+            replicate_columns: Metadata columns to aggregate by.
             operation: Consensus operation ("median", "mean", or "modz").
             features: Feature list or "infer" to infer CellProfiler features.
             output_type: Output type to write.

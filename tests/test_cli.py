@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import pathlib
+import subprocess
+import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
+from pycytominer import cli as pycytominer_cli
 from pycytominer.cli import PycytominerCLI
 
 
@@ -134,3 +138,107 @@ def test_cli_consensus(tmp_path: pathlib.Path) -> None:
     assert np.isclose(
         result.loc[result["Metadata_Well"] == "A01", "Feature_2"].item(), 5.5
     )
+
+
+def test_cli_accepts_sequence_inputs(tmp_path: pathlib.Path) -> None:
+    """Ensure list-like inputs are accepted for CLI sequence arguments."""
+    _, profiles_path = _write_profiles(tmp_path)
+    output_path = tmp_path / "aggregate_sequence.csv"
+
+    cli = PycytominerCLI()
+    cli.aggregate(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        strata=["Metadata_Plate", "Metadata_Well"],
+        features=["Feature_1", "Feature_2"],
+    )
+
+    result = pd.read_csv(output_path)
+    assert result.shape[0] == 2
+    assert set(result["Metadata_Well"]) == {"A01", "A02"}
+
+
+def test_cli_annotate_join_on_sequence(tmp_path: pathlib.Path) -> None:
+    """Ensure annotate accepts a sequence for join keys."""
+    _, profiles_path = _write_profiles(tmp_path)
+    platemap = pd.DataFrame({
+        "well_position": ["A01", "A02"],
+        "Treatment": ["control", "drug"],
+    })
+    platemap_path = tmp_path / "platemap.csv"
+    platemap.to_csv(platemap_path, index=False)
+    output_path = tmp_path / "annotated_sequence.csv"
+
+    cli = PycytominerCLI()
+    cli.annotate(
+        profiles=str(profiles_path),
+        platemap=str(platemap_path),
+        output_file=str(output_path),
+        join_on=["Metadata_well_position", "Metadata_Well"],
+    )
+
+    result = pd.read_csv(output_path)
+    assert "Metadata_Treatment" in result.columns
+
+
+def test_cli_raises_if_core_returns_dataframe(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ensure defensive type checking errors when core returns a dataframe."""
+
+    def _mock_aggregate(**_: object) -> pd.DataFrame:
+        return pd.DataFrame({"x": [1.0]})
+
+    def _mock_load_profiles(_: object) -> pd.DataFrame:
+        return pd.DataFrame({"Metadata_Plate": ["P1"], "Feature_1": [1.0]})
+
+    monkeypatch.setattr(pycytominer_cli, "aggregate", _mock_aggregate)
+    monkeypatch.setattr(pycytominer_cli, "load_profiles", _mock_load_profiles)
+    cli = PycytominerCLI()
+
+    with pytest.raises(
+        TypeError,
+        match=r"aggregate\(\) returned a DataFrame when a file path was expected.",
+    ):
+        cli.aggregate(
+            profiles="fake.csv",
+            output_file="out.csv",
+            strata="Metadata_Plate",
+            features=["Feature_1"],
+        )
+
+
+def test_cli_unknown_argument_errors(tmp_path: pathlib.Path) -> None:
+    """Ensure unknown Fire arguments fail with a non-zero exit status."""
+    _, profiles_path = _write_profiles(tmp_path)
+    output_path = tmp_path / "unknown_arg.csv"
+
+    command = [
+        sys.executable,
+        "-m",
+        "pycytominer",
+        "aggregate",
+        f"--profiles={profiles_path}",
+        f"--output_file={output_path}",
+        "--features=Feature_1",
+        "--not_a_real_argument=1",
+    ]
+
+    result = subprocess.run(command, capture_output=True, text=True, check=False)  # noqa: S603
+
+    assert result.returncode != 0
+    error_text = f"{result.stdout}\n{result.stderr}"
+    assert "not_a_real_argument" in error_text
+
+
+def test_cli_propagates_file_not_found_error() -> None:
+    """Ensure core function file loading errors propagate through CLI."""
+    cli = PycytominerCLI()
+
+    with pytest.raises(
+        FileNotFoundError, match=r"load_profiles\(\) didn't find the path."
+    ):
+        cli.normalize(
+            profiles="missing_file.csv",
+            output_file="unused.csv",
+            features=["Feature_1"],
+            meta_features=["Metadata_Plate"],
+        )
