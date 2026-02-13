@@ -82,6 +82,8 @@ class PycytominerCLI:
             The output file path.
         """
         profiles_df = load_profiles(profiles)
+
+        # Process CLI inputs into the data structures Pycytominer expects
         strata_list = _split_csv_arg(strata)
         if isinstance(features, str) and features == "infer":
             features_value: str | list[str] = "infer"
