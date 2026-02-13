@@ -145,6 +145,18 @@ normalized_df = pycytominer.normalize(
 
 ### Command Line Interface (CLI) usage
 
+Before using the CLI, keep in mind the following conventions:
+
+- The CLI is intended for file-based execution of the core processing functions:
+  `aggregate`, `annotate`, `normalize`, `feature_select`, and `consensus`.
+- Arguments that map to Python lists (for example `--features`, `--strata`,
+  `--replicate_columns`, and `--operation`) should be passed as comma-delimited
+  strings.
+- The CLI executes one Pycytominer function per command and writes results to
+  disk. For full pipeline orchestration, chain commands in your workflow manager.
+- Output format is controlled by `--output_type` (for example `parquet`); this is
+  not inferred from the filename extension.
+
 Pycytominer also provides a simple CLI for file-based workflows.
 The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
 
