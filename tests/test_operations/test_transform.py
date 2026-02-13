@@ -34,7 +34,8 @@ def test_spherize():
 
             # The transfomed data is expected to have uncorrelated samples
             result = (
-                pd.DataFrame(np.cov(np.transpose(transform_df)))
+                pd
+                .DataFrame(np.cov(np.transpose(transform_df)))
                 .abs()
                 .round()
                 .sum()

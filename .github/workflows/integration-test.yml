@@ -52,11 +52,9 @@ jobs:
           cache-venv: false
           setup-poetry: false
           install-deps: false
-      - name: Run pre-commit checks on all files
-        uses: pre-commit/action@v3.0.1
+      - name: Run pre-commit checks on all files (with prek)
+        uses: j178/prek-action@v1
         id: pre_commit
-        with:
-          extra_args: --all-files
       # run pre-commit ci lite for automated fixes
       - uses: pre-commit-ci/lite-action@v1.1.0
         if: ${{ !cancelled() && steps.pre_commit.outcome == 'failure' }}
@@ -183,14 +181,14 @@ jobs:
         run: |
           echo "version=$(poetry version | cut -d' ' -f2 )" >> "$GITHUB_OUTPUT"
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheel
           path: dist/*.whl
           if-no-files-found: error
           retention-days: 90
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: sdist
           path: dist/*.tar.gz
@@ -214,7 +212,7 @@ jobs:
             tests
           sparse-checkout-cone-mode: false
       - name: Download sdist artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: sdist
       # gather the sdist tar.gz name (which varies)

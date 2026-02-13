@@ -131,7 +131,8 @@ def annotate(
         ])
 
         annotated = (
-            annotated.merge(
+            annotated
+            .merge(
                 external_metadata,
                 left_on=external_join_left,
                 right_on=external_join_right,
