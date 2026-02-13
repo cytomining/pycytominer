@@ -214,7 +214,7 @@ def test_cli_unknown_argument_errors(tmp_path: pathlib.Path) -> None:
     command = [
         sys.executable,
         "-m",
-        "pycytominer",
+        "pycytominer.cli",
         "aggregate",
         f"--profiles={profiles_path}",
         f"--output_file={output_path}",
