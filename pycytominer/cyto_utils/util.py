@@ -2,16 +2,17 @@
 Miscellaneous utility functions
 """
 
+import inspect
 import os
 import warnings
-from typing import Literal, Union, cast
+from functools import wraps
+from typing import Callable, Literal, Union, cast
 
 import numpy as np
 import pandas as pd
 
-from pycytominer.cyto_utils.features import (
-    convert_compartment_format_to_list,
-)
+from pycytominer.cyto_utils.features import convert_compartment_format_to_list
+from pycytominer.cyto_utils.output import output
 
 default_metadata_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "metadata_feature_dictionary.txt"
@@ -174,6 +175,56 @@ def check_consensus_operation(operation: str) -> str:
             )
 
     return operation
+
+
+def write_to_file_if_user_specifies_output_details(
+    func: Callable[..., Union[pd.DataFrame, str]],
+) -> Callable[..., Union[pd.DataFrame, str]]:
+    """Decorate a function to optionally write its output to disk.
+
+    The decorator intercepts common output-related keyword arguments
+    (``output_file``, ``output_type``, ``compression_options``, ``float_format``)
+    from the decorated function call. The wrapped function should return a
+    :class:`pandas.DataFrame` when ``output_file`` is provided; the DataFrame is
+    written using :func:`pycytominer.cyto_utils.output` and the resulting path is
+    returned instead.
+    """
+
+    signature = inspect.signature(func)
+
+    # wraps the function to preserve docstring and function name
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Union[pd.DataFrame, str]:
+        # bind the passed arguments to the function's signature
+        bound_arguments = signature.bind_partial(*args, **kwargs)
+        # fill in default values for missing arguments
+        bound_arguments.apply_defaults()
+
+        # extract output-related arguments
+        output_file = bound_arguments.arguments.pop("output_file", None)
+        output_type = bound_arguments.arguments.pop("output_type", None)
+        compression_options = bound_arguments.arguments.pop("compression_options", None)
+        float_format = bound_arguments.arguments.pop("float_format", None)
+
+        # call the original function with the remaining arguments
+        result = func(**bound_arguments.arguments)
+
+        # if no output file is specified, return the DataFrame directly
+        if output_file is None:
+            return result
+
+        # write the DataFrame to file and return the file path
+        return output(
+            # note: we cast here because mypy cannot
+            # infer that result is a DataFrame (not str)
+            df=cast(pd.DataFrame, result),
+            output_filename=output_file,
+            output_type=output_type,
+            compression_options=compression_options,
+            float_format=float_format,
+        )
+
+    return wrapper
 
 
 def check_fields_of_view_format(
