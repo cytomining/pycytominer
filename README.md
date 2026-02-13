@@ -143,6 +143,68 @@ normalized_df = pycytominer.normalize(
 )
 ```
 
+### Command Line Interface (CLI) usage
+
+Pycytominer also provides a simple CLI for file-based workflows.
+The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
+
+Before using the CLI, keep in mind the following conventions:
+
+- The CLI is intended for file-based execution of the core processing functions:
+  `aggregate`, `annotate`, `normalize`, `feature_select`, and `consensus`.
+- Arguments that map to Python lists (for example `--features`, `--strata`,
+  `--replicate_columns`, and `--operation`) should be passed as comma-delimited
+  strings.
+- The CLI executes one Pycytominer function per command and writes results to
+  disk. For full pipeline orchestration, chain commands in your workflow manager.
+- Output format is controlled by `--output_type` (for example `parquet`); this is
+  not inferred from the filename extension.
+
+```bash
+# Aggregate profiles (note the parquet output type)
+pycytominer aggregate \
+  --profiles path/to/profiles.csv.gz \
+  --output_file path/to/profiles_aggregated.parquet \
+  --output_type parquet \
+  --strata Metadata_Plate,Metadata_Well \
+  --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area
+
+# Annotate profiles with platemap metadata
+pycytominer annotate \
+  --profiles path/to/profiles_aggregated.parquet \
+  --platemap path/to/platemap.csv \
+  --output_type parquet \
+  --output_file path/to/profiles_augmented.parquet \
+  --join_on Metadata_well_position,Metadata_Well
+
+# Normalize profiles
+pycytominer normalize \
+  --profiles path/to/profiles_augmented.csv.gz \
+  --output_file path/to/profiles_normalized.parquet \
+  --output_type parquet \
+  --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area \
+  --meta_features Metadata_Plate,Metadata_Well \
+  --samples "Metadata_treatment == 'control'" \
+  --method standardize
+
+# Feature selection
+pycytominer feature_select \
+  --profiles path/to/profiles_normalized.parquet \
+  --output_file path/to/profiles_feature_selected.parquet \
+  --output_type parquet
+  --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area \
+  --operation variance_threshold,correlation_threshold
+
+# Form consensus profiles
+pycytominer consensus \
+  --profiles path/to/profiles_feature_selected.csv.gz \
+  --output_file path/to/profiles_consensus.parquet \
+  --output_type parquet \
+  --replicate_columns Metadata_Plate,Metadata_Well \
+  --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area \
+  --operation median
+```
+
 ### Pipeline orchestration
 
 Pycytominer is a collection of different functions with no explicit link between steps.

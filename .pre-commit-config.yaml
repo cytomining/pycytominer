@@ -36,7 +36,6 @@ repos:
     rev: v0.1.15
     hooks:
     -   id: almanack-check
-        args: ["--verbose"]
 -   repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
     rev: v0.9.0
     hooks:
