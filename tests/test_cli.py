@@ -11,7 +11,7 @@ import pandas as pd
 import pytest
 
 from pycytominer import cli as pycytominer_cli
-from pycytominer.cli import PycytominerCLI
+from pycytominer.cli import PycytominerCLI, PycytominerCLIError
 
 
 def _write_profiles(tmp_path: pathlib.Path) -> tuple[pd.DataFrame, pathlib.Path]:
@@ -195,7 +195,7 @@ def test_cli_raises_if_core_returns_dataframe(monkeypatch: pytest.MonkeyPatch) -
     cli = PycytominerCLI()
 
     with pytest.raises(
-        TypeError,
+        PycytominerCLIError,
         match=r"aggregate\(\) returned a DataFrame when a file path was expected.",
     ):
         cli.aggregate(

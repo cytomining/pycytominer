@@ -11,6 +11,10 @@ from pycytominer import aggregate, annotate, consensus, feature_select, normaliz
 from pycytominer.cyto_utils.load import load_profiles
 
 
+class PycytominerCLIError(RuntimeError):
+    """Raised when CLI wrapper assumptions are violated."""
+
+
 def _split_csv_arg(value: str | Sequence[str]) -> list[str]:
     """Split a comma-delimited string or sequence into a list.
 
@@ -100,7 +104,7 @@ class PycytominerCLI:
         )
         if isinstance(result, str):
             return result
-        raise TypeError(
+        raise PycytominerCLIError(
             "aggregate() returned a DataFrame when a file path was expected."
         )
 
@@ -162,7 +166,7 @@ class PycytominerCLI:
         )
         if isinstance(result, str):
             return result
-        raise TypeError(
+        raise PycytominerCLIError(
             "annotate() returned a DataFrame when a file path was expected."
         )
 
@@ -232,7 +236,7 @@ class PycytominerCLI:
         )
         if isinstance(result, str):
             return result
-        raise TypeError(
+        raise PycytominerCLIError(
             "normalize() returned a DataFrame when a file path was expected."
         )
 
@@ -319,7 +323,7 @@ class PycytominerCLI:
         )
         if isinstance(result, str):
             return result
-        raise TypeError(
+        raise PycytominerCLIError(
             "feature_select() returned a DataFrame when a file path was expected."
         )
 
@@ -383,7 +387,7 @@ class PycytominerCLI:
         )
         if isinstance(result, str):
             return result
-        raise TypeError(
+        raise PycytominerCLIError(
             "consensus() returned a DataFrame when a file path was expected."
         )
 
