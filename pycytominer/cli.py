@@ -1,4 +1,4 @@
-"""Command-line interface for file-based Pycytominer workflows."""
+"""Command Line Interface (CLI) for Pycytominer operations."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def _parse_list_or_str(value: str | None) -> str | list[str] | None:
 
 
 class PycytominerCLI:
-    """Command-line interface for file-based Pycytominer workflows."""
+    """Command Line Interface for Pycytominer operations."""
 
     def aggregate(
         self,
