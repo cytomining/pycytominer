@@ -158,7 +158,7 @@ pycytominer aggregate \
   --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area
 
 # Annotate profiles with platemap metadata
-python -m pycytominer annotate \
+pycytominer annotate \
   --profiles path/to/profiles_aggregated.parquet \
   --platemap path/to/platemap.csv \
   --output_type parquet \
@@ -166,7 +166,7 @@ python -m pycytominer annotate \
   --join_on Metadata_well_position,Metadata_Well
 
 # Normalize profiles
-python -m pycytominer normalize \
+pycytominer normalize \
   --profiles path/to/profiles_augmented.csv.gz \
   --output_file path/to/profiles_normalized.parquet \
   --output_type parquet \
@@ -176,7 +176,7 @@ python -m pycytominer normalize \
   --method standardize
 
 # Feature selection
-python -m pycytominer feature_select \
+pycytominer feature_select \
   --profiles path/to/profiles_normalized.parquet \
   --output_file path/to/profiles_feature_selected.parquet \
   --output_type parquet
@@ -184,7 +184,7 @@ python -m pycytominer feature_select \
   --operation variance_threshold,correlation_threshold
 
 # Form consensus profiles
-python -m pycytominer consensus \
+pycytominer consensus \
   --profiles path/to/profiles_feature_selected.csv.gz \
   --output_file path/to/profiles_consensus.parquet \
   --output_type parquet \
