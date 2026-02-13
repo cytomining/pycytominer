@@ -13,10 +13,11 @@ from pycytominer.cyto_utils import (
     infer_cp_features,
     load_platemap,
     load_profiles,
-    output,
 )
+from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 
 
+@write_to_file_if_user_specifies_output_details
 def annotate(
     profiles: Union[str, pd.DataFrame],
     platemap: Union[str, pd.DataFrame],
@@ -147,14 +148,4 @@ def annotate(
     other_cols = annotated.drop(meta_cols, axis="columns").columns.tolist()
 
     annotated = annotated.loc[:, meta_cols + other_cols]
-
-    if output_file is not None:
-        return output(
-            df=annotated,
-            output_filename=output_file,
-            output_type=output_type,
-            compression_options=compression_options,
-            float_format=float_format,
-        )
-    else:
-        return annotated
+    return annotated
