@@ -145,7 +145,7 @@ normalized_df = pycytominer.normalize(
 
 ### Command Line Interface (CLI) usage
 
-Pycytominer also provides a simple CLI for file-based workflows. 
+Pycytominer also provides a simple CLI for file-based workflows.
 The Pycytominer CLI calls single Pycytominer functions that read profiles from disk, perform a specific operation with provided arguments, and write outputs to disk without requiring a dedicated python file.
 
 ```bash
