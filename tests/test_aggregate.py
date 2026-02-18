@@ -3,6 +3,8 @@ import tempfile
 
 import numpy as np
 import pandas as pd
+import polars as pl
+import pyarrow as pa
 import pytest
 
 from pycytominer import aggregate
@@ -133,6 +135,106 @@ def test_aggregate_mean_subsetvar():
     expected_result.Cells_x = expected_result.Cells_x.astype(float)
 
     assert aggregate_result.equals(expected_result)
+
+
+def test_aggregate_mean_single_feature_string():
+    """
+    Testing aggregate pycytominer function with a single string feature input
+    """
+    aggregate_result = aggregate(
+        population_df=data_df, strata=["g"], features="Cells_x", operation="mean"
+    )
+
+    expected_result = pd.DataFrame({"g": ["a", "b"], "Cells_x": [4, 3]})
+    expected_result.Cells_x = expected_result.Cells_x.astype(float)
+
+    assert aggregate_result.equals(expected_result)
+
+
+def test_aggregate_with_polars_input():
+    """
+    Testing aggregate pycytominer function with polars input
+    """
+    aggregate_result = aggregate(
+        population_df=pl.from_pandas(data_df),
+        strata=["g"],
+        features="infer",
+        operation="median",
+    )
+
+    expected_result = pd.concat([
+        pd.DataFrame({"g": "a", "Cells_x": [3], "Nuclei_y": [3]}),
+        pd.DataFrame({"g": "b", "Cells_x": [3], "Nuclei_y": [3]}),
+    ]).reset_index(drop=True)
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    pd.testing.assert_frame_equal(
+        aggregate_result.sort_values("g").reset_index(drop=True),
+        expected_result.sort_values("g").reset_index(drop=True),
+    )
+
+
+def test_aggregate_with_pyarrow_table_input():
+    """
+    Testing aggregate pycytominer function with pyarrow Table input
+    """
+    aggregate_result = aggregate(
+        population_df=pa.Table.from_pandas(data_df),
+        strata=["g"],
+        features="infer",
+        operation="median",
+    )
+
+    expected_result = pd.concat([
+        pd.DataFrame({"g": "a", "Cells_x": [3], "Nuclei_y": [3]}),
+        pd.DataFrame({"g": "b", "Cells_x": [3], "Nuclei_y": [3]}),
+    ]).reset_index(drop=True)
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    pd.testing.assert_frame_equal(
+        aggregate_result.sort_values("g").reset_index(drop=True),
+        expected_result.sort_values("g").reset_index(drop=True),
+    )
+
+
+def test_aggregate_with_polars_subset_data():
+    """
+    Testing aggregate pycytominer function with polars subset input
+    """
+    subset_data = pl.DataFrame({"g": ["a"]})
+
+    aggregate_result = aggregate(
+        population_df=data_df,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        subset_data_df=subset_data,
+    )
+
+    expected_result = pd.DataFrame({"g": ["a"], "Cells_x": [3], "Nuclei_y": [3]})
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    pd.testing.assert_frame_equal(aggregate_result, expected_result)
+
+
+def test_aggregate_with_pyarrow_subset_data():
+    """
+    Testing aggregate pycytominer function with pyarrow subset input
+    """
+    subset_data = pa.Table.from_pydict({"g": ["a"]})
+
+    aggregate_result = aggregate(
+        population_df=data_df,
+        strata=["g"],
+        features="infer",
+        operation="median",
+        subset_data_df=subset_data,
+    )
+
+    expected_result = pd.DataFrame({"g": ["a"], "Cells_x": [3], "Nuclei_y": [3]})
+    expected_result = expected_result.astype(dtype_convert_dict)
+
+    pd.testing.assert_frame_equal(aggregate_result, expected_result)
 
 
 def test_aggregate_median_dtype_confirm():

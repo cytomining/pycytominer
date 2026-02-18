@@ -4,7 +4,7 @@ Aggregate profiles based on given grouping variables.
 
 from typing import Any, Literal, Optional, Union
 
-import numpy as np
+import narwhals.stable.v1 as nw
 import pandas as pd
 
 from pycytominer.cyto_utils import check_aggregate_operation, infer_cp_features
@@ -14,7 +14,7 @@ from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_d
 @write_to_file_if_user_specifies_output_details
 def aggregate(
     population_df: pd.DataFrame,
-    strata: list[str] = ["Metadata_Plate", "Metadata_Well"],
+    strata: Union[list[str], str] = ["Metadata_Plate", "Metadata_Well"],
     features: Union[list[str], str] = "infer",
     operation: str = "median",
     output_file: Optional[str] = None,
@@ -23,7 +23,7 @@ def aggregate(
     ] = "csv",
     compute_object_count: bool = False,
     object_feature: str = "Metadata_ObjectNumber",
-    subset_data_df: Optional[pd.DataFrame] = None,
+    subset_data_df: Optional[Any] = None,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
 ) -> Union[pd.DataFrame, str]:
@@ -49,7 +49,7 @@ def aggregate(
         Whether or not to compute object counts.
     object_feature : str, default "Metadata_ObjectNumber"
         Object number feature. Only used if compute_object_count=True.
-    subset_data_df : pd.DataFrame
+    subset_data_df : dataframe-like
         How to subset the input.
     compression_options : str or dict, optional
         Contains compression options as input to
@@ -73,52 +73,54 @@ def aggregate(
 
     # Check that the operation is supported
     operation = check_aggregate_operation(operation)
+    narwhals_df = nw.from_native(population_df, eager_only=True)
+    population_columns = list(narwhals_df.columns)
 
-    # Subset the data to specified samples
-    if isinstance(subset_data_df, pd.DataFrame):
-        population_df = subset_data_df.merge(
-            population_df, how="inner", on=subset_data_df.columns.tolist()
-        ).reindex(population_df.columns, axis="columns")
+    if isinstance(strata, str):
+        strata = [strata]
 
-    # Subset dataframe to only specified variables if provided
-    strata_df = population_df[strata]
+    if subset_data_df is not None:
+        subset_nw = nw.from_native(subset_data_df, eager_only=True)
+        subset_columns = list(subset_nw.columns)
+        subset_nw = nw.from_dict(
+            subset_nw.to_dict(as_series=False),
+            backend=nw.get_native_namespace(nw.to_native(narwhals_df)),
+        )
+        narwhals_df = subset_nw.join(
+            narwhals_df, on=subset_columns, how="inner"
+        ).select(*population_columns)
+
+    if features == "infer":
+        features = infer_cp_features(nw.to_native(narwhals_df))
+    elif isinstance(features, str):
+        features = [features]
 
     # Only extract single object column in preparation for count
     if compute_object_count:
-        count_object_df = (
-            population_df
-            .loc[:, list(np.union1d(strata, [object_feature]))]
-            .groupby(strata)[object_feature]
-            .count()
-            .reset_index()
-            .rename(columns={f"{object_feature}": "Metadata_Object_Count"})
+        count_object_nw = narwhals_df.group_by(*strata, drop_null_keys=False).agg(
+            nw.col(object_feature).count().alias("Metadata_Object_Count")
         )
 
-    if features == "infer":
-        features = infer_cp_features(population_df)
-
-    # recast as dataframe to protect against scenarios where a series may be returned
-    population_df = pd.DataFrame(population_df[features])
-
-    # Fix dtype of input features (they should all be floats!)
-    population_df = population_df.astype(float)
-
-    # Merge back metadata used to aggregate by
-    population_df = pd.concat([strata_df, population_df], axis="columns")
-
-    # Perform aggregating function
-    # Note: type ignore added below to address the change in variable types for
-    # label `population_df`.
-    population_df = population_df.groupby(strata, dropna=False)  # type: ignore[assignment]
-
-    if operation == "median":
-        population_df = population_df.median().reset_index()
-    else:
-        population_df = population_df.mean().reset_index()
-
-    # Compute objects counts
+    narwhals_df = narwhals_df.select(
+        *strata,
+        *[nw.col(feature).cast(nw.Float64).alias(feature) for feature in features],
+    )
+    aggregated = narwhals_df.group_by(*strata, drop_null_keys=False).agg(*[
+        getattr(nw.col(feature), operation)().alias(feature) for feature in features
+    ])
     if compute_object_count:
-        population_df = count_object_df.merge(population_df, on=strata, how="right")
+        aggregated = aggregated.join(count_object_nw, on=strata, how="left").select(
+            *strata, "Metadata_Object_Count", *features
+        )
+
+    aggregated_native = nw.to_native(aggregated)
+    if isinstance(aggregated_native, pd.DataFrame):
+        population_df = aggregated_native
+    elif hasattr(aggregated_native, "to_pandas"):
+        population_df = aggregated_native.to_pandas()
+    else:
+        population_df = pd.DataFrame(aggregated_native)
+    population_df = population_df.sort_values(by=strata).reset_index(drop=True)
 
     # Aggregated image number and object number do not make sense
     if columns_to_drop := [
