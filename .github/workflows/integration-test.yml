@@ -101,6 +101,12 @@ jobs:
           cache-venv: true
           setup-poetry: true
           install-deps: true
+      - name: Install docs dependencies
+        # Keep docs dependencies in this job only. `sphinx-autobuild` pulls
+        # `watchfiles`, and current `watchfiles`/`PyO3` builds fail on Python 3.14.
+        # Avoid installing docs extras in matrix test jobs until upstream support lands.
+        run: |
+          poetry install --with docs -v --no-interaction
       - name: Run sphinx-build
         run: |
           poetry run sphinx-build docs/ docs-build/
