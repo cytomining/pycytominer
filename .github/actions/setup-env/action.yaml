@@ -76,4 +76,4 @@ runs:
       shell: bash
       if: ${{ inputs.install-deps == 'true' }}
       run: |
-        poetry install --with dev --all-extras -v --no-interaction
+        poetry install --with dev,docs --all-extras -v --no-interaction
