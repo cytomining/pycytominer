@@ -1,3 +1,19 @@
+## v1.4.0 (2026-02-20)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.4.0)
+
+### Feat
+
+- add cli for core functions (#622)
+
+### Refactor
+
+- add output decorator for repeated use (#600)
+
+### Build
+
+- **deps**: various dependency updates automated by dependabot
+
 ## v1.3.1 (2026-01-06)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.3.1)
