@@ -4,8 +4,9 @@ Utility function to manipulate cell profiler features
 
 import os
 import pathlib
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
+import narwhals.stable.v1 as nw
 import pandas as pd
 
 blocklist_file = os.path.join(
@@ -80,7 +81,7 @@ def label_compartment(
 
 
 def infer_cp_features(
-    population_df: pd.DataFrame,
+    population_df: Any,
     compartments: Union[str, list[str]] = ["Cells", "Nuclei", "Cytoplasm"],
     metadata: bool = False,
     image_features: bool = False,
@@ -89,8 +90,8 @@ def infer_cp_features(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
-        DataFrame from which features are to be inferred.
+    population_df : dataframe-like
+        Dataframe-like object from which features are to be inferred.
     compartments : list of str, default ["Cells", "Nuclei", "Cytoplasm"]
         Compartments from which Cell Painting features were extracted.
     metadata : bool, default False
@@ -112,15 +113,15 @@ def infer_cp_features(
     if image_features:
         compartments = list({"Image", *compartments})
 
+    columns = list(nw.from_native(population_df, eager_only=True).columns)
+
     features = []
-    for col in population_df.columns.tolist():
+    for col in columns:
         if any(col.startswith(x.title()) for x in compartments):
             features.append(col)
 
     if metadata:
-        features = population_df.columns[
-            population_df.columns.str.startswith("Metadata_")
-        ].tolist()
+        features = [col for col in columns if col.startswith("Metadata_")]
 
     if len(features) == 0:
         raise ValueError(

@@ -1,4 +1,6 @@
 import pandas as pd
+import polars as pl
+import pyarrow as pa
 import pytest
 
 from pycytominer.cyto_utils.features import infer_cp_features
@@ -72,6 +74,30 @@ def test_feature_infer_image():
         "Nuclei_Correlation_RWC_ER_RNA",
         "Image_Feature_1",
         "Image_Feature_2",
+    ]
+
+    assert features == expected
+
+
+def test_feature_infer_polars():
+    features = infer_cp_features(population_df=pl.from_pandas(data_df))
+    expected = [
+        "Cells_Something_Something",
+        "Cytoplasm_Something_Something",
+        "Nuclei_Correlation_Manders_AGP_DNA",
+        "Nuclei_Correlation_RWC_ER_RNA",
+    ]
+
+    assert features == expected
+
+
+def test_feature_infer_pyarrow():
+    features = infer_cp_features(population_df=pa.Table.from_pandas(data_df))
+    expected = [
+        "Cells_Something_Something",
+        "Cytoplasm_Something_Something",
+        "Nuclei_Correlation_Manders_AGP_DNA",
+        "Nuclei_Correlation_RWC_ER_RNA",
     ]
 
     assert features == expected

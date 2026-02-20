@@ -79,6 +79,9 @@ fire = ">=0.5.0"
 # Extra dependencies for collate
 cytominer-database = { version = "0.3.4", optional = true }
 
+# narwhals for agnostic dataframe work
+narwhals = "^2.16.0"
+
 [tool.poetry.extras]
 cell-locations = [ "fsspec", "s3fs", "boto3" ]
 collate = [ "cytominer-database" ]
@@ -101,6 +104,7 @@ pandas-stubs = [
   { version = "^2.2.2.240909", python = ">=3.10" },
 ]
 types-sqlalchemy = "^1.4.53.38"
+polars = "^1.38.1"
 
 [tool.poetry.group.docs]
 optional = true
