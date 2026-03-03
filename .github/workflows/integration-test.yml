@@ -212,7 +212,7 @@ jobs:
             tests
           sparse-checkout-cone-mode: false
       - name: Download sdist artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: sdist
       # gather the sdist tar.gz name (which varies)
