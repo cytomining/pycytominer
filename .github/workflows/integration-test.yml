@@ -225,7 +225,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       # attempts to build a test image for observing test behavior
       # and modeling a production image build. Version label
       # assumes pwd of, for example: pycytominer-1.0.1.post37.dev0+55690e4,
