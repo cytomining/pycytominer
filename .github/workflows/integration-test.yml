@@ -53,7 +53,7 @@ jobs:
           setup-poetry: false
           install-deps: false
       - name: Run pre-commit checks on all files (with prek)
-        uses: j178/prek-action@v1
+        uses: j178/prek-action@v2
         id: pre_commit
       # run pre-commit ci lite for automated fixes
       - uses: pre-commit-ci/lite-action@v1.1.0
