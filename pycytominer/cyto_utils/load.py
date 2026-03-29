@@ -5,7 +5,7 @@ Module for loading profiles from files or dataframes.
 import csv
 import gzip
 import pathlib
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -48,6 +48,149 @@ def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     # return boolean based on whether
     # file path is a parquet file
     return path.suffix.lower() == ".parquet"
+
+
+def is_path_a_parquet_dataset_dir(file: Union[str, pathlib.Path]) -> bool:
+    """Check whether a path is a parquet dataset directory.
+
+    Parameters
+    ----------
+    file : Union[str, pathlib.Path]
+        Path to inspect.
+
+    Returns
+    -------
+    bool
+        Returns True when the path is a directory that contains parquet files.
+
+    Raises
+    ------
+    FileNotFoundError
+        Raised if the provided path in the `file` does not exist.
+    """
+
+    try:
+        path = pathlib.Path(file).resolve(strict=True)
+    except FileNotFoundError:
+        raise FileNotFoundError("load_profiles() didn't find the path.")
+    except TypeError:
+        print("Detected a non-str or non-path object in the `file` parameter.")
+        return False
+
+    return path.is_dir() and any(
+        child.is_file() and child.suffix.lower() == ".parquet"
+        for child in path.iterdir()
+    )
+
+
+def resolve_parquet_path(
+    path_like: Union[str, pathlib.Path, pathlib.PurePath],
+) -> Optional[pathlib.Path]:
+    """Resolve file and dataset paths that pandas can read via parquet.
+
+    Parameters
+    ----------
+    path_like : path-like
+        Path to inspect.
+
+    Returns
+    -------
+    pathlib.Path or None
+        Resolved parquet file or dataset directory. Returns None when the path
+        does not point to a parquet-backed source.
+    """
+
+    path = pathlib.Path(path_like).resolve(strict=True)
+
+    if path.is_file() and path.suffix.lower() == ".parquet":
+        return path
+
+    if is_path_a_parquet_dataset_dir(path):
+        return path
+
+    data_dir = path / "data"
+    if data_dir.exists() and is_path_a_parquet_dataset_dir(data_dir):
+        return data_dir
+
+    return None
+
+
+def load_cytotable_profiles(
+    warehouse_path: Union[str, pathlib.Path, pathlib.PurePath],
+    table_name: str = "joined_profiles",
+    namespace: str = "profiles",
+) -> pd.DataFrame:
+    """Load a parquet-backed table from a CytoTable-style warehouse layout.
+
+    Parameters
+    ----------
+    warehouse_path : path-like
+        Path to either the warehouse root or the project directory that contains
+        a `warehouse/` directory.
+    table_name : str, default "joined_profiles"
+        Table name to load from within the namespace.
+    namespace : str, default "profiles"
+        Namespace that contains the table. For profile data this is typically
+        `profiles`.
+
+    Returns
+    -------
+    pd.DataFrame
+        Loaded table as a pandas dataframe.
+
+    Raises
+    ------
+    FileNotFoundError
+        Raised when the requested table cannot be resolved to a parquet dataset.
+    """
+
+    root = pathlib.Path(warehouse_path).resolve(strict=True)
+    candidate_paths = [
+        root / namespace / table_name,
+        root / "warehouse" / namespace / table_name,
+    ]
+
+    for candidate_path in candidate_paths:
+        if not candidate_path.exists():
+            continue
+        if parquet_path := resolve_parquet_path(candidate_path):
+            return pd.read_parquet(parquet_path, engine="pyarrow")
+
+    raise FileNotFoundError(
+        "Could not find a parquet-backed table for "
+        f"namespace={namespace!r} and table_name={table_name!r} under {root}."
+    )
+
+
+def load_iceberg_profiles(
+    warehouse_path: Union[str, pathlib.Path, pathlib.PurePath],
+    table_name: str = "joined_profiles",
+    namespace: str = "profiles",
+) -> pd.DataFrame:
+    """Backward-compatible alias for `load_cytotable_profiles`.
+
+    Parameters
+    ----------
+    warehouse_path : path-like
+        Path to either the warehouse root or the project directory that contains
+        a `warehouse/` directory.
+    table_name : str, default "joined_profiles"
+        Table name to load from within the namespace.
+    namespace : str, default "profiles"
+        Namespace that contains the table. For profile data this is typically
+        `profiles`.
+
+    Returns
+    -------
+    pd.DataFrame
+        Loaded table as a pandas dataframe.
+    """
+
+    return load_cytotable_profiles(
+        warehouse_path=warehouse_path,
+        table_name=table_name,
+        namespace=namespace,
+    )
 
 
 def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
@@ -103,10 +246,13 @@ def load_profiles(
         return profiles
 
     # Check if path exists and load depending on file type
-    if isinstance(
-        profiles, (str, pathlib.Path, pathlib.PurePath)
-    ) and is_path_a_parquet_file(profiles):
-        return pd.read_parquet(profiles, engine="pyarrow")
+    if isinstance(profiles, (str, pathlib.Path, pathlib.PurePath)):
+        try:
+            parquet_path = resolve_parquet_path(profiles)
+        except FileNotFoundError:
+            raise FileNotFoundError("load_profiles() didn't find the path.")
+        if parquet_path is not None:
+            return pd.read_parquet(parquet_path, engine="pyarrow")
 
     # Check if path is an AnnData file or object
     if (

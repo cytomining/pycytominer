@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pycytominer.cyto_utils import infer_cp_features
 from pycytominer.normalize import normalize
 
 random.seed(123)
@@ -78,6 +79,8 @@ data_no_var_df = pd.concat(
     [data_df, pd.DataFrame([1] * data_df.shape[0], columns=["yy"])], axis="columns"
 )
 
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+
 
 def test_normalize_standardize_allsamples():
     """
@@ -113,6 +116,61 @@ def test_normalize_standardize_allsamples():
     }).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_ignores_ome_arrow_columns_when_inferred():
+    profiles_path = os.path.join(
+        ROOT_DIR,
+        "tests",
+        "test_data",
+        "cytotable",
+        "examplehuman_iceberg_warehouse",
+        "warehouse",
+        "profiles",
+        "joined_profiles",
+        "data",
+        "00000-0-fe1e327c-3eb3-4711-833b-73ba36da733c.parquet",
+    )
+    image_crops_path = os.path.join(
+        ROOT_DIR,
+        "tests",
+        "test_data",
+        "cytotable",
+        "examplehuman_iceberg_warehouse",
+        "warehouse",
+        "images",
+        "image_crops",
+        "data",
+        "00000-0-2fa7c8c6-117b-4fab-ba87-c934a56fe88d.parquet",
+    )
+
+    profiles = (
+        pd.read_parquet(profiles_path, engine="pyarrow").head(8).reset_index(drop=True)
+    )
+    ome_arrow_columns = pd.read_parquet(image_crops_path, engine="pyarrow")[
+        ["ome_arrow_image", "ome_arrow_outline"]
+    ].head(8)
+    profiles = profiles.assign(
+        Metadata_treatment=["control"] * 4 + ["drug"] * 4,
+        ome_arrow_image=ome_arrow_columns["ome_arrow_image"].tolist(),
+        ome_arrow_outline=ome_arrow_columns["ome_arrow_outline"].tolist(),
+    )
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features="infer",
+        meta_features="infer",
+        samples="Metadata_treatment == 'control'",
+        method="standardize",
+    )
+
+    assert "ome_arrow_image" not in normalize_result.columns
+    assert "ome_arrow_outline" not in normalize_result.columns
+    assert "Metadata_treatment" in normalize_result.columns
+    assert normalize_result.columns.tolist() == [
+        *infer_cp_features(profiles, metadata=True),
+        *infer_cp_features(profiles),
+    ]
 
 
 def test_normalize_standardize_ctrlsamples():

@@ -68,7 +68,7 @@ docker run -v $PWD:/opt --platform=linux/amd64 cytomining/pycytominer:pycytomine
 
 Pycytominer is primarily built on top of [pandas](https://pandas.pydata.org/docs/index.html), also using aspects of SQLAlchemy, sklearn, and pyarrow.
 
-Pycytominer currently supports [parquet](https://parquet.apache.org/), compressed text (e.g. `.csv.gz`), and [`anndata`](https://github.com/scverse/anndata) (through the extra `pip install pycytominer[anndata]` and limited to `h5ad` or `zarr`) input and output data.
+Pycytominer currently supports [parquet](https://parquet.apache.org/), parquet dataset directories, compressed text (e.g. `.csv.gz`), and [`anndata`](https://github.com/scverse/anndata) (through the extra `pip install pycytominer[anndata]` and limited to `h5ad` or `zarr`) input and output data.
 
 ### CellProfiler support
 
@@ -89,6 +89,8 @@ CytoTable is purpose-built to help prepare data for Pycytominer and includes man
 
 For example, to resolve potential feature issues in the `normalize()` function, you must manually specify the morphological features using the `features` [parameter](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.normalize.normalize).
 The `features` parameter is also available in other key steps, such as [`aggregate`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.aggregate.aggregate) and [`feature_select`](https://pycytominer.readthedocs.io/en/latest/pycytominer.html#pycytominer.feature_select.feature_select).
+
+When parquet-backed CytoTable warehouse tables include OME-Arrow image payload columns, `normalize()` still operates on inferred CellProfiler profile features only. Nested OME-Arrow payload columns are not treated as morphology features and are therefore excluded from inferred normalization output.
 
 If you are using Pycytominer with these other tools, please file [an issue](https://github.com/cytomining/pycytominer/issues) to reach out.
 We'd love to hear from you so that we can learn how to best support broad and multiple use-cases.
@@ -140,6 +142,33 @@ normalized_df = pycytominer.normalize(
     profiles=df,
     method="standardize",
     samples="Metadata_broad_sample == 'DMSO'"
+)
+```
+
+For CytoTable warehouse layouts, you can either load the profile table directory directly with `load_profiles()` or use the convenience helper `load_cytotable_profiles()`:
+
+```python
+from pycytominer import normalize
+from pycytominer.cyto_utils import load_cytotable_profiles, load_profiles
+
+profiles_df = load_profiles(
+    "tests/test_data/cytotable/examplehuman_iceberg_warehouse/warehouse/profiles/joined_profiles"
+)
+
+profiles_df = load_cytotable_profiles(
+    "tests/test_data/cytotable/examplehuman_iceberg_warehouse",
+    table_name="joined_profiles",
+)
+
+normalized_df = normalize(
+    profiles=profiles_df.assign(
+        Metadata_treatment=[
+            "control" if image_number % 2 == 0 else "drug"
+            for image_number in profiles_df["Metadata_ImageNumber"]
+        ]
+    ),
+    samples="Metadata_treatment == 'control'",
+    method="standardize",
 )
 ```
 

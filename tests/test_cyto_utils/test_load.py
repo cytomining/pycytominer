@@ -10,12 +10,18 @@ import pandas as pd
 import pytest
 
 from pycytominer.cyto_utils import (
+    load_cytotable_profiles,
+    load_iceberg_profiles,
     load_npz_features,
     load_npz_locations,
     load_platemap,
     load_profiles,
 )
-from pycytominer.cyto_utils.load import infer_delim, is_path_a_parquet_file
+from pycytominer.cyto_utils.load import (
+    infer_delim,
+    is_path_a_parquet_file,
+    resolve_parquet_path,
+)
 
 random.seed(123)
 
@@ -61,6 +67,15 @@ example_npz_file_locations = os.path.join(
     "SQ00014812",
     "A01_1.npz",
 )
+
+example_iceberg_root = (
+    ROOT_DIR / "tests" / "test_data" / "cytotable" / "examplehuman_iceberg_warehouse"
+)
+example_iceberg_warehouse = example_iceberg_root / "warehouse"
+example_iceberg_profiles_table = (
+    example_iceberg_warehouse / "profiles" / "joined_profiles"
+)
+example_iceberg_image_crops_table = example_iceberg_warehouse / "images" / "image_crops"
 
 # Build data to use in tests
 data_df = pd.concat([
@@ -160,6 +175,35 @@ def test_load_profiles():
     # loading in-memory anndata
     adata_profile_test = load_profiles(adata)
     pd.testing.assert_frame_equal(adata_profile_test, data_df)
+
+    # loading parquet datasets from a CytoTable-style warehouse layout
+    profiles_from_iceberg_table = load_profiles(example_iceberg_profiles_table)
+    profiles_from_iceberg_data = load_profiles(example_iceberg_profiles_table / "data")
+    expected_iceberg_profiles = pd.read_parquet(
+        resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
+    )
+    pd.testing.assert_frame_equal(
+        profiles_from_iceberg_table, expected_iceberg_profiles
+    )
+    pd.testing.assert_frame_equal(profiles_from_iceberg_data, expected_iceberg_profiles)
+
+    image_crops = load_profiles(example_iceberg_image_crops_table)
+    assert "ome_arrow_image" in image_crops.columns
+    assert image_crops["ome_arrow_image"].dtype == "object"
+
+
+def test_load_cytotable_profiles():
+    expected_profiles = pd.read_parquet(
+        resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
+    )
+
+    warehouse_profiles = load_cytotable_profiles(example_iceberg_warehouse)
+    root_profiles = load_cytotable_profiles(example_iceberg_root)
+    alias_profiles = load_iceberg_profiles(example_iceberg_root)
+
+    pd.testing.assert_frame_equal(warehouse_profiles, expected_profiles)
+    pd.testing.assert_frame_equal(root_profiles, expected_profiles)
+    pd.testing.assert_frame_equal(alias_profiles, expected_profiles)
 
 
 def test_load_platemap():
