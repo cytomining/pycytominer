@@ -20,6 +20,7 @@ from pycytominer.cyto_utils import (
 from pycytominer.cyto_utils.load import (
     infer_delim,
     is_path_a_parquet_file,
+    resolve_cytotable_profiles_target,
     resolve_parquet_path,
 )
 
@@ -187,9 +188,34 @@ def test_load_profiles():
     )
     pd.testing.assert_frame_equal(profiles_from_iceberg_data, expected_iceberg_profiles)
 
+    profiles_from_iceberg_root = load_profiles(example_iceberg_root)
+    profiles_from_iceberg_warehouse = load_profiles(example_iceberg_warehouse)
+    pd.testing.assert_frame_equal(profiles_from_iceberg_root, expected_iceberg_profiles)
+    pd.testing.assert_frame_equal(
+        profiles_from_iceberg_warehouse, expected_iceberg_profiles
+    )
+
     image_crops = load_profiles(example_iceberg_image_crops_table)
     assert "ome_arrow_image" in image_crops.columns
     assert image_crops["ome_arrow_image"].dtype == "object"
+
+
+def test_resolve_cytotable_profiles_target_ambiguous(tmp_path):
+    warehouse_root = tmp_path / "warehouse"
+    first_table = warehouse_root / "profiles" / "joined_profiles" / "data"
+    second_table = warehouse_root / "profiles" / "normalized_profiles" / "data"
+
+    first_table.mkdir(parents=True)
+    second_table.mkdir(parents=True)
+
+    data_df.to_parquet(first_table / "part-00000.parquet", engine="pyarrow")
+    data_df.to_parquet(second_table / "part-00000.parquet", engine="pyarrow")
+
+    with pytest.raises(ValueError, match="multiple parquet-backed profile tables"):
+        resolve_cytotable_profiles_target(tmp_path)
+
+    with pytest.raises(ValueError, match="multiple parquet-backed profile tables"):
+        load_profiles(tmp_path)
 
 
 def test_load_cytotable_profiles():

@@ -115,6 +115,57 @@ def resolve_parquet_path(
     return None
 
 
+def resolve_cytotable_profiles_target(
+    warehouse_path: Union[str, pathlib.Path, pathlib.PurePath],
+) -> Optional[tuple[pathlib.Path, str, str]]:
+    """Resolve an unambiguous profile table from a CytoTable-style warehouse.
+
+    Parameters
+    ----------
+    warehouse_path : path-like
+        Path to either the warehouse root or a project directory that contains
+        a ``warehouse/`` directory.
+
+    Returns
+    -------
+    tuple[pathlib.Path, str, str] or None
+        Returns the resolved root path, namespace, and table name when exactly
+        one parquet-backed profile table is found. Returns None when the path
+        does not look like a supported warehouse layout.
+
+    Raises
+    ------
+    ValueError
+        Raised when multiple parquet-backed profile tables are found and the
+        intended target is ambiguous.
+    """
+
+    root = pathlib.Path(warehouse_path).resolve(strict=True)
+    profile_roots = [root / "profiles", root / "warehouse" / "profiles"]
+
+    for profile_root in profile_roots:
+        if not profile_root.is_dir():
+            continue
+
+        candidates = [
+            child
+            for child in sorted(profile_root.iterdir())
+            if child.is_dir() and resolve_parquet_path(child) is not None
+        ]
+
+        if len(candidates) == 1:
+            return root, "profiles", candidates[0].name
+
+        if len(candidates) > 1:
+            raise ValueError(
+                "Found multiple parquet-backed profile tables under "
+                f"{profile_root}. Use load_cytotable_profiles() to select "
+                "the target table explicitly."
+            )
+
+    return None
+
+
 def load_cytotable_profiles(
     warehouse_path: Union[str, pathlib.Path, pathlib.PurePath],
     table_name: str = "joined_profiles",
@@ -223,13 +274,17 @@ def load_profiles(
     profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike],
 ) -> pd.DataFrame:
     """
-    Unless a dataframe is provided, load the given profile dataframe from path or string
+    Unless a dataframe is provided, load the given profile dataframe from path or string.
+
+    This loader supports direct files, parquet dataset directories, AnnData
+    inputs, and unambiguous CytoTable-style warehouse roots that contain a
+    single parquet-backed table under ``profiles/*/data``.
 
     Parameters
     ----------
     profiles :
         {str, pathlib.Path, pandas.DataFrame, ad.AnnData}
-        file location or actual pandas dataframe of profiles
+        File location, warehouse root, or actual pandas dataframe of profiles.
 
     Return
     ------
@@ -253,6 +308,15 @@ def load_profiles(
             raise FileNotFoundError("load_profiles() didn't find the path.")
         if parquet_path is not None:
             return pd.read_parquet(parquet_path, engine="pyarrow")
+
+        cytotable_target = resolve_cytotable_profiles_target(profiles)
+        if cytotable_target is not None:
+            warehouse_root, namespace, table_name = cytotable_target
+            return load_cytotable_profiles(
+                warehouse_path=warehouse_root,
+                table_name=table_name,
+                namespace=namespace,
+            )
 
     # Check if path is an AnnData file or object
     if (
