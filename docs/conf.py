@@ -44,6 +44,8 @@ extensions = [
     "nbsphinx",
 ]
 
+# Render notebooks without executing them during docs builds because the CI docs
+# environment does not provision the optional kernels/dependencies used there.
 nbsphinx_execute = "never"
 
 # Add any paths that contain templates here, relative to this directory.
