@@ -97,7 +97,9 @@ def resolve_parquet_path(
     -------
     pathlib.Path or None
         Resolved parquet file or dataset directory. Returns None when the path
-        does not point to a parquet-backed source.
+        does not point to a parquet-backed source. This helper also resolves
+        Iceberg-style table directories whose parquet data lives under a
+        ``data/`` child directory, such as CytoTable warehouse tables.
     """
 
     try:
@@ -111,6 +113,8 @@ def resolve_parquet_path(
     if is_path_a_parquet_dataset_dir(path):
         return path
 
+    # Iceberg-style table directories typically store parquet fragments under
+    # a sibling ``data/`` directory rather than at the table root itself.
     data_dir = path / "data"
     if data_dir.exists() and is_path_a_parquet_dataset_dir(data_dir):
         return data_dir
