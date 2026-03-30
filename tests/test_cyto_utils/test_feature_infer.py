@@ -75,3 +75,16 @@ def test_feature_infer_image():
     ]
 
     assert features == expected
+
+
+def test_feature_infer_image_ignores_object_columns():
+    object_image_df = pd.DataFrame({
+        "Image_Feature_1": [1.0, 2.0, 3.0],
+        "Image_FileName_DNA": ["a.tif", "b.tif", "c.tif"],
+        "Image_FileName_DNA_OMEArrow_ORIG": [{"a": 1}, {"a": 2}, {"a": 3}],
+        "Metadata_ImageNumber": [1, 2, 3],
+    })
+
+    features = infer_cp_features(population_df=object_image_df, image_features=True)
+
+    assert features == ["Image_Feature_1"]

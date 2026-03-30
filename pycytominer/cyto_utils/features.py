@@ -103,7 +103,8 @@ def infer_cp_features(
     Returns
     -------
     features: list of str
-        List of Cell Painting features.
+        List of Cell Painting features. Inferred feature columns must match the
+        expected CellProfiler prefixes and use a numeric dtype.
     """
 
     compartments = convert_compartment_format_to_list(compartments)
@@ -115,7 +116,8 @@ def infer_cp_features(
     features = []
     for col in population_df.columns.tolist():
         if any(col.startswith(x.title()) for x in compartments):
-            features.append(col)
+            if pd.api.types.is_numeric_dtype(population_df[col]):
+                features.append(col)
 
     if metadata:
         features = population_df.columns[

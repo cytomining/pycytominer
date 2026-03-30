@@ -80,6 +80,12 @@ data_no_var_df = pd.concat(
 )
 
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+EXAMPLE_OME_PARQUET = os.path.join(
+    ROOT_DIR, "tests", "test_data", "cytodataframe", "example.ome.parquet"
+)
+EXAMPLE_ICEBERG_ROOT = os.path.join(
+    ROOT_DIR, "tests", "test_data", "cytotable", "examplehuman_iceberg_warehouse"
+)
 
 
 def test_normalize_standardize_allsamples():
@@ -166,6 +172,60 @@ def test_normalize_ignores_ome_arrow_columns_when_inferred():
 
     assert "ome_arrow_image" not in normalize_result.columns
     assert "ome_arrow_outline" not in normalize_result.columns
+    assert "Metadata_treatment" in normalize_result.columns
+    assert normalize_result.columns.tolist() == [
+        *infer_cp_features(profiles, metadata=True),
+        *infer_cp_features(profiles),
+    ]
+
+
+def test_normalize_example_ome_parquet_with_explicit_feature_selection():
+    profiles = pd.read_parquet(EXAMPLE_OME_PARQUET, engine="pyarrow").assign(
+        Metadata_treatment=["control" if i % 2 == 0 else "drug" for i in range(3)]
+    )
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features=["Metadata_Cells_Number_Object_Number"],
+        meta_features=["Metadata_ImageNumber", "Metadata_treatment"],
+        samples="Metadata_treatment == 'control'",
+        method="standardize",
+    )
+
+    assert normalize_result.shape == (3, 3)
+    assert normalize_result.columns.tolist() == [
+        "Metadata_ImageNumber",
+        "Metadata_treatment",
+        "Metadata_Cells_Number_Object_Number",
+    ]
+
+
+def test_normalize_warehouse_root_with_inferred_features():
+    profiles = pd.read_parquet(
+        os.path.join(
+            EXAMPLE_ICEBERG_ROOT,
+            "warehouse",
+            "profiles",
+            "joined_profiles",
+            "data",
+            "00000-0-fe1e327c-3eb3-4711-833b-73ba36da733c.parquet",
+        ),
+        engine="pyarrow",
+    )
+    profiles = profiles.assign(
+        Metadata_treatment=[
+            "control" if i % 2 == 0 else "drug" for i in range(len(profiles))
+        ]
+    )
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features="infer",
+        meta_features="infer",
+        samples="Metadata_treatment == 'control'",
+        method="standardize",
+    )
+
     assert "Metadata_treatment" in normalize_result.columns
     assert normalize_result.columns.tolist() == [
         *infer_cp_features(profiles, metadata=True),

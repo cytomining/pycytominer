@@ -77,6 +77,9 @@ example_iceberg_profiles_table = (
     example_iceberg_warehouse / "profiles" / "joined_profiles"
 )
 example_iceberg_image_crops_table = example_iceberg_warehouse / "images" / "image_crops"
+example_ome_parquet = (
+    ROOT_DIR / "tests" / "test_data" / "cytodataframe" / "example.ome.parquet"
+)
 
 # Build data to use in tests
 data_df = pd.concat([
@@ -198,6 +201,10 @@ def test_load_profiles():
     image_crops = load_profiles(example_iceberg_image_crops_table)
     assert "ome_arrow_image" in image_crops.columns
     assert image_crops["ome_arrow_image"].dtype == "object"
+
+    ome_parquet = load_profiles(example_ome_parquet)
+    assert "Image_FileName_GFP_OMEArrow_ORIG" in ome_parquet.columns
+    assert ome_parquet["Image_FileName_GFP_OMEArrow_ORIG"].dtype == "object"
 
 
 def test_resolve_cytotable_profiles_target_ambiguous(tmp_path):
