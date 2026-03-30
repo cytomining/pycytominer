@@ -225,6 +225,18 @@ def test_resolve_cytotable_profiles_target_ambiguous(tmp_path):
         load_profiles(tmp_path)
 
 
+def test_resolve_cytotable_profiles_target_warehouse_root():
+    resolved = resolve_cytotable_profiles_target(example_iceberg_warehouse)
+
+    assert resolved == (example_iceberg_warehouse, "profiles", "joined_profiles")
+
+
+def test_resolve_cytotable_profiles_target_no_match(tmp_path):
+    tmp_path.mkdir(exist_ok=True)
+
+    assert resolve_cytotable_profiles_target(tmp_path) is None
+
+
 def test_load_cytotable_profiles():
     expected_profiles = pd.read_parquet(
         resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
