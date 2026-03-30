@@ -104,7 +104,9 @@ def infer_cp_features(
     -------
     features: list of str
         List of Cell Painting features. Inferred feature columns must match the
-        expected CellProfiler prefixes and use a numeric dtype.
+        expected CellProfiler prefixes. When ``image_features=True``,
+        non-numeric ``Image_*`` columns are excluded so OME-Arrow payload
+        columns are not inferred as features.
     """
 
     compartments = convert_compartment_format_to_list(compartments)
@@ -115,10 +117,15 @@ def infer_cp_features(
 
     features = []
     for col in population_df.columns.tolist():
-        if any(
-            col.startswith(x.title()) for x in compartments
-        ) and pd.api.types.is_numeric_dtype(population_df[col]):
-            features.append(col)
+        if not any(col.startswith(x.title()) for x in compartments):
+            continue
+
+        if col.startswith("Image_") and not pd.api.types.is_numeric_dtype(
+            population_df[col]
+        ):
+            continue
+
+        features.append(col)
 
     if metadata:
         features = population_df.columns[
