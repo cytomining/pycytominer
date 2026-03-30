@@ -151,20 +151,20 @@ For CytoTable warehouse layouts, you can either load the profile table directory
 from pycytominer import normalize
 from pycytominer.cyto_utils import load_cytotable_profiles, load_profiles
 
-profiles_df = load_profiles(
-    "tests/test_data/cytotable/examplehuman_iceberg_warehouse/warehouse/profiles/joined_profiles"
+profiles_from_root_df = load_profiles(
+    "path/to/warehouse_root"
 )
 
-profiles_df = load_cytotable_profiles(
-    "tests/test_data/cytotable/examplehuman_iceberg_warehouse",
+profiles_from_helper_df = load_cytotable_profiles(
+    "path/to/warehouse_root",
     table_name="joined_profiles",
 )
 
 normalized_df = normalize(
-    profiles=profiles_df.assign(
+    profiles=profiles_from_helper_df.assign(
         Metadata_treatment=[
             "control" if image_number % 2 == 0 else "drug"
-            for image_number in profiles_df["Metadata_ImageNumber"]
+            for image_number in profiles_from_helper_df["Metadata_ImageNumber"]
         ]
     ),
     samples="Metadata_treatment == 'control'",

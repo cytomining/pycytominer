@@ -206,6 +206,9 @@ def test_load_profiles():
     assert "Image_FileName_GFP_OMEArrow_ORIG" in ome_parquet.columns
     assert ome_parquet["Image_FileName_GFP_OMEArrow_ORIG"].dtype == "object"
 
+    with pytest.raises(FileNotFoundError, match="load_profiles\\(\\) didn't find the path."):
+        load_profiles(ROOT_DIR / "tests" / "test_data" / "missing.parquet")
+
 
 def test_resolve_cytotable_profiles_target_ambiguous(tmp_path):
     warehouse_root = tmp_path / "warehouse"
@@ -235,6 +238,14 @@ def test_resolve_cytotable_profiles_target_no_match(tmp_path):
     tmp_path.mkdir(exist_ok=True)
 
     assert resolve_cytotable_profiles_target(tmp_path) is None
+
+
+def test_resolve_cytotable_profiles_target_missing_path(tmp_path):
+    assert resolve_cytotable_profiles_target(tmp_path / "missing") is None
+
+
+def test_resolve_parquet_path_missing_file(tmp_path):
+    assert resolve_parquet_path(tmp_path / "missing.parquet") is None
 
 
 def test_load_cytotable_profiles():

@@ -100,7 +100,10 @@ def resolve_parquet_path(
         does not point to a parquet-backed source.
     """
 
-    path = pathlib.Path(path_like).resolve(strict=True)
+    try:
+        path = pathlib.Path(path_like).resolve(strict=True)
+    except FileNotFoundError:
+        return None
 
     if path.is_file() and path.suffix.lower() == ".parquet":
         return path
@@ -140,7 +143,10 @@ def resolve_cytotable_profiles_target(
         intended target is ambiguous.
     """
 
-    root = pathlib.Path(warehouse_path).resolve(strict=True)
+    try:
+        root = pathlib.Path(warehouse_path).resolve(strict=True)
+    except FileNotFoundError:
+        return None
     profile_roots = [root / "profiles", root / "warehouse" / "profiles"]
 
     for profile_root in profile_roots:
@@ -302,10 +308,10 @@ def load_profiles(
 
     # Check if path exists and load depending on file type
     if isinstance(profiles, (str, pathlib.Path, pathlib.PurePath)):
-        try:
-            parquet_path = resolve_parquet_path(profiles)
-        except FileNotFoundError:
+        if not pathlib.Path(profiles).exists():
             raise FileNotFoundError("load_profiles() didn't find the path.")
+
+        parquet_path = resolve_parquet_path(profiles)
         if parquet_path is not None:
             return pd.read_parquet(parquet_path, engine="pyarrow")
 

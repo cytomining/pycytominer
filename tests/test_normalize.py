@@ -180,8 +180,11 @@ def test_normalize_ignores_ome_arrow_columns_when_inferred():
 
 
 def test_normalize_example_ome_parquet_with_explicit_feature_selection():
-    profiles = pd.read_parquet(EXAMPLE_OME_PARQUET, engine="pyarrow").assign(
-        Metadata_treatment=["control" if i % 2 == 0 else "drug" for i in range(3)]
+    profiles = pd.read_parquet(EXAMPLE_OME_PARQUET, engine="pyarrow")
+    profiles = profiles.assign(
+        Metadata_treatment=[
+            "control" if i % 2 == 0 else "drug" for i in range(len(profiles))
+        ]
     )
 
     normalize_result = normalize(
