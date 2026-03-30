@@ -98,15 +98,23 @@ def infer_cp_features(
         If metadata is set to True, find column names that begin with the `Metadata_` prefix.
         This convention is expected by CellProfiler defaults.
     image_features : bool, default False
-        Whether or not the profiles contain image features.
+        Whether or not to include ``Image_*`` columns in inferred features.
+        When True, pycytominer includes numeric image features alongside the
+        default CellProfiler compartments, while still excluding non-numeric
+        ``Image_*`` columns. This avoids treating image payload columns as
+        profile features in data layouts that store both under the same
+        ``Image_*`` prefix, such as OME-Arrow-backed tables.
 
     Returns
     -------
     features: list of str
         List of Cell Painting features. Inferred feature columns must match the
         expected CellProfiler prefixes. When ``image_features=True``,
-        non-numeric ``Image_*`` columns are excluded so OME-Arrow payload
-        columns are not inferred as features.
+        non-numeric ``Image_*`` columns are excluded from inferred features.
+        This is important for data engines that combine profile features with
+        image payload columns under the ``Image_*`` prefix, such as OME-Arrow.
+        Nested object-valued columns are excluded from inferred features even
+        if they use a CellProfiler-like prefix.
     """
 
     compartments = convert_compartment_format_to_list(compartments)
@@ -119,6 +127,11 @@ def infer_cp_features(
     for col in population_df.columns.tolist():
         if not any(col.startswith(x.title()) for x in compartments):
             continue
+
+        if population_df[col].dtype == "object":
+            non_null_values = population_df[col].dropna()
+            if any(not pd.api.types.is_scalar(value) for value in non_null_values):
+                continue
 
         if col.startswith("Image_") and not pd.api.types.is_numeric_dtype(
             population_df[col]

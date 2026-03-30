@@ -42,9 +42,15 @@ def normalize(
         A list of strings corresponding to feature measurement column names in the
         `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume features are from CellProfiler output and
-        prefixed with "Cells", "Nuclei", or "Cytoplasm".
+        prefixed with "Cells", "Nuclei", or "Cytoplasm". Selected feature columns
+        must be numeric. If you are working with mixed profile and image payload
+        data, pass explicit feature columns when needed to avoid selecting
+        non-profile content.
     image_features: bool, default False
-        Whether the profiles contain image features.
+        Whether to include inferred ``Image_*`` feature columns alongside the
+        default CellProfiler compartments. This preserves support for numeric
+        image-level measurements while avoiding non-numeric ``Image_*``
+        payload columns from OME-Arrow-backed or similarly mixed tables.
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
@@ -97,6 +103,12 @@ def normalize(
         str:
             If output_file is provided, then the function returns the path to the
             output file.
+
+    Raises
+    ------
+    ValueError
+        Raised when inferred or manually selected feature columns are non-numeric,
+        because pycytominer normalization methods operate on numeric features only.
 
     Examples
     --------
@@ -163,6 +175,18 @@ def normalize(
 
     if isinstance(features, str):
         raise ValueError("features must be a list of strings, not a single string")
+
+    non_numeric_features = [
+        feature
+        for feature in features
+        if not pd.api.types.is_numeric_dtype(profiles[feature])
+    ]
+    if non_numeric_features:
+        raise ValueError(
+            "normalize() requires numeric feature columns. "
+            "Found non-numeric columns: "
+            f"{non_numeric_features}."
+        )
 
     # Separate out the features and meta
     feature_df = profiles.loc[:, features]

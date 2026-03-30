@@ -203,6 +203,29 @@ def test_normalize_example_ome_parquet_with_explicit_feature_selection():
     ]
 
 
+def test_normalize_rejects_non_numeric_feature_columns():
+    profiles = pd.read_parquet(EXAMPLE_OME_PARQUET, engine="pyarrow")
+    profiles = profiles.assign(
+        Metadata_treatment=[
+            "control" if i % 2 == 0 else "drug" for i in range(len(profiles))
+        ]
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="normalize\\(\\) requires numeric feature columns",
+    ) as exc_info:
+        normalize(
+            profiles=profiles,
+            features=["Image_FileName_GFP_OMEArrow_ORIG"],
+            meta_features=["Metadata_ImageNumber", "Metadata_treatment"],
+            samples="Metadata_treatment == 'control'",
+            method="standardize",
+        )
+
+    assert "Image_FileName_GFP_OMEArrow_ORIG" in str(exc_info.value)
+
+
 def test_normalize_warehouse_root_with_inferred_features():
     profiles = pd.read_parquet(
         os.path.join(

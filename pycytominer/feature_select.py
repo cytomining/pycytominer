@@ -56,7 +56,11 @@ def feature_select(
         Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     image_features: bool, default False
-        Whether the profiles contain image features.
+        Whether to include inferred ``Image_*`` feature columns. When True,
+        pycytominer preserves numeric image-level measurements while excluding
+        non-numeric ``Image_*`` columns, which helps avoid treating image
+        payload columns as profile features in mixed tables such as
+        OME-Arrow-backed inputs.
     samples : str, default "all"
         Samples to provide operation on.
     operation: list of str or str, default "variance_threshold

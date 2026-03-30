@@ -88,3 +88,15 @@ def test_feature_infer_image_ignores_object_columns():
     features = infer_cp_features(population_df=object_image_df, image_features=True)
 
     assert features == ["Image_Feature_1"]
+
+
+def test_feature_infer_excludes_nested_object_columns_without_image_prefix():
+    object_feature_df = pd.DataFrame({
+        "Cells_AreaShape_Area": ["1", "2", "3"],
+        "Cells_OMEArrow_Payload": [{"a": 1}, {"a": 2}, {"a": 3}],
+        "Metadata_ImageNumber": [1, 2, 3],
+    })
+
+    features = infer_cp_features(population_df=object_feature_df)
+
+    assert features == ["Cells_AreaShape_Area"]
