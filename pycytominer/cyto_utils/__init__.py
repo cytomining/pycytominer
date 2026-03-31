@@ -16,7 +16,6 @@ from .features import (
 from .load import (
     infer_delim,
     load_cytotable_profiles,
-    load_iceberg_profiles,
     load_npz_features,
     load_npz_locations,
     load_platemap,

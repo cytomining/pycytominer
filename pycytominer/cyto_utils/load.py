@@ -251,41 +251,6 @@ def load_cytotable_profiles(
     )
 
 
-def load_iceberg_profiles(
-    warehouse_path: Union[str, pathlib.Path, pathlib.PurePath],
-    table_name: str = "joined_profiles",
-    namespace: str = "profiles",
-) -> pd.DataFrame:
-    """Backward-compatible alias for `load_cytotable_profiles`.
-
-    This function is kept so existing code that uses the older Iceberg-focused
-    name continues to work while pycytominer standardizes on the
-    ``load_cytotable_profiles`` name for CytoTable-style warehouse inputs.
-
-    Parameters
-    ----------
-    warehouse_path : path-like
-        Path to either the warehouse root or the project directory that contains
-        a `warehouse/` directory.
-    table_name : str, default "joined_profiles"
-        Table name to load from within the namespace.
-    namespace : str, default "profiles"
-        Namespace that contains the table. For profile data this is typically
-        `profiles`.
-
-    Returns
-    -------
-    pd.DataFrame
-        Loaded table as a pandas dataframe.
-    """
-
-    return load_cytotable_profiles(
-        warehouse_path=warehouse_path,
-        table_name=table_name,
-        namespace=namespace,
-    )
-
-
 def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     """
     Sniff the delimiter in the given file

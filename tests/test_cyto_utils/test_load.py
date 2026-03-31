@@ -11,7 +11,6 @@ import pytest
 
 from pycytominer.cyto_utils import (
     load_cytotable_profiles,
-    load_iceberg_profiles,
     load_npz_features,
     load_npz_locations,
     load_platemap,
@@ -301,11 +300,9 @@ def test_load_cytotable_profiles():
 
     warehouse_profiles = load_cytotable_profiles(example_iceberg_warehouse)
     root_profiles = load_cytotable_profiles(example_iceberg_root)
-    alias_profiles = load_iceberg_profiles(example_iceberg_root)
 
     pd.testing.assert_frame_equal(warehouse_profiles, expected_profiles)
     pd.testing.assert_frame_equal(root_profiles, expected_profiles)
-    pd.testing.assert_frame_equal(alias_profiles, expected_profiles)
 
 
 def test_load_platemap():
