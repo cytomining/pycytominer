@@ -135,6 +135,31 @@ def test_aggregate_mean_subsetvar():
     assert aggregate_result.equals(expected_result)
 
 
+def test_aggregate_infer_with_image_features():
+    image_data_df = pd.DataFrame({
+        "g": ["a", "a", "b", "b"],
+        "Cells_x": [1, 3, 5, 7],
+        "Image_Quality": [10.0, 14.0, 20.0, 24.0],
+        "Image_OMEArrow_Payload": [{"a": 1}, {"a": 2}, {"a": 3}, {"a": 4}],
+    })
+
+    aggregate_result = aggregate(
+        population_df=image_data_df,
+        strata=["g"],
+        features="infer",
+        image_features=True,
+        operation="median",
+    )
+
+    expected_result = pd.DataFrame({
+        "g": ["a", "b"],
+        "Cells_x": [2.0, 6.0],
+        "Image_Quality": [12.0, 22.0],
+    })
+
+    pd.testing.assert_frame_equal(aggregate_result, expected_result)
+
+
 def test_aggregate_median_dtype_confirm():
     """
     Testing aggregate pycytominer function

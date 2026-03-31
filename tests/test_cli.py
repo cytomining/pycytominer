@@ -206,6 +206,34 @@ def test_cli_raises_if_core_returns_dataframe(monkeypatch: pytest.MonkeyPatch) -
         )
 
 
+def test_cli_aggregate_passes_image_features(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured_kwargs: dict[str, object] = {}
+
+    def _mock_aggregate(**kwargs: object) -> str:
+        captured_kwargs.update(kwargs)
+        return "out.csv"
+
+    def _mock_load_profiles(_: object) -> pd.DataFrame:
+        return pd.DataFrame({"Metadata_Plate": ["P1"], "Feature_1": [1.0]})
+
+    monkeypatch.setattr(pycytominer_cli, "aggregate", _mock_aggregate)
+    monkeypatch.setattr(pycytominer_cli, "load_profiles", _mock_load_profiles)
+    cli = PycytominerCLI()
+
+    result = cli.aggregate(
+        profiles="fake.csv",
+        output_file="out.csv",
+        strata="Metadata_Plate",
+        features="infer",
+        image_features=True,
+    )
+
+    assert result == "out.csv"
+    assert captured_kwargs["image_features"] is True
+
+
 def test_cli_unknown_argument_errors(tmp_path: pathlib.Path) -> None:
     """Ensure unknown Fire arguments fail with a non-zero exit status."""
     _, profiles_path = _write_profiles(tmp_path)

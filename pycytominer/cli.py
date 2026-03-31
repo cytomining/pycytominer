@@ -65,6 +65,7 @@ class PycytominerCLI:
         output_file: str,
         strata: str | Sequence[str] = "Metadata_Plate,Metadata_Well",
         features: str | Sequence[str] = "infer",
+        image_features: bool = False,
         operation: str = "median",
         output_type: Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
         | None = "csv",
@@ -81,6 +82,7 @@ class PycytominerCLI:
             output_file: Path to the output file to write.
             strata: Metadata columns to aggregate by.
             features: Feature list or "infer" to infer CellProfiler features.
+            image_features: Whether inferred features should include numeric image features.
             operation: Aggregation operation ("median" or "mean").
             output_type: Output type to write.
             compute_object_count: Whether to compute object counts.
@@ -106,6 +108,7 @@ class PycytominerCLI:
             population_df=profiles_df,
             strata=strata_list,
             features=features_value,
+            image_features=image_features,
             operation=operation,
             output_file=output_file,
             output_type=output_type,

@@ -16,6 +16,7 @@ def aggregate(
     population_df: pd.DataFrame,
     strata: list[str] = ["Metadata_Plate", "Metadata_Well"],
     features: Union[list[str], str] = "infer",
+    image_features: bool = False,
     operation: str = "median",
     output_file: Optional[str] = None,
     output_type: Literal[
@@ -37,6 +38,11 @@ def aggregate(
         Columns to groupby and aggregate.
     features : list of str, default "infer"
         List of features that should be aggregated.
+    image_features : bool, default False
+        Whether to include inferred ``Image_*`` feature columns. When True,
+        pycytominer preserves numeric image-level measurements while excluding
+        non-numeric ``Image_*`` columns and nested object-valued payload
+        columns from inferred features.
     operation : str, default "median"
         How the data is aggregated. Currently only supports one of ['mean', 'median'].
     output_file : str or file handle, optional
@@ -95,7 +101,7 @@ def aggregate(
         )
 
     if features == "infer":
-        features = infer_cp_features(population_df)
+        features = infer_cp_features(population_df, image_features=image_features)
 
     # recast as dataframe to protect against scenarios where a series may be returned
     population_df = pd.DataFrame(population_df[features])
