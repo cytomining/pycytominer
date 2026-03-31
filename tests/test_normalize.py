@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pycytominer.cyto_utils import infer_cp_features
 from pycytominer.normalize import normalize
 
 random.seed(123)

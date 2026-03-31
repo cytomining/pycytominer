@@ -179,7 +179,11 @@ def resolve_cytotable_profiles_target(
         ]
 
         if len(candidates) == 1:
-            resolved_targets.append((profile_root.parent, "profiles", candidates[0].name))
+            resolved_targets.append((
+                profile_root.parent,
+                "profiles",
+                candidates[0].name,
+            ))
 
         if len(candidates) > 1:
             ambiguous_roots.append(profile_root)
@@ -188,7 +192,9 @@ def resolve_cytotable_profiles_target(
         return resolved_targets[0]
 
     if len(resolved_targets) > 1 or ambiguous_roots:
-        problem_roots = resolved_targets if len(resolved_targets) > 1 else ambiguous_roots
+        problem_roots = (
+            resolved_targets if len(resolved_targets) > 1 else ambiguous_roots
+        )
         raise ValueError(
             "Found multiple parquet-backed profile tables or candidates under "
             f"{problem_roots}. Use load_cytotable_profiles() to select "

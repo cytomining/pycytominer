@@ -18,8 +18,8 @@ from pycytominer.cyto_utils import (
 )
 from pycytominer.cyto_utils.load import (
     infer_delim,
-    is_path_a_parquet_file,
     is_path_a_parquet_dataset_dir,
+    is_path_a_parquet_file,
     resolve_cytotable_profiles_target,
     resolve_parquet_path,
 )
@@ -207,7 +207,8 @@ def test_load_profiles():
     assert ome_parquet["Image_FileName_GFP_OMEArrow_ORIG"].dtype == "object"
 
     with pytest.raises(
-        FileNotFoundError, match=r"load_profiles\(\) didn't find the path: .*missing\.parquet\."
+        FileNotFoundError,
+        match=r"load_profiles\(\) didn't find the path: .*missing\.parquet\.",
     ):
         load_profiles(ROOT_DIR / "tests" / "test_data" / "missing.parquet")
 
