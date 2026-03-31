@@ -237,6 +237,31 @@ def test_resolve_cytotable_profiles_target_warehouse_root():
     assert resolved == (example_iceberg_warehouse, "profiles", "joined_profiles")
 
 
+def test_resolve_cytotable_profiles_target_project_root():
+    resolved = resolve_cytotable_profiles_target(example_iceberg_root)
+
+    assert resolved == (example_iceberg_warehouse, "profiles", "joined_profiles")
+
+
+def test_resolve_cytotable_profiles_target_ignores_ambiguous_sibling_root(tmp_path):
+    malformed_profiles_root = tmp_path / "profiles"
+    first_table = malformed_profiles_root / "joined_profiles" / "data"
+    second_table = malformed_profiles_root / "normalized_profiles" / "data"
+    warehouse_table = tmp_path / "warehouse" / "profiles" / "joined_profiles" / "data"
+
+    first_table.mkdir(parents=True)
+    second_table.mkdir(parents=True)
+    warehouse_table.mkdir(parents=True)
+
+    data_df.to_parquet(first_table / "part-00000.parquet", engine="pyarrow")
+    data_df.to_parquet(second_table / "part-00000.parquet", engine="pyarrow")
+    data_df.to_parquet(warehouse_table / "part-00000.parquet", engine="pyarrow")
+
+    resolved = resolve_cytotable_profiles_target(tmp_path)
+
+    assert resolved == (tmp_path / "warehouse", "profiles", "joined_profiles")
+
+
 def test_resolve_cytotable_profiles_target_no_match(tmp_path):
     tmp_path.mkdir(exist_ok=True)
 

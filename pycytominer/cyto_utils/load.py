@@ -141,9 +141,9 @@ def resolve_cytotable_profiles_target(
     Returns
     -------
     tuple[pathlib.Path, str, str] or None
-        Returns the resolved root path, namespace, and table name when exactly
-        one parquet-backed profile table can be identified under the profile
-        namespace. Returns None when the path does not expose a profile
+        Returns the resolved warehouse root path, namespace, and table name
+        when exactly one parquet-backed profile table can be identified under
+        the profile namespace. Returns None when the path does not expose a profile
         namespace in either ``<root>/profiles/<table>`` or
         ``<root>/warehouse/profiles/<table>`` form.
 
@@ -165,6 +165,9 @@ def resolve_cytotable_profiles_target(
     # that upstream tools always generate both forms.
     profile_roots = [root / "profiles", root / "warehouse" / "profiles"]
 
+    resolved_targets = []
+    ambiguous_roots = []
+
     for profile_root in profile_roots:
         if not profile_root.is_dir():
             continue
@@ -176,14 +179,21 @@ def resolve_cytotable_profiles_target(
         ]
 
         if len(candidates) == 1:
-            return root, "profiles", candidates[0].name
+            resolved_targets.append((profile_root.parent, "profiles", candidates[0].name))
 
         if len(candidates) > 1:
-            raise ValueError(
-                "Found multiple parquet-backed profile tables under "
-                f"{profile_root}. Use load_cytotable_profiles() to select "
-                "the target table explicitly."
-            )
+            ambiguous_roots.append(profile_root)
+
+    if len(resolved_targets) == 1:
+        return resolved_targets[0]
+
+    if len(resolved_targets) > 1 or ambiguous_roots:
+        problem_roots = resolved_targets if len(resolved_targets) > 1 else ambiguous_roots
+        raise ValueError(
+            "Found multiple parquet-backed profile tables or candidates under "
+            f"{problem_roots}. Use load_cytotable_profiles() to select "
+            "the target table explicitly."
+        )
 
     return None
 
