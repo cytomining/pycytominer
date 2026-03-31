@@ -158,6 +158,11 @@ def resolve_cytotable_profiles_target(
         root = pathlib.Path(warehouse_path).resolve(strict=True)
     except FileNotFoundError:
         return None
+
+    # Accept either the warehouse root itself or a parent project directory
+    # that contains ``warehouse/``. This reflects the path shapes pycytominer
+    # supports for local CytoTable-style fixtures; it is not meant to claim
+    # that upstream tools always generate both forms.
     profile_roots = [root / "profiles", root / "warehouse" / "profiles"]
 
     for profile_root in profile_roots:
