@@ -143,8 +143,9 @@ def resolve_cytotable_profiles_target(
     tuple[pathlib.Path, str, str] or None
         Returns the resolved root path, namespace, and table name when exactly
         one parquet-backed profile table can be identified under the profile
-        namespace. Returns None when the path does not look like a supported
-        warehouse layout.
+        namespace. Returns None when the path does not expose a profile
+        namespace in either ``<root>/profiles/<table>`` or
+        ``<root>/warehouse/profiles/<table>`` form.
 
     Raises
     ------
