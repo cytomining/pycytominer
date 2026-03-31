@@ -258,6 +258,10 @@ def load_iceberg_profiles(
 ) -> pd.DataFrame:
     """Backward-compatible alias for `load_cytotable_profiles`.
 
+    This function is kept so existing code that uses the older Iceberg-focused
+    name continues to work while pycytominer standardizes on the
+    ``load_cytotable_profiles`` name for CytoTable-style warehouse inputs.
+
     Parameters
     ----------
     warehouse_path : path-like
