@@ -51,6 +51,7 @@ def normalize(
         default CellProfiler compartments. This preserves support for numeric
         image-level measurements while avoiding non-numeric ``Image_*``
         payload columns from OME-Arrow-backed or similarly mixed tables.
+        Non-normalized image payload columns are preserved in the output.
     meta_features : list
         A list of strings corresponding to metadata column names in the `profiles`
         DataFrame. All features listed must be found in `profiles`. Defaults to "infer".
@@ -197,6 +198,13 @@ def normalize(
         raise ValueError("meta_features must be a list of strings, not a single string")
 
     meta_df = profiles.loc[:, meta_features]
+    passthrough_image_columns = [
+        column
+        for column in profiles.columns
+        if column not in set(features).union(meta_features)
+        and (column.startswith("Image_") or column.startswith("ome_arrow_"))
+    ]
+    passthrough_image_df = profiles.loc[:, passthrough_image_columns]
 
     # Fit the sklearn scaler
     if samples == "all":
@@ -215,7 +223,7 @@ def normalize(
         index=feature_df.index,
     )
 
-    normalized = meta_df.merge(feature_df, left_index=True, right_index=True)
+    normalized = pd.concat([meta_df, passthrough_image_df, feature_df], axis="columns")
 
     if feature_df.shape != profiles.loc[:, features].shape:
         error_detail = "The number of rows and columns in the feature dataframe does not match the original dataframe"
@@ -223,7 +231,8 @@ def normalize(
         raise ValueError(f"{error_detail}. This is likely a bug in {context}")
 
     if (normalized.shape[0] != profiles.shape[0]) or (
-        normalized.shape[1] != len(features) + len(meta_features)
+        normalized.shape[1]
+        != len(features) + len(meta_features) + len(passthrough_image_columns)
     ):
         error_detail = "The number of rows and columns in the normalized dataframe does not match the original dataframe"
         context = f"the `{method}` method in `pycytominer.normalize`"

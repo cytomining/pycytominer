@@ -124,7 +124,7 @@ def test_normalize_standardize_allsamples():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
-def test_normalize_ignores_ome_arrow_columns_when_inferred():
+def test_normalize_preserves_ome_arrow_columns_when_inferred():
     profiles_path = os.path.join(
         ROOT_DIR,
         "tests",
@@ -170,11 +170,21 @@ def test_normalize_ignores_ome_arrow_columns_when_inferred():
         method="standardize",
     )
 
-    assert "ome_arrow_image" not in normalize_result.columns
-    assert "ome_arrow_outline" not in normalize_result.columns
+    passthrough_image_columns = [
+        column
+        for column in profiles.columns
+        if column not in set(infer_cp_features(profiles, metadata=True)).union(
+            infer_cp_features(profiles)
+        )
+        and (column.startswith("Image_") or column.startswith("ome_arrow_"))
+    ]
+
+    assert "ome_arrow_image" in normalize_result.columns
+    assert "ome_arrow_outline" in normalize_result.columns
     assert "Metadata_treatment" in normalize_result.columns
     assert normalize_result.columns.tolist() == [
         *infer_cp_features(profiles, metadata=True),
+        *passthrough_image_columns,
         *infer_cp_features(profiles),
     ]
 
@@ -195,10 +205,22 @@ def test_normalize_example_ome_parquet_with_explicit_feature_selection():
         method="standardize",
     )
 
-    assert normalize_result.shape == (3, 3)
+    assert normalize_result.shape == (3, 15)
     assert normalize_result.columns.tolist() == [
         "Metadata_ImageNumber",
         "Metadata_treatment",
+        "Image_FileName_GFP",
+        "Image_FileName_RFP",
+        "Image_FileName_DAPI",
+        "Image_FileName_GFP_OMEArrow_ORIG",
+        "Image_FileName_GFP_OMEArrow_LABL",
+        "Image_FileName_GFP_OMEArrow_COMP",
+        "Image_FileName_RFP_OMEArrow_ORIG",
+        "Image_FileName_RFP_OMEArrow_LABL",
+        "Image_FileName_RFP_OMEArrow_COMP",
+        "Image_FileName_DAPI_OMEArrow_ORIG",
+        "Image_FileName_DAPI_OMEArrow_LABL",
+        "Image_FileName_DAPI_OMEArrow_COMP",
         "Metadata_Cells_Number_Object_Number",
     ]
 
@@ -252,9 +274,19 @@ def test_normalize_warehouse_root_with_inferred_features():
         method="standardize",
     )
 
+    passthrough_image_columns = [
+        column
+        for column in profiles.columns
+        if column not in set(infer_cp_features(profiles, metadata=True)).union(
+            infer_cp_features(profiles)
+        )
+        and (column.startswith("Image_") or column.startswith("ome_arrow_"))
+    ]
+
     assert "Metadata_treatment" in normalize_result.columns
     assert normalize_result.columns.tolist() == [
         *infer_cp_features(profiles, metadata=True),
+        *passthrough_image_columns,
         *infer_cp_features(profiles),
     ]
 
