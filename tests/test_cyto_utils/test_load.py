@@ -207,7 +207,7 @@ def test_load_profiles():
     assert ome_parquet["Image_FileName_GFP_OMEArrow_ORIG"].dtype == "object"
 
     with pytest.raises(
-        FileNotFoundError, match=r"load_profiles\(\) didn't find the path."
+        FileNotFoundError, match=r"load_profiles\(\) didn't find the path: .*missing\.parquet\."
     ):
         load_profiles(ROOT_DIR / "tests" / "test_data" / "missing.parquet")
 

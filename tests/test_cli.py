@@ -234,7 +234,8 @@ def test_cli_propagates_file_not_found_error() -> None:
     cli = PycytominerCLI()
 
     with pytest.raises(
-        FileNotFoundError, match=r"load_profiles\(\) didn't find the path."
+        FileNotFoundError,
+        match=r"load_profiles\(\) didn't find the path: .*missing_file\.csv\.",
     ):
         cli.normalize(
             profiles="missing_file.csv",

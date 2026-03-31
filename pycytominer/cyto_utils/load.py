@@ -310,7 +310,9 @@ def load_profiles(
     # Check if path exists and load depending on file type
     if isinstance(profiles, (str, pathlib.Path, pathlib.PurePath)):
         if not pathlib.Path(profiles).exists():
-            raise FileNotFoundError("load_profiles() didn't find the path.")
+            raise FileNotFoundError(
+                f"load_profiles() didn't find the path: {profiles}."
+            )
 
         parquet_path = resolve_parquet_path(profiles)
         if parquet_path is not None:
