@@ -130,7 +130,7 @@ def resolve_parquet_path(
 def resolve_cytotable_profiles_target(
     warehouse_path: Union[str, pathlib.Path, pathlib.PurePath],
 ) -> Optional[tuple[pathlib.Path, str, str]]:
-    """Resolve an unambiguous profile table from a CytoTable-style warehouse.
+    """Resolve a single profile table from a CytoTable-style warehouse.
 
     Parameters
     ----------
@@ -142,8 +142,9 @@ def resolve_cytotable_profiles_target(
     -------
     tuple[pathlib.Path, str, str] or None
         Returns the resolved root path, namespace, and table name when exactly
-        one parquet-backed profile table is found. Returns None when the path
-        does not look like a supported warehouse layout.
+        one parquet-backed profile table can be identified under the profile
+        namespace. Returns None when the path does not look like a supported
+        warehouse layout.
 
     Raises
     ------
