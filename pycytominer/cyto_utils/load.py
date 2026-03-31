@@ -219,8 +219,8 @@ def load_cytotable_profiles(
     table_name : str, default "joined_profiles"
         Table name to load from within the namespace.
     namespace : str, default "profiles"
-        Namespace that contains the table. For profile data this is typically
-        `profiles`.
+        Iceberg namespace that contains the table. For profile data this is
+        typically `profiles`.
 
     Returns
     -------
