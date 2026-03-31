@@ -20,6 +20,7 @@ from pycytominer.cyto_utils import (
 from pycytominer.cyto_utils.load import (
     infer_delim,
     is_path_a_parquet_file,
+    is_path_a_parquet_dataset_dir,
     resolve_cytotable_profiles_target,
     resolve_parquet_path,
 )
@@ -244,6 +245,24 @@ def test_resolve_cytotable_profiles_target_no_match(tmp_path):
 
 def test_resolve_cytotable_profiles_target_missing_path(tmp_path):
     assert resolve_cytotable_profiles_target(tmp_path / "missing") is None
+
+
+def test_is_path_a_parquet_dataset_dir_strict(tmp_path):
+    parquet_dir = tmp_path / "parquet_dir"
+    parquet_dir.mkdir()
+    data_df.to_parquet(parquet_dir / "part-00000.parquet", engine="pyarrow")
+    data_df.to_parquet(parquet_dir / "part-00001.parquet", engine="pyarrow")
+
+    assert is_path_a_parquet_dataset_dir(parquet_dir)
+
+
+def test_is_path_a_parquet_dataset_dir_rejects_mixed_files(tmp_path):
+    mixed_dir = tmp_path / "mixed_dir"
+    mixed_dir.mkdir()
+    data_df.to_parquet(mixed_dir / "part-00000.parquet", engine="pyarrow")
+    (mixed_dir / "notes.txt").write_text("not parquet", encoding="utf-8")
+
+    assert not is_path_a_parquet_dataset_dir(mixed_dir)
 
 
 def test_resolve_parquet_path_missing_file(tmp_path):

@@ -61,7 +61,8 @@ def is_path_a_parquet_dataset_dir(file: Union[str, pathlib.Path]) -> bool:
     Returns
     -------
     bool
-        Returns True when the path is a directory that contains parquet files.
+        Returns True when the path is a directory whose direct file children are
+        parquet files and at least one parquet file is present.
 
     Raises
     ------
@@ -77,10 +78,14 @@ def is_path_a_parquet_dataset_dir(file: Union[str, pathlib.Path]) -> bool:
         print("Detected a non-str or non-path object in the `file` parameter.")
         return False
 
-    return path.is_dir() and any(
-        child.is_file() and child.suffix.lower() == ".parquet"
-        for child in path.iterdir()
-    )
+    if not path.is_dir():
+        return False
+
+    child_files = [child for child in path.iterdir() if child.is_file()]
+    if not child_files:
+        return False
+
+    return all(child.suffix.lower() == ".parquet" for child in child_files)
 
 
 def resolve_parquet_path(
