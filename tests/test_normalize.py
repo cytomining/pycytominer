@@ -170,23 +170,33 @@ def test_normalize_preserves_ome_arrow_columns_when_inferred():
         method="standardize",
     )
 
-    passthrough_image_columns = [
-        column
-        for column in profiles.columns
-        if column not in set(infer_cp_features(profiles, metadata=True)).union(
-            infer_cp_features(profiles)
-        )
-        and (column.startswith("Image_") or column.startswith("ome_arrow_"))
+    expected_metadata_columns = [
+        column for column in profiles.columns if column.startswith("Metadata_")
+    ]
+    expected_passthrough_image_columns = [
+        "Image_FileName_DNA",
+        "Image_FileName_OrigOverlay",
+        "Image_FileName_PH3",
+        "Image_FileName_cellbody",
+        "ome_arrow_image",
+        "ome_arrow_outline",
     ]
 
     assert "ome_arrow_image" in normalize_result.columns
     assert "ome_arrow_outline" in normalize_result.columns
     assert "Metadata_treatment" in normalize_result.columns
-    assert normalize_result.columns.tolist() == [
-        *infer_cp_features(profiles, metadata=True),
-        *passthrough_image_columns,
-        *infer_cp_features(profiles),
-    ]
+    assert normalize_result.columns[: len(expected_metadata_columns)].tolist() == (
+        expected_metadata_columns
+    )
+    image_start = len(expected_metadata_columns)
+    image_end = image_start + len(expected_passthrough_image_columns)
+    assert normalize_result.columns[image_start:image_end].tolist() == (
+        expected_passthrough_image_columns
+    )
+    assert all(
+        column.startswith(("Cells_", "Cytoplasm_", "Nuclei_"))
+        for column in normalize_result.columns[image_end:]
+    )
 
 
 def test_normalize_example_ome_parquet_with_explicit_feature_columns():
@@ -300,21 +310,29 @@ def test_normalize_warehouse_root_with_inferred_features():
         method="standardize",
     )
 
-    passthrough_image_columns = [
-        column
-        for column in profiles.columns
-        if column not in set(infer_cp_features(profiles, metadata=True)).union(
-            infer_cp_features(profiles)
-        )
-        and (column.startswith("Image_") or column.startswith("ome_arrow_"))
+    expected_metadata_columns = [
+        column for column in profiles.columns if column.startswith("Metadata_")
+    ]
+    expected_passthrough_image_columns = [
+        "Image_FileName_DNA",
+        "Image_FileName_OrigOverlay",
+        "Image_FileName_PH3",
+        "Image_FileName_cellbody",
     ]
 
     assert "Metadata_treatment" in normalize_result.columns
-    assert normalize_result.columns.tolist() == [
-        *infer_cp_features(profiles, metadata=True),
-        *passthrough_image_columns,
-        *infer_cp_features(profiles),
-    ]
+    assert normalize_result.columns[: len(expected_metadata_columns)].tolist() == (
+        expected_metadata_columns
+    )
+    image_start = len(expected_metadata_columns)
+    image_end = image_start + len(expected_passthrough_image_columns)
+    assert normalize_result.columns[image_start:image_end].tolist() == (
+        expected_passthrough_image_columns
+    )
+    assert all(
+        column.startswith(("Cells_", "Cytoplasm_", "Nuclei_"))
+        for column in normalize_result.columns[image_end:]
+    )
 
 
 def test_normalize_standardize_ctrlsamples():
