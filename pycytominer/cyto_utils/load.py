@@ -203,7 +203,13 @@ def load_cytotable_profiles(
     table_name: str = "joined_profiles",
     namespace: str = "profiles",
 ) -> pd.DataFrame:
-    """Load a parquet-backed table from a CytoTable-style warehouse layout.
+    """Load a profile table from a CytoTable-style warehouse layout.
+
+    This helper loads profile data stored as parquet fragments within an
+    Iceberg-style table directory, typically under
+    ``warehouse/profiles/<table_name>/data``. It is intended for CytoTable-style
+    local outputs that organize tables by namespace and table name for
+    downstream pycytominer processing.
 
     Parameters
     ----------
