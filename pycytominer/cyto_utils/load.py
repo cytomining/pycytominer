@@ -236,8 +236,9 @@ def load_cytotable_profiles(
 
     This helper loads profile data stored as parquet fragments within an
     Iceberg-style table directory, typically under
-    ``warehouse/profiles/<table_name>/data``. It is intended for CytoTable-style
-    local outputs that organize tables by namespace and table name for
+    ``warehouse/<namespace>/<table_name>/data``, where namespace is typically
+    ``profiles``. It is intended for CytoTable-style local outputs that
+    organize tables by namespace and table name for
     downstream Pycytominer processing.
 
     Parameters
