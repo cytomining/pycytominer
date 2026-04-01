@@ -193,13 +193,18 @@ def normalize(
     # whitespace stripping and lowercasing.
     missing_string_tokens = {"", "na", "n/a", "nan", "none", "null"}
     for feature in features:
+        # Already-numeric feature columns do not need compatibility cleanup.
         if pd.api.types.is_numeric_dtype(profiles[feature]):
             continue
 
         non_null_values = profiles[feature].dropna()
+        # A column of only missing values can pass through to downstream numeric
+        # handling without special coercion here.
         if non_null_values.empty:
             continue
 
+        # Split mixed object columns into string markers versus other values so
+        # we can distinguish missing-value strings from truly malformed content.
         string_values = non_null_values[
             non_null_values.map(lambda value: isinstance(value, str))
         ]
@@ -207,13 +212,19 @@ def normalize(
             non_null_values.map(lambda value: not isinstance(value, str))
         ]
 
+        # Non-string values must still be numeric for this compatibility path
+        # to apply.
         non_string_values_are_numeric = non_string_values.map(
             pd.api.types.is_number
         ).all()
 
+        # If the column contains no strings, or mixes strings with non-numeric
+        # payloads, leave it untouched so validation can reject it below.
         if not non_string_values_are_numeric or string_values.empty:
             continue
 
+        # Only coerce when every remaining string is a missing-value marker;
+        # this avoids silently converting arbitrary strings to NaN.
         if (
             string_values
             .map(lambda value: value.strip().lower())
