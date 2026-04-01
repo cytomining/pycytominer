@@ -205,6 +205,11 @@ def normalize(
         raise ValueError("meta_features must be a list of strings, not a single string")
 
     meta_df = profiles.loc[:, meta_features]
+    # Preserve image payload columns without normalizing them. The
+    # ``ome_arrow_*`` prefix is a flexible naming convention used here for
+    # OME-Arrow payload columns, not a strict upstream requirement; see the
+    # ome-arrow project docs for the broader format context:
+    # https://pypi.org/project/ome-arrow/
     passthrough_image_columns = [
         column
         for column in profiles.columns
