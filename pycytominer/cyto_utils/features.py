@@ -130,6 +130,7 @@ def infer_cp_features(
         if not any(col.startswith(x.title()) for x in compartments):
             continue
 
+        # Exclude nested object payloads while allowing scalar object values.
         if population_df[col].dtype == "object":
             non_null_values = population_df[col].dropna()
             if any(not pd.api.types.is_scalar(value) for value in non_null_values):
