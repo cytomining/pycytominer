@@ -243,7 +243,13 @@ def test_resolve_cytotable_profiles_target_project_root():
     assert resolved == (example_iceberg_warehouse, "profiles", "joined_profiles")
 
 
-def test_resolve_cytotable_profiles_target_ignores_ambiguous_sibling_root(tmp_path):
+def test_resolve_cytotable_profiles_target_prefers_unambiguous_warehouse_root(
+    tmp_path,
+):
+    # Guard against a project directory that contains both a malformed sibling
+    # ``profiles/`` tree and a valid ``warehouse/profiles/`` tree. Resolution
+    # should still succeed when exactly one warehouse-backed profile table is
+    # unambiguous.
     malformed_profiles_root = tmp_path / "profiles"
     first_table = malformed_profiles_root / "joined_profiles" / "data"
     second_table = malformed_profiles_root / "normalized_profiles" / "data"
@@ -304,6 +310,39 @@ def test_load_cytotable_profiles():
 
     pd.testing.assert_frame_equal(warehouse_profiles, expected_profiles)
     pd.testing.assert_frame_equal(root_profiles, expected_profiles)
+
+
+def test_load_cytotable_profiles_with_explicit_table_name_and_namespace():
+    expected_profiles = pd.read_parquet(
+        resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
+    )
+
+    warehouse_profiles = load_cytotable_profiles(
+        warehouse_path=example_iceberg_warehouse,
+        table_name="joined_profiles",
+        namespace="profiles",
+    )
+    root_profiles = load_cytotable_profiles(
+        warehouse_path=example_iceberg_root,
+        table_name="joined_profiles",
+        namespace="profiles",
+    )
+
+    pd.testing.assert_frame_equal(warehouse_profiles, expected_profiles)
+    pd.testing.assert_frame_equal(root_profiles, expected_profiles)
+
+
+def test_load_cytotable_profiles_rejects_missing_or_malformed_targets(tmp_path):
+    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+        load_cytotable_profiles(tmp_path / "missing")
+
+    malformed_root = tmp_path / "warehouse"
+    malformed_table = malformed_root / "profiles" / "joined_profiles"
+    malformed_table.mkdir(parents=True)
+    (malformed_table / "notes.txt").write_text("not parquet", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError, match="Could not find a parquet-backed table"):
+        load_cytotable_profiles(malformed_root)
 
 
 def test_load_platemap():
