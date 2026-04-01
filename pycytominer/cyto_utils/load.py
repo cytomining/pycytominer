@@ -66,8 +66,8 @@ def is_path_a_parquet_dataset_dir(file: Union[str, pathlib.Path]) -> bool:
     Returns
     -------
     bool
-        Returns True when the path is a directory whose direct file children are
-        parquet files and at least one parquet file is present.
+        Returns True when the path is a directory, contains at least one direct
+        file child, and all direct file children are parquet files.
 
     Raises
     ------
