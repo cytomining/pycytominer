@@ -142,6 +142,12 @@ def resolve_cytotable_profiles_target(
 ) -> Optional[tuple[pathlib.Path, str, str]]:
     """Resolve a single profile table from a CytoTable-style warehouse.
 
+    This helper only auto-resolves a target when exactly one parquet-backed
+    profile table is present under the expected profile namespace layout. It
+    does not infer which table to use based on downstream pycytominer
+    operations or processing level; callers must be explicit when multiple
+    profile tables are available.
+
     Parameters
     ----------
     warehouse_path : path-like
@@ -153,8 +159,8 @@ def resolve_cytotable_profiles_target(
     tuple[pathlib.Path, str, str] or None
         Returns the resolved warehouse root path, namespace, and table name
         when exactly one parquet-backed profile table can be identified under
-        the profile namespace. Returns None when the path does not expose a profile
-        namespace in either ``<root>/profiles/<table>`` or
+        the profile namespace. Returns None when the path does not expose a
+        profile namespace in either ``<root>/profiles/<table>`` or
         ``<root>/warehouse/profiles/<table>`` form.
 
     Raises
