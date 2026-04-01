@@ -246,7 +246,10 @@ def load_cytotable_profiles(
         Path to either the warehouse root or the project directory that contains
         a `warehouse/` directory.
     table_name : str, default "joined_profiles"
-        Table name to load from within the namespace.
+        Table name to load from within the namespace. The default,
+        ``joined_profiles``, is the conventional CytoTable table that joins
+        object-level profile measurements across compartments into one profile
+        table.
     namespace : str, default "profiles"
         Iceberg namespace that contains the table. For profile data this is
         typically `profiles`.
