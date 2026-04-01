@@ -198,7 +198,9 @@ def normalize(
         if non_null_values.empty:
             continue
 
-        string_values = non_null_values[non_null_values.map(lambda value: isinstance(value, str))]
+        string_values = non_null_values[
+            non_null_values.map(lambda value: isinstance(value, str))
+        ]
         non_string_values = non_null_values[
             non_null_values.map(lambda value: not isinstance(value, str))
         ]
@@ -210,9 +212,12 @@ def normalize(
         if not non_string_values_are_numeric or string_values.empty:
             continue
 
-        if string_values.map(lambda value: value.strip().lower()).isin(
-            missing_string_tokens
-        ).all():
+        if (
+            string_values
+            .map(lambda value: value.strip().lower())
+            .isin(missing_string_tokens)
+            .all()
+        ):
             profiles[feature] = profiles[feature].map(
                 lambda value: (
                     np.nan
