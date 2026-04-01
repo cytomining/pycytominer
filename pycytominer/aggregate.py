@@ -40,9 +40,10 @@ def aggregate(
         List of features that should be aggregated.
     image_features : bool, default False
         Whether to include inferred ``Image_*`` feature columns. When True,
-        pycytominer preserves numeric image-level measurements while excluding
-        non-numeric ``Image_*`` columns and nested object-valued payload
-        columns from inferred features.
+        Pycytominer preserves numeric image-level measurements while excluding
+        non-numeric ``Image_*`` columns, which helps avoid treating image
+        payload columns as profile features in mixed tables such as
+        OME-Arrow-backed inputs.
     operation : str, default "median"
         How the data is aggregated. Currently only supports one of ['mean', 'median'].
     output_file : str or file handle, optional
