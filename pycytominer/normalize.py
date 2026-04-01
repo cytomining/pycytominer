@@ -189,7 +189,8 @@ def normalize(
     # that encode
     # missing feature values as strings such as "nan" or "None". Only
     # missing-value-like strings are coerced; other non-numeric content still
-    # fails validation below.
+    # fails validation below. String matching is case-insensitive after
+    # whitespace stripping and lowercasing.
     missing_string_tokens = {"", "na", "n/a", "nan", "none", "null"}
     for feature in features:
         if pd.api.types.is_numeric_dtype(profiles[feature]):
