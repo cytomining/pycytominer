@@ -255,6 +255,7 @@ def test_normalize_rejects_non_numeric_feature_columns():
         )
 
     assert "Image_FileName_GFP_OMEArrow_ORIG" in str(exc_info.value)
+    assert "feature_select() first" in str(exc_info.value)
 
 
 def test_normalize_rejects_mixed_numeric_and_ome_arrow_feature_columns():
@@ -281,6 +282,7 @@ def test_normalize_rejects_mixed_numeric_and_ome_arrow_feature_columns():
         )
 
     assert "Image_FileName_GFP_OMEArrow_ORIG" in str(exc_info.value)
+    assert "feature_select() first" in str(exc_info.value)
 
 
 def test_normalize_warehouse_root_with_inferred_features():

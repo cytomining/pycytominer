@@ -110,7 +110,10 @@ def normalize(
     ------
     ValueError
         Raised when inferred or manually selected feature columns are non-numeric,
-        because pycytominer normalization methods operate on numeric features only.
+        because Pycytominer normalization methods operate on numeric features
+        only. In that case, select numeric features explicitly before calling
+        ``normalize()``, for example by passing a curated feature list or by
+        running ``feature_select()`` first.
 
     Examples
     --------
@@ -187,7 +190,10 @@ def normalize(
         raise ValueError(
             "normalize() requires numeric feature columns. "
             "Found non-numeric columns: "
-            f"{non_numeric_features}."
+            f"{non_numeric_features}. "
+            "Select numeric features explicitly before normalization, "
+            "for example by passing a curated feature list or by running "
+            "feature_select() first."
         )
 
     # Separate out the features and meta
