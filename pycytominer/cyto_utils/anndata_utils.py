@@ -105,9 +105,7 @@ def is_anndata(
 
 
 def read_anndata(
-    profiles: Union[
-        str, pathlib.Path, pathlib.PurePath, pd.DataFrame, AnnDataLike
-    ],
+    profiles: Union[str, pathlib.Path, pathlib.PurePath, pd.DataFrame, AnnDataLike],
     anndata_category: str,
 ) -> pd.DataFrame:
     """
