@@ -341,7 +341,9 @@ def test_load_cytotable_profiles_rejects_missing_or_malformed_targets(tmp_path):
     malformed_table.mkdir(parents=True)
     (malformed_table / "notes.txt").write_text("not parquet", encoding="utf-8")
 
-    with pytest.raises(FileNotFoundError, match="Could not find a parquet-backed table"):
+    with pytest.raises(
+        FileNotFoundError, match="Could not find a parquet-backed table"
+    ):
         load_cytotable_profiles(malformed_root)
 
 
