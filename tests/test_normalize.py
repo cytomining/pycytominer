@@ -236,9 +236,9 @@ def test_normalize_example_ome_parquet_with_explicit_feature_columns():
     ]
 
 
-def test_normalize_allows_missing_values_in_numeric_feature_columns():
+def test_normalize_allows_none_missing_values_in_numeric_feature_columns():
     profiles = data_df.copy()
-    profiles.loc[0, "x"] = np.nan
+    profiles.loc[0, "x"] = None
 
     normalize_result = normalize(
         profiles=profiles,
@@ -250,6 +250,27 @@ def test_normalize_allows_missing_values_in_numeric_feature_columns():
 
     assert "x" in normalize_result.columns
     assert pd.isna(normalize_result.loc[0, "x"])
+
+
+def test_normalize_rejects_string_nan_in_feature_columns():
+    profiles = data_df.copy()
+    profiles["x"] = profiles["x"].astype(object)
+    profiles.loc[0, "x"] = "nan"
+
+    with pytest.raises(
+        ValueError,
+        match="normalize\\(\\) requires numeric feature columns",
+    ) as exc_info:
+        normalize(
+            profiles=profiles,
+            features=["x", "y", "z", "zz"],
+            meta_features="infer",
+            samples="all",
+            method="standardize",
+        )
+
+    assert "x" in str(exc_info.value)
+    assert "feature_select() first" in str(exc_info.value)
 
 
 def test_normalize_rejects_non_numeric_feature_columns():
