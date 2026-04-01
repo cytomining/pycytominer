@@ -167,7 +167,10 @@ def resolve_cytotable_profiles_target(
     ------
     ValueError
         Raised when multiple parquet-backed profile tables are found and the
-        intended target is ambiguous.
+        intended target is ambiguous. This helper is only for the convenience
+        case where a warehouse path exposes exactly one profile table. When
+        multiple tables are present, use ``load_cytotable_profiles()`` with an
+        explicit namespace and table name.
     """
 
     try:
@@ -195,6 +198,8 @@ def resolve_cytotable_profiles_target(
         ]
 
         if len(candidates) == 1:
+            # ``profiles`` is the CytoTable profile namespace/folder under the
+            # warehouse root that load_cytotable_profiles() expects.
             resolved_targets.append((
                 profile_root.parent,
                 "profiles",
@@ -213,8 +218,10 @@ def resolve_cytotable_profiles_target(
         )
         raise ValueError(
             "Found multiple parquet-backed profile tables or candidates under "
-            f"{problem_roots}. Use load_cytotable_profiles() to select "
-            "the target table explicitly."
+            f"{problem_roots}. pycytominer only auto-resolves a warehouse path "
+            "when exactly one profile table is available. Use "
+            "load_cytotable_profiles() with an explicit namespace and "
+            "table_name to select the target table."
         )
 
     return None
@@ -307,7 +314,12 @@ def load_profiles(
 
     This loader supports direct files, parquet dataset directories, AnnData
     inputs, and unambiguous CytoTable-style warehouse roots that contain a
-    single parquet-backed table under ``profiles/*/data``.
+    single parquet-backed table under ``profiles/*/data``. This is the entry
+    point used by higher-level functions such as ``normalize()`` and
+    ``annotate()`` when they receive a path-like ``profiles`` input. If a
+    warehouse path contains multiple profile tables, this loader will not guess
+    which one to use; call ``load_cytotable_profiles()`` directly with an
+    explicit ``table_name`` and ``namespace`` instead.
 
     Parameters
     ----------
