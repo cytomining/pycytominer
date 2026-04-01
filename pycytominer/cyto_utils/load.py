@@ -356,6 +356,8 @@ def load_profiles(
         if parquet_path is not None:
             return pd.read_parquet(parquet_path, engine="pyarrow")
 
+        # Non-parquet paths may still be valid warehouse roots, AnnData inputs,
+        # or delimited text files handled by the fallback branches below.
         cytotable_target = resolve_cytotable_profiles_target(profiles)
         if cytotable_target is not None:
             warehouse_root, namespace, table_name = cytotable_target
