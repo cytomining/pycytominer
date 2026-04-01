@@ -99,7 +99,7 @@ def infer_cp_features(
         This convention is expected by CellProfiler defaults.
     image_features : bool, default False
         Whether or not to include ``Image_*`` columns in inferred features.
-        When True, pycytominer includes numeric image features alongside the
+        When True, Pycytominer includes numeric image features alongside the
         default CellProfiler compartments, while still excluding non-numeric
         ``Image_*`` columns. This avoids treating image payload columns as
         profile features in data layouts that store both under the same
