@@ -43,9 +43,10 @@ def normalize(
         `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume features are from CellProfiler output and
         prefixed with "Cells", "Nuclei", or "Cytoplasm". Selected feature columns
-        must be numeric. If you are working with mixed profile and image payload
-        data, pass explicit feature columns when needed to avoid selecting
-        non-profile content.
+        must be numeric. Missing values are allowed as long as the column
+        remains numeric. If you are working with mixed profile and image
+        payload data, pass explicit feature columns when needed to avoid
+        selecting non-profile content.
     image_features: bool, default False
         Whether to include inferred ``Image_*`` feature columns alongside the
         default CellProfiler compartments. This preserves support for numeric
