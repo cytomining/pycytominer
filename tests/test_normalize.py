@@ -236,6 +236,22 @@ def test_normalize_example_ome_parquet_with_explicit_feature_columns():
     ]
 
 
+def test_normalize_allows_missing_values_in_numeric_feature_columns():
+    profiles = data_df.copy()
+    profiles.loc[0, "x"] = np.nan
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        samples="all",
+        method="standardize",
+    )
+
+    assert "x" in normalize_result.columns
+    assert pd.isna(normalize_result.loc[0, "x"])
+
+
 def test_normalize_rejects_non_numeric_feature_columns():
     profiles = pd.read_parquet(EXAMPLE_OME_PARQUET, engine="pyarrow")
     profiles = profiles.assign(
