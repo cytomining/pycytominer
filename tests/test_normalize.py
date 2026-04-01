@@ -252,10 +252,29 @@ def test_normalize_allows_none_missing_values_in_numeric_feature_columns():
     assert pd.isna(normalize_result.loc[0, "x"])
 
 
-def test_normalize_rejects_string_nan_in_feature_columns():
+def test_normalize_allows_string_missing_markers_in_feature_columns():
     profiles = data_df.copy()
     profiles["x"] = profiles["x"].astype(object)
     profiles.loc[0, "x"] = "nan"
+    profiles.loc[1, "x"] = "None"
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        samples="all",
+        method="standardize",
+    )
+
+    assert "x" in normalize_result.columns
+    assert pd.isna(normalize_result.loc[0, "x"])
+    assert pd.isna(normalize_result.loc[1, "x"])
+
+
+def test_normalize_rejects_malformed_string_feature_values():
+    profiles = data_df.copy()
+    profiles["x"] = profiles["x"].astype(object)
+    profiles.loc[0, "x"] = "not_a_number"
 
     with pytest.raises(
         ValueError,

@@ -4,6 +4,7 @@ Normalize observation features based on specified normalization method
 
 from typing import Any, Literal, Optional, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import RobustScaler, StandardScaler
 
@@ -44,7 +45,10 @@ def normalize(
         Defaults to "infer". If "infer", then assume features are from CellProfiler output and
         prefixed with "Cells", "Nuclei", or "Cytoplasm". Selected feature columns
         must be numeric. Missing values are allowed as long as the column
-        remains numeric. If you are working with mixed profile and image
+        remains numeric. As a temporary compatibility measure, Pycytominer
+        also treats common missing-value strings such as ``"nan"`` and
+        ``"None"`` as missing values in selected feature columns before
+        numeric validation. If you are working with mixed profile and image
         payload data, pass explicit feature columns when needed to avoid
         selecting non-profile content.
     image_features: bool, default False
@@ -180,6 +184,44 @@ def normalize(
 
     if isinstance(features, str):
         raise ValueError("features must be a list of strings, not a single string")
+
+    # Temporary compatibility path for CellProfiler-style exports that encode
+    # missing feature values as strings such as "nan" or "None". Only
+    # missing-value-like strings are coerced; other non-numeric content still
+    # fails validation below.
+    missing_string_tokens = {"", "na", "n/a", "nan", "none", "null"}
+    for feature in features:
+        if pd.api.types.is_numeric_dtype(profiles[feature]):
+            continue
+
+        non_null_values = profiles[feature].dropna()
+        if non_null_values.empty:
+            continue
+
+        string_values = non_null_values[non_null_values.map(lambda value: isinstance(value, str))]
+        non_string_values = non_null_values[
+            non_null_values.map(lambda value: not isinstance(value, str))
+        ]
+
+        non_string_values_are_numeric = non_string_values.map(
+            pd.api.types.is_number
+        ).all()
+
+        if not non_string_values_are_numeric or string_values.empty:
+            continue
+
+        if string_values.map(lambda value: value.strip().lower()).isin(
+            missing_string_tokens
+        ).all():
+            profiles[feature] = profiles[feature].map(
+                lambda value: (
+                    np.nan
+                    if isinstance(value, str)
+                    and value.strip().lower() in missing_string_tokens
+                    else value
+                )
+            )
+            profiles[feature] = pd.to_numeric(profiles[feature], errors="coerce")
 
     non_numeric_features = [
         feature
