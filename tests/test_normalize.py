@@ -208,6 +208,8 @@ def test_normalize_example_ome_parquet_with_explicit_feature_columns():
 
     normalize_result = normalize(
         profiles=profiles,
+        # This column uses a ``Metadata_`` prefix in the source data but is
+        # intentionally normalized here as an explicit feature.
         features=["Metadata_Cells_Number_Object_Number"],
         meta_features=["Metadata_ImageNumber", "Metadata_treatment"],
         samples="Metadata_treatment == 'control'",
