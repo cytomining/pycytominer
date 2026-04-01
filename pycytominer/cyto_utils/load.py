@@ -238,7 +238,7 @@ def load_cytotable_profiles(
     Iceberg-style table directory, typically under
     ``warehouse/profiles/<table_name>/data``. It is intended for CytoTable-style
     local outputs that organize tables by namespace and table name for
-    downstream pycytominer processing.
+    downstream Pycytominer processing.
 
     Parameters
     ----------
