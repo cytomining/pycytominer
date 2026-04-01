@@ -185,7 +185,8 @@ def normalize(
     if isinstance(features, str):
         raise ValueError("features must be a list of strings, not a single string")
 
-    # Temporary compatibility path for CellProfiler-style exports that encode
+    # Temporary compatibility path for accommodating CellProfiler-style imports
+    # that encode
     # missing feature values as strings such as "nan" or "None". Only
     # missing-value-like strings are coerced; other non-numeric content still
     # fails validation below.
