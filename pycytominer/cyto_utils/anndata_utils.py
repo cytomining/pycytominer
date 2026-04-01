@@ -24,7 +24,7 @@ Type_AnnDataLike = TypeVar("Type_AnnDataLike", bound=AnnDataLike)
 
 
 def is_anndata(
-    path_or_anndata_object: Union[str, pathlib.Path, AnnDataLike],
+    path_or_anndata_object: Union[str, pathlib.Path, pathlib.PurePath, AnnDataLike],
 ) -> Optional[str]:
     """
     Return AnnData category as str if
@@ -105,7 +105,10 @@ def is_anndata(
 
 
 def read_anndata(
-    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike], anndata_category: str
+    profiles: Union[
+        str, pathlib.Path, pathlib.PurePath, pd.DataFrame, AnnDataLike
+    ],
+    anndata_category: str,
 ) -> pd.DataFrame:
     """
     Read an AnnData object or file and return a pandas DataFrame.
