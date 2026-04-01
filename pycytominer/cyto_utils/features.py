@@ -87,6 +87,14 @@ def infer_cp_features(
 ) -> list[str]:
     """Given CellProfiler output data read as a DataFrame, output feature column names as a list.
 
+    Inferred feature columns will match expected CellProfiler prefixes (for
+    example, ``Cells_``, ``Cytoplasm_``, and ``Nuclei_``). When
+    ``image_features=True``, the function excludes non-numeric ``Image_*``
+    columns from inferred features. This is important for use cases that
+    combine profile features with image payload columns under the ``Image_*``
+    prefix, such as OME-Arrow. The function also excludes columns with nested
+    object values, even if they use a CellProfiler-like prefix.
+
     Parameters
     ----------
     population_df : pd.DataFrame
@@ -108,13 +116,7 @@ def infer_cp_features(
     Returns
     -------
     features: list of str
-        List of Cell Painting features. Inferred feature columns must match the
-        expected CellProfiler prefixes. When ``image_features=True``,
-        non-numeric ``Image_*`` columns are excluded from inferred features.
-        This is important for data engines that combine profile features with
-        image payload columns under the ``Image_*`` prefix, such as OME-Arrow.
-        Nested object-valued columns are excluded from inferred features even
-        if they use a CellProfiler-like prefix.
+        List of inferred Cell Painting feature column names.
     """
 
     compartments = convert_compartment_format_to_list(compartments)
