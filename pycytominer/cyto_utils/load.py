@@ -311,7 +311,7 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
 
 
 def load_profiles(
-    profiles: Union[str, pathlib.Path, pd.DataFrame, AnnDataLike],
+    profiles: Union[str, pathlib.Path, pathlib.PurePath, pd.DataFrame, AnnDataLike],
 ) -> pd.DataFrame:
     """
     Unless a dataframe is provided, load the given profile dataframe from path or string.
@@ -328,8 +328,8 @@ def load_profiles(
     Parameters
     ----------
     profiles :
-        {str, pathlib.Path, pandas.DataFrame, ad.AnnData}
-        File location, warehouse root, or actual pandas dataframe of profiles.
+        {str, pathlib.Path, pathlib.PurePath, pandas.DataFrame, ad.AnnData}
+        File location, warehouse root, or in-memory profile data.
 
     Return
     ------
