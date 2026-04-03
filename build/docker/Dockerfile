@@ -33,8 +33,11 @@ RUN uv sync --frozen --all-extras --no-dev --no-install-project && \
 # create stage for production build (no dev or non-essential deps)
 FROM production AS testing
 
+# copy the source tree for tests that read package data via repository paths
+COPY pycytominer ./pycytominer
+
 # copy the tests dir for testing purposes
 COPY tests ./tests
 
-# install dev dependencies without reinstalling pycytominer from source
-RUN uv sync --frozen --all-extras --group dev --no-install-project
+# install dev dependencies without removing the wheel-installed pycytominer
+RUN uv sync --frozen --all-extras --group dev --no-install-project --inexact
