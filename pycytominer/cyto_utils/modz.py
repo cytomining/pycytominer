@@ -87,8 +87,8 @@ def modz_base(
         # There is only one sample (note that columns are now samples)
         modz_df = population_df.sum(axis=1)
     else:
-        modz_df = population_df * weights
-        modz_df = modz_df.sum(axis=1)
+        weighted_df: pd.DataFrame = population_df.mul(weights, axis="columns")
+        modz_df = weighted_df.sum(axis="columns")
 
     return modz_df
 
