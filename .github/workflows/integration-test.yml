@@ -49,7 +49,7 @@ jobs:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
           cache-pre-commit: true
           cache-venv: false
-          setup-uv: false
+          setup-uv: true
           install-deps: false
       - name: Run pre-commit checks on all files (with prek)
         uses: j178/prek-action@v2
