@@ -20,12 +20,11 @@ env:
   LANG: "en_US.utf-8"
   LC_ALL: "en_US.utf-8"
   PIP_CACHE_DIR: ${{ github.workspace }}/.cache/pip
-  POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
-  POETRY_VIRTUALENVS_IN_PROJECT: "true"
   PRE_COMMIT_HOME: ${{ github.workspace }}/.cache/pre-commit
   PYTEST_ADDOPTS: ${{ github.event.inputs.pytest_addopts }}
   PYTHONIOENCODING: "UTF-8"
   TARGET_PYTHON_VERSION: "3.10"
+  UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
 
 jobs:
   quality-test:
@@ -50,7 +49,7 @@ jobs:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
           cache-pre-commit: true
           cache-venv: false
-          setup-poetry: false
+          setup-uv: false
           install-deps: false
       - name: Run pre-commit checks on all files (with prek)
         uses: j178/prek-action@v2
@@ -75,11 +74,11 @@ jobs:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
           cache-pre-commit: false
           cache-venv: true
-          setup-poetry: true
+          setup-uv: true
           install-deps: true
       - name: Run mypy
         run: |
-          poetry run mypy .
+          uv run mypy .
   docs-build-test:
     # This job checks that the docs build
     name: Docs build test
@@ -99,11 +98,11 @@ jobs:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
           cache-pre-commit: false
           cache-venv: true
-          setup-poetry: true
+          setup-uv: true
           install-deps: true
       - name: Run sphinx-build
         run: |
-          poetry run sphinx-build docs/ docs-build/
+          uv run sphinx-build docs/ docs-build/
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
@@ -127,12 +126,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache-pre-commit: false
           cache-venv: true
-          setup-poetry: true
+          setup-uv: true
           install-deps: true
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
         if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
-        run: poetry run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
+        run: uv run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
         if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
@@ -153,7 +152,7 @@ jobs:
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
         if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
-        run: poetry run pytest ${{ github.event.inputs.pytest_addopts }}
+        run: uv run pytest ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
@@ -172,14 +171,15 @@ jobs:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
           cache-pre-commit: false
           cache-venv: true
-          setup-poetry: true
+          setup-uv: true
           install-deps: true
       - name: Build
-        run: poetry build
+        run: uv build
       - name: Get Pycytominer version
         id: get_version
         run: |
-          echo "version=$(poetry version | cut -d' ' -f2 )" >> "$GITHUB_OUTPUT"
+          sdist_filename=$(basename dist/*.tar.gz)
+          echo "version=${sdist_filename#pycytominer-}" | sed 's/\.tar\.gz$//' >> "$GITHUB_OUTPUT"
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:

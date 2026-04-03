@@ -1,30 +1,29 @@
-install: .devcontainer/postCreateCommand.sh ## Install the poetry environment and install the pre-commit hooks
-	@echo "🛠️ Creating virtual environment using poetry and installing pre-commit hooks"
+install: .devcontainer/postCreateCommand.sh ## Install the uv environment and install the pre-commit hooks
+	@echo "🛠️ Creating virtual environment using uv and installing pre-commit hooks"
 	@bash .devcontainer/postCreateCommand.sh
-	@echo "🐢 Launching poetry shell"
-	@poetry shell
+	@echo "🐢 Environment ready. Activate with 'source .venv/bin/activate' or use 'uv run <command>'."
 
 .PHONY: check
 check: ## Run code quality tools.
-	@echo "🔒 Checking Poetry lock file consistency with 'pyproject.toml': Running poetry lock --check"
-	@poetry check --lock
+	@echo "🔒 Checking uv lock file consistency with 'pyproject.toml': Running uv lock --check"
+	@uv lock --check
 	@echo "🔎 Linting code: Running pre-commit"
-	@poetry run pre-commit run -a
+	@uv run pre-commit run -a
 
 .PHONY: test
 test: ## Test the code with pytest
 	@echo "🧪 Testing code: Running pytest"
-	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
+	@uv run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
 .PHONY: docs
 docs: ## Build the documentation
 	@echo "📚 Building documentation"
-	@poetry run sphinx-build docs build
+	@uv run sphinx-build docs build
 
 .PHONY: build
-build: clean-build ## Build wheel file using poetry
+build: clean-build ## Build wheel file using uv
 	@echo "🛞 Creating wheel and sdist files"
-	@poetry build
+	@uv build
 
 .PHONY: clean-build
 clean-build: ## clean build artifacts
@@ -35,7 +34,7 @@ clean-build: ## clean build artifacts
 test_docker_build: ## Build the docker image and run the tests
 	@echo "🐳 Building docker image and running tests"
 	@docker build -f build/docker/Dockerfile -t pycytominer:latest .
-	@docker run pycytominer:latest poetry run pytest
+	@docker run pycytominer:latest pytest
 
 .PHONY: help
 help:

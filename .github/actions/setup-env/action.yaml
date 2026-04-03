@@ -5,7 +5,7 @@ description: |
   - Setup Python
   - Cache the pre-commit installation
   - Cache the virtual environment
-  - Setup poetry
+  - Setup uv
   - Install dependencies
 inputs:
   python-version:
@@ -17,8 +17,8 @@ inputs:
   cache-venv:
     description: Whether to cache the virtual environment
     required: true
-  setup-poetry:
-    description: Whether to setup poetry
+  setup-uv:
+    description: Whether to setup uv
     required: true
   install-deps:
     description: Whether to install dependencies
@@ -55,25 +55,25 @@ runs:
     - name: Cache venv
       # The cache key for the virtual environment is a hash of the
       # operating system, PY (see above), the pyproject.toml and
-      # the poetry.lock file. This allows for caching the virtual
+      # the uv.lock file. This allows for caching the virtual
       # environment with all the dependencies.
       if: ${{ inputs.cache-venv == 'true' }}
       uses: actions/cache@v5
       with:
         path: |
           .cache
+          .cache/uv
           .venv
         key:
           cache|${{ runner.os }}|${{ runner.arch }}|${{ env.PY }}|${{ hashFiles('pyproject.toml') }}|${{
-          hashFiles('poetry.lock') }}
-    - name: Setup poetry and poetry-dynamic-versioning
+          hashFiles('uv.lock') }}
+    - name: Setup uv
       shell: bash
-      if: ${{ inputs.setup-poetry == 'true' }}
+      if: ${{ inputs.setup-uv == 'true' }}
       run: |
-        python -m pip install poetry
-        poetry self add "poetry-dynamic-versioning[plugin]"
-    - name: Install dependencies with poetry
+        python -m pip install uv
+    - name: Install dependencies with uv
       shell: bash
       if: ${{ inputs.install-deps == 'true' }}
       run: |
-        poetry install --with dev,docs --all-extras -v --no-interaction
+        uv sync --all-extras --group dev --group docs

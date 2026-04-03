@@ -6,7 +6,7 @@ on:
       - opened
     paths:
       - "docs/**"
-      - poetry.lock
+      - uv.lock
 
 permissions:
   pull-requests: write

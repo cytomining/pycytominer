@@ -19,7 +19,7 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Your first code contribution](#your-first-code-contribution)
 - [Pull requests](#pull-requests)
 - [Documentation](#documentation)
-- [Poetry](#poetry)
+- [uv](#uv)
 - [Dev environments](#dev-environments)
 - [Releases](#releases)
 
@@ -148,13 +148,13 @@ sphinx-build -b html docs build
 
 See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
 
-### Poetry
+### uv
 
-We use [Poetry](https://python-poetry.org/) to manage dependencies and packaging.
-Changes in dependencies are managed by Poetry's `pyproject.toml` file.
-Poetry installs all dependencies in a virtual environment, which is activated automatically when you run `poetry shell`.
-Poetry also provides a `poetry run` command to run commands in the virtual environment without activating it.
-For example, to run the test suite, you can use `poetry run pytest`.
+We use [uv](https://docs.astral.sh/uv/) to manage dependencies, virtual environments, and packaging.
+Changes in dependencies are managed through `pyproject.toml` and `uv.lock`.
+Run `uv sync --all-extras --group dev --group docs` to create the project virtual environment.
+Use `uv run` to execute commands in that environment without activating it manually.
+For example, to run the test suite, you can use `uv run pytest`.
 
 ### Running tests
 
@@ -162,8 +162,8 @@ We use [`pytest`](https://docs.pytest.org/en/stable/) to help organize, configur
 We expect that all tests must pass in order for new contributions to be accepted into production code.
 `pytest` configuration may be found within the `pyproject.toml` file under `tool.pytest.ini_options`.
 We include the marker `large_data_tests` for tests which involve large amounts of data downloaded from the internet (these tests could take time).
-We recommend invoking `pytest` through the command: `poetry run pytest`.
-You may temporarily deselect the `large_data_tests` marked tests during development using, for example: `poetry run pytest -m "not large_data_tests"`.
+We recommend invoking `pytest` through the command: `uv run pytest`.
+You may temporarily deselect the `large_data_tests` marked tests during development using, for example: `uv run pytest -m "not large_data_tests"`.
 
 ### Dev environments
 
@@ -180,9 +180,9 @@ Instructions for setting up a local development environment using VSCode DevCont
 #### Cloud environment
 
 We've set up cloud development configurations with [Github Codespaces](https://github.com/codespaces).
-These development environments include the project dependencies pre-installed via [Poetry](https://python-poetry.org/).
+These development environments include the project dependencies pre-installed via [uv](https://docs.astral.sh/uv/).
 Prior to commit, pre-installed git hooks auto-format any changed code.
-When you are ready to make a pull request, use the pre-configured test suite in VSCode or run `poetry run pytest` to ensure that your changes pass all tests.
+When you are ready to make a pull request, use the pre-configured test suite in VSCode or run `uv run pytest` to ensure that your changes pass all tests.
 You can create a codespace by clicking on the following link:
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/?repo=195106954&ref=main&devcontainer_path=.devcontainer%2Fdevcontainer.json)
@@ -195,8 +195,8 @@ We recommend using either the local devcontainer or cloud dev environment approa
 However, we also provide general guidance for setting up a dev environment in Linux, MacOS, or Windows (WSL) below.
 
 ```bash
-# Install Poetry (Linux, MacOS, Windows - WSL)
-curl -sSL https://install.python-poetry.org | python3 -
+# Install uv (Linux, MacOS, Windows - WSL)
+python -m pip install uv
 # Checkout the repository
 git clone https://github.com/cytomining/pycytominer.git
 cd pycytominer
@@ -207,16 +207,16 @@ bash .devcontainer/postCreateCommand.sh
 ### Releases
 
 Project maintainers are responsible for releasing new versions of Pycytominer.
-We use [`poetry-dynamic-versioning`](https://github.com/mtkennerly/poetry-dynamic-versioning) to abide by [PEP 440](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers) for version specifications.
+We use Git tag-based dynamic versioning through the build backend to abide by [PEP 440](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers) for version specifications.
 Note: we use a slightly different specification for versioning our Docker image (please see the [relevant section below](#docker-hub-image-releases)).
 Creating a new release includes the following steps:
 
 1. Create a new branch from `main` for the release (e.g. `release-v1.0.0`)
 2. Review the [commit history](https://github.com/cytomining/pycytominer/compare) from the last release and check whether it includes commits that don't follow the [conventional commit standard](https://www.conventionalcommits.org/en/v1.0.0/#summary).
    If all changes follow conventional commits, skip to step 5.
-3. Run the command `poetry run cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen` and generate the draft changelog.
+3. Run the command `uv run cz bump --files-only` to update the version number in `CITATION.cff` and `pyproject.toml:tool.commitizen` and generate the draft changelog.
 4. Review the changes to `CHANGELOG.md`. If necessary, add descriptions of missing changes and modify descriptions to match conventional commits standard.
-5. `git add` any manual changes and run `poetry run cz bump` to create the release commit.
+5. `git add` any manual changes and run `uv run cz bump` to create the release commit.
    Push the changes to the release branch.
 6. Create a pull request for the release branch into `main`.
 7. Request a review from another maintainer.
@@ -245,8 +245,8 @@ If you have configured your [dev environment](#dev-environments) as described ab
 
 We use [ruff](https://docs.astral.sh/ruff/) for formatting Python code, and [prettier](https://prettier.io/) for formatting markdown, json and yaml files.
 Ruff includes a python code formatter similar to Black.
-We include `ruff` in the poetry dev dependencies so it can be run manually using `ruff format`
-Prettier (which is not python-based) is not included in the poetry dev dependencies, but can be installed and run manually.
+We include `ruff` in the dev dependency group so it can be run manually using `uv run ruff format`
+Prettier (which is not python-based) is not included in the project dependency groups, but can be installed and run manually.
 Alternately, both `ruff format` and `prettier` will be run automatically at commit time with the pre-commit hooks installed.
 
 ### Linting
@@ -260,7 +260,7 @@ All linting checks will also be run automatically at commit time with the pre-co
 ### Git commit messages
 
 Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
-We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the poetry dev dependencies.
+We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the dev dependency group.
 
 ### Documentation style guide
 

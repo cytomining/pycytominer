@@ -20,13 +20,13 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
-  # Perform checks and updates for python poetry environment.
+  # Perform checks and updates for the Python project dependencies.
   # See here for more information:
   # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#pip-and-pip-compile
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      # Check for updates to poetry lockfile every week
+      # Check for updates to the project lockfile every month
       interval: "monthly"
     groups:
       python-packages:

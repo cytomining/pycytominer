@@ -13,23 +13,19 @@ LABEL about.license="SPDX:BSD-3-Clause"
 # set the workdir to /app
 WORKDIR /app
 
-# configures poetry to install dependencies without virtualenvs
-# see: https://python-poetry.org/docs/configuration/#virtualenvscreate
-ENV POETRY_VIRTUALENVS_CREATE=false
-
-# install poetry and poetry dynamic versioning
+# install uv
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir poetry
+RUN pip install --no-cache-dir uv
 
 # create stage for production build (no dev or non-essential deps)
 FROM base as production
 
 # copy the pycytominer source into image
-COPY README.md pyproject.toml poetry.lock ./
+COPY README.md pyproject.toml uv.lock ./
 COPY pycytominer ./pycytominer
 
-# install pycytominer using poetry root dependencies and all extras
-RUN poetry install --all-extras -v --no-interaction
+# install pycytominer using project dependencies and all extras
+RUN uv sync --frozen --all-extras --no-dev
 
 # create stage for production build (no dev or non-essential deps)
 FROM production as testing
@@ -37,5 +33,5 @@ FROM production as testing
 # copy the tests dir for testing purposes
 COPY tests ./tests
 
-# install pycytominer from poetry with group deps and all extras for testing
-RUN poetry install --with dev --all-extras -v --no-interaction
+# install pycytominer with the dev dependency group and all extras for testing
+RUN uv sync --frozen --all-extras --group dev

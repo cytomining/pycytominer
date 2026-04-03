@@ -33,10 +33,10 @@ jobs:
           python-version: ${{ env.TARGET_PYTHON_VERSION }}
           cache-pre-commit: false
           cache-venv: false
-          setup-poetry: true
+          setup-uv: true
           install-deps: false
       - name: Build 📦 distributions
         run: |
-          poetry build
+          uv build
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

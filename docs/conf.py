@@ -27,7 +27,7 @@ project = "Pycytominer"
 author = pycytominer.__about__.__author__
 project_copyright = f"Copyright 2019 - {date.today().year} {author}"
 
-# Get the version from dunamai (the backend of poetry-dynamic-versioning)
+# Get the version from Git tags via dunamai
 auto_version = dunamai.Version.from_git()
 version = auto_version.serialize()
 release = version
