@@ -200,8 +200,6 @@ jobs:
     needs: build
     env:
       version: ${{ needs.build.outputs.version }}
-      sdist_filename: pycytominer-${{ needs.build.outputs.version}}.tar.gz
-      sdist_extracted_name: pycytominer-${{ needs.build.outputs.version}}
     steps:
       # checks out selected files for docker image build testing
       - name: Checkout selected files
@@ -209,17 +207,16 @@ jobs:
         with:
           sparse-checkout: |
             build/docker/Dockerfile
+            README.md
+            pyproject.toml
+            uv.lock
             tests
           sparse-checkout-cone-mode: false
-      - name: Download sdist artifact
+      - name: Download wheel artifact
         uses: actions/download-artifact@v8
         with:
-          name: sdist
-      # gather the sdist tar.gz name (which varies)
-      # unzips the sdist
-      - name: Extract sdist
-        run: |
-          tar -xzvf "${{ env.sdist_filename}}"
+          name: wheel
+          path: dist
       # note: roughly follows Docker documentation on GitHub Actions usage
       # found on the following https://github.com/docker/build-push-action
       - name: Set up QEMU
@@ -232,9 +229,7 @@ jobs:
       # where we attempt to use 1.0.1.post37.dev0+55690e4 as a version label.
       - name: Build docker image for testing
         run: |
-          cd "${{ env.sdist_extracted_name }}" && \
-          cp -r ../tests . && \
-          docker build -f ../build/docker/Dockerfile \
+          docker build -f build/docker/Dockerfile \
             -t pycytominer:testing \
             --label version="${{ env.version }}" \
             --target testing \
@@ -249,7 +244,7 @@ jobs:
         if: (github.event_name == 'push'||  github.event_name == 'schedule') && github.ref == 'refs/heads/main'
         id: env-vars
         run: >-
-          echo "CLEAN_VERSION=$(echo ${{ env.sdist_extracted_name }} | tr '+' '_' )" >> "$GITHUB_OUTPUT" &&
+          echo "CLEAN_VERSION=$(echo ${{ env.version }} | tr '+' '_' )" >> "$GITHUB_OUTPUT" &&
           echo "DATE_TAG=$(date +'%y%m%d')" >> "$GITHUB_OUTPUT"
       - name: Login to Docker Hub
         # only run this task if we have a pull request merged or the schedule triggers from main
@@ -264,7 +259,7 @@ jobs:
         if: github.event_name == 'schedule' &&  github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
         uses: docker/build-push-action@v7
         with:
-          context: "${{ env.sdist_extracted_name }}"
+          context: "."
           push: true
           file: ./build/docker/Dockerfile
           target: production
@@ -275,7 +270,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
         uses: docker/build-push-action@v7
         with:
-          context: "${{ env.sdist_extracted_name }}"
+          context: "."
           push: true
           file: ./build/docker/Dockerfile
           target: production
@@ -289,4 +284,4 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: cytomining/pycytominer
-          readme-filepath: "${{ env.sdist_extracted_name }}/README.md"
+          readme-filepath: "./README.md"
