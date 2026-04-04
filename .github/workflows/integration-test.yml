@@ -209,6 +209,7 @@ jobs:
             build/docker/Dockerfile
             README.md
             pyproject.toml
+            pycytominer
             uv.lock
             tests
           sparse-checkout-cone-mode: false
