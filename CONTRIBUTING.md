@@ -152,7 +152,7 @@ See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
 
 We use [uv](https://docs.astral.sh/uv/) to manage dependencies, virtual environments, and packaging.
 Changes in dependencies are managed through `pyproject.toml` and `uv.lock`.
-Run `uv sync --all-extras --group dev --group docs` to create the project virtual environment.
+Run `uv sync --all-extras --group dev --group docs` to create the project's virtual environment.
 Use `uv run` to execute commands in that environment without activating it manually.
 For example, to run the test suite, you can use `uv run pytest`.
 
