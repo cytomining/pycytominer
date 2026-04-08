@@ -76,4 +76,4 @@ runs:
       shell: bash
       if: ${{ inputs.install-deps == 'true' }}
       run: |
-        uv sync --all-extras --group dev --group docs
+        uv sync --frozen --all-extras --group dev --group docs

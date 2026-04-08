@@ -15,8 +15,10 @@ repos:
     hooks:
     -   id: uv-lock-check
         name: uv lock check
-        entry: uv lock --check
-        language: system
+        entry: python -m uv lock --check
+        language: python
+        additional_dependencies:
+        - uv
         pass_filenames: false
 -   repo: https://github.com/rhysd/actionlint
     rev: v1.7.12

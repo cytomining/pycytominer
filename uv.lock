@@ -2874,7 +2874,7 @@ requires-dist = [
     { name = "anndata", marker = "python_full_version >= '3.11' and extra == 'anndata'", specifier = ">=0.12.2" },
     { name = "anndata", marker = "python_full_version < '3.11' and extra == 'anndata'", specifier = "<0.12.2" },
     { name = "boto3", marker = "extra == 'cell-locations'", specifier = ">=1.26.79" },
-    { name = "csvkit", marker = "extra == 'collate'", specifier = "<2" },
+    { name = "csvkit", marker = "extra == 'collate'", specifier = "<3" },
     { name = "cytominer-database", marker = "extra == 'collate'", specifier = "==0.3.4" },
     { name = "fire", specifier = ">=0.5" },
     { name = "fsspec", marker = "extra == 'cell-locations'", specifier = ">=2023.1" },
@@ -2896,7 +2896,7 @@ provides-extras = ["anndata", "cell-locations", "collate"]
 dev = [
     { name = "codecov", specifier = ">=2.1.12" },
     { name = "commitizen", specifier = ">=3.12,<5" },
-    { name = "mypy", specifier = ">=1.11.2,<1.12" },
+    { name = "mypy", specifier = ">=1.11.2,<1.21" },
     { name = "pandas-stubs", marker = "python_full_version < '3.10'", specifier = "<2.2.2.240909" },
     { name = "pandas-stubs", marker = "python_full_version >= '3.10'", specifier = "==2.2.2.240909" },
     { name = "pre-commit", specifier = ">=3.3.2" },
