@@ -2885,7 +2885,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=0.21.2" },
     { name = "scipy", marker = "python_full_version < '3.13'", specifier = ">=1.5" },
     { name = "scipy", marker = "python_full_version >= '3.13'", specifier = ">1.13.1" },
-    { name = "setuptools", marker = "extra == 'collate'", specifier = ">=65,<81" },
+    { name = "setuptools", marker = "extra == 'collate'", specifier = ">=65,<83" },
     { name = "sqlalchemy", specifier = ">=1.3.6,<3" },
     { name = "zarr", marker = "python_full_version >= '3.11' and extra == 'anndata'", specifier = ">=3.1.1" },
     { name = "zarr", marker = "python_full_version < '3.11' and extra == 'anndata'", specifier = "<3.1.1" },
