@@ -86,7 +86,7 @@ dev = [
   "commitizen>=3.12,<5",
   "mypy>=1.11.2,<1.21",
   "pandas-stubs<2.2.2.240909; python_version<'3.10'",
-  "pandas-stubs==2.2.2.240909; python_version>='3.10'",
+  "pandas-stubs==2.3.3.260113; python_version>='3.10'",
   "pre-commit>=3.3.2",
   "pytest>=5.0.1",
   "pytest-cov>=4.1,<8",
