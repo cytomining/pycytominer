@@ -120,8 +120,8 @@ def determine_high_cor_pair(
     pair_b = correlation_row["pair_b"]
 
     if (
-        sorted_correlation_pairs.get_indexer_for([pair_a])[0]
-        > sorted_correlation_pairs.get_indexer_for([pair_b])[0]
+        sorted_correlation_pairs.get_indexer_for(pd.Index([pair_a]))[0]
+        > sorted_correlation_pairs.get_indexer_for(pd.Index([pair_b]))[0]
     ):
         return pair_a
     else:

@@ -245,7 +245,9 @@ class CellLocation:
         """
 
         # define a dictionary to store the output
-        output_df_list = collections.defaultdict(list)
+        output_df_list: collections.defaultdict[str, list[object]] = (
+            collections.defaultdict(list)
+        )
 
         # iterate over each group of cells in the merged DataFrame
         group_cols = [*self.image_key, self.image_column, self.table_column]

@@ -42,7 +42,7 @@ def annotate_cmap(
 
     annotated = annotated.assign(
         Metadata_pert_id=annotated.Metadata_broad_sample.str.extract(
-            r"(BRD[-N][A-Z0-9]+)"
+            r"(BRD[-N][A-Z0-9]+)", expand=False
         ),
         Metadata_pert_mfc_id=annotated.Metadata_broad_sample,
         Metadata_pert_well=annotated.loc[:, annotate_join_on],

@@ -719,7 +719,7 @@ class SingleCells:
             self
             .image_df[self.strata + self.merge_cols]
             .groupby(self.strata)
-            .agg(lambda s: np.unique(s).tolist())
+            .agg(lambda s: np.unique(s).tolist())  # type: ignore[misc]
             .reset_index(drop=True)
         )
 

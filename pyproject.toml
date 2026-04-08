@@ -185,6 +185,8 @@ markers = [
 
 [tool.mypy]
 exclude = [
+  # ignore build artifacts
+  "build",
   # ignore notebook-based walkthroughs
   "walkthroughs",
   # ignore tests dir

@@ -127,7 +127,6 @@ def read_anndata(
     import h5py
     import numpy as np
     import zarr
-    from pandas.core.arrays.sparse.accessor import SparseFrameAccessor
     from scipy.sparse import issparse
 
     # conditional import for read_elem because the
@@ -170,7 +169,7 @@ def read_anndata(
     # handle sparse vs dense X
     if issparse(X):
         # if we have a sparse matrix, use from_spmatrix
-        sparse_accessor = cast(SparseFrameAccessor, pd.DataFrame.sparse)
+        sparse_accessor = cast(Any, pd.DataFrame.sparse)
         X_df = sparse_accessor.from_spmatrix(X, index=obs.index, columns=var.index)
     else:
         # otherwise, use np.asarray to ensure we have a dense array
@@ -246,7 +245,9 @@ def write_anndata(
         if df_nonnumeric[c].dtype == object and not isinstance(
             df_nonnumeric[c].dtype, pd.CategoricalDtype
         ):
-            df_nonnumeric[c] = df_nonnumeric[c].where(~pd.isna(df_nonnumeric[c]), None)
+            df_nonnumeric[c] = (
+                df_nonnumeric[c].astype(object).mask(pd.isna(df_nonnumeric[c]), None)
+            )
 
     # Build AnnData
     # important: X and obs should be set at the same time to avoid

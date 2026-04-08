@@ -96,12 +96,12 @@ def variance_threshold(
     # unique_ratio is defined as the number of unique features divided by the total
     # number of samples
     unique_ratio = num_unique_features / n
-    unique_ratio = unique_ratio < unique_cut
+    unique_ratio_mask = unique_ratio < unique_cut
 
     # Get the feature names that have a unique ratio less than the unique_cut
     # This represents features that have too few unique values compared to the number
     # of samples.
-    excluded_features_unique = unique_ratio[unique_ratio].index.tolist()
+    excluded_features_unique = unique_ratio_mask[unique_ratio_mask].index.tolist()
 
     # Combine the two lists of features to exclude
     excluded_features = list(
