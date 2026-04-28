@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+import pytest
 
 from pycytominer.cyto_utils import modz
 from pycytominer.cyto_utils.modz import modz_base
@@ -188,6 +190,36 @@ def test_modz_unbalanced_sample_numbers():
             "Cells_x": [0.9999, 5.0],
             "Cytoplasm_y": [5.9994, 1.0],
             "Nuclei_z": [2.9997, 1],
+        },
+    )
+    pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+
+def test_modz_nan_in_replicate_columns():
+    # Test to ensure that replicate groups containing NaN are not silently dropped.
+    # Group "c" matches the data pattern from original group "a"
+    # The NaN group matches the data pattern from original group "b"
+    data_replicate_nan_df = data_replicate_df.assign(
+        Metadata_nan=["c", "c", "c", np.nan, np.nan, np.nan]
+    )
+
+    # We expect our newly implemented warning since the input structure contains NaNs
+    with pytest.warns(UserWarning, match="Missing values \\(NaN\\) detected in input."):
+        consensus_df = modz(
+            data_replicate_nan_df,
+            replicate_columns="Metadata_nan",
+            min_weight=0,
+            precision=precision,
+        )
+
+    # The expected result should preserve the exact same continuous outputs as groups 'a' and 'b'
+    # but bound under the labels 'c' and NaN respectively for the new metadata group.
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_nan": ["c", np.nan],
+            "Cells_x": [1.0, 4.0],
+            "Cytoplasm_y": [5.0, 2.0],
+            "Nuclei_z": [2.0, -0.5],
         },
     )
     pd.testing.assert_frame_equal(expected_result, consensus_df)
