@@ -204,7 +204,7 @@ def test_modz_nan_in_replicate_columns():
     )
 
     # We expect our newly implemented warning since the input structure contains NaNs
-    with pytest.warns(UserWarning, match="Missing values \\(NaN\\) detected in input."):
+    with pytest.warns(UserWarning, match="NaN values detected."):
         consensus_df = modz(
             data_replicate_nan_df,
             replicate_columns="Metadata_nan",
