@@ -42,3 +42,14 @@ body:
       label: Additional information
       description: >
         Provide additional information or context.
+  - type: checkboxes
+    id: contribution-interest
+    attributes:
+      label: Contribution interest
+      description: >
+        If you would like to help build this feature, we would be happy to
+        support you. This is completely optional, but it helps us know when
+        someone is interested in contributing.
+      options:
+        - label: >
+            I would be interested in submitting a pull request to help implement this feature.
