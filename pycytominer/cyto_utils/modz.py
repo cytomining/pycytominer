@@ -150,13 +150,16 @@ def modz(
     subset_features = list(set(replicate_columns + features))
     population_df = population_df.loc[:, subset_features]
 
-    # warn users about using modz with NaN values
-    # NaN values will be treated as a valid group
-    if population_df.isnull().any().any():
+    # warn users about having NaN values in replicate columns
+    if population_df[replicate_columns].isnull().any().any():
         warnings.warn(
-            "NaN values detected. NaNs in 'replicate_columns' form their own "
-            "group; NaNs in 'features' are skipped in correlation but treated "
-            "as 0 in the weighted sum."
+            "NaN values detected. NaNs in 'replicate_columns' form their own group"
+        )
+
+    if population_df[features].isnull().any().any():
+        raise ValueError(
+            "NaN values detected in feature columns. NaNs miscalculate the "
+            "pairwise correlations used to weight samples."
         )
 
     modz_df = (

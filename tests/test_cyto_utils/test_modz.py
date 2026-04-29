@@ -196,14 +196,11 @@ def test_modz_unbalanced_sample_numbers():
 
 
 def test_modz_nan_in_replicate_columns():
-    # Test to ensure that replicate groups containing NaN are not silently dropped.
-    # Group "c" matches the data pattern from original group "a"
-    # The NaN group matches the data pattern from original group "b"
     data_replicate_nan_df = data_replicate_df.assign(
         Metadata_nan=["c", "c", "c", np.nan, np.nan, np.nan]
     )
 
-    # We expect our newly implemented warning since the input structure contains NaNs
+    # min_weight=0: removes influence of anticorrelated sample
     with pytest.warns(UserWarning, match="NaN values detected."):
         consensus_df = modz(
             data_replicate_nan_df,
@@ -212,8 +209,6 @@ def test_modz_nan_in_replicate_columns():
             precision=precision,
         )
 
-    # The expected result should preserve the exact same continuous outputs as groups 'a' and 'b'
-    # but bound under the labels 'c' and NaN respectively for the new metadata group.
     expected_result = pd.DataFrame(
         {
             "Metadata_nan": ["c", np.nan],
@@ -223,3 +218,38 @@ def test_modz_nan_in_replicate_columns():
         },
     )
     pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+    # min_weight=1: modz is equivalent to mean
+    with pytest.warns(UserWarning, match="NaN values detected."):
+        consensus_df = modz(
+            data_replicate_nan_df,
+            replicate_columns="Metadata_nan",
+            min_weight=1,
+            precision=precision,
+        )
+
+    expected_result = (
+        data_replicate_nan_df
+        .groupby("Metadata_nan", dropna=False)
+        .mean(numeric_only=True)
+        .round(precision)
+        .reset_index()
+    )
+    pd.testing.assert_frame_equal(
+        expected_result, consensus_df, check_exact=False, atol=1e-3
+    )
+
+
+def test_modz_nan_in_feature_space():
+    data_replicate_nan_features_df = data_replicate_df.copy()
+    data_replicate_nan_features_df.iloc[
+        0, data_replicate_nan_features_df.columns.get_loc("Cells_x")
+    ] = np.nan
+
+    with pytest.raises(ValueError, match="NaN values detected"):
+        modz(
+            data_replicate_nan_features_df,
+            replicate_columns="Metadata_g",
+            min_weight=0,
+            precision=precision,
+        )
