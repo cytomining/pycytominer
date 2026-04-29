@@ -130,6 +130,7 @@ def collate(
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
+            # Keep the AWS command as argv to avoid shell parsing in subprocess.run.
             sync_cmd = [
                 "aws",
                 "s3",
