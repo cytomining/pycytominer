@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+import pytest
 
 from pycytominer.cyto_utils import modz
 from pycytominer.cyto_utils.modz import modz_base
@@ -191,3 +193,63 @@ def test_modz_unbalanced_sample_numbers():
         },
     )
     pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+
+def test_modz_nan_in_replicate_columns():
+    data_replicate_nan_df = data_replicate_df.assign(
+        Metadata_nan=["c", "c", "c", np.nan, np.nan, np.nan]
+    )
+
+    # min_weight=0: removes influence of anticorrelated sample
+    with pytest.warns(UserWarning, match="NaN values detected."):
+        consensus_df = modz(
+            data_replicate_nan_df,
+            replicate_columns="Metadata_nan",
+            min_weight=0,
+            precision=precision,
+        )
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_nan": ["c", np.nan],
+            "Cells_x": [1.0, 4.0],
+            "Cytoplasm_y": [5.0, 2.0],
+            "Nuclei_z": [2.0, -0.5],
+        },
+    )
+    pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+    # min_weight=1: modz is equivalent to mean
+    with pytest.warns(UserWarning, match="NaN values detected."):
+        consensus_df = modz(
+            data_replicate_nan_df,
+            replicate_columns="Metadata_nan",
+            min_weight=1,
+            precision=precision,
+        )
+
+    expected_result = (
+        data_replicate_nan_df
+        .groupby("Metadata_nan", dropna=False)
+        .mean(numeric_only=True)
+        .round(precision)
+        .reset_index()
+    )
+    pd.testing.assert_frame_equal(
+        expected_result, consensus_df, check_exact=False, atol=1e-3
+    )
+
+
+def test_modz_nan_in_feature_space():
+    data_replicate_nan_features_df = data_replicate_df.copy()
+    data_replicate_nan_features_df.iloc[
+        0, data_replicate_nan_features_df.columns.get_loc("Cells_x")
+    ] = np.nan
+
+    with pytest.raises(ValueError, match="NaN values detected"):
+        modz(
+            data_replicate_nan_features_df,
+            replicate_columns="Metadata_g",
+            min_weight=0,
+            precision=precision,
+        )
