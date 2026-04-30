@@ -315,7 +315,11 @@ class SingleCells:
         self.image_data_loaded = True
 
     def count_cells(
-        self, compartment: str = "cells", count_subset: bool = False
+        self,
+        compartment: str = "cells",
+        merge_cols: list[str] = ["TableNumber", "ImageNumber"],
+        object_col: str = "ObjectNumber",
+        count_subset: bool = False,
     ) -> pd.DataFrame:
         """Determine how many cells are measured per well.
 
@@ -323,6 +327,10 @@ class SingleCells:
         ----------
         compartment : str, default "cells"
             Compartment to subset.
+        merge_cols : list[str], default ["TableNumber", "ImageNumber"]
+            Columns used to merge image and compartment tables for counting.
+        object_col : str, default "ObjectNumber"
+            Column used as the object identifier to count.
         count_subset : bool, default False
             Whether or not count the number of cells as specified by the strata groups.
 
@@ -353,17 +361,30 @@ class SingleCells:
                 .rename({"Metadata_ObjectNumber": "cell_count"}, axis="columns")
             )
         else:
-            query_cols = "TableNumber, ImageNumber, ObjectNumber"
+            if len(merge_cols) < 1:
+                raise ValueError(
+                    "merge_cols must include at least one merge column."
+                )
+
+            if len(object_col) == 0:
+                raise ValueError(
+                    "object_col must be a non-empty column name."
+                )
+
+            # specify query to get the columns needed for counting cells per group
+            query_cols = ", ".join([*merge_cols, object_col])
             query = f"select {query_cols} from {compartment}"
+
+            # count the number of cells per group by merging image and compartment data
             count_df = self.image_df.merge(
-                pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
+                pd.read_sql(sql=query, con=self.conn), how="inner", on=merge_cols
             )
             count_df = (
                 count_df
-                .groupby(self.strata)["ObjectNumber"]
+                .groupby(self.strata)[object_col]
                 .count()
                 .reset_index()
-                .rename({"ObjectNumber": "cell_count"}, axis="columns")
+                .rename({object_col: "cell_count"}, axis="columns")
             )
 
         return count_df

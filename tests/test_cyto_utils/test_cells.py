@@ -272,6 +272,27 @@ def test_SingleCells_count():
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
+def test_SingleCells_count_without_tablenumber_uses_explicit_count_cols():
+    tmp_sqlite_file = f"sqlite:///{TMPDIR}/test_count_cells_no_tablenumber.sqlite"
+    test_engine = create_engine(tmp_sqlite_file)
+
+    image_df = IMAGE_DF.copy()
+    cells_df = CELLS_DF.drop(columns=["TableNumber"])
+
+    image_df.to_sql(name="image", con=test_engine, index=False, if_exists="replace")
+    cells_df.to_sql(name="cells", con=test_engine, index=False, if_exists="replace")
+
+    ap = SingleCells(sql_file=tmp_sqlite_file)
+    count_df = ap.count_cells(merge_cols=["ImageNumber"], object_col="ObjectNumber")
+
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "cell_count": [50, 50],
+    })
+    pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+
 def test_load_compartment():
     loaded_compartment_df = AP.load_compartment(compartment="cells")
     pd.testing.assert_frame_equal(
