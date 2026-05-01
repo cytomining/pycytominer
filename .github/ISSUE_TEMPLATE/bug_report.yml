@@ -40,3 +40,14 @@ body:
           - Screenshots
           - Operating system
           - Pycytominer version
+  - type: checkboxes
+    id: contribution-interest
+    attributes:
+      label: Contribution interest
+      description: >
+        If you would like to help fix this issue, we would be happy to support
+        you. This is completely optional, but it helps us know when someone is
+        interested in contributing.
+      options:
+        - label: >
+            I would be interested in submitting a pull request to help resolve this issue.
