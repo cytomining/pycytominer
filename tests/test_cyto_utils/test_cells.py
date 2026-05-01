@@ -272,6 +272,44 @@ def test_SingleCells_count():
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
+def test_SingleCells_count_prefers_image_count_cells():
+    count_df = AP_IMAGE_COUNT.count_cells()
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate"],
+        "Metadata_Well": ["A01"],
+        "cell_count": [100],
+    })
+    pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+
+def test_SingleCells_count_uses_configured_image_count_col():
+    tmp_sqlite_file = f"sqlite:///{TMPDIR}/test_count_cells_custom_image_col.sqlite"
+    test_engine = create_engine(tmp_sqlite_file)
+
+    image_df = pd.DataFrame({
+        "TableNumber": ["x_hash", "y_hash"],
+        "ImageNumber": ["x", "y"],
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A01"],
+        "Metadata_Site": [1, 2],
+        "Cells_Per_Image": [2, 3],
+    })
+    cells_df = build_random_data(compartment="cells")
+
+    image_df.to_sql(name="image", con=test_engine, index=False, if_exists="replace")
+    cells_df.to_sql(name="cells", con=test_engine, index=False, if_exists="replace")
+
+    ap = SingleCells(sql_file=tmp_sqlite_file)
+    count_df = ap.count_cells(image_count_col="Cells_Per_Image")
+
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate"],
+        "Metadata_Well": ["A01"],
+        "cell_count": [5],
+    })
+    pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+
 def test_SingleCells_count_without_tablenumber_uses_explicit_count_cols():
     tmp_sqlite_file = f"sqlite:///{TMPDIR}/test_count_cells_no_tablenumber.sqlite"
     test_engine = create_engine(tmp_sqlite_file)

@@ -319,6 +319,7 @@ class SingleCells:
         compartment: str = "cells",
         merge_cols: list[str] = ["TableNumber", "ImageNumber"],
         object_col: str = "ObjectNumber",
+        image_count_col: str = "Count_Cells",
         count_subset: bool = False,
     ) -> pd.DataFrame:
         """Determine how many cells are measured per well.
@@ -331,6 +332,9 @@ class SingleCells:
             Columns used to merge image and compartment tables for counting.
         object_col : str, default "ObjectNumber"
             Column used as the object identifier to count.
+        image_count_col : str, default "Count_Cells"
+            Image-level count column to sum by strata before falling back to
+            object-level counting.
         count_subset : bool, default False
             Whether or not count the number of cells as specified by the strata groups.
 
@@ -342,6 +346,9 @@ class SingleCells:
 
         check_compartments([compartment])
 
+        # count the number of cells per group by merging image and compartment data
+        # if count_subset is True, otherwise use image-level count or object counting
+        # without merging
         if count_subset:
             if not self.is_aggregated:
                 raise RuntimeError("Make sure to aggregate_profiles() first!")
@@ -361,15 +368,48 @@ class SingleCells:
                 .rename({"Metadata_ObjectNumber": "cell_count"}, axis="columns")
             )
         else:
-            if len(merge_cols) < 1:
-                raise ValueError(
-                    "merge_cols must include at least one merge column."
+            # prefer image-level count feature when available, then fallback to object
+            # counting.
+            if image_count_col in self.image_df.columns:
+                count_df = (
+                    self.image_df
+                    .groupby(self.strata)[image_count_col]
+                    .sum()
+                    .reset_index()
+                    .rename({image_count_col: "cell_count"}, axis="columns")
                 )
+                return count_df
+            image_table_col_names = self.get_sql_table_col_names(self.image_table_name)
 
-            if len(object_col) == 0:
-                raise ValueError(
-                    "object_col must be a non-empty column name."
+            # if the image-level count column is present in the image table, use it to
+            # compute cell counts per strata.
+            if image_count_col in image_table_col_names:
+                image_count_query_cols = ", ".join([*self.merge_cols, image_count_col])
+                image_count_query = (
+                    f"select {image_count_query_cols} from {self.image_table_name}"
                 )
+                image_count_df = pd.read_sql(sql=image_count_query, con=self.conn)
+                count_df = self.image_df.merge(
+                    image_count_df, how="inner", on=self.merge_cols
+                )
+                count_df = (
+                    count_df
+                    .groupby(self.strata)[image_count_col]
+                    .sum()
+                    .reset_index()
+                    .rename({image_count_col: "cell_count"}, axis="columns")
+                )
+                return count_df
+
+            # if merge_cols is empty, raise an error since we need merge columns to
+            # merge image and compartment data for counting.
+            if len(merge_cols) < 1:
+                raise ValueError("merge_cols must include at least one merge column.")
+
+            # if object_col is empty, raise an error since we need an object column to
+            # count the number of cells per strata.
+            if len(object_col) == 0:
+                raise ValueError("object_col must be a non-empty column name.")
 
             # specify query to get the columns needed for counting cells per group
             query_cols = ", ".join([*merge_cols, object_col])
