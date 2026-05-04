@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import pathlib
-import subprocess
-import sys
 
+import fire
 import numpy as np
 import pandas as pd
 import pytest
@@ -234,15 +233,15 @@ def test_cli_aggregate_passes_image_features(
     assert captured_kwargs["image_features"] is True
 
 
-def test_cli_unknown_argument_errors(tmp_path: pathlib.Path) -> None:
+def test_cli_unknown_argument_errors(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Ensure unknown Fire arguments fail with a non-zero exit status."""
     _, profiles_path = _write_profiles(tmp_path)
     output_path = tmp_path / "unknown_arg.csv"
 
+    # set commands
     command = [
-        sys.executable,
-        "-m",
-        "pycytominer.cli",
         "aggregate",
         f"--profiles={profiles_path}",
         f"--output_file={output_path}",
@@ -250,10 +249,15 @@ def test_cli_unknown_argument_errors(tmp_path: pathlib.Path) -> None:
         "--not_a_real_argument=1",
     ]
 
-    result = subprocess.run(command, capture_output=True, text=True, check=False)  # noqa: S603
+    # use fire.Fire() to execute the command
+    # useful for testing in-process execution in testing suites
+    with pytest.raises(fire.core.FireExit) as exc_info:
+        fire.Fire(PycytominerCLI, command=command)
 
-    assert result.returncode != 0
-    error_text = f"{result.stdout}\n{result.stderr}"
+    # check that the command failed with a non-zero exit status
+    assert exc_info.value.code != 0
+    captured = capsys.readouterr()
+    error_text = f"{captured.out}\n{captured.err}"
     assert "not_a_real_argument" in error_text
 
 
