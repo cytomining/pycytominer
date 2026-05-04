@@ -15,16 +15,11 @@ jobs:
     name: Pytest (Python ${{ matrix.python-version }})
     runs-on: ubuntu-24.04
     strategy:
-      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
-        with:
-          # Full history is required for setuptools-scm to determine the
-          # package version during dependency installation.
-          fetch-depth: 0
       - name: Setup base environment
         uses: ./.github/actions/setup-env
         with:
@@ -34,8 +29,7 @@ jobs:
           setup-uv: true
           install-deps: true
       - name: Run pytest
-        run: |
-          uv run pytest
+        run: uv run pytest
 
   build-and-publish:
     name: Build and publish Python 🐍 distributions
