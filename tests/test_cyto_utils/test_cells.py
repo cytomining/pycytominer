@@ -282,6 +282,34 @@ def test_SingleCells_count_prefers_image_count_cells():
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
 
 
+def test_SingleCells_count_uses_loaded_image_count_cells(tmp_path):
+    tmp_sqlite_file = f"sqlite:///{tmp_path / 'test_count_cells_loaded_image.sqlite'}"
+    test_engine = create_engine(tmp_sqlite_file)
+
+    image_df = pd.DataFrame({
+        "TableNumber": ["x_hash", "y_hash", "z_hash"],
+        "ImageNumber": ["x", "y", "z"],
+        "Metadata_Plate": ["plate", "plate", "plate"],
+        "Metadata_Well": ["A01", "A01", "A02"],
+        "Metadata_Site": [1, 2, 1],
+        "Count_Cells": [4, 6, 11],
+    })
+    image_df.to_sql(name="image", con=test_engine, index=False, if_exists="replace")
+
+    ap = SingleCells(
+        sql_file=tmp_sqlite_file,
+        image_cols=["TableNumber", "ImageNumber", "Metadata_Site", "Count_Cells"],
+    )
+    count_df = ap.count_cells()
+
+    expected_count = pd.DataFrame({
+        "Metadata_Plate": ["plate", "plate"],
+        "Metadata_Well": ["A01", "A02"],
+        "cell_count": [10, 11],
+    })
+    pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+
 def test_SingleCells_count_uses_configured_image_count_col():
     tmp_sqlite_file = f"sqlite:///{TMPDIR}/test_count_cells_custom_image_col.sqlite"
     test_engine = create_engine(tmp_sqlite_file)
@@ -329,6 +357,42 @@ def test_SingleCells_count_without_tablenumber_uses_explicit_count_cols():
         "cell_count": [50, 50],
     })
     pd.testing.assert_frame_equal(count_df, expected_count, check_names=False)
+
+
+def test_SingleCells_count_requires_merge_cols_for_object_counting():
+    with pytest.raises(
+        ValueError, match="merge_cols must include at least one merge column"
+    ):
+        AP.count_cells(merge_cols=[])
+
+
+def test_SingleCells_count_requires_object_col_for_object_counting():
+    with pytest.raises(ValueError, match="object_col must be a non-empty column name"):
+        AP.count_cells(object_col="")
+
+
+def test_SingleCells_count_subset_requires_aggregation():
+    ap = SingleCells(sql_file=TMP_SQLITE_FILE)
+
+    with pytest.raises(RuntimeError, match="Make sure to aggregate_profiles"):
+        ap.count_cells(count_subset=True)
+
+
+def test_SingleCells_count_subset_requires_subsample():
+    ap = SingleCells(sql_file=TMP_SQLITE_FILE)
+    ap.is_aggregated = True
+
+    with pytest.raises(RuntimeError, match="Make sure to get_subsample"):
+        ap.count_cells(count_subset=True)
+
+
+def test_SingleCells_count_subset_requires_subset_data():
+    ap = SingleCells(sql_file=TMP_SQLITE_FILE)
+    ap.is_aggregated = True
+    ap.is_subset_computed = True
+
+    with pytest.raises(RuntimeError, match=r"count_cells\(\) did not set subset_data_df"):
+        ap.count_cells(count_subset=True)
 
 
 def test_SingleCells_get_subsample_without_tablenumber_uses_merge_cols():
