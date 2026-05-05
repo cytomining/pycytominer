@@ -391,7 +391,9 @@ def test_SingleCells_count_subset_requires_subset_data():
     ap.is_aggregated = True
     ap.is_subset_computed = True
 
-    with pytest.raises(RuntimeError, match=r"count_cells\(\) did not set subset_data_df"):
+    with pytest.raises(
+        RuntimeError, match=r"count_cells\(\) did not set subset_data_df"
+    ):
         ap.count_cells(count_subset=True)
 
 
