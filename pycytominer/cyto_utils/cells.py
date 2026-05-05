@@ -362,10 +362,10 @@ class SingleCells:
 
             count_df = (
                 self.subset_data_df
-                .groupby(self.strata)["Metadata_ObjectNumber"]
+                .groupby(self.strata)[self.object_feature]
                 .count()
                 .reset_index()
-                .rename({"Metadata_ObjectNumber": "cell_count"}, axis="columns")
+                .rename({self.object_feature: "cell_count"}, axis="columns")
             )
         else:
             # prefer image-level count feature when available, then fallback to object
@@ -499,7 +499,7 @@ class SingleCells:
 
         check_compartments(compartment)
 
-        query_cols = "TableNumber, ImageNumber, ObjectNumber"
+        query_cols = ", ".join([*self.merge_cols, "ObjectNumber"])
         query = f"select {query_cols} from {compartment}"
 
         # Load query and merge with image_df
