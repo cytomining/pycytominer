@@ -69,7 +69,7 @@ docker run -v $PWD:/opt --platform=linux/amd64 cytomining/pycytominer:pycytomine
 
 Pycytominer is primarily built on top of [pandas](https://pandas.pydata.org/docs/index.html), also using aspects of SQLAlchemy, sklearn, and pyarrow.
 
-Pycytominer currently supports [parquet](https://parquet.apache.org/), parquet dataset directories, compressed text (e.g. `.csv.gz`), and [`anndata`](https://github.com/scverse/anndata) (through the extra `pip install pycytominer[anndata]` and is limited to `h5ad` or `zarr`) input and output data.
+Pycytominer currently supports [Apache Parquet](https://parquet.apache.org/), Parquet dataset directories, compressed text (e.g. `.csv.gz`), and [`anndata`](https://github.com/scverse/anndata) (through the extra `pip install pycytominer[anndata]` and is limited to `h5ad` or `zarr`) input and output data.
 
 ### CellProfiler inputs
 
