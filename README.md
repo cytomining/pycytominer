@@ -89,7 +89,7 @@ CellProfiler-generated image-based profiles typically consist of two main compon
 We recommend harmonizing data using [CytoTable](https://github.com/cytomining/CytoTable) when working with data from image analysis tools such as [CellProfiler](https://cellprofiler.org/) or [In Carta](https://www.moleculardevices.com/products/cellular-imaging-systems/high-content-analysis/in-carta-image-analysis-software), or legacy data systems such as cytominer-database.
 We built CytoTable to help prepare data for Pycytominer and include many presets to help you get started with your work (please also check out our [CytoTable paper](https://doi.org/10.1016/j.patter.2026.101514)).
 
-When parquet-backed CytoTable or CytoDataframe inputs include OME-Arrow image payload columns, Pycytominer still supports numeric `Image_*` measurements when you request image features.
+When Parquet-backed CytoTable or CytoDataframe inputs include [OME-Arrow](https://github.com/WayScience/ome-arrow) image payload columns, Pycytominer still supports numeric `Image_*` measurements when you request image features.
 At the same time, inferred `Image_*` features are limited to numeric columns, and `normalize()` only accepts numeric feature columns.
 Non-normalized image payload columns are preserved in normalized outputs rather than being transformed.
 This lets Pycytominer analyze image-level measurements without trying to normalize nested image payload data stored alongside them.
