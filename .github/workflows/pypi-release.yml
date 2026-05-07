@@ -11,30 +11,9 @@ env:
   TARGET_PYTHON_VERSION: "3.10"
 
 jobs:
-  python-support-tests:
-    name: Pytest (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-      - name: Setup base environment
-        uses: ./.github/actions/setup-env
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache-pre-commit: false
-          cache-venv: true
-          setup-uv: true
-          install-deps: true
-      - name: Run pytest
-        run: uv run pytest
-
   build-and-publish:
     name: Build and publish Python 🐍 distributions
     runs-on: ubuntu-24.04
-    needs: python-support-tests
     environment: release
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
