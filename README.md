@@ -245,7 +245,7 @@ We included some custom tools in `pycytominer/cyto_utils` that provides other fu
 If running your images on a cluster, unless you have a MySQL or similar large database set up then you will likely end up with lots of different folders from the different cluster runs (often one per well or one per site), each one containing an `Image.csv`, `Nuclei.csv`, etc.
 In order to look at full plates, therefore, we first need to collate all of these CSVs into a single file (currently SQLite) per plate.
 We can do this with a library called [cytominer-database](https://github.com/cytomining/cytominer-database).
-However, please use caution as cytominer-database is a deprecated tool.
+However, **please use caution** as cytominer-database is a deprecated tool.
 
 If you want to perform this data collation inside Pycytominer using the `cyto_utils` function `collate` (and/or you want to be able to run the tests and have them all pass!), you will need `cytominer-database==0.3.4`; this will change your installation commands slightly:
 
