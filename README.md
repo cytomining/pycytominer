@@ -20,7 +20,7 @@ The tool is most often used for processing data through the following pipeline:
 Image data flow from a microscope to cell segmentation and feature extraction tools (e.g. [CellProfiler](https://cellprofiler.org/) or [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html)) (**Figure 1A**).
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for Pycytominer input.
 For [CellProfiler](https://cellprofiler.org/), we recommend [CytoTable](https://github.com/cytomining/CytoTable) for harmonizing outputs before Pycytominer processing.
-Some legacy workflows use [cytominer-database](https://github.com/cytomining/cytominer-database), including the CSV collation utilities described below.
+Some legacy workflows use [cytominer-database ([DEPRECATED])](https://github.com/cytomining/cytominer-database), including the CSV collation utilities described below.
 For [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html), we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
 
 Next, Pycytominer performs reproducible image-based profiling (**Figure 1B**).
