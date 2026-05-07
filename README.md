@@ -8,7 +8,7 @@
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
 [![DOI](https://img.shields.io/badge/DOI-10.1038/s41592--025--02611--8-blue)](https://doi.org/10.1038/s41592-025-02611-8)
 
-Pycytominer is a suite of common functions used to process high dimensional readouts from high-throughput image-based profiling experiments.
+Pycytominer is a toolkit for processing high dimensional readouts from high-throughput image-based profiling experiments.
 The tool is most often used for processing data through the following pipeline:
 
 <img height="700" align="center" alt="Description of the Pycytominer pipeline. Images flow from feature extraction and are processed with a series of steps" src="https://github.com/cytomining/pycytominer/blob/main/media/pipeline.png?raw=true">
