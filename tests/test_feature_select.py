@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pycytominer.cyto_utils import Blocklist
 from pycytominer.feature_select import feature_select
 
 random.seed(123)
@@ -439,6 +440,63 @@ def test_feature_select_blocklist():
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_blocklist_df,
+        features=data_blocklist_df.columns.tolist(),
+        operation="blocklist",
+        blocklist=["Nuclei_Correlation_Manders_AGP_DNA", "zz"],
+    )
+    expected_result = pd.DataFrame({
+        "y": [1, 2, 8, 5, 2, 1],
+        "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+    })
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_blocklist_df,
+        features=data_blocklist_df.columns.tolist(),
+        operation="blocklist",
+        blocklist=Blocklist(features=["Nuclei_Correlation_RWC_ER_RNA"]),
+    )
+    expected_result = pd.DataFrame({
+        "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
+        "y": [1, 2, 8, 5, 2, 1],
+        "zz": [0, -3, 8, 9, 6, 9],
+    })
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_blocklist_df,
+        features=data_blocklist_df.columns.tolist(),
+        operation="blocklist",
+        blocklist=Blocklist(type="default", features=["zz"]),
+    )
+    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1]})
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    with pytest.warns(DeprecationWarning, match="blocklist_file parameter"):
+        result = feature_select(
+            data_blocklist_df,
+            features=data_blocklist_df.columns.tolist(),
+            operation="blocklist",
+            blocklist_file=["Nuclei_Correlation_Manders_AGP_DNA"],
+        )
+    expected_result = pd.DataFrame({
+        "y": [1, 2, 8, 5, 2, 1],
+        "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+        "zz": [0, -3, 8, 9, 6, 9],
+    })
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    with pytest.raises(ValueError, match="Specify only one of blocklist"):
+        feature_select(
+            data_blocklist_df,
+            features=data_blocklist_df.columns.tolist(),
+            operation="blocklist",
+            blocklist=["Nuclei_Correlation_Manders_AGP_DNA"],
+            blocklist_file=["Nuclei_Correlation_RWC_ER_RNA"],
+        )
 
 
 def test_feature_select_drop_outlier():

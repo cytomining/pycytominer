@@ -6,6 +6,7 @@ from .cp_image_features import (
 )
 from .DeepProfiler_processing import AggregateDeepProfiler
 from .features import (
+    Blocklist,
     convert_compartment_format_to_list,
     count_na_features,
     drop_outlier_features,

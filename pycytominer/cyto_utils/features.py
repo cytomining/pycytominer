@@ -2,8 +2,10 @@
 Utility function to manipulate cell profiler features
 """
 
+import json
 import os
 import pathlib
+from collections.abc import Sequence
 from typing import Optional, Union
 
 import pandas as pd
@@ -11,18 +13,97 @@ import pandas as pd
 blocklist_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
 )
+blocklists_file = os.path.join(
+    os.path.dirname(__file__), "..", "data", "blocklists.json"
+)
+default_blocklist_name = "default"
+
+
+class Blocklist:
+    """Container for named and user-provided blocklist features."""
+
+    def __init__(
+        self,
+        type: Optional[str] = None,  # noqa: A002
+        features: Optional[Sequence[str]] = None,
+        blocklists_file: Union[str, pathlib.Path] = blocklists_file,
+    ):
+        """Create a blocklist from a named registry entry and/or extra features.
+
+        Parameters
+        ----------
+        type : str, optional
+            Name of a blocklist stored in the packaged blocklist registry.
+            If None, the blocklist starts empty.
+        features : sequence of str, optional
+            Additional feature names to add to the blocklist.
+        blocklists_file : path-like object, default packaged blocklists.json
+            JSON file mapping blocklist names to feature lists.
+        """
+        self.type = type
+        self.features: list[str] = []
+
+        if type is not None:
+            self.features.extend(_load_named_blocklist(type, blocklists_file))
+
+        if features is not None:
+            self.add(features)
+
+    def add(self, features: Union[str, Sequence[str]]) -> None:
+        """Add one or more feature names to the blocklist."""
+        features_to_add = [features] if isinstance(features, str) else list(features)
+        self.features = list(dict.fromkeys([*self.features, *features_to_add]))
+
+    def to_list(self) -> list[str]:
+        """Return blocklist features as a list."""
+        return self.features.copy()
+
+    def __iter__(self):
+        return iter(self.features)
+
+    def __len__(self):
+        return len(self.features)
+
+
+def _load_named_blocklist(
+    blocklist_type: str,
+    blocklists_file: Union[str, pathlib.Path] = blocklists_file,
+) -> list[str]:
+    """Load a named blocklist from the JSON registry."""
+    with pathlib.Path(blocklists_file).open() as blocklist_stream:
+        blocklists = json.load(blocklist_stream)
+
+    if blocklist_type not in blocklists:
+        blocklist_names = ", ".join(sorted(blocklists))
+        raise ValueError(
+            f"Unknown blocklist type '{blocklist_type}'. Choose one of: {blocklist_names}"
+        )
+
+    blocklist = blocklists[blocklist_type]
+    if not isinstance(blocklist, list) or not all(
+        isinstance(feature, str) for feature in blocklist
+    ):
+        raise ValueError("Blocklist registry entries must be lists of feature names.")
+
+    return blocklist
 
 
 def get_blocklist_features(
-    blocklist_file: Union[str, pathlib.Path] = blocklist_file,
+    blocklist_file: Optional[Union[str, pathlib.Path, Sequence[str], Blocklist]] = None,
+    blocklist_type: str = default_blocklist_name,
     population_df: Optional[pd.DataFrame] = None,
 ) -> list[str]:
     """Get a list of blocklist features.
 
     Parameters
     ----------
-    blocklist_file : path-like object
-        Location of the dataframe with features to exclude.
+    blocklist_file : path-like object, sequence of str, or Blocklist, optional
+        Blocklist features to exclude. If a path is provided, it may point to the
+        legacy CSV/text format with a ``blocklist`` column or a JSON registry.
+        If None, load the named blocklist from the packaged registry.
+    blocklist_type : str, default "default"
+        Name of the blocklist to load from the JSON registry when
+        ``blocklist_file`` is None or points to a JSON registry.
     population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
@@ -32,12 +113,24 @@ def get_blocklist_features(
         Features to exclude from downstream analysis.
     """
 
-    blocklist = pd.read_csv(blocklist_file)
+    if blocklist_file is None:
+        blocklist_features = Blocklist(type=blocklist_type).to_list()
+    elif isinstance(blocklist_file, Blocklist):
+        blocklist_features = blocklist_file.to_list()
+    elif isinstance(blocklist_file, (str, pathlib.Path)):
+        blocklist_path = pathlib.Path(blocklist_file)
+        if blocklist_path.suffix == ".json":
+            blocklist_features = _load_named_blocklist(blocklist_type, blocklist_path)
+        else:
+            blocklist = pd.read_csv(blocklist_path)
 
-    if not any(x == "blocklist" for x in blocklist.columns):
-        raise ValueError("one column must be named 'blocklist'")
+            if not any(x == "blocklist" for x in blocklist.columns):
+                raise ValueError("one column must be named 'blocklist'")
 
-    blocklist_features = blocklist.blocklist.to_list()
+            blocklist_features = blocklist.blocklist.to_list()
+    else:
+        blocklist_features = list(blocklist_file)
+
     if isinstance(population_df, pd.DataFrame):
         population_features = population_df.columns.tolist()
         blocklist_features = [x for x in blocklist_features if x in population_features]

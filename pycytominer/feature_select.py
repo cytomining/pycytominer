@@ -2,11 +2,15 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
+import pathlib
+import warnings
+from collections.abc import Sequence
 from typing import Any, Literal, Optional, Union
 
 import pandas as pd
 
 from pycytominer.cyto_utils import (
+    Blocklist,
     drop_outlier_features,
     get_blocklist_features,
     infer_cp_features,
@@ -39,7 +43,9 @@ def feature_select(
     unique_cut: float = 0.01,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
-    blocklist_file: Optional[str] = None,
+    blocklist_file: Optional[Union[str, pathlib.Path, Sequence[str], Blocklist]] = None,
+    blocklist: Optional[Union[str, pathlib.Path, Sequence[str], Blocklist]] = None,
+    blocklist_type: str = "default",
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
@@ -94,8 +100,16 @@ def feature_select(
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
-    blocklist_file : str, optional
-        File location of datafrmame with with features to exclude. Note that if "blocklist" in operation then will remove standard blocklist
+    blocklist_file : str, pathlib.Path, sequence of str, or Blocklist, optional
+        Deprecated. Use ``blocklist`` instead.
+    blocklist : str, pathlib.Path, sequence of str, or Blocklist, optional
+        Features to exclude for the blocklist operation. A path may point to the
+        legacy CSV/text format with a ``blocklist`` column or to a JSON registry.
+        A sequence of strings or ``Blocklist`` object may also be provided
+        directly.
+    blocklist_type : str, default "default"
+        Name of the blocklist to load from the JSON registry when
+        ``blocklist_file`` is None or points to a JSON registry.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
@@ -115,6 +129,18 @@ def feature_select(
             output file.
 
     """
+
+    if blocklist is not None and blocklist_file is not None:
+        raise ValueError("Specify only one of blocklist or blocklist_file.")
+
+    if blocklist_file is not None:
+        warnings.warn(
+            "The blocklist_file parameter is deprecated and will be removed in a "
+            "future release. Use blocklist instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        blocklist = blocklist_file
 
     all_ops = [
         "variance_threshold",
@@ -170,12 +196,11 @@ def feature_select(
                 method=corr_method,
             )
         elif op == "blocklist":
-            if blocklist_file:
-                exclude = get_blocklist_features(
-                    population_df=profiles, blocklist_file=blocklist_file
-                )
-            else:
-                exclude = get_blocklist_features(population_df=profiles)
+            exclude = get_blocklist_features(
+                population_df=profiles,
+                blocklist_file=blocklist,
+                blocklist_type=blocklist_type,
+            )
         elif op == "drop_outliers":
             exclude = drop_outlier_features(
                 population_df=profiles,

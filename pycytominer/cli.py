@@ -277,6 +277,7 @@ class PycytominerCLI:
         compression_options: str | dict[str, Any] | None = None,
         float_format: str | None = None,
         blocklist_file: str | None = None,
+        blocklist_type: str = "default",
         outlier_cutoff: float = 500.0,
         noise_removal_perturb_groups: str | None = None,
         noise_removal_stdev_cutoff: float | None = None,
@@ -299,6 +300,7 @@ class PycytominerCLI:
             compression_options: Compression options for writing output.
             float_format: Decimal precision for output formatting.
             blocklist_file: Optional blocklist file path.
+            blocklist_type: Named blocklist to load from a JSON registry.
             outlier_cutoff: Outlier cutoff for feature removal.
             noise_removal_perturb_groups: Metadata column or list for noise removal.
             noise_removal_stdev_cutoff: Standard deviation cutoff for noise removal.
@@ -335,7 +337,8 @@ class PycytominerCLI:
             unique_cut=unique_cut,
             compression_options=compression_options,
             float_format=float_format,
-            blocklist_file=blocklist_file,
+            blocklist=blocklist_file,
+            blocklist_type=blocklist_type,
             outlier_cutoff=outlier_cutoff,
             noise_removal_perturb_groups=noise_removal_groups_value,
             noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
