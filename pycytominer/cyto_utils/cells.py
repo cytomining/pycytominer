@@ -329,9 +329,13 @@ class SingleCells:
         compartment : str, default "cells"
             Compartment to subset.
         merge_cols : list[str], default ["TableNumber", "ImageNumber"]
-            Columns used to merge image and compartment tables for counting.
+            Columns used to merge image and compartment tables when falling back
+            to object-level counting. Must include at least one column when
+            image_count_col is unavailable.
         object_col : str, default "ObjectNumber"
-            Column used as the object identifier to count.
+            Column used as the object identifier when falling back to
+            object-level counting. Must be non-empty when image_count_col is
+            unavailable.
         image_count_col : str, default "Count_Cells"
             Image-level count column to sum by strata before falling back to
             object-level counting.
@@ -401,14 +405,16 @@ class SingleCells:
                 )
                 return count_df
 
-            # if merge_cols is empty, raise an error since we need merge columns to
-            # merge image and compartment data for counting.
+            # Fall back to object-level counting when an image-level count column
+            # is unavailable in both the loaded image data and the SQL image table.
+            # This path requires merge columns to attach image metadata to object
+            # rows before grouping by strata.
             if len(merge_cols) < 1:
                 raise ValueError("merge_cols must include at least one merge column.")
 
-            # if object_col is empty, raise an error since we need an object column to
-            # count the number of cells per strata.
-            if len(object_col) == 0:
+            # This path also requires an object identifier column to count objects
+            # per strata.
+            if not object_col:
                 raise ValueError("object_col must be a non-empty column name.")
 
             # specify query to get the columns needed for counting cells per group
