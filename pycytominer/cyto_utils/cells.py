@@ -379,10 +379,10 @@ class SingleCells:
                     .rename({image_count_col: "cell_count"}, axis="columns")
                 )
                 return count_df
-            image_table_col_names = self.get_sql_table_col_names(self.image_table_name)
-
+            
             # if the image-level count column is present in the image table, use it to
             # compute cell counts per strata.
+            image_table_col_names = self.get_sql_table_col_names(self.image_table_name)
             if image_count_col in image_table_col_names:
                 image_count_query_cols = ", ".join([*self.merge_cols, image_count_col])
                 image_count_query = (
