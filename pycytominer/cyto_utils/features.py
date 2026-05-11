@@ -10,9 +10,6 @@ from typing import Optional, Union
 
 import pandas as pd
 
-blocklist_file = os.path.join(
-    os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
-)
 blocklists_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklists.json"
 )
@@ -89,7 +86,7 @@ def _load_named_blocklist(
 
 
 def get_blocklist_features(
-    blocklist_file: Optional[Union[str, pathlib.Path, Sequence[str], Blocklist]] = None,
+    blocklist: Optional[Union[str, Sequence[str], Blocklist]] = None,
     blocklist_type: str = default_blocklist_name,
     population_df: Optional[pd.DataFrame] = None,
 ) -> list[str]:
@@ -97,13 +94,11 @@ def get_blocklist_features(
 
     Parameters
     ----------
-    blocklist_file : path-like object, sequence of str, or Blocklist, optional
-        Blocklist features to exclude. If a path is provided, it may point to the
-        legacy CSV/text format with a ``blocklist`` column or a JSON registry.
-        If None, load the named blocklist from the packaged registry.
+    blocklist : str, sequence of str, or Blocklist, optional
+        Feature name(s) to exclude. If None, load the named blocklist from the
+        packaged registry.
     blocklist_type : str, default "default"
-        Name of the blocklist to load from the JSON registry when
-        ``blocklist_file`` is None or points to a JSON registry.
+        Name of the packaged blocklist to load when ``blocklist`` is None.
     population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
@@ -113,23 +108,14 @@ def get_blocklist_features(
         Features to exclude from downstream analysis.
     """
 
-    if blocklist_file is None:
+    if blocklist is None:
         blocklist_features = Blocklist(type=blocklist_type).to_list()
-    elif isinstance(blocklist_file, Blocklist):
-        blocklist_features = blocklist_file.to_list()
-    elif isinstance(blocklist_file, (str, pathlib.Path)):
-        blocklist_path = pathlib.Path(blocklist_file)
-        if blocklist_path.suffix == ".json":
-            blocklist_features = _load_named_blocklist(blocklist_type, blocklist_path)
-        else:
-            blocklist = pd.read_csv(blocklist_path)
-
-            if not any(x == "blocklist" for x in blocklist.columns):
-                raise ValueError("one column must be named 'blocklist'")
-
-            blocklist_features = blocklist.blocklist.to_list()
+    elif isinstance(blocklist, Blocklist):
+        blocklist_features = blocklist.to_list()
+    elif isinstance(blocklist, str):
+        blocklist_features = [blocklist]
     else:
-        blocklist_features = list(blocklist_file)
+        blocklist_features = list(blocklist)
 
     if isinstance(population_df, pd.DataFrame):
         population_features = population_df.columns.tolist()
