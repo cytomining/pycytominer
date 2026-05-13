@@ -76,7 +76,7 @@ optional-dependencies.collate = [
   "cytominer-database==0.3.4",
   "setuptools>=65,<70",
 ]
-urls.Homepage = "https://pycytominer.readthedocs.io/"
+urls.Homepage = "https://cytomining.github.io/pycytominer/"
 urls.Repository = "https://github.com/cytomining/pycytominer"
 scripts.pycytominer = "pycytominer.cli:main"
 
