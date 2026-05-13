@@ -161,7 +161,7 @@ Then build the HTML output:
 uv run sphinx-build ./docs/ ./docs/build
 ```
 
-Open `/tmp/pycytominer-docs/index.html` in your browser to preview the result.
+Open `./docs/build/index.html` in your browser to preview the result.
 
 #### API documentation
 
