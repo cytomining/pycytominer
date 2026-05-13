@@ -158,7 +158,7 @@ uv sync --all-extras --group docs
 Then build the HTML output:
 
 ```bash
-uv run sphinx-build docs/ /tmp/pycytominer-docs/
+uv run sphinx-build ./docs/ ./docs/build
 ```
 
 Open `/tmp/pycytominer-docs/index.html` in your browser to preview the result.
