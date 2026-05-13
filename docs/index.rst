@@ -10,8 +10,8 @@
    :maxdepth: 2
    :caption: Contents:
 
-   install
    walkthrough
+   contributing
    tutorial
    modules
 
