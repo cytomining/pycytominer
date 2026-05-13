@@ -72,9 +72,9 @@ optional-dependencies.cell-locations = [
   "s3fs>=2023.4",
 ]
 optional-dependencies.collate = [
-  "csvkit<3",
+  "csvkit>=1,<2",
   "cytominer-database==0.3.4",
-  "setuptools>=65,<83",
+  "setuptools>=65,<70",
 ]
 urls.Homepage = "https://pycytominer.readthedocs.io/"
 urls.Repository = "https://github.com/cytomining/pycytominer"
