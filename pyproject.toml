@@ -108,6 +108,7 @@ docs = [
   "sphinx-autoapi>=3,<4",
   "sphinx-autobuild>=2021.3.14,<2025",
   "sphinx-copybutton>=0.5.2,<0.6",
+  "myst-parser>=2,<5",
 ]
 
 [tool.setuptools]
