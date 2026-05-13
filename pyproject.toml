@@ -103,12 +103,12 @@ docs = [
   "lxml[html-clean]>=5.4,<7",
   "mkdocs",
   "mock>=5.1,<6",
+  "myst-parser>=2,<5",
   "nbsphinx>=0.9.3,<0.10",
   "sphinx>=7.1,<8.2",
   "sphinx-autoapi>=3,<4",
   "sphinx-autobuild>=2021.3.14,<2025",
   "sphinx-copybutton>=0.5.2,<0.6",
-  "myst-parser>=2,<5",
 ]
 
 [tool.setuptools]
