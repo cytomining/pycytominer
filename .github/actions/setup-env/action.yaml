@@ -75,5 +75,7 @@ runs:
     - name: Install dependencies with uv
       shell: bash
       if: ${{ inputs.install-deps == 'true' }}
+      env:
+        UV_PYTHON: ${{ inputs.python-version }}
       run: |
-        uv sync --frozen --all-extras --group dev --group docs --python ${{ inputs.python-version }}
+        uv sync --frozen --all-extras --group dev --group docs
