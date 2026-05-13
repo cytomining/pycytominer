@@ -39,10 +39,10 @@ Please report unacceptable behavior to cytodata.info@gmail.com.
 
 ## Quick links
 
-- Documentation: https://pycytominer.readthedocs.io/en/latest/
+- Documentation: https://cytomining.github.io/pycytominer/
 - Issue tracker: https://github.com/cytomining/pycytominer/issues
 - Code coverage: https://app.codecov.io/gh/cytomining/pycytominer
-- Package requirements (using Poetry): https://github.com/cytomining/pycytominer/blob/main/pyproject.toml
+- Package requirements: https://github.com/cytomining/pycytominer/blob/main/pyproject.toml
 
 ## How can I contribute?
 
@@ -137,16 +137,38 @@ We will check for accuracy, style, code coverage, and scope.
 
 ### Documentation
 
-We use [sphinx](https://www.sphinx-doc.org/en/master/index.html) for autodocumentation of docstrings, using the [napoleon extenstion](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) to parse [NumPy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html), implemented with a [furo](https://pradyunsg.me/furo/) theme.
-We host our documentation on [readthedocs.org](https://readthedocs.org/) at [https://pycytominer.readthedocs.io/en/latest/](https://pycytominer.readthedocs.io/en/latest/).
+We use [Sphinx](https://www.sphinx-doc.org/en/master/index.html) for documentation, with the following setup:
 
-To build and test changes to the docs locally, run the following command:
+- [Napoleon extension](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) to parse [NumPy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html)
+- [MyST Parser](https://myst-parser.readthedocs.io/) to allow Markdown files (including the README) alongside RST
+- [Furo](https://pradyunsg.me/furo/) theme
+- [nbsphinx](https://nbsphinx.readthedocs.io/) to render Jupyter notebooks
+
+We host documentation on [GitHub Pages](https://cytomining.github.io/pycytominer/), built automatically on every push to `main` via the [publish-docs workflow](.github/workflows/publish-docs.yml).
+ReadTheDocs redirects to GitHub Pages.
+
+#### Building docs locally
+
+First install the docs dependencies:
 
 ```bash
-sphinx-build -b html docs build
+uv sync --all-extras --group docs
 ```
 
-See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
+Then build the HTML output:
+
+```bash
+uv run sphinx-build docs/ /tmp/pycytominer-docs/
+```
+
+Open `/tmp/pycytominer-docs/index.html` in your browser to preview the result.
+
+#### API documentation
+
+Pycytominer automatically pulls docstrings into the API reference via `sphinx.ext.autodoc`.
+Write docstrings in [NumPy format](https://numpydoc.readthedocs.io/en/latest/format.html) and they will appear at `cytomining.github.io/pycytominer/` under the API section after the next build.
+
+See [`docs/conf.py`](docs/conf.py) for the full Sphinx configuration.
 
 ### uv
 
