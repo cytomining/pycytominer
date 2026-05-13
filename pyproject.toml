@@ -74,6 +74,8 @@ optional-dependencies.cell-locations = [
 optional-dependencies.collate = [
   "csvkit>=1,<2",
   "cytominer-database==0.3.4",
+  # cytominer-database requires `pkg_resources`, which
+  # setuptools deprecated in v70
   "setuptools>=65,<70",
 ]
 urls.Homepage = "https://cytomining.github.io/pycytominer/"
