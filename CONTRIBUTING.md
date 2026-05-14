@@ -39,7 +39,7 @@ Please report unacceptable behavior to cytodata.info@gmail.com.
 
 ## Quick links
 
-- Documentation: https://cytomining.github.io/pycytominer/
+- Documentation: https://pycytominer.readthedocs.io/
 - Issue tracker: https://github.com/cytomining/pycytominer/issues
 - Code coverage: https://app.codecov.io/gh/cytomining/pycytominer
 - Package requirements: https://github.com/cytomining/pycytominer/blob/main/pyproject.toml

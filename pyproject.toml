@@ -78,7 +78,7 @@ optional-dependencies.collate = [
   # setuptools deprecated in v70
   "setuptools>=65,<70",
 ]
-urls.Homepage = "https://cytomining.github.io/pycytominer/"
+urls.Homepage = "https://pycytominer.readthedocs.io/"
 urls.Repository = "https://github.com/cytomining/pycytominer"
 scripts.pycytominer = "pycytominer.cli:main"
 

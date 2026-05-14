@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.10--3.14-blue)](https://pypi.org/project/pycytominer/)
 [![Coverage Status](https://codecov.io/gh/cytomining/pycytominer/branch/main/graph/badge.svg)](https://codecov.io/github/cytomining/pycytominer?branch=main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://cytomining.github.io/pycytominer/)
+[![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
 [![DOI](https://img.shields.io/badge/DOI-10.1038/s41592--025--02611--8-blue)](https://www.nature.com/articles/s41592-025-02611-8)
 
 Pycytominer is a toolkit for processing high dimensional readouts from high-throughput image-based profiling experiments.
@@ -123,7 +123,7 @@ df = function(
 )
 ```
 
-Each processing function has unique arguments, see our [documentation](https://cytomining.github.io/pycytominer/) for more details.
+Each processing function has unique arguments, see our [documentation](https://pycytominer.readthedocs.io/) for more details.
 
 ## Usage
 
