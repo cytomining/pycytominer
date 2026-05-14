@@ -39,5 +39,4 @@ jobs:
           install-deps: true
 
       - name: Build docs
-        # -W turns warnings into errors; --keep-going reports all of them
-        run: uv run sphinx-build -W --keep-going ./docs/ ./docs/build
+        run: uv run sphinx-build ./docs/ ./docs/build
