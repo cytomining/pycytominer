@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx_copybutton",
     "nbsphinx",
+    "myst_parser",
 ]
 
 # Render notebooks without executing them during docs builds because the CI docs

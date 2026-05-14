@@ -170,6 +170,7 @@ cython_debug/
 
 # Miscellaneous
 .DS_Store
+.claude
 
 # removes files that are meant for prototyping
 _*
