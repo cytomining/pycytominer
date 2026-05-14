@@ -11,6 +11,7 @@ build:
     post_create_environment:
       # Install uv for dependency management
       - pip install uv
+      - pip install dunamai
     post_install:
       # Install dependencies with 'docs' dependency group using uv
       - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv sync --all-extras --group docs
