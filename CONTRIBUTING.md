@@ -1,6 +1,6 @@
 # Contributing to Pycytominer
 
-First of all, thank you for contributing to Pycytominer! :tada: :100:
+First of all, thank you for contributing to Pycytominer! 🎉 💯
 
 This document contains guidelines on how to most effectively contribute to the Pycytominer codebase.
 
@@ -28,21 +28,19 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Formatting](#formatting)
 - [Linting](#linting)
 - [Git commit messages](#git-commit-messages)
-- [Python style guide](#python-style-guide)
-- [Documentation style guide](#documentation-style-guide)
 
 ## Code of conduct
 
-This project and everyone participating in it is governed by our [code of conduct](CODE_OF_CONDUCT.md).
+This project and everyone participating in it is governed by our [code of conduct](https://github.com/cytomining/pycytominer/blob/main/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 Please report unacceptable behavior to cytodata.info@gmail.com.
 
 ## Quick links
 
-- Documentation: https://pycytominer.readthedocs.io/en/latest/
+- Documentation: https://pycytominer.readthedocs.io/
 - Issue tracker: https://github.com/cytomining/pycytominer/issues
 - Code coverage: https://app.codecov.io/gh/cytomining/pycytominer
-- Package requirements (using Poetry): https://github.com/cytomining/pycytominer/blob/main/pyproject.toml
+- Package requirements: https://github.com/cytomining/pycytominer/blob/main/pyproject.toml
 
 ## How can I contribute?
 
@@ -126,7 +124,7 @@ Once you make the necessary changes on this branch, you should file a pull reque
 The content and description of your pull request are directly related to the speed at which we are able to review, approve, and merge your contribution into Pycytominer.
 To ensure an efficient review process please perform the following steps:
 
-1. Follow all instructions in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md)
+1. Follow all instructions in the [pull request template](https://github.com/cytomining/pycytominer/blob/main/.github/PULL_REQUEST_TEMPLATE.md)
 2. Triple check that your pull request is only adding _one_ specific feature. Small, bite-sized pull requests move so much faster than large pull requests.
 3. After submitting your pull request, ensure that your contribution passes all status checks (e.g. passes all tests)
 
@@ -137,16 +135,49 @@ We will check for accuracy, style, code coverage, and scope.
 
 ### Documentation
 
-We use [sphinx](https://www.sphinx-doc.org/en/master/index.html) for autodocumentation of docstrings, using the [napoleon extenstion](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) to parse [NumPy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html), implemented with a [furo](https://pradyunsg.me/furo/) theme.
-We host our documentation on [readthedocs.org](https://readthedocs.org/) at [https://pycytominer.readthedocs.io/en/latest/](https://pycytominer.readthedocs.io/en/latest/).
+We use [Sphinx](https://www.sphinx-doc.org/en/master/index.html) for documentation, with the following setup:
 
-To build and test changes to the docs locally, run the following command:
+- [Napoleon extension](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) to parse [NumPy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html)
+- [MyST Parser](https://myst-parser.readthedocs.io/) to allow Markdown files (including the README) alongside RST
+- [Furo](https://pradyunsg.me/furo/) theme
+- [nbsphinx](https://nbsphinx.readthedocs.io/) to render Jupyter notebooks
+
+#### Building docs locally
+
+First install the docs dependencies:
 
 ```bash
-sphinx-build -b html docs build
+uv sync --all-extras --group docs
 ```
 
-See [`docs/conf.py`](docs/conf.py) for full documentation configuration.
+Then build the HTML output:
+
+```bash
+uv run sphinx-build ./docs/ ./docs/build
+```
+
+Open `./docs/build/index.html` in your browser to preview the result.
+
+#### Previewing docs on a pull request
+
+Every pull request automatically triggers two complementary checks:
+
+- **GitHub Actions (`docs-build.yml`)**: runs `sphinx-build` in CI to verify the docs
+  compile without errors. The job must pass before a PR can be merged.
+- **ReadTheDocs preview**: once the PR is opened, ReadTheDocs builds and deploys a
+  live preview of the docs for that branch. A bot posts a comment on the PR with a
+  link like `https://pycytominer--<PR-number>.org.readthedocs.build/`. The preview
+  is rebuilt automatically on every new commit pushed to the PR branch.
+
+In short: the GitHub Action confirms the docs _build_, and ReadTheDocs confirms they
+_deploy_ correctly.
+
+#### API documentation
+
+Pycytominer automatically pulls docstrings into the API reference via `sphinx.ext.autodoc`.
+Write docstrings in [NumPy format](https://numpydoc.readthedocs.io/en/latest/format.html) and they will appear at `cytomining.github.io/pycytominer/` under the API section after the next build.
+
+See [`docs/conf.py`](https://github.com/cytomining/pycytominer/blob/main/docs/conf.py) for the full Sphinx configuration.
 
 ### uv
 
@@ -230,7 +261,7 @@ Creating a new release includes the following steps:
 #### Docker Hub Image Releases
 
 We automate image pushes for `pycytominer` under the `cytomining` organization on [Docker Hub](https://hub.docker.com/) using GitHub Actions workflows.
-These pushes are defined within [.github/workflows/integration-test.yml](.github/workflows/integration-test.yml).
+These pushes are defined within [.github/workflows/integration-test.yml](https://github.com/cytomining/pycytominer/blob/main/.github/workflows/integration-test.yml).
 
 - **Scheduled**: We create new Docker image releases on a weekly basis to incorporate the latest updates from external dependencies (such as OS updates, Python versions, etc.).
   An image tag published this way may appear as `cytomining/pycytominer:1.1.0.post2.dev0_892dee2_240320`, where the dynamic version of `pycytominer` is referenced alongside a date in the format `YYMMDD`.
@@ -262,8 +293,3 @@ All linting checks will also be run automatically at commit time with the pre-co
 
 Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
 We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the dev dependency group.
-
-### Documentation style guide
-
-We use the [numpy documentation style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
-When writing markdown documentation, please also ensure that each sentence is on a new line.
