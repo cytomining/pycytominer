@@ -1,6 +1,6 @@
 # Contributing to Pycytominer
 
-First of all, thank you for contributing to Pycytominer! :tada: :100:
+First of all, thank you for contributing to Pycytominer! 🎉 💯
 
 This document contains guidelines on how to most effectively contribute to the Pycytominer codebase.
 
