@@ -27,6 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install pandoc
+        # nbsphinx requires pandoc to convert Jupyter notebooks during the Sphinx build
         uses: pandoc/actions/setup@v1
 
       - name: Setup Python and uv

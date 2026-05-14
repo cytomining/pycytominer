@@ -5,6 +5,7 @@ build:
   tools:
     python: "3.11"
   apt_packages:
+    # nbsphinx requires pandoc to convert Jupyter notebooks during the Sphinx build
     - pandoc
   jobs:
     post_checkout:
