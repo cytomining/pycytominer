@@ -16,7 +16,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-docs-with-sphinx:
     name: Sphinx build
     runs-on: ubuntu-24.04
     steps:
@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install pandoc
-        run: sudo apt-get install -y pandoc
+        uses: pandoc/actions/setup@v1
 
       - name: Setup Python and uv
         uses: ./.github/actions/setup-env
