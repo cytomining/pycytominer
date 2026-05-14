@@ -13,7 +13,7 @@ build:
       - pip install uv
     post_install:
       # Install dependencies with 'docs' dependency group using uv
-      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv sync --frozen --all-extras --group docs
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv sync --all-extras --group docs
 
 sphinx:
   builder: html
