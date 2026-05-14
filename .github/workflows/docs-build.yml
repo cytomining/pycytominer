@@ -1,0 +1,40 @@
+---
+name: docs build
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "pycytominer/**"
+      - ".readthedocs.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "README.md"
+      - "CONTRIBUTING.md"
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Sphinx build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          # Full history required for dunamai to derive the version from git tags
+          fetch-depth: 0
+
+      - name: Setup Python and uv
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: "3.11"
+          cache-pre-commit: false
+          cache-venv: true
+          setup-uv: true
+          install-deps: true
+
+      - name: Build docs
+        # -W turns warnings into errors; --keep-going reports all of them
+        run: uv run sphinx-build -W --keep-going ./docs/ ./docs/build
