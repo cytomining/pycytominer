@@ -24,7 +24,8 @@ MAIN_CSV_LOCATION = TEST_DATA_LOCATION / "backend" / BATCH / PLATE / f"{PLATE}_m
 
 
 def test_run_check_errors_uses_command_list(monkeypatch):
-    """Ensure run_check_errors forwards argv-style command lists to subprocess.run."""
+    """Check that run_check_errors passes a command list to subprocess.run
+    so we know it is not building a shell string."""
     command = ["aws", "s3", "cp", "source.sqlite", "target.sqlite"]
     captured_kwargs = {}
 
