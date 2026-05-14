@@ -11,11 +11,10 @@ build:
       # Full history is required for dunamai to calculate the version
       - git fetch --unshallow || true
     post_create_environment:
-      # Install uv for dependency management
       - pip install uv
     post_install:
-      # Install dependencies with 'docs' dependency group using uv
-      - uv sync --active --all-extras --group docs
+      - uv pip install -e ".[anndata,cell-locations]"
+      - uv export --group docs --no-hashes --no-emit-project | uv pip install -r -
 
 sphinx:
   builder: html
