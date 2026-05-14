@@ -158,6 +158,20 @@ uv run sphinx-build ./docs/ ./docs/build
 
 Open `./docs/build/index.html` in your browser to preview the result.
 
+#### Previewing docs on a pull request
+
+Every pull request automatically triggers two complementary checks:
+
+- **GitHub Actions (`docs-build.yml`)**: runs `sphinx-build` in CI to verify the docs
+  compile without errors. The job must pass before a PR can be merged.
+- **ReadTheDocs preview**: once the PR is opened, ReadTheDocs builds and deploys a
+  live preview of the docs for that branch. A bot posts a comment on the PR with a
+  link like `https://pycytominer--<PR-number>.org.readthedocs.build/`. The preview
+  is rebuilt automatically on every new commit pushed to the PR branch.
+
+In short: the GitHub Action confirms the docs _build_, and ReadTheDocs confirms they
+_deploy_ correctly.
+
 #### API documentation
 
 Pycytominer automatically pulls docstrings into the API reference via `sphinx.ext.autodoc`.
