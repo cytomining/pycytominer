@@ -87,15 +87,19 @@ class SingleCells:
     Notes
     -----
     .. note::
-        the argument compartment_linking_cols is designed to work with CellProfiler output,
-        as curated by cytominer-database. The default is: {
-            "cytoplasm": {
-                "cells": "Cytoplasm_Parent_Cells",
-                "nuclei": "Cytoplasm_Parent_Nuclei",
-            },
-            "cells": {"cytoplasm": "ObjectNumber"},
-            "nuclei": {"cytoplasm": "ObjectNumber"},
-        }
+        The argument ``compartment_linking_cols`` is designed to work with CellProfiler
+        output, as curated by cytominer-database. The default is:
+
+        .. code-block:: python
+
+            {
+                "cytoplasm": {
+                    "cells": "Cytoplasm_Parent_Cells",
+                    "nuclei": "Cytoplasm_Parent_Nuclei",
+                },
+                "cells": {"cytoplasm": "ObjectNumber"},
+                "nuclei": {"cytoplasm": "ObjectNumber"},
+            }
     """
 
     def __init__(

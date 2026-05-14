@@ -59,48 +59,49 @@ def consensus(
 
     Returns
     -------
-    str or pd.DataFrame
-        pd.DataFrame:
-            The consensus profile DataFrame. If output_file=None, then return the
-            DataFrame. If you specify output_file, then write to file and do not return
-            data.
-        str:
-            If output_file is provided, then the function returns the path to the
-            output file.
+    pd.DataFrame
+        The consensus profile DataFrame. If output_file=None, then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
+    str
+        If output_file is provided, then the function returns the path to the
+        output file.
 
     Examples
     --------
-    import pandas as pd
-    from pycytominer import consensus
+    .. code-block:: python
 
-    data_df = pd.concat(
-        [
-            pd.DataFrame(
-                {
-                    "Metadata_Plate": "X",
-                    "Metadata_Well": "a",
-                    "Cells_x": [0.1, 0.3, 0.8],
-                    "Nuclei_y": [0.5, 0.3, 0.1],
-                }
-            ),
-            pd.DataFrame(
-                {
-                    "Metadata_Plate": "X",
-                    "Metadata_Well": "b",
-                    "Cells_x": [0.4, 0.2, -0.5],
-                    "Nuclei_y": [-0.8, 1.2, -0.5],
-                }
-            ),
-        ]
-    ).reset_index(drop=True)
+        import pandas as pd
+        from pycytominer import consensus
 
-    consensus_df = consensus(
-        profiles=data_df,
-        replicate_columns=["Metadata_Plate", "Metadata_Well"],
-        operation="median",
-        features="infer",
-        output_file=None,
-    )
+        data_df = pd.concat(
+            [
+                pd.DataFrame(
+                    {
+                        "Metadata_Plate": "X",
+                        "Metadata_Well": "a",
+                        "Cells_x": [0.1, 0.3, 0.8],
+                        "Nuclei_y": [0.5, 0.3, 0.1],
+                    }
+                ),
+                pd.DataFrame(
+                    {
+                        "Metadata_Plate": "X",
+                        "Metadata_Well": "b",
+                        "Cells_x": [0.4, 0.2, -0.5],
+                        "Nuclei_y": [-0.8, 1.2, -0.5],
+                    }
+                ),
+            ]
+        ).reset_index(drop=True)
+
+        consensus_df = consensus(
+            profiles=data_df,
+            replicate_columns=["Metadata_Plate", "Metadata_Well"],
+            operation="median",
+            features="infer",
+            output_file=None,
+        )
     """
     # Confirm that the operation is supported
     check_consensus_operation(operation)

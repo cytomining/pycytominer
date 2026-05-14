@@ -1,0 +1,45 @@
+---
+name: docs build
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "pycytominer/**"
+      - ".readthedocs.yml"
+      - ".github/workflows/docs-build.yml"
+      - ".github/actions/setup-env/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "README.md"
+      - "CONTRIBUTING.md"
+  push:
+    branches:
+      - main
+
+jobs:
+  build-docs-with-sphinx:
+    name: Sphinx build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          # Full history required for dunamai to derive the version from git tags
+          fetch-depth: 0
+
+      - name: Install pandoc
+        # nbsphinx requires pandoc to convert Jupyter notebooks during the Sphinx build
+        uses: pandoc/actions/setup@v1
+
+      - name: Setup Python and uv
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: "3.11"
+          cache-pre-commit: false
+          cache-venv: true
+          setup-uv: true
+          install-deps: true
+
+      - name: Build docs
+        run: uv run sphinx-build ./docs/ ./docs/build
