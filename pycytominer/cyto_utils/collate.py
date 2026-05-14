@@ -15,10 +15,11 @@ from typing import Optional
 def run_check_errors(cmd: list[str]) -> None:
     """Run a system command, and exit if an error occurred, otherwise continue"""
     output = subprocess.run(args=cmd, capture_output=True, text=True, check=False)
-    if output.stderr != "":
+    if output.returncode != 0:
         print_cmd = " ".join(cmd)
+        error_text = output.stderr.strip() or output.stdout.strip() or "unknown error"
         sys.exit(
-            f"The error {output.stderr} was generated when running {print_cmd}. Exiting."
+            f"The error {error_text} was generated when running {print_cmd}. Exiting."
         )
 
 

@@ -43,6 +43,22 @@ def test_run_check_errors_uses_command_list(monkeypatch):
     assert captured_kwargs["check"] is False
 
 
+def test_run_check_errors_exits_on_nonzero_returncode(monkeypatch):
+    """Ensure run_check_errors exits when subprocess returns non-zero."""
+
+    def mock_run(**kwargs):
+        return subprocess.CompletedProcess(
+            args=kwargs["args"], returncode=1, stderr="boom"
+        )
+
+    monkeypatch.setattr(run_check_errors.__globals__["subprocess"], "run", mock_run)
+
+    with pytest.raises(SystemExit) as exc:
+        run_check_errors(["aws", "s3", "cp", "a", "b"])
+
+    assert "boom" in str(exc.value)
+
+
 def cleanup():
     if os.path.exists(TEST_BACKEND_LOCATION):
         os.remove(TEST_BACKEND_LOCATION)
