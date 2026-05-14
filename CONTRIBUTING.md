@@ -28,12 +28,10 @@ If you are stuck, please feel free to ask any questions or ask for help.
 - [Formatting](#formatting)
 - [Linting](#linting)
 - [Git commit messages](#git-commit-messages)
-- [Python style guide](#python-style-guide)
-- [Documentation style guide](#documentation-style-guide)
 
 ## Code of conduct
 
-This project and everyone participating in it is governed by our [code of conduct](CODE_OF_CONDUCT.md).
+This project and everyone participating in it is governed by our [code of conduct](https://github.com/cytomining/pycytominer/blob/main/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 Please report unacceptable behavior to cytodata.info@gmail.com.
 
@@ -126,7 +124,7 @@ Once you make the necessary changes on this branch, you should file a pull reque
 The content and description of your pull request are directly related to the speed at which we are able to review, approve, and merge your contribution into Pycytominer.
 To ensure an efficient review process please perform the following steps:
 
-1. Follow all instructions in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md)
+1. Follow all instructions in the [pull request template](https://github.com/cytomining/pycytominer/blob/main/.github/PULL_REQUEST_TEMPLATE.md)
 2. Triple check that your pull request is only adding _one_ specific feature. Small, bite-sized pull requests move so much faster than large pull requests.
 3. After submitting your pull request, ensure that your contribution passes all status checks (e.g. passes all tests)
 
@@ -143,9 +141,6 @@ We use [Sphinx](https://www.sphinx-doc.org/en/master/index.html) for documentati
 - [MyST Parser](https://myst-parser.readthedocs.io/) to allow Markdown files (including the README) alongside RST
 - [Furo](https://pradyunsg.me/furo/) theme
 - [nbsphinx](https://nbsphinx.readthedocs.io/) to render Jupyter notebooks
-
-We host documentation on [GitHub Pages](https://cytomining.github.io/pycytominer/), built automatically on every push to `main` via the [publish-docs workflow](.github/workflows/publish-docs.yml).
-ReadTheDocs redirects to GitHub Pages.
 
 #### Building docs locally
 
@@ -168,7 +163,7 @@ Open `./docs/build/index.html` in your browser to preview the result.
 Pycytominer automatically pulls docstrings into the API reference via `sphinx.ext.autodoc`.
 Write docstrings in [NumPy format](https://numpydoc.readthedocs.io/en/latest/format.html) and they will appear at `cytomining.github.io/pycytominer/` under the API section after the next build.
 
-See [`docs/conf.py`](docs/conf.py) for the full Sphinx configuration.
+See [`docs/conf.py`](https://github.com/cytomining/pycytominer/blob/main/docs/conf.py) for the full Sphinx configuration.
 
 ### uv
 
@@ -252,7 +247,7 @@ Creating a new release includes the following steps:
 #### Docker Hub Image Releases
 
 We automate image pushes for `pycytominer` under the `cytomining` organization on [Docker Hub](https://hub.docker.com/) using GitHub Actions workflows.
-These pushes are defined within [.github/workflows/integration-test.yml](.github/workflows/integration-test.yml).
+These pushes are defined within [.github/workflows/integration-test.yml](https://github.com/cytomining/pycytominer/blob/main/.github/workflows/integration-test.yml).
 
 - **Scheduled**: We create new Docker image releases on a weekly basis to incorporate the latest updates from external dependencies (such as OS updates, Python versions, etc.).
   An image tag published this way may appear as `cytomining/pycytominer:1.1.0.post2.dev0_892dee2_240320`, where the dynamic version of `pycytominer` is referenced alongside a date in the format `YYMMDD`.

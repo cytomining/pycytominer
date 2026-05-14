@@ -22,7 +22,7 @@ Image data flow from a microscope to cell segmentation and feature extraction to
 From here, additional single cell processing tools curate the single cell readouts into a form manageable for Pycytominer input.
 For [CellProfiler](https://cellprofiler.org/), we recommend [CytoTable](https://github.com/cytomining/CytoTable) for harmonizing outputs before Pycytominer processing.
 Some legacy workflows use [cytominer-database ([DEPRECATED])](https://github.com/cytomining/cytominer-database), including the CSV collation utilities described below.
-For [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html), we include single cell processing tools in [pycytominer.cyto_utils](pycytominer/cyto_utils/).
+For [DeepProfiler](https://cytomining.github.io/DeepProfiler-handbook/docs/00-welcome.html), we include single cell processing tools in [pycytominer.cyto_utils](https://github.com/cytomining/pycytominer/tree/main/pycytominer/cyto_utils).
 
 Next, Pycytominer performs reproducible image-based profiling (**Figure 1B**).
 The Pycytominer API consists of five key steps (**Figure 1C**).
@@ -324,4 +324,4 @@ pycytominer.cyto_utils.write_gct(
 
 If you use `pycytominer` in your project, please cite our software.
 You can see citation information in the 'cite this repository' link at the top right under `about` section within GitHub.
-This information may also be referenced within the [`CITATION.cff`](CITATION.cff) file.
+This information may also be referenced within the [`CITATION.cff`](https://github.com/cytomining/pycytominer/blob/main/CITATION.cff) file.
