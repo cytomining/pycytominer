@@ -15,7 +15,7 @@ build:
       - pip install uv
     post_install:
       # Install the project for access to required dependencies
-      - uv pip install -e ".[anndata,cell-locations]
+      - uv pip install -e ".[anndata,cell-locations]"
       # Install dependencies with 'docs' dependency group using uv
       - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv sync --all-extras --group docs
 
