@@ -10,9 +10,8 @@
    :maxdepth: 2
    :caption: Contents:
 
-   walkthrough
    contributing
-   tutorial
+   walkthrough
    modules
 
 Indices and tables

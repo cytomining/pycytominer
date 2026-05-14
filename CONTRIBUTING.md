@@ -284,8 +284,3 @@ All linting checks will also be run automatically at commit time with the pre-co
 
 Pycytominer uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commit messages to aid in automatic changelog generation.
 We prepare commit messages that follow this standard using [commitizen](https://commitizen-tools.github.io/commitizen/), which comes with the dev dependency group.
-
-### Documentation style guide
-
-We use the [numpy documentation style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
-When writing markdown documentation, please also ensure that each sentence is on a new line.
