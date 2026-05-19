@@ -34,24 +34,26 @@ def test_empty_blocklist():
 
 
 def test_named_blocklist():
-    blocklist_from_object = Blocklist(type="default")
+    blocklist_from_object = Blocklist(blocklist_name="default")
     assert blocklist == blocklist_from_object.to_list()
 
 
 def test_named_blocklist_additional_features():
-    blocklist_from_object = Blocklist(type="default", features=["Cells_Custom"])
+    blocklist_from_object = Blocklist(
+        blocklist_name="default", extra_features=["Cells_Custom"]
+    )
     assert blocklist_from_object.to_list() == [*blocklist, "Cells_Custom"]
 
 
 def test_blocklist_add_features():
-    blocklist_from_object = Blocklist(features=["Cells_Custom"])
+    blocklist_from_object = Blocklist(extra_features=["Cells_Custom"])
     blocklist_from_object.add(["Cells_Custom", "Nuclei_Custom"])
     assert blocklist_from_object.to_list() == ["Cells_Custom", "Nuclei_Custom"]
 
 
 def test_blocklist_object_filters_to_population_features():
     blocklist_from_object = Blocklist(
-        features=["Nuclei_Correlation_Manders_AGP_DNA", "Cells_Custom"]
+        extra_features=["Nuclei_Correlation_Manders_AGP_DNA", "Cells_Custom"]
     )
     blocklist_from_func = get_blocklist_features(
         blocklist=blocklist_from_object,

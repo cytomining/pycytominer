@@ -21,30 +21,31 @@ class Blocklist:
 
     def __init__(
         self,
-        type: Optional[str] = None,  # noqa: A002
-        features: Optional[Sequence[str]] = None,
+        blocklist_name: Optional[str] = None,
+        extra_features: Optional[Sequence[str]] = None,
         blocklists_file: Union[str, pathlib.Path] = blocklists_file,
     ):
         """Create a blocklist from a named registry entry and/or extra features.
 
         Parameters
         ----------
-        type : str, optional
+        blocklist_name : str, optional
             Name of a blocklist stored in the packaged blocklist registry.
             If None, the blocklist starts empty.
-        features : sequence of str, optional
-            Additional feature names to add to the blocklist.
+        extra_features : sequence of str, optional
+            Additional feature names to append to the named blocklist. If
+            ``blocklist_name`` is None, these are the only blocklisted features.
         blocklists_file : path-like object, default packaged blocklists.yaml
             YAML file mapping blocklist names to feature lists.
         """
-        self.type = type
+        self.blocklist_name = blocklist_name
         self.features: list[str] = []
 
-        if type is not None:
-            self.features.extend(_load_named_blocklist(type, blocklists_file))
+        if blocklist_name is not None:
+            self.features.extend(_load_named_blocklist(blocklist_name, blocklists_file))
 
-        if features is not None:
-            self.add(features)
+        if extra_features is not None:
+            self.add(extra_features)
 
     def add(self, features: Union[str, Sequence[str]]) -> None:
         """Add one or more feature names to the blocklist."""
@@ -76,7 +77,7 @@ def _load_named_blocklist(
     if blocklist_type not in blocklists:
         blocklist_names = ", ".join(sorted(blocklists))
         raise ValueError(
-            f"Unknown blocklist type '{blocklist_type}'. Choose one of: {blocklist_names}"
+            f"Unknown blocklist name '{blocklist_type}'. Choose one of: {blocklist_names}"
         )
 
     blocklist = blocklists[blocklist_type]
@@ -112,7 +113,7 @@ def get_blocklist_features(
     """
 
     if blocklist is None:
-        blocklist_features = Blocklist(type=blocklist_type).to_list()
+        blocklist_features = Blocklist(blocklist_name=blocklist_type).to_list()
     elif isinstance(blocklist, Blocklist):
         blocklist_features = blocklist.to_list()
     elif isinstance(blocklist, str):
