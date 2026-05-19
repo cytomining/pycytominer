@@ -21,18 +21,18 @@ class Blocklist:
     def __init__(
         self,
         blocklist_name: Optional[str] = None,
-        extra_features: Optional[list[str]] = None,
+        features_to_block: Optional[list[str]] = None,
         blocklists_file: Union[str, pathlib.Path] = blocklists_file,
     ):
-        """Create a blocklist from a named registry entry and/or extra features.
+        """Create a blocklist from a named registry entry and/or features to block.
 
         Parameters
         ----------
         blocklist_name : str, optional
             Name of a blocklist stored in the packaged blocklist registry.
             If None, the blocklist starts empty.
-        extra_features : list of str, optional
-            Additional feature names to append to the named blocklist. If
+        features_to_block : list of str, optional
+            Feature names to append to the named blocklist. If
             ``blocklist_name`` is None, these are the only blocklisted features.
         blocklists_file : path-like object, default packaged blocklists.yaml
             YAML file mapping blocklist names to feature lists.
@@ -43,8 +43,8 @@ class Blocklist:
         if blocklist_name is not None:
             self.features.extend(_load_named_blocklist(blocklist_name, blocklists_file))
 
-        if extra_features is not None:
-            self.add(extra_features)
+        if features_to_block is not None:
+            self.add(features_to_block)
 
     def add(self, features: list[str]) -> None:
         """Add one or more feature names to the blocklist."""

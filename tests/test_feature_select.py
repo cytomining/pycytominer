@@ -457,7 +457,7 @@ def test_feature_select_blocklist():
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
-        blocklist=Blocklist(extra_features=["Nuclei_Correlation_RWC_ER_RNA"]),
+        blocklist=Blocklist(features_to_block=["Nuclei_Correlation_RWC_ER_RNA"]),
     )
     expected_result = pd.DataFrame({
         "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
@@ -470,7 +470,7 @@ def test_feature_select_blocklist():
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
-        blocklist=Blocklist(blocklist_name="default", extra_features=["zz"]),
+        blocklist=Blocklist(blocklist_name="default", features_to_block=["zz"]),
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1]})
     pd.testing.assert_frame_equal(result, expected_result)

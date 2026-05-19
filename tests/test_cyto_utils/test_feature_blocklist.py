@@ -41,7 +41,7 @@ def test_named_blocklist():
 
 def test_named_blocklist_additional_features():
     blocklist_from_object = Blocklist(
-        blocklist_name="default", extra_features=["Cells_Custom"]
+        blocklist_name="default", features_to_block=["Cells_Custom"]
     )
     assert blocklist_from_object.to_list() == [*blocklist, "Cells_Custom"]
 
@@ -65,7 +65,7 @@ def test_named_blocklist_requires_list_entry(tmp_path):
 
 
 def test_blocklist_add_features():
-    blocklist_from_object = Blocklist(extra_features=["Cells_Custom"])
+    blocklist_from_object = Blocklist(features_to_block=["Cells_Custom"])
     blocklist_from_object.add(["Cells_Custom", "Nuclei_Custom"])
     assert blocklist_from_object.to_list() == [
         "Cells_Custom",
@@ -75,7 +75,7 @@ def test_blocklist_add_features():
 
 
 def test_blocklist_add_features_converts_to_strings():
-    blocklist_from_object = Blocklist(extra_features=[1])
+    blocklist_from_object = Blocklist(features_to_block=[1])
     blocklist_from_object.add([2])
     assert blocklist_from_object.to_list() == ["1", "2"]
 
@@ -88,7 +88,7 @@ def test_blocklist_add_features_requires_list():
 
 def test_blocklist_object_filters_to_population_features():
     blocklist_from_object = Blocklist(
-        extra_features=["Nuclei_Correlation_Manders_AGP_DNA", "Cells_Custom"]
+        features_to_block=["Nuclei_Correlation_Manders_AGP_DNA", "Cells_Custom"]
     )
     blocklist_from_func = get_blocklist_features(
         blocklist=blocklist_from_object,
