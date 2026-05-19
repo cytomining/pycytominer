@@ -1,7 +1,7 @@
-import json
 import pathlib
 
 import pandas as pd
+import yaml
 
 from pycytominer.cyto_utils.features import (
     Blocklist,
@@ -10,7 +10,7 @@ from pycytominer.cyto_utils.features import (
 )
 
 with pathlib.Path(blocklists_file).open() as blocklist_stream:
-    blocklist = json.load(blocklist_stream)["default"]
+    blocklist = yaml.safe_load(blocklist_stream)["default"]
 
 data_blocklist_df = pd.DataFrame({
     "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],

@@ -2,16 +2,16 @@
 Utility function to manipulate cell profiler features
 """
 
-import json
 import os
 import pathlib
 from collections.abc import Sequence
 from typing import Optional, Union
 
 import pandas as pd
+import yaml
 
 blocklists_file = os.path.join(
-    os.path.dirname(__file__), "..", "data", "blocklists.json"
+    os.path.dirname(__file__), "..", "data", "blocklists.yaml"
 )
 default_blocklist_name = "default"
 
@@ -34,8 +34,8 @@ class Blocklist:
             If None, the blocklist starts empty.
         features : sequence of str, optional
             Additional feature names to add to the blocklist.
-        blocklists_file : path-like object, default packaged blocklists.json
-            JSON file mapping blocklist names to feature lists.
+        blocklists_file : path-like object, default packaged blocklists.yaml
+            YAML file mapping blocklist names to feature lists.
         """
         self.type = type
         self.features: list[str] = []
@@ -66,9 +66,12 @@ def _load_named_blocklist(
     blocklist_type: str,
     blocklists_file: Union[str, pathlib.Path] = blocklists_file,
 ) -> list[str]:
-    """Load a named blocklist from the JSON registry."""
+    """Load a named blocklist from the YAML registry."""
     with pathlib.Path(blocklists_file).open() as blocklist_stream:
-        blocklists = json.load(blocklist_stream)
+        blocklists = yaml.safe_load(blocklist_stream)
+
+    if not isinstance(blocklists, dict):
+        raise ValueError("Blocklist registry must map blocklist names to features.")
 
     if blocklist_type not in blocklists:
         blocklist_names = ", ".join(sorted(blocklists))
