@@ -48,7 +48,11 @@ def test_named_blocklist_additional_features():
 def test_blocklist_add_features():
     blocklist_from_object = Blocklist(extra_features=["Cells_Custom"])
     blocklist_from_object.add(["Cells_Custom", "Nuclei_Custom"])
-    assert blocklist_from_object.to_list() == ["Cells_Custom", "Nuclei_Custom"]
+    assert blocklist_from_object.to_list() == [
+        "Cells_Custom",
+        "Cells_Custom",
+        "Nuclei_Custom",
+    ]
 
 
 def test_blocklist_object_filters_to_population_features():

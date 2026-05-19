@@ -50,7 +50,7 @@ class Blocklist:
     def add(self, features: Union[str, Sequence[str]]) -> None:
         """Add one or more feature names to the blocklist."""
         features_to_add = [features] if isinstance(features, str) else list(features)
-        self.features = list(dict.fromkeys([*self.features, *features_to_add]))
+        self.features = self.features + features_to_add
 
     def to_list(self) -> list[str]:
         """Return blocklist features as a list."""
