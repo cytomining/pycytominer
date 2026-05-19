@@ -1,6 +1,7 @@
 import pathlib
 
 import pandas as pd
+import pytest
 import yaml
 
 from pycytominer.cyto_utils.features import (
@@ -45,6 +46,24 @@ def test_named_blocklist_additional_features():
     assert blocklist_from_object.to_list() == [*blocklist, "Cells_Custom"]
 
 
+def test_named_blocklist_converts_features_to_strings(tmp_path):
+    blocklists_file = tmp_path / "blocklists.yaml"
+    blocklists_file.write_text("default:\n  - 1\n  - Cells_Custom\n", encoding="utf-8")
+
+    blocklist_from_object = Blocklist(
+        blocklist_name="default", blocklists_file=blocklists_file
+    )
+    assert blocklist_from_object.to_list() == ["1", "Cells_Custom"]
+
+
+def test_named_blocklist_requires_list_entry(tmp_path):
+    blocklists_file = tmp_path / "blocklists.yaml"
+    blocklists_file.write_text("default: Cells_Custom\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must be a list of feature names"):
+        Blocklist(blocklist_name="default", blocklists_file=blocklists_file)
+
+
 def test_blocklist_add_features():
     blocklist_from_object = Blocklist(extra_features=["Cells_Custom"])
     blocklist_from_object.add(["Cells_Custom", "Nuclei_Custom"])
@@ -53,6 +72,18 @@ def test_blocklist_add_features():
         "Cells_Custom",
         "Nuclei_Custom",
     ]
+
+
+def test_blocklist_add_features_converts_to_strings():
+    blocklist_from_object = Blocklist(extra_features=[1])
+    blocklist_from_object.add([2])
+    assert blocklist_from_object.to_list() == ["1", "2"]
+
+
+def test_blocklist_add_features_requires_list():
+    blocklist_from_object = Blocklist()
+    with pytest.raises(TypeError, match="requires a list"):
+        blocklist_from_object.add("Cells_Custom")
 
 
 def test_blocklist_object_filters_to_population_features():
@@ -72,3 +103,8 @@ def test_blocklist_from_list():
         population_df=data_blocklist_df,
     )
     assert blocklist_from_func == ["Nuclei_Correlation_Manders_AGP_DNA"]
+
+
+def test_blocklist_features_requires_list_or_blocklist():
+    with pytest.raises(TypeError, match="list of feature names or a Blocklist"):
+        get_blocklist_features(blocklist="Nuclei_Correlation_Manders_AGP_DNA")

@@ -479,7 +479,7 @@ def test_feature_select_blocklist():
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
-        blocklist="Nuclei_Correlation_Manders_AGP_DNA",
+        blocklist=["Nuclei_Correlation_Manders_AGP_DNA"],
     )
     expected_result = pd.DataFrame({
         "y": [1, 2, 8, 5, 2, 1],

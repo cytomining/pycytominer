@@ -276,7 +276,7 @@ class PycytominerCLI:
         unique_cut: float = 0.01,
         compression_options: str | dict[str, Any] | None = None,
         float_format: str | None = None,
-        blocklist: str | Sequence[str] | None = None,
+        blocklist: str | list[str] | None = None,
         blocklist_type: str = "default",
         outlier_cutoff: float = 500.0,
         noise_removal_perturb_groups: str | None = None,
@@ -300,7 +300,8 @@ class PycytominerCLI:
             compression_options: Compression options for writing output.
             float_format: Decimal precision for output formatting.
             blocklist: Optional blocklist feature name(s).
-            blocklist_type: Named packaged blocklist to use by default.
+            blocklist_type: Named packaged blocklist to use by default. This is
+                the top-level YAML key in the packaged blocklist registry.
             outlier_cutoff: Outlier cutoff for feature removal.
             noise_removal_perturb_groups: Metadata column or list for noise removal.
             noise_removal_stdev_cutoff: Standard deviation cutoff for noise removal.
@@ -322,7 +323,7 @@ class PycytominerCLI:
 
         noise_removal_groups_value = _parse_list_or_str(noise_removal_perturb_groups)
         blocklist_value = (
-            _parse_list_or_str(blocklist) if isinstance(blocklist, str) else blocklist
+            _split_csv_arg(blocklist) if isinstance(blocklist, str) else blocklist
         )
 
         result = feature_select(

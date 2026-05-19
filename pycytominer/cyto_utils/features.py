@@ -4,7 +4,6 @@ Utility function to manipulate cell profiler features
 
 import os
 import pathlib
-from collections.abc import Sequence
 from typing import Optional, Union
 
 import pandas as pd
@@ -22,7 +21,7 @@ class Blocklist:
     def __init__(
         self,
         blocklist_name: Optional[str] = None,
-        extra_features: Optional[Sequence[str]] = None,
+        extra_features: Optional[list[str]] = None,
         blocklists_file: Union[str, pathlib.Path] = blocklists_file,
     ):
         """Create a blocklist from a named registry entry and/or extra features.
@@ -32,7 +31,7 @@ class Blocklist:
         blocklist_name : str, optional
             Name of a blocklist stored in the packaged blocklist registry.
             If None, the blocklist starts empty.
-        extra_features : sequence of str, optional
+        extra_features : list of str, optional
             Additional feature names to append to the named blocklist. If
             ``blocklist_name`` is None, these are the only blocklisted features.
         blocklists_file : path-like object, default packaged blocklists.yaml
@@ -47,10 +46,12 @@ class Blocklist:
         if extra_features is not None:
             self.add(extra_features)
 
-    def add(self, features: Union[str, Sequence[str]]) -> None:
+    def add(self, features: list[str]) -> None:
         """Add one or more feature names to the blocklist."""
-        features_to_add = [features] if isinstance(features, str) else list(features)
-        self.features = self.features + features_to_add
+        if not isinstance(features, list):
+            raise TypeError("Blocklist.add() requires a list of feature names.")
+
+        self.features = self.features + [str(feature) for feature in features]
 
     def to_list(self) -> list[str]:
         """Return blocklist features as a list."""
@@ -64,33 +65,61 @@ class Blocklist:
 
 
 def _load_named_blocklist(
-    blocklist_type: str,
+    blocklist_name: str,
     blocklists_file: Union[str, pathlib.Path] = blocklists_file,
 ) -> list[str]:
-    """Load a named blocklist from the YAML registry."""
+    """Load a blocklist entry by name from the YAML registry.
+
+    Parameters
+    ----------
+    blocklist_name : str
+        Name of the blocklist to load. This is the top-level YAML key in
+        ``blocklists_file``; for example, ``"default"`` loads the list under
+        the ``default:`` key in ``blocklists.yaml``.
+    blocklists_file : str or pathlib.Path, default packaged blocklists.yaml
+        YAML file mapping blocklist names to feature lists.
+
+    Returns
+    -------
+    list of str
+        Feature names from the named blocklist. Values loaded from YAML are
+        converted to strings.
+
+    Raises
+    ------
+    ValueError
+        If the registry is not a mapping, ``blocklist_name`` is not present, or
+        the selected registry entry is not a list of feature names.
+    """
     with pathlib.Path(blocklists_file).open() as blocklist_stream:
         blocklists = yaml.safe_load(blocklist_stream)
 
     if not isinstance(blocklists, dict):
-        raise ValueError("Blocklist registry must map blocklist names to features.")
-
-    if blocklist_type not in blocklists:
-        blocklist_names = ", ".join(sorted(blocklists))
         raise ValueError(
-            f"Unknown blocklist name '{blocklist_type}'. Choose one of: {blocklist_names}"
+            "Blocklist registry must be a mapping of blocklist names to feature "
+            "lists."
         )
 
-    blocklist = blocklists[blocklist_type]
-    if not isinstance(blocklist, list) or not all(
-        isinstance(feature, str) for feature in blocklist
-    ):
-        raise ValueError("Blocklist registry entries must be lists of feature names.")
+    if blocklist_name not in blocklists:
+        blocklist_names = ", ".join(sorted(blocklists))
+        raise ValueError(
+            f"Unknown blocklist name '{blocklist_name}'. "
+            f"Choose one of: {blocklist_names}"
+        )
 
-    return blocklist
+    blocklist = blocklists[blocklist_name]
+    if not isinstance(blocklist, list):
+        raise ValueError(
+            "Each blocklist registry entry must be a list of feature names. "
+            "Feature names may be strings or values that can be converted to "
+            "strings."
+        )
+
+    return [str(feature) for feature in blocklist]
 
 
 def get_blocklist_features(
-    blocklist: Optional[Union[str, Sequence[str], Blocklist]] = None,
+    blocklist: Optional[Union[list[str], Blocklist]] = None,
     blocklist_type: str = default_blocklist_name,
     population_df: Optional[pd.DataFrame] = None,
 ) -> list[str]:
@@ -98,11 +127,13 @@ def get_blocklist_features(
 
     Parameters
     ----------
-    blocklist : str, sequence of str, or Blocklist, optional
+    blocklist : list of str or Blocklist, optional
         Feature name(s) to exclude. If None, load the named blocklist from the
         packaged registry.
     blocklist_type : str, default "default"
         Name of the packaged blocklist to load when ``blocklist`` is None.
+        This corresponds to a top-level key in the packaged YAML registry
+        (for example, ``default`` in ``blocklists.yaml``).
     population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
@@ -116,10 +147,10 @@ def get_blocklist_features(
         blocklist_features = Blocklist(blocklist_name=blocklist_type).to_list()
     elif isinstance(blocklist, Blocklist):
         blocklist_features = blocklist.to_list()
-    elif isinstance(blocklist, str):
-        blocklist_features = [blocklist]
+    elif isinstance(blocklist, list):
+        blocklist_features = [str(feature) for feature in blocklist]
     else:
-        blocklist_features = list(blocklist)
+        raise TypeError("blocklist must be a list of feature names or a Blocklist.")
 
     if isinstance(population_df, pd.DataFrame):
         population_features = population_df.columns.tolist()

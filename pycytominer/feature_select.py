@@ -2,7 +2,6 @@
 Select features to use in downstream analysis based on specified selection method
 """
 
-from collections.abc import Sequence
 from typing import Any, Literal, Optional, Union
 
 import pandas as pd
@@ -41,7 +40,7 @@ def feature_select(
     unique_cut: float = 0.01,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
-    blocklist: Optional[Union[str, Sequence[str], Blocklist]] = None,
+    blocklist: Optional[Union[list[str], Blocklist]] = None,
     blocklist_type: str = "default",
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
@@ -97,11 +96,13 @@ def feature_select(
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
-    blocklist : str, sequence of str, or Blocklist, optional
+    blocklist : list of str or Blocklist, optional
         Feature name(s) to exclude for the blocklist operation. A ``Blocklist``
         object may also be provided directly.
     blocklist_type : str, default "default"
         Name of the packaged blocklist to use when ``blocklist`` is None.
+        This is the top-level YAML key in the packaged blocklist registry
+        (for example, ``default`` in ``blocklists.yaml``).
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
