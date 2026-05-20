@@ -36,7 +36,9 @@ def prepare_external_metadata_for_annotate(
 
     # Capture "Metadata_" prefix columns
     with contextlib.suppress(ValueError):
-        protected_columns_to_avoid_metadata_prefix.update(infer_cp_features(external_metadata, metadata=True))
+        protected_columns_to_avoid_metadata_prefix.update(
+            infer_cp_features(external_metadata, metadata=True)
+        )
 
     # Capture non-numeric "Image_" prefix columns
     with contextlib.suppress(ValueError):
