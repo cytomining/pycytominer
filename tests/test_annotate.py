@@ -232,7 +232,7 @@ def test_annotate_external_parquet_merge_before_cp_clean(
                 "Image_Metadata_Well",
             ],
         ],
-        external_metadata=str(external_metadata_path),
+        external_metadata=external_metadata_path,
         **annotate_kwargs,
     )
 
