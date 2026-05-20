@@ -97,8 +97,7 @@ def _load_named_blocklist(
 
     if not isinstance(blocklists, dict):
         raise ValueError(
-            "Blocklist registry must be a mapping of blocklist names to feature "
-            "lists."
+            "Blocklist registry must be a mapping of blocklist names to feature lists."
         )
 
     if blocklist_name not in blocklists:
