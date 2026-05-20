@@ -44,9 +44,12 @@ class Blocklist:
         self.blocklist_name = blocklist_name
         self.features: list[str] = []
 
+        # Start with features from any packaged blocklist names the user chose.
         for name in _normalize_blocklist_names(blocklist_name):
             self.features.extend(_load_named_blocklist(name, blocklists_file))
 
+        # Then append explicit feature names so users can combine packaged
+        # blocklists with project-specific exclusions.
         if features_to_block is not None:
             self.add(features_to_block)
 
@@ -165,12 +168,17 @@ def get_blocklist_features(
     """
 
     if blocklist is None:
+        # No explicit features were provided, so use the named registry entry
+        # if one was requested; otherwise this returns an empty list.
         blocklist_features = Blocklist(blocklist_name=blocklist_name).to_list()
     elif isinstance(blocklist, Blocklist):
+        # A Blocklist object may already combine named and explicit features.
         blocklist_features = blocklist.to_list()
     elif isinstance(blocklist, str):
+        # Treat a single string as one feature name, not as an iterable of characters.
         blocklist_features = [blocklist]
     elif isinstance(blocklist, list):
+        # Lists are already feature collections; normalize values to strings.
         blocklist_features = [str(feature) for feature in blocklist]
     else:
         raise TypeError(
@@ -180,6 +188,7 @@ def get_blocklist_features(
 
     if isinstance(population_df, pd.DataFrame):
         population_features = population_df.columns.tolist()
+        # Keep only blocklisted features that are present in this profile table.
         blocklist_features = [x for x in blocklist_features if x in population_features]
 
     return blocklist_features

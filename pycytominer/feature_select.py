@@ -179,6 +179,8 @@ def feature_select(
                 method=corr_method,
             )
         elif op == "blocklist":
+            # Resolve user-provided and/or named blocklists into concrete
+            # profile columns, then drop only the matching columns below.
             exclude = get_blocklist_features(
                 population_df=profiles,
                 blocklist=blocklist,

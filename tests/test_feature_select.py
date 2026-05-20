@@ -431,10 +431,12 @@ def test_feature_select_blocklist():
         "zz": [0, -3, 8, 9, 6, 9],
     }).reset_index(drop=True)
 
+    # No blocklist is supplied, so the blocklist operation leaves the table unchanged.
     result = feature_select(data_blocklist_df, features="infer", operation="blocklist")
     expected_result = data_blocklist_df
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # Explicit features without a blocklist also preserve every column.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -443,6 +445,7 @@ def test_feature_select_blocklist():
     expected_result = data_blocklist_df
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # A packaged blocklist name removes the matching feature columns from the table.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -452,6 +455,7 @@ def test_feature_select_blocklist():
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # Packaged blocklist names can also be supplied as a list.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -461,6 +465,7 @@ def test_feature_select_blocklist():
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # A list of explicit feature names removes each matching column.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -473,6 +478,7 @@ def test_feature_select_blocklist():
     })
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # A Blocklist object can carry explicit feature names into feature_select().
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -486,6 +492,7 @@ def test_feature_select_blocklist():
     })
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # A Blocklist object can combine a packaged blocklist with extra explicit features.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -497,6 +504,7 @@ def test_feature_select_blocklist():
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1]})
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # A one-item list removes the one matching feature and keeps the rest.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
@@ -510,6 +518,7 @@ def test_feature_select_blocklist():
     })
     pd.testing.assert_frame_equal(result, expected_result)
 
+    # A single feature string behaves like a one-item blocklist.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
