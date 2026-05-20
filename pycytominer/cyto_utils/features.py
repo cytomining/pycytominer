@@ -32,7 +32,9 @@ class Blocklist:
         blocklist_name : str or list of str, optional
             Name(s) of blocklists stored in the packaged blocklist registry.
             If None, the blocklist starts empty. When multiple names are
-            provided, entries are appended in the provided order.
+            provided, entries are appended in the provided order. Use
+            `"default"`` to explicitly load the
+            packaged default blocklist.
         features_to_block : list of str, optional
             Feature names to append to the named blocklist. If
             ``blocklist_name`` is None, these are the only blocklisted features.
@@ -149,7 +151,10 @@ def get_blocklist_features(
         Name(s) of packaged blocklists to load when ``blocklist`` is None. Each
         name corresponds to a top-level key in the packaged YAML registry (for
         example, ``default`` in ``blocklists.yaml``). If None, no packaged
-        blocklist is loaded.
+        blocklist is loaded and an empty ``Blocklist`` is used. Use
+        ``default_blocklist_name`` or ``"default"`` to explicitly load the
+        packaged default blocklist. Multiple names are loaded in the order
+        provided.
     population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
