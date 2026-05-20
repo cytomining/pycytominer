@@ -114,6 +114,12 @@ def annotate(
             else cmap_args.get("perturbation_mode", "none"),
         )
 
+    # Check that external metadata and join keys are being provided together
+    if (external_metadata is None) != (external_join_on is None):
+        raise ValueError(
+            "Both `external_metadata` and `external_join_on` must be provided together."
+        )
+
     # Add external metadata if provided (including a QC.parquet file with QC flags)
     if isinstance(external_metadata, str):
         external_metadata = load_profiles(external_metadata)
