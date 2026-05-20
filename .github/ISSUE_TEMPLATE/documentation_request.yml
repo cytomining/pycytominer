@@ -29,3 +29,14 @@ body:
         Please provide your suggestion for what changes should be made in the documentation. If your suggestion involves modifying existing documentation, please explain why the suggested change is an improvement.
     validations:
       required: true
+  - type: checkboxes
+    id: contribution-interest
+    attributes:
+      label: Contribution interest
+      description: >
+        If you would like to help improve this documentation, we would be happy
+        to support you. This is completely optional, but it helps us know when
+        someone is interested in contributing.
+      options:
+        - label: >
+            I would be interested in submitting a pull request to help update this documentation.

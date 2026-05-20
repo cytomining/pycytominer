@@ -51,7 +51,7 @@ def normalize(
         numeric validation. If you are working with mixed profile and image
         payload data, pass explicit feature columns when needed to avoid
         selecting non-profile content.
-    image_features: bool, default False
+    image_features : bool, default False
         Whether to include inferred ``Image_*`` feature columns alongside the
         default CellProfiler compartments. This preserves support for numeric
         image-level measurements while avoiding non-numeric ``Image_*``
@@ -84,7 +84,7 @@ def normalize(
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
-    mad_robustize_epsilon: float, optional
+    mad_robustize_epsilon : float, optional
         The mad_robustize fudge factor parameter. The function only uses
         this variable if method = "mad_robustize". Set this to 0 if
         mad_robustize generates features with large values.
@@ -101,14 +101,13 @@ def normalize(
 
     Returns
     -------
-    str or pd.DataFrame
-        pd.DataFrame:
-            The normalized profile DataFrame. If output_file=None, then return the
-            DataFrame. If you specify output_file, then write to file and do not return
-            data.
-        str:
-            If output_file is provided, then the function returns the path to the
-            output file.
+    pd.DataFrame
+        The normalized profile DataFrame. If output_file=None, then return the
+        DataFrame. If you specify output_file, then write to file and do not return
+        data.
+    str
+        If output_file is provided, then the function returns the path to the
+        output file.
 
     Raises
     ------
@@ -121,36 +120,38 @@ def normalize(
 
     Examples
     --------
-    import pandas as pd
-    from pycytominer import normalize
+    .. code-block:: python
 
-    data_df = pd.DataFrame(
-        {
-            "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
-            "Metadata_treatment": [
-                "drug",
-                "drug",
-                "control",
-                "control",
-                "drug",
-                "drug",
-                "control",
-                "control",
-            ],
-            "x": [1, 2, 8, 2, 5, 5, 5, 1],
-            "y": [3, 1, 7, 4, 5, 9, 6, 1],
-            "z": [1, 8, 2, 5, 6, 22, 2, 2],
-            "zz": [14, 46, 1, 6, 30, 100, 2, 2],
-        }
-    ).reset_index(drop=True)
+        import pandas as pd
+        from pycytominer import normalize
 
-    normalized_df = normalize(
-        profiles=data_df,
-        features=["x", "y", "z", "zz"],
-        meta_features=["Metadata_plate", "Metadata_treatment"],
-        samples="Metadata_treatment == 'control'",
-        method="standardize"
-    )
+        data_df = pd.DataFrame(
+            {
+                "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
+                "Metadata_treatment": [
+                    "drug",
+                    "drug",
+                    "control",
+                    "control",
+                    "drug",
+                    "drug",
+                    "control",
+                    "control",
+                ],
+                "x": [1, 2, 8, 2, 5, 5, 5, 1],
+                "y": [3, 1, 7, 4, 5, 9, 6, 1],
+                "z": [1, 8, 2, 5, 6, 22, 2, 2],
+                "zz": [14, 46, 1, 6, 30, 100, 2, 2],
+            }
+        ).reset_index(drop=True)
+
+        normalized_df = normalize(
+            profiles=data_df,
+            features=["x", "y", "z", "zz"],
+            meta_features=["Metadata_plate", "Metadata_treatment"],
+            samples="Metadata_treatment == 'control'",
+            method="standardize",
+        )
     """
 
     # Load Data

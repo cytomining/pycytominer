@@ -7,21 +7,20 @@ import pathlib
 import sqlite3
 import subprocess
 import sys
+import tempfile
 import warnings
-from typing import Optional, Union
+from typing import Optional
 
 
-def run_check_errors(cmd: Union[str, list]):
+def run_check_errors(cmd: list[str]) -> None:
     """Run a system command, and exit if an error occurred, otherwise continue"""
-    if isinstance(cmd, str):
-        cmd = cmd.split()
-    output = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
-    if output.stderr != "":
-        print_cmd = " ".join(map(str, cmd))
+    output = subprocess.run(args=cmd, capture_output=True, text=True, check=False)
+    if output.returncode != 0:
+        print_cmd = " ".join(cmd)
+        error_text = output.stderr.strip() or output.stdout.strip() or "unknown error"
         sys.exit(
-            f"The error {output.stderr} was generated when running {print_cmd}. Exiting."
+            f"The error {error_text} was generated when running {print_cmd}. Exiting."
         )
-    return
 
 
 def collate(
@@ -34,7 +33,7 @@ def collate(
     csv_dir: str = "analysis",
     aws_remote: Optional[str] = None,
     aggregate_only: bool = False,
-    tmp_dir: str = "/tmp",  # noqa: S108
+    tmp_dir: Optional[str] = None,
     overwrite: bool = False,
     add_image_features: bool = True,
     image_feature_categories: Optional[list[str]] = [
@@ -67,8 +66,9 @@ def collate(
         A remote AWS prefix, if set CSV files will be synced down from at the beginning and to which SQLite files will be synced up at the end of the run
     aggregate_only : bool, default False
         Whether to perform only the aggregation of existent SQLite files and bypass previous collation steps
-    tmp_dir: str, default '/tmp'
-        The temporary directory to be used by cytominer-databases for output
+    tmp_dir: str, optional
+        The temporary directory to be used by cytominer-databases for output. If
+        not provided, the system temporary directory is used.
     overwrite: bool, optional, default False
         Whether or not to overwrite an sqlite that exists in the temporary directory if it already exists
     add_image_features: bool, optional, default True
@@ -105,6 +105,7 @@ def collate(
     )
 
     # Set up directories (these need to be abspaths to keep from confusing makedirs later)
+    tmp_dir = tempfile.gettempdir() if tmp_dir is None else tmp_dir
     input_dir = pathlib.Path(f"{base_directory}/analysis/{batch}/{plate}/{csv_dir}")
     backend_dir = pathlib.Path(f"{base_directory}/backend/{batch}/{plate}")
     cache_backend_dir = pathlib.Path(f"{tmp_dir}/backend/{batch}/{plate}")
@@ -133,7 +134,24 @@ def collate(
 
             remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-            sync_cmd = f"aws s3 sync --exclude * --include */Cells.csv --include */Nuclei.csv --include */Cytoplasm.csv --include */Image.csv {remote_input_dir} {input_dir}"
+            # Keep the AWS command as argv to avoid shell parsing in subprocess.run.
+            sync_cmd = [
+                "aws",
+                "s3",
+                "sync",
+                "--exclude",
+                "*",
+                "--include",
+                "*/Cells.csv",
+                "--include",
+                "*/Nuclei.csv",
+                "--include",
+                "*/Cytoplasm.csv",
+                "--include",
+                "*/Image.csv",
+                remote_input_dir,
+                str(input_dir),
+            ]
             if printtoscreen:
                 print(f"Downloading CSVs from {remote_input_dir} to {input_dir}")
             run_check_errors(sync_cmd)
@@ -178,7 +196,7 @@ def collate(
         if aws_remote:
             if printtoscreen:
                 print(f"Uploading {cache_backend_file} to {remote_backend_file}")
-            cp_cmd = ["aws", "s3", "cp", cache_backend_file, remote_backend_file]
+            cp_cmd = ["aws", "s3", "cp", str(cache_backend_file), remote_backend_file]
             run_check_errors(cp_cmd)
 
             if printtoscreen:
@@ -201,7 +219,7 @@ def collate(
 
         remote_aggregated_file = f"{aws_remote}/backend/{batch}/{plate}/{plate}.csv"
 
-        cp_cmd = ["aws", "s3", "cp", remote_backend_file, backend_file]
+        cp_cmd = ["aws", "s3", "cp", remote_backend_file, str(backend_file)]
         if printtoscreen:
             print(
                 f"Downloading SQLite files from {remote_backend_file} to {backend_file}"
@@ -227,7 +245,7 @@ def collate(
     if aws_remote:
         if printtoscreen:
             print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
-        csv_cp_cmd = ["aws", "s3", "cp", aggregated_file, remote_aggregated_file]
+        csv_cp_cmd = ["aws", "s3", "cp", str(aggregated_file), remote_aggregated_file]
         run_check_errors(csv_cp_cmd)
 
         if printtoscreen:
