@@ -153,11 +153,9 @@ def get_blocklist_features(
     blocklist_name : str or list of str, optional
         Name(s) of packaged blocklists to load when ``blocklist`` is None. Each
         name corresponds to a top-level key in the packaged YAML registry (for
-        example, ``default`` in ``blocklists.yaml``). If None, no packaged
-        blocklist is loaded and an empty ``Blocklist`` is used. Use
-        ``default_blocklist_name`` or ``"default"`` to explicitly load the
-        packaged default blocklist. Multiple names are loaded in the order
-        provided.
+        example, ``default`` in ``blocklists.yaml``). If None and ``blocklist``
+        is also None, the packaged default blocklist (``default_blocklist_name``)
+        is used. Multiple names are loaded in the order provided.
     population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
@@ -168,9 +166,12 @@ def get_blocklist_features(
     """
 
     if blocklist is None:
-        # No explicit features were provided, so use the named registry entry
-        # if one was requested; otherwise this returns an empty list.
-        blocklist_features = Blocklist(blocklist_name=blocklist_name).to_list()
+        # No explicit features were provided; use the named registry entry if
+        # requested, otherwise fall back to the packaged default blocklist.
+        resolved_name = (
+            blocklist_name if blocklist_name is not None else default_blocklist_name
+        )
+        blocklist_features = Blocklist(blocklist_name=resolved_name).to_list()
     elif isinstance(blocklist, Blocklist):
         # A Blocklist object may already combine named and explicit features.
         blocklist_features = blocklist.to_list()

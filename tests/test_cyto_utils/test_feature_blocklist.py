@@ -43,14 +43,29 @@ def dummy_blocklists_file(tmp_path):
     return blocklists_file
 
 
-def test_blocklist():
+def test_blocklist_no_args_uses_default():
+    # With no arguments, the packaged default blocklist is used.
     blocklist_from_func = get_blocklist_features()
+    assert blocklist_from_func == blocklist
+
+
+def test_blocklist_none_name_uses_default():
+    # Explicitly passing blocklist_name=None also falls back to the default.
+    blocklist_from_func = get_blocklist_features(blocklist_name=None)
+    assert blocklist_from_func == blocklist
+
+
+def test_blocklist_explicit_name_not_overridden_by_default():
+    # An explicitly provided blocklist_name is used as-is; the default fallback does not apply.
+    # An empty list produces no features, distinguishing it from the non-empty default.
+    blocklist_from_func = get_blocklist_features(blocklist_name=[])
     assert blocklist_from_func == []
 
 
-def test_blocklist_df():
+def test_blocklist_df_no_args_filters_default_to_population():
+    # With only a population_df, the default blocklist is filtered to matching columns.
     blocklist_from_func = get_blocklist_features(population_df=data_blocklist_df)
-    assert blocklist_from_func == []
+    assert blocklist_from_func == data_blocklist_df.columns.tolist()
 
 
 def test_default_blocklist_df():

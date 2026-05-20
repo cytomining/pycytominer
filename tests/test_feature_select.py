@@ -431,18 +431,18 @@ def test_feature_select_blocklist():
         "zz": [0, -3, 8, 9, 6, 9],
     }).reset_index(drop=True)
 
-    # No blocklist is supplied, so the blocklist operation leaves the table unchanged.
+    # No blocklist is supplied, so the default packaged blocklist is used.
     result = feature_select(data_blocklist_df, features="infer", operation="blocklist")
-    expected_result = data_blocklist_df
+    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
 
-    # Explicit features without a blocklist also preserve every column.
+    # Explicit features without a blocklist also applies the default packaged blocklist.
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
     )
-    expected_result = data_blocklist_df
+    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
 
     # A packaged blocklist name removes the matching feature columns from the table.
