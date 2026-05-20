@@ -141,8 +141,7 @@ def test_annotate_external():
         platemap=PLATEMAP_DF,
         external_metadata=external_metadata_df,
         join_on=["Metadata_well_position", "Metadata_Well"],
-        external_join_left=["Metadata_gene"],
-        external_join_right=["Metadata_gene"],
+        external_join_on=["Metadata_gene"],
         add_metadata_id_to_platemap=True,
     )
 
@@ -150,55 +149,33 @@ def test_annotate_external():
 
 
 @pytest.mark.parametrize(
-    "external_metadata_df, annotate_kwargs",
+    "external_metadata_cosmicqc_df",
     [
-        (
-            pd.DataFrame({
-                "Image_Metadata_Plate": ["P1", "P1"],
-                "Image_Metadata_Well": ["A01", "A02"],
-                "Image_Metadata_Site": [1, 2],
-                "qc_pass": [True, False],
-            }),
-            {
-                "external_join_left": [
-                    "Image_Metadata_Plate",
-                    "Image_Metadata_Well",
-                    "Image_Metadata_Site",
-                ],
-                "external_join_right": [
-                    "Image_Metadata_Plate",
-                    "Image_Metadata_Well",
-                    "Image_Metadata_Site",
-                ],
-            },
-        ),
-        (
-            pd.DataFrame({
-                "Image_Metadata_Plate": ["P1", "P1"],
-                "Image_Metadata_Well": ["A01", "A02"],
-                "Image_Metadata_Site": [1, 2],
-                "Metadata_qc_pass": [True, False],
-            }),
-            {
-                "external_join_on": [
-                    "Image_Metadata_Plate",
-                    "Image_Metadata_Well",
-                    "Image_Metadata_Site",
-                ],
-            },
-        ),
+        pd.DataFrame({
+            "Image_Metadata_Plate": ["P1", "P1"],
+            "Image_Metadata_Well": ["A01", "A02"],
+            "Image_Metadata_Site": [1, 2],
+            "Metadata_qc_pass": [True, False],
+            "plain_column": ["needs_prefix", "needs_prefix"],
+        }),
+        pd.DataFrame({
+            "Image_Metadata_Plate": ["P1", "P1"],
+            "Image_Metadata_Well": ["A01", "A02"],
+            "Image_Metadata_Site": [1, 2],
+            "Metadata_qc_pass": [True, False],
+            "Metadata_plain_column": ["needs_prefix", "needs_prefix"],
+        }),
     ],
     ids=[
-        "external-join-left-right-before-cp-clean",
-        "external-join-on-before-cp-clean",
+        "unprefixed-external-metadata-before-cp-clean",
+        "prefixed-external-metadata-before-cp-clean",
     ],
 )
 def test_annotate_external_parquet_merge_before_cp_clean(
-    tmp_path, external_metadata_df, annotate_kwargs
+    tmp_path, external_metadata_cosmicqc_df
 ):
     # Test that parquet-backed external metadata can be merged in before
-    # cleaning CellProfiler metadata names using either external_join_left /
-    # external_join_right or the external_join_on shorthand.
+    # cleaning CellProfiler metadata names.
     profiles_df = pd.DataFrame({
         "Image_Metadata_Plate": ["P1", "P1"],
         "Image_Metadata_Well": ["A01", "A02"],
@@ -211,7 +188,7 @@ def test_annotate_external_parquet_merge_before_cp_clean(
         "gene": ["x", "y"],
     })
     external_metadata_path = tmp_path / "qc.parquet"
-    external_metadata_df.to_parquet(external_metadata_path, engine="pyarrow")
+    external_metadata_cosmicqc_df.to_parquet(external_metadata_path, engine="pyarrow")
 
     expected_result = pd.DataFrame({
         "Metadata_gene": ["x", "y"],
@@ -219,6 +196,7 @@ def test_annotate_external_parquet_merge_before_cp_clean(
         "Metadata_Well": ["A01", "A02"],
         "Metadata_Site": [1, 2],
         "Metadata_qc_pass": [True, False],
+        "Metadata_plain_column": ["needs_prefix", "needs_prefix"],
         "Cells_AreaShape_Area": [1.0, 2.0],
     })
 
@@ -232,8 +210,12 @@ def test_annotate_external_parquet_merge_before_cp_clean(
                 "Image_Metadata_Well",
             ],
         ],
-        external_metadata=external_metadata_path,
-        **annotate_kwargs,
+        external_metadata=str(external_metadata_path),
+        external_join_on=[
+            "Image_Metadata_Plate",
+            "Image_Metadata_Well",
+            "Image_Metadata_Site",
+        ],
     )
 
     pd.testing.assert_frame_equal(result, expected_result)

@@ -138,8 +138,6 @@ class PycytominerCLI:
         clean_cellprofiler: bool = True,
         external_metadata: str | None = None,
         external_join_on: str | Sequence[str] | None = None,
-        external_join_left: str | Sequence[str] | None = None,
-        external_join_right: str | Sequence[str] | None = None,
         compression_options: str | dict[str, str] | None = None,
         float_format: str | None = None,
     ) -> str:
@@ -156,8 +154,6 @@ class PycytominerCLI:
             clean_cellprofiler: Whether to clean CellProfiler feature names.
             external_metadata: Optional external metadata file path.
             external_join_on: Shared join column(s) for annotated and external metadata.
-            external_join_left: Join column in profiles metadata.
-            external_join_right: Join column in external metadata.
             compression_options: Compression options for writing output.
             float_format: Decimal precision for output formatting.
 
@@ -182,8 +178,6 @@ class PycytominerCLI:
             clean_cellprofiler=clean_cellprofiler,
             external_metadata=external_metadata,
             external_join_on=external_join_on_values,
-            external_join_left=external_join_left,
-            external_join_right=external_join_right,
             compression_options=compression_options,
             float_format=float_format,
         )

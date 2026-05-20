@@ -31,8 +31,6 @@ def annotate(
     clean_cellprofiler: bool = True,
     external_metadata: Optional[Union[str, pd.DataFrame]] = None,
     external_join_on: Optional[Union[str, list[str]]] = None,
-    external_join_left: Optional[Union[str, list[str]]] = None,
-    external_join_right: Optional[Union[str, list[str]]] = None,
     compression_options: Optional[Union[str, dict[str, str]]] = None,
     float_format: Optional[str] = None,
     cmap_args: Optional[dict[str, Union[str]]] = None,
@@ -70,10 +68,6 @@ def annotate(
     external_join_on : str or list, optional
         Merge column(s) shared by the annotated profiles and external metadata.
         When provided, these keys are used on both sides of the external merge.
-    external_join_left : str or list, optional
-        Merge column(s) in the profile metadata.
-    external_join_right: str or list, optional
-        Merge column(s) in the external metadata.
     compression_options : str or dict, optional
         Contains compression options as input to
         pd.DataFrame.to_csv(compression=compression_options). pandas version >= 1.2.
@@ -126,20 +120,12 @@ def annotate(
 
     if isinstance(external_metadata, pd.DataFrame):
         external_metadata = prepare_external_metadata_for_annotate(external_metadata)
+
         annotated = (
             annotated
             .merge(
                 external_metadata,
-                left_on=(
-                    external_join_on
-                    if external_join_on is not None
-                    else external_join_left
-                ),
-                right_on=(
-                    external_join_on
-                    if external_join_on is not None
-                    else external_join_right
-                ),
+                on=external_join_on,
                 how="left",
                 suffixes=(None, "_external"),
             )

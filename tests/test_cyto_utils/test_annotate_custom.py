@@ -195,7 +195,7 @@ def test_annotate_cmap_pertchemical():
 
 def test_annotate_cmap_externalmetadata():
     external_data_example = pd.DataFrame({
-        "test_well_join": ["A01"],
+        "Well": ["A01"],
         "test_info_col": ["DMSO is cool"],
     }).reset_index(drop=True)
 
@@ -218,8 +218,7 @@ def test_annotate_cmap_externalmetadata():
         format_broad_cmap=True,
         cmap_args={"perturbation_mode": "chemical"},
         external_metadata=output_file,
-        external_join_left="Metadata_Well",
-        external_join_right="Metadata_test_well_join",
+        external_join_on="Metadata_Well",
     )
 
     assert anno_result.loc[0, "Metadata_test_info_col"] == "DMSO is cool"

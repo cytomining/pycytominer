@@ -29,32 +29,34 @@ def prepare_external_metadata_for_annotate(
     external_metadata : pd.DataFrame
         External metadata with columns renamed to be compatible with annotate() conventions.
     """
-    # Set existing CellProfiler columns to avoid adding a Metadata_ prefix
-    # which will occur during cp_clean
-    existing_cp_columns = set()
+    # Protect certain columns with specific prefixes ("Metadata_", "Image_Metadata", and "Image_").
+    # The function will protect only non-numeric columns with "Image_" prefix.
+    # This prevents adding a "Metadata_" prefix, which will occur during `cp_clean`, later
+    protected_columns_to_avoid_metadata_prefix = set()
 
-    # Ty to detect CP metadata columns
+    # Capture "Metadata_" prefix columns
     with contextlib.suppress(ValueError):
-        existing_cp_columns.update(infer_cp_features(external_metadata, metadata=True))
+        protected_columns_to_avoid_metadata_prefix.update(infer_cp_features(external_metadata, metadata=True))
 
+    # Capture non-numeric "Image_" prefix columns
     with contextlib.suppress(ValueError):
-        existing_cp_columns.update(
+        protected_columns_to_avoid_metadata_prefix.update(
             infer_cp_features(external_metadata, image_features=True)
         )
 
-    # Keep Image_Metadata_* columns unchanged so external joins can still happen
-    # before cp_clean standardizes them.
-    existing_cp_columns.update([
+    # Capture "Image_Metadata_" prefixed columns with string dtypes
+    protected_columns_to_avoid_metadata_prefix.update([
         column
         for column in external_metadata.columns
         if isinstance(column, str) and column.startswith("Image_Metadata_")
     ])
 
-    # Rename only non-CP columns with Metadata_ prefix to be in expected column naming format
+    # Rename unprotected columns (outside "protected_columns_to_avoid_metadata_prefix")
+    # with Metadata_ prefix to be in expected column naming format
     external_metadata = external_metadata.copy()
     external_metadata.columns = pd.Index([
         column
-        if column in existing_cp_columns
+        if column in protected_columns_to_avoid_metadata_prefix
         else f"Metadata_{column}"
         if isinstance(column, str)
         else column
