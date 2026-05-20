@@ -7,12 +7,13 @@ import yaml
 from pycytominer.cyto_utils.features import (
     Blocklist,
     blocklists_file,
-    default_blocklist_name,
     get_blocklist_features,
 )
 
+packaged_blocklist_name = "nuclei_corr_and_granularity"
+
 with pathlib.Path(blocklists_file).open() as blocklist_stream:
-    blocklist = yaml.safe_load(blocklist_stream)[default_blocklist_name]
+    blocklist = yaml.safe_load(blocklist_stream)[packaged_blocklist_name]
 
 data_blocklist_df = pd.DataFrame({
     "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
@@ -32,7 +33,7 @@ def test_blocklist_df():
 
 def test_named_blocklist_df():
     blocklist_from_func = get_blocklist_features(
-        blocklist_name=default_blocklist_name,
+        blocklist_name=packaged_blocklist_name,
         population_df=data_blocklist_df,
     )
     assert data_blocklist_df.columns.tolist() == blocklist_from_func
@@ -49,13 +50,13 @@ def test_empty_blocklist_does_not_load_blocklists_file(tmp_path):
 
 
 def test_named_blocklist():
-    blocklist_from_object = Blocklist(blocklist_name=default_blocklist_name)
+    blocklist_from_object = Blocklist(blocklist_name=packaged_blocklist_name)
     assert blocklist == blocklist_from_object.to_list()
 
 
 def test_named_blocklist_additional_features():
     blocklist_from_object = Blocklist(
-        blocklist_name=default_blocklist_name, features_to_block=["Cells_Custom"]
+        blocklist_name=packaged_blocklist_name, features_to_block=["Cells_Custom"]
     )
     assert blocklist_from_object.to_list() == [*blocklist, "Cells_Custom"]
 

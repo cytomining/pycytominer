@@ -7,10 +7,11 @@ import pandas as pd
 import pytest
 
 from pycytominer.cyto_utils import Blocklist
-from pycytominer.cyto_utils.features import default_blocklist_name
 from pycytominer.feature_select import feature_select
 
 random.seed(123)
+
+packaged_blocklist_name = "nuclei_corr_and_granularity"
 
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
@@ -446,7 +447,7 @@ def test_feature_select_blocklist():
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
-        blocklist_name=default_blocklist_name,
+        blocklist_name=packaged_blocklist_name,
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
@@ -481,7 +482,7 @@ def test_feature_select_blocklist():
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
         blocklist=Blocklist(
-            blocklist_name=default_blocklist_name, features_to_block=["zz"]
+            blocklist_name=packaged_blocklist_name, features_to_block=["zz"]
         ),
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1]})

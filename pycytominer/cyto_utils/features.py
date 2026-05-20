@@ -12,7 +12,6 @@ import yaml
 blocklists_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklists.yaml"
 )
-default_blocklist_name = "nuclei_corr_and_granularity"
 
 
 class Blocklist:
