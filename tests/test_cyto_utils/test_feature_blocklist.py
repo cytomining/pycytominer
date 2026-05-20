@@ -7,10 +7,11 @@ import yaml
 from pycytominer.cyto_utils.features import (
     Blocklist,
     blocklists_file,
+    default_blocklist_name,
     get_blocklist_features,
 )
 
-packaged_blocklist_name = "nuclei_corr_and_granularity"
+packaged_blocklist_name = "default"
 
 with pathlib.Path(blocklists_file).open() as blocklist_stream:
     blocklist = yaml.safe_load(blocklist_stream)[packaged_blocklist_name]
@@ -21,6 +22,27 @@ data_blocklist_df = pd.DataFrame({
 }).reset_index(drop=True)
 
 
+@pytest.fixture
+def dummy_blocklists_file(tmp_path):
+    blocklists_file = tmp_path / "blocklists.yaml"
+    blocklists_file.write_text(
+        "\n".join([
+            "custom:",
+            "  - Cells_Custom",
+            "  - Cytoplasm_Custom",
+            "nuclear_blocklist:",
+            "  - Nuclei_Custom",
+            "correlation_blocklist:",
+            "  - Nuclei_Correlation_Manders_AGP_DNA",
+            "  - Nuclei_Correlation_RWC_ER_RNA",
+            "",
+        ]),
+        encoding="utf-8",
+    )
+
+    return blocklists_file
+
+
 def test_blocklist():
     blocklist_from_func = get_blocklist_features()
     assert blocklist_from_func == []
@@ -29,6 +51,16 @@ def test_blocklist():
 def test_blocklist_df():
     blocklist_from_func = get_blocklist_features(population_df=data_blocklist_df)
     assert blocklist_from_func == []
+
+
+def test_default_blocklist_df():
+    blocklist_from_func = get_blocklist_features(
+        blocklist_name=default_blocklist_name,
+        population_df=data_blocklist_df,
+    )
+
+    assert default_blocklist_name == packaged_blocklist_name
+    assert blocklist_from_func == data_blocklist_df.columns.tolist()
 
 
 def test_named_blocklist_df():
@@ -59,6 +91,45 @@ def test_named_blocklist_additional_features():
         blocklist_name=packaged_blocklist_name, features_to_block=["Cells_Custom"]
     )
     assert blocklist_from_object.to_list() == [*blocklist, "Cells_Custom"]
+
+
+def test_named_blocklist_from_dummy_file(dummy_blocklists_file):
+    blocklist_from_object = Blocklist(
+        blocklist_name="custom",
+        blocklists_file=dummy_blocklists_file,
+    )
+
+    assert blocklist_from_object.to_list() == ["Cells_Custom", "Cytoplasm_Custom"]
+
+
+def test_named_blocklists_from_dummy_file(dummy_blocklists_file):
+    blocklist_from_object = Blocklist(
+        blocklist_name=["custom", "nuclear_blocklist", "correlation_blocklist"],
+        blocklists_file=dummy_blocklists_file,
+    )
+
+    assert blocklist_from_object.to_list() == [
+        "Cells_Custom",
+        "Cytoplasm_Custom",
+        "Nuclei_Custom",
+        "Nuclei_Correlation_Manders_AGP_DNA",
+        "Nuclei_Correlation_RWC_ER_RNA",
+    ]
+
+
+def test_named_blocklists_from_dummy_file_filters_to_population_features(
+    dummy_blocklists_file,
+):
+    blocklist_from_object = Blocklist(
+        blocklist_name=["custom", "correlation_blocklist"],
+        blocklists_file=dummy_blocklists_file,
+    )
+    blocklist_from_func = get_blocklist_features(
+        blocklist=blocklist_from_object,
+        population_df=data_blocklist_df,
+    )
+
+    assert blocklist_from_func == data_blocklist_df.columns.tolist()
 
 
 def test_named_blocklist_converts_features_to_strings(tmp_path):
@@ -121,5 +192,5 @@ def test_blocklist_from_list():
 
 
 def test_blocklist_features_requires_list_or_blocklist():
-    with pytest.raises(TypeError, match="list of feature names or a Blocklist"):
-        get_blocklist_features(blocklist="Nuclei_Correlation_Manders_AGP_DNA")
+    with pytest.raises(TypeError, match="feature-name string, a list"):
+        get_blocklist_features(blocklist=1)

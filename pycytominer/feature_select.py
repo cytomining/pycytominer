@@ -41,7 +41,7 @@ def feature_select(
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
     blocklist: Optional[Union[list[str], Blocklist]] = None,
-    blocklist_name: Optional[str] = None,
+    blocklist_name: Optional[Union[str, list[str]]] = None,
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
@@ -99,11 +99,11 @@ def feature_select(
     blocklist : list of str or Blocklist, optional
         Feature name(s) to exclude for the blocklist operation. A ``Blocklist``
         object may also be provided directly.
-    blocklist_name : str, optional
-        Name of the packaged blocklist to use when ``blocklist`` is None. This
-        is the top-level YAML key in the packaged blocklist registry (for
-        example, ``nuclei_corr_and_granularity`` in ``blocklists.yaml``). If
-        None, no packaged blocklist is loaded.
+    blocklist_name : str or list of str, optional
+        Name(s) of packaged blocklists to use when ``blocklist`` is None. Each
+        name is a top-level YAML key in the packaged blocklist registry (for
+        example, ``default`` in ``blocklists.yaml``). If None, no packaged
+        blocklist is loaded.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional

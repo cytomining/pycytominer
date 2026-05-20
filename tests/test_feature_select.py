@@ -11,7 +11,7 @@ from pycytominer.feature_select import feature_select
 
 random.seed(123)
 
-packaged_blocklist_name = "nuclei_corr_and_granularity"
+packaged_blocklist_name = "default"
 
 # Get temporary directory
 tmpdir = tempfile.gettempdir()
@@ -448,6 +448,15 @@ def test_feature_select_blocklist():
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
         blocklist_name=packaged_blocklist_name,
+    )
+    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_blocklist_df,
+        features=data_blocklist_df.columns.tolist(),
+        operation="blocklist",
+        blocklist_name=[packaged_blocklist_name],
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
