@@ -2,8 +2,70 @@
 Custom annotation functions for CMAP specific data
 """
 
+import contextlib
+
 import numpy as np
 import pandas as pd
+
+from pycytominer.cyto_utils.features import infer_cp_features
+
+
+def prepare_external_metadata_for_annotate(
+    external_metadata: pd.DataFrame,
+) -> pd.DataFrame:
+    """Make external metadata columns compatible with annotate() conventions.
+
+    This mirrors the metadata-prefixing behavior that load_platemap() applies to
+    platemap inputs, while preserving CellProfiler-style columns that should
+    remain unchanged before annotate() optionally calls cp_clean().
+
+    Parameters
+    ----------
+    external_metadata : pd.DataFrame
+        External metadata to be merged in with profiles in annotate().
+
+    Returns
+    -------
+    external_metadata : pd.DataFrame
+        External metadata with columns renamed to be compatible with annotate() conventions.
+    """
+    # Protect certain columns with specific prefixes ("Metadata_", "Image_Metadata", and "Image_").
+    # The function will protect only non-numeric columns with "Image_" prefix.
+    # This prevents adding a "Metadata_" prefix, which will occur during `cp_clean`, later
+    protected_columns_to_avoid_metadata_prefix = set()
+
+    # Capture "Metadata_" prefix columns
+    with contextlib.suppress(ValueError):
+        protected_columns_to_avoid_metadata_prefix.update(
+            infer_cp_features(external_metadata, metadata=True)
+        )
+
+    # Capture non-numeric "Image_" prefix columns
+    with contextlib.suppress(ValueError):
+        protected_columns_to_avoid_metadata_prefix.update(
+            infer_cp_features(external_metadata, image_features=True)
+        )
+
+    # Capture "Image_Metadata_" prefixed columns with string dtypes
+    protected_columns_to_avoid_metadata_prefix.update([
+        column
+        for column in external_metadata.columns
+        if isinstance(column, str) and column.startswith("Image_Metadata_")
+    ])
+
+    # Rename unprotected columns (outside "protected_columns_to_avoid_metadata_prefix")
+    # with Metadata_ prefix to be in expected column naming format
+    external_metadata = external_metadata.copy()
+    external_metadata.columns = pd.Index([
+        column
+        if column in protected_columns_to_avoid_metadata_prefix
+        else f"Metadata_{column}"
+        if isinstance(column, str)
+        else column
+        for column in external_metadata.columns
+    ])
+
+    return external_metadata
 
 
 def annotate_cmap(
@@ -129,6 +191,7 @@ def cp_clean(profiles: pd.DataFrame) -> pd.DataFrame:
         {
             "Image_Metadata_Plate": "Metadata_Plate",
             "Image_Metadata_Well": "Metadata_Well",
+            "Image_Metadata_Site": "Metadata_Site",
         },
         axis="columns",
     )

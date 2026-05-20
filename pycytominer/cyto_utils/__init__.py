@@ -1,4 +1,8 @@
-from .annotate_custom import annotate_cmap, cp_clean
+from .annotate_custom import (
+    annotate_cmap,
+    cp_clean,
+    prepare_external_metadata_for_annotate,
+)
 from .collate import collate
 from .cp_image_features import (
     aggregate_fields_count,
