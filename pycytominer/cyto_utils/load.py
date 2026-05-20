@@ -407,10 +407,10 @@ def load_platemap(
         location or actual pd.DataFrame of platemap file
 
     add_metadata_id : bool
-        boolean if "Metadata_" should be appended to all platemap columns
+        boolean if ``Metadata_`` should be appended to all platemap columns
 
-    Return
-    ------
+    Returns
+    -------
     platemap : pd.DataFrame
         pandas DataFrame of profiles
     """

@@ -1,10 +1,11 @@
 import os
 import pathlib
+import subprocess
 
 import pandas as pd
 import pytest
 
-from pycytominer.cyto_utils.collate import collate
+from pycytominer.cyto_utils.collate import collate, run_check_errors
 
 # Set constants
 BATCH = "2021_04_20_Target2"
@@ -20,6 +21,42 @@ TEST_BACKEND_LOCATION = (
 )
 TEST_CSV_LOCATION = TEST_DATA_LOCATION / "backend" / BATCH / PLATE / f"{PLATE}.csv"
 MAIN_CSV_LOCATION = TEST_DATA_LOCATION / "backend" / BATCH / PLATE / f"{PLATE}_main.csv"
+
+
+def test_run_check_errors_uses_command_list(monkeypatch):
+    """Check that run_check_errors passes a command list to subprocess.run
+    so we know it is not building a shell string."""
+    command = ["aws", "s3", "cp", "source.sqlite", "target.sqlite"]
+    captured_kwargs = {}
+
+    def mock_run(**kwargs):
+        captured_kwargs.update(kwargs)
+        return subprocess.CompletedProcess(args=kwargs["args"], returncode=0, stderr="")
+
+    monkeypatch.setattr(run_check_errors.__globals__["subprocess"], "run", mock_run)
+
+    run_check_errors(command)
+
+    assert captured_kwargs["args"] == command
+    assert captured_kwargs["capture_output"] is True
+    assert captured_kwargs["text"] is True
+    assert captured_kwargs["check"] is False
+
+
+def test_run_check_errors_exits_on_nonzero_returncode(monkeypatch):
+    """Ensure run_check_errors exits when subprocess returns non-zero."""
+
+    def mock_run(**kwargs):
+        return subprocess.CompletedProcess(
+            args=kwargs["args"], returncode=1, stderr="boom"
+        )
+
+    monkeypatch.setattr(run_check_errors.__globals__["subprocess"], "run", mock_run)
+
+    with pytest.raises(SystemExit) as exc:
+        run_check_errors(["aws", "s3", "cp", "a", "b"])
+
+    assert "boom" in str(exc.value)
 
 
 def cleanup():

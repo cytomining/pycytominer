@@ -87,15 +87,19 @@ class SingleCells:
     Notes
     -----
     .. note::
-        the argument compartment_linking_cols is designed to work with CellProfiler output,
-        as curated by cytominer-database. The default is: {
-            "cytoplasm": {
-                "cells": "Cytoplasm_Parent_Cells",
-                "nuclei": "Cytoplasm_Parent_Nuclei",
-            },
-            "cells": {"cytoplasm": "ObjectNumber"},
-            "nuclei": {"cytoplasm": "ObjectNumber"},
-        }
+        The argument ``compartment_linking_cols`` is designed to work with CellProfiler
+        output, as curated by cytominer-database. The default is:
+
+        .. code-block:: python
+
+            {
+                "cytoplasm": {
+                    "cells": "Cytoplasm_Parent_Cells",
+                    "nuclei": "Cytoplasm_Parent_Nuclei",
+                },
+                "cells": {"cytoplasm": "ObjectNumber"},
+                "nuclei": {"cytoplasm": "ObjectNumber"},
+            }
     """
 
     def __init__(
@@ -315,7 +319,12 @@ class SingleCells:
         self.image_data_loaded = True
 
     def count_cells(
-        self, compartment: str = "cells", count_subset: bool = False
+        self,
+        compartment: str = "cells",
+        merge_cols: list[str] = ["TableNumber", "ImageNumber"],
+        object_col: str = "ObjectNumber",
+        image_count_col: str = "Count_Cells",
+        count_subset: bool = False,
     ) -> pd.DataFrame:
         """Determine how many cells are measured per well.
 
@@ -323,6 +332,17 @@ class SingleCells:
         ----------
         compartment : str, default "cells"
             Compartment to subset.
+        merge_cols : list[str], default ["TableNumber", "ImageNumber"]
+            Columns used to merge image and compartment tables when falling back
+            to object-level counting. Must include at least one column when
+            image_count_col is unavailable.
+        object_col : str, default "ObjectNumber"
+            Column used as the object identifier when falling back to
+            object-level counting. Must be non-empty when image_count_col is
+            unavailable.
+        image_count_col : str, default "Count_Cells"
+            Image-level count column to sum by strata before falling back to
+            object-level counting.
         count_subset : bool, default False
             Whether or not count the number of cells as specified by the strata groups.
 
@@ -334,6 +354,9 @@ class SingleCells:
 
         check_compartments([compartment])
 
+        # count the number of cells per group by merging image and compartment data
+        # if count_subset is True, otherwise use image-level count or object counting
+        # without merging
         if count_subset:
             if not self.is_aggregated:
                 raise RuntimeError("Make sure to aggregate_profiles() first!")
@@ -347,23 +370,71 @@ class SingleCells:
 
             count_df = (
                 self.subset_data_df
-                .groupby(self.strata)["Metadata_ObjectNumber"]
+                .groupby(self.strata)[self.object_feature]
                 .count()
                 .reset_index()
-                .rename({"Metadata_ObjectNumber": "cell_count"}, axis="columns")
+                .rename({self.object_feature: "cell_count"}, axis="columns")
             )
         else:
-            query_cols = "TableNumber, ImageNumber, ObjectNumber"
+            # prefer image-level count feature when available, then fallback to object
+            # counting.
+            if image_count_col in self.image_df.columns:
+                count_df = (
+                    self.image_df
+                    .groupby(self.strata)[image_count_col]
+                    .sum()
+                    .reset_index()
+                    .rename({image_count_col: "cell_count"}, axis="columns")
+                )
+                return count_df
+
+            # if the image-level count column is present in the image table, use it to
+            # compute cell counts per strata.
+            image_table_col_names = self.get_sql_table_col_names(self.image_table_name)
+            if image_count_col in image_table_col_names:
+                image_count_query_cols = ", ".join([*self.merge_cols, image_count_col])
+                image_count_query = (
+                    f"select {image_count_query_cols} from {self.image_table_name}"
+                )
+                image_count_df = pd.read_sql(sql=image_count_query, con=self.conn)
+                count_df = self.image_df.merge(
+                    image_count_df, how="inner", on=self.merge_cols
+                )
+                count_df = (
+                    count_df
+                    .groupby(self.strata)[image_count_col]
+                    .sum()
+                    .reset_index()
+                    .rename({image_count_col: "cell_count"}, axis="columns")
+                )
+                return count_df
+
+            # Fall back to object-level counting when an image-level count column
+            # is unavailable in both the loaded image data and the SQL image table.
+            # This path requires merge columns to attach image metadata to object
+            # rows before grouping by strata.
+            if len(merge_cols) < 1:
+                raise ValueError("merge_cols must include at least one merge column.")
+
+            # This path also requires an object identifier column to count objects
+            # per strata.
+            if not object_col:
+                raise ValueError("object_col must be a non-empty column name.")
+
+            # specify query to get the columns needed for counting cells per group
+            query_cols = ", ".join([*merge_cols, object_col])
             query = f"select {query_cols} from {compartment}"
+
+            # count the number of cells per group by merging image and compartment data
             count_df = self.image_df.merge(
-                pd.read_sql(sql=query, con=self.conn), how="inner", on=self.merge_cols
+                pd.read_sql(sql=query, con=self.conn), how="inner", on=merge_cols
             )
             count_df = (
                 count_df
-                .groupby(self.strata)["ObjectNumber"]
+                .groupby(self.strata)[object_col]
                 .count()
                 .reset_index()
-                .rename({"ObjectNumber": "cell_count"}, axis="columns")
+                .rename({object_col: "cell_count"}, axis="columns")
             )
 
         return count_df
@@ -438,7 +509,7 @@ class SingleCells:
 
         check_compartments(compartment)
 
-        query_cols = "TableNumber, ImageNumber, ObjectNumber"
+        query_cols = ", ".join([*self.merge_cols, "ObjectNumber"])
         query = f"select {query_cols} from {compartment}"
 
         # Load query and merge with image_df

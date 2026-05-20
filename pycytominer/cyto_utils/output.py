@@ -50,38 +50,40 @@ def output(
 
     Examples
     --------
-    import pandas as pd
-    from pycytominer.cyto_utils import output
+    .. code-block:: python
 
-    data_df = pd.concat(
-        [
-            pd.DataFrame(
-                {
-                    "Metadata_Plate": "X",
-                    "Metadata_Well": "a",
-                    "Cells_x": [0.1, 0.3, 0.8],
-                    "Nuclei_y": [0.5, 0.3, 0.1],
-                }
-            ),
-            pd.DataFrame(
-                {
-                    "Metadata_Plate": "X",
-                    "Metadata_Well": "b",
-                    "Cells_x": [0.4, 0.2, -0.5],
-                    "Nuclei_y": [-0.8, 1.2, -0.5],
-                }
-            ),
-        ]
-    ).reset_index(drop=True)
+        import pandas as pd
+        from pycytominer.cyto_utils import output
 
-    output_file = "test.csv.gz"
-    output(
-        df=data_df,
-        output_filename=output_file,
-        sep=",",
-        compression_options={"method": "gzip", "mtime": 1},
-        float_format=None,
-    )
+        data_df = pd.concat(
+            [
+                pd.DataFrame(
+                    {
+                        "Metadata_Plate": "X",
+                        "Metadata_Well": "a",
+                        "Cells_x": [0.1, 0.3, 0.8],
+                        "Nuclei_y": [0.5, 0.3, 0.1],
+                    }
+                ),
+                pd.DataFrame(
+                    {
+                        "Metadata_Plate": "X",
+                        "Metadata_Well": "b",
+                        "Cells_x": [0.4, 0.2, -0.5],
+                        "Nuclei_y": [-0.8, 1.2, -0.5],
+                    }
+                ),
+            ]
+        ).reset_index(drop=True)
+
+        output_file = "test.csv.gz"
+        output(
+            df=data_df,
+            output_filename=output_file,
+            sep=",",
+            compression_options={"method": "gzip", "mtime": 1},
+            float_format=None,
+        )
     """
 
     # ensure a default output type
