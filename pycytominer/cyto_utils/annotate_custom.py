@@ -29,9 +29,11 @@ def prepare_external_metadata_for_annotate(
     external_metadata : pd.DataFrame
         External metadata with columns renamed to be compatible with annotate() conventions.
     """
-
+    # Set existing CellProfiler columns to avoid adding a Metadata_ prefix
+    # which will occur during cp_clean
     existing_cp_columns = set()
 
+    # Ty to detect CP metadata columns
     with contextlib.suppress(ValueError):
         existing_cp_columns.update(infer_cp_features(external_metadata, metadata=True))
 
@@ -48,6 +50,7 @@ def prepare_external_metadata_for_annotate(
         if isinstance(column, str) and column.startswith("Image_Metadata_")
     ])
 
+    # Rename only non-CP columns with Metadata_ prefix to be in expected column naming format
     external_metadata = external_metadata.copy()
     external_metadata.columns = pd.Index([
         column

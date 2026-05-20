@@ -63,8 +63,8 @@ def annotate(
         Default is true as the most common use case is
         annotating CellProfiler profiles, but this can be
         set to False if you are not using CellProfiler.
-    external_metadata : str, optional
-        File with additional metadata information.
+    external_metadata : pd.DataFrame or file, optional
+        DataFrame or file with additional metadata information.
         Most common use case is a QC.parquet file with QC flags for each profile
         that comes from coSMicQC.
     external_join_on : str or list, optional

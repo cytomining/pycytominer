@@ -6,6 +6,9 @@ import pandas as pd
 import pytest
 
 from pycytominer import annotate
+from pycytominer.cyto_utils.annotate_custom import (
+    prepare_external_metadata_for_annotate,
+)
 
 random.seed(123)
 
@@ -53,6 +56,32 @@ platemap_df = pd.DataFrame({
 }).reset_index(drop=True)
 
 broad_platemap_df = platemap_df.assign(Metadata_broad_sample=example_broad_samples)
+
+
+def test_prepare_external_metadata_for_annotate():
+    external_metadata_df = pd.DataFrame({
+        "Image_Metadata_Plate": ["P1"],
+        "Image_Metadata_Well": ["A01"],
+        "Image_Metadata_Site": [1],
+        "Metadata_existing": ["already_metadata"],
+        "plain_column": ["needs_prefix"],
+        "Image_Count_Cells": [5],
+    })
+
+    result = prepare_external_metadata_for_annotate(external_metadata_df)
+
+    assert result.columns.tolist() == [
+        "Image_Metadata_Plate",
+        "Image_Metadata_Well",
+        "Image_Metadata_Site",
+        "Metadata_existing",
+        "Metadata_plain_column",
+        "Image_Count_Cells",
+    ]
+    pd.testing.assert_frame_equal(
+        result,
+        external_metadata_df.rename(columns={"plain_column": "Metadata_plain_column"}),
+    )
 
 
 def test_annotate_cmap_assert():

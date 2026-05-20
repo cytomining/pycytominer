@@ -105,7 +105,7 @@ def test_annotate_merge():
 
 
 def test_annotate_external():
-    # Test that the external_metadata
+    # Test to ensure external metadata columns are added to profile correctly
     external_metadata_df = EXTERNAL_METADATA_DF.rename(
         columns={
             "gene": "Metadata_gene",
