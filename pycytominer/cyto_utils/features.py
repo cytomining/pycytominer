@@ -12,7 +12,7 @@ import yaml
 blocklists_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklists.yaml"
 )
-default_blocklist_name = "default"
+default_blocklist_name = "nuclei_corr_and_granularity"
 
 
 class Blocklist:
@@ -74,8 +74,9 @@ def _load_named_blocklist(
     ----------
     blocklist_name : str
         Name of the blocklist to load. This is the top-level YAML key in
-        ``blocklists_file``; for example, ``"default"`` loads the list under
-        the ``default:`` key in ``blocklists.yaml``.
+        ``blocklists_file``; for example, ``"nuclei_corr_and_granularity"``
+        loads the list under the ``nuclei_corr_and_granularity:`` key in
+        ``blocklists.yaml``.
     blocklists_file : str or pathlib.Path, default packaged blocklists.yaml
         YAML file mapping blocklist names to feature lists.
 
@@ -120,7 +121,7 @@ def _load_named_blocklist(
 
 def get_blocklist_features(
     blocklist: Optional[Union[list[str], Blocklist]] = None,
-    blocklist_type: str = default_blocklist_name,
+    blocklist_name: Optional[str] = None,
     population_df: Optional[pd.DataFrame] = None,
 ) -> list[str]:
     """Get a list of blocklist features.
@@ -128,12 +129,13 @@ def get_blocklist_features(
     Parameters
     ----------
     blocklist : list of str or Blocklist, optional
-        Feature name(s) to exclude. If None, load the named blocklist from the
-        packaged registry.
-    blocklist_type : str, default "default"
-        Name of the packaged blocklist to load when ``blocklist`` is None.
-        This corresponds to a top-level key in the packaged YAML registry
-        (for example, ``default`` in ``blocklists.yaml``).
+        Feature name(s) to exclude. If None, no user-provided blocklist
+        features are used.
+    blocklist_name : str, optional
+        Name of the packaged blocklist to load when ``blocklist`` is None. This
+        corresponds to a top-level key in the packaged YAML registry (for
+        example, ``nuclei_corr_and_granularity`` in ``blocklists.yaml``). If
+        None, no packaged blocklist is loaded.
     population_df : pd.DataFrame, optional
         Profile dataframe used to subset blocklist features.
 
@@ -143,8 +145,10 @@ def get_blocklist_features(
         Features to exclude from downstream analysis.
     """
 
-    if blocklist is None:
-        blocklist_features = Blocklist(blocklist_name=blocklist_type).to_list()
+    if blocklist is None and blocklist_name is not None:
+        blocklist_features = Blocklist(blocklist_name=blocklist_name).to_list()
+    elif blocklist is None:
+        blocklist_features = []
     elif isinstance(blocklist, Blocklist):
         blocklist_features = blocklist.to_list()
     elif isinstance(blocklist, list):

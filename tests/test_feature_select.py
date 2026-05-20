@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from pycytominer.cyto_utils import Blocklist
+from pycytominer.cyto_utils.features import default_blocklist_name
 from pycytominer.feature_select import feature_select
 
 random.seed(123)
@@ -430,13 +431,22 @@ def test_feature_select_blocklist():
     }).reset_index(drop=True)
 
     result = feature_select(data_blocklist_df, features="infer", operation="blocklist")
-    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
+    expected_result = data_blocklist_df
     pd.testing.assert_frame_equal(result, expected_result)
 
     result = feature_select(
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
+    )
+    expected_result = data_blocklist_df
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_blocklist_df,
+        features=data_blocklist_df.columns.tolist(),
+        operation="blocklist",
+        blocklist_name=default_blocklist_name,
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
@@ -470,7 +480,9 @@ def test_feature_select_blocklist():
         data_blocklist_df,
         features=data_blocklist_df.columns.tolist(),
         operation="blocklist",
-        blocklist=Blocklist(blocklist_name="default", features_to_block=["zz"]),
+        blocklist=Blocklist(
+            blocklist_name=default_blocklist_name, features_to_block=["zz"]
+        ),
     )
     expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1]})
     pd.testing.assert_frame_equal(result, expected_result)
