@@ -40,7 +40,7 @@ def feature_select(
     unique_cut: float = 0.01,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
-    blocklist: Optional[Union[list[str], Blocklist]] = None,
+    blocklist: Optional[Union[str, list[str], Blocklist]] = None,
     blocklist_name: Optional[Union[str, list[str]]] = None,
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
@@ -96,7 +96,7 @@ def feature_select(
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
-    blocklist : list of str or Blocklist, optional
+    blocklist : str, list of str, or Blocklist, optional
         Feature name(s) to exclude for the blocklist operation. A ``Blocklist``
         object may also be provided directly.
     blocklist_name : str or list of str, optional

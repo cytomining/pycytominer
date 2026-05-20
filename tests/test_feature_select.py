@@ -510,6 +510,19 @@ def test_feature_select_blocklist():
     })
     pd.testing.assert_frame_equal(result, expected_result)
 
+    result = feature_select(
+        data_blocklist_df,
+        features=data_blocklist_df.columns.tolist(),
+        operation="blocklist",
+        blocklist="Nuclei_Correlation_Manders_AGP_DNA",
+    )
+    expected_result = pd.DataFrame({
+        "y": [1, 2, 8, 5, 2, 1],
+        "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+        "zz": [0, -3, 8, 9, 6, 9],
+    })
+    pd.testing.assert_frame_equal(result, expected_result)
+
 
 def test_feature_select_drop_outlier():
     """
