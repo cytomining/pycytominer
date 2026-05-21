@@ -17,8 +17,7 @@ repos:
         name: uv lock check
         entry: python -m uv lock --check
         language: python
-        additional_dependencies:
-        -   uv
+        additional_dependencies: [uv]
         pass_filenames: false
 -   repo: https://github.com/rhysd/actionlint
     rev: v1.7.12
