@@ -106,9 +106,12 @@ def feature_select(
         :class:`~pycytominer.cyto_utils.blocklist.Blocklist` directly and pass
         it here.
     blocklist_name : str or list of str, optional
-        Name(s) of packaged blocklists to load when ``blocklist`` is ``None``.
-        Each name is a top-level key in the blocklist YAML registry (e.g.
-        ``"default"``).  Ignored when ``blocklist`` is provided.
+        Name(s) of packaged blocklists to use when ``blocklist`` is None. Each
+        name is a top-level YAML key in the packaged blocklist registry (for
+        example, ``default`` in ``blocklists.yaml``). If None and ``blocklist``
+        is also None, the packaged default blocklist is loaded. Use
+        ``"default"`` to load that registry entry explicitly. Multiple names
+        are loaded in the order provided.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
