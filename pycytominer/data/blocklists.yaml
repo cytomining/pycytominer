@@ -1,3 +1,6 @@
+# Default blocklist of known-noisy CellProfiler features.
+# Source: Way (2019). "Blacklist Features - Cell Profiler."
+# figshare. https://doi.org/10.6084/m9.figshare.10255811
 default:
   - Nuclei_Correlation_Manders_AGP_DNA
   - Nuclei_Correlation_Manders_AGP_ER

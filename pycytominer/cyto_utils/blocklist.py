@@ -34,7 +34,8 @@ class Blocklist:
     1. **Packaged named lists** — pycytominer ships a ``blocklists.yaml``
        registry whose top-level keys are named lists of features.  Pass one or
        more names via ``blocklist_name`` to load them.  The key ``"default"``
-       loads the curated pycytominer default.
+       loads the curated pycytominer default, which is derived from
+       Way (2019) [1]_.
     2. **Explicit feature names** — pass a list of column names directly via
        ``features_to_block``.
     3. **Custom YAML registry** — supply your own YAML file via
@@ -122,6 +123,11 @@ class Blocklist:
         plain list of feature names present in a given profile DataFrame.
     feature_select : Apply blocklist (and other) feature-selection operations
         to a profile DataFrame.
+
+    References
+    ----------
+    .. [1] Way (2019). "Blacklist Features - Cell Profiler. Figshare.
+       https://doi.org/10.6084/m9.figshare.10255811
     """
 
     def __init__(
