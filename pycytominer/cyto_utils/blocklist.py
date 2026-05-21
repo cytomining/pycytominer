@@ -264,7 +264,7 @@ def get_blocklist_features(
         When provided, the returned list is filtered to only feature names
         that appear as columns in this DataFrame.
     blocklist_file : str or path-like, optional
-        .. deprecated::
+        .. deprecated:: 2.0
             Pass feature names via ``blocklist`` (a list or :class:`Blocklist`
             object) instead.  ``blocklist_file`` accepted a CSV file with a
             single ``blocklist`` column; that format is no longer the primary

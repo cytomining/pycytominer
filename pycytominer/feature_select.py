@@ -114,7 +114,7 @@ def feature_select(
         ``"default"`` to load that registry entry explicitly. Multiple names
         are loaded in the order provided.
     blocklist_file : str, optional
-        .. deprecated::
+        .. deprecated:: 2.0
             Use ``blocklist`` (a list of feature names or a
             :class:`~pycytominer.cyto_utils.blocklist.Blocklist` object) instead.
             Previously accepted a path to a CSV file with a single ``blocklist``
