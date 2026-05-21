@@ -217,12 +217,12 @@ ignore_missing_imports = true
 
 [tool.commitizen]
 # This version is used for changelog tracking and is updated using `cz bump`
-version = "1.4.0"
+version = "1.5.0"
 name = "cz_conventional_commits"
 tag_format = "v$version"
 version_scheme = "pep440"
 version_provider = "commitizen"
-update_changelog_on_bump = true
+update_changelog_on_bump = false
 template = "dev_tools/commitizen/CHANGELOG.md.j2"
 version_files = [
   "CITATION.cff",
