@@ -1,5 +1,10 @@
 """
-Blocklist utilities for excluding known-noisy CellProfiler features.
+Blocklist utilities for excluding unwanted features from profile DataFrames.
+
+Although the packaged default blocklist targets known-noisy CellProfiler
+features, the ``Blocklist`` class works with any feature names — including
+embeddings, custom morphological measurements, or any other column-based
+profile type.
 """
 
 import os
@@ -17,11 +22,14 @@ default_blocklist_name = "default"
 
 
 class Blocklist:
-    """A collection of CellProfiler feature names to exclude from analysis.
+    """A collection of feature names to exclude from downstream analysis.
 
     A ``Blocklist`` holds feature names that are known to be noisy,
-    uninformative, or otherwise undesirable for downstream analysis.  It can be
-    built from any combination of three sources:
+    uninformative, or otherwise undesirable.  While the packaged default
+    targets known-problematic CellProfiler measurements, ``Blocklist`` works
+    with any column-based profile — CellProfiler features, embeddings, custom
+    morphological measurements, or any other feature type.  It can be built
+    from any combination of three sources:
 
     1. **Packaged named lists** — pycytominer ships a ``blocklists.yaml``
        registry whose top-level keys are named lists of features.  Pass one or
@@ -31,14 +39,16 @@ class Blocklist:
        ``features_to_block``.
     3. **Custom YAML registry** — supply your own YAML file via
        ``blocklists_file`` and reference its named lists with
-       ``blocklist_name``.  The file must follow the format::
+       ``blocklist_name``.  Feature names can follow any naming convention
+       (CellProfiler prefixes, embedding dimensions, custom names, etc.).
+       The file must follow the format::
 
            my_list:
+             - embedding_dim_42
              - Cells_MyFeature_A
-             - Nuclei_MyFeature_B
 
            another_list:
-             - Cytoplasm_MyFeature_C
+             - my_custom_feature
 
        Any top-level key becomes a valid ``blocklist_name``.
 
@@ -83,13 +93,14 @@ class Blocklist:
     ...     features_to_block=["Cells_MyFeature"],
     ... )
 
-    Use a custom YAML registry instead of the packaged one:
+    Use a custom YAML registry instead of the packaged one (feature names can
+    follow any convention — CellProfiler prefixes, embedding dimensions, etc.):
 
     >>> import pathlib
     >>> # my_blocklists.yaml contains:
     >>> # qc_fails:
+    >>> #   - embedding_dim_42
     >>> #   - Cells_Texture_BadChannel
-    >>> #   - Nuclei_Intensity_BadChannel
     >>> bl = Blocklist(
     ...     blocklist_name="qc_fails",
     ...     blocklists_file=pathlib.Path("my_blocklists.yaml"),
