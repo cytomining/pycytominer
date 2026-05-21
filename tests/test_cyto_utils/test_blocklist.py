@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from pycytominer.cyto_utils.features import (
+from pycytominer.cyto_utils.blocklist import (
     Blocklist,
     blocklists_file,
     default_blocklist_name,

@@ -1,4 +1,5 @@
 from .annotate_custom import annotate_cmap, cp_clean
+from .blocklist import Blocklist, get_blocklist_features
 from .collate import collate
 from .cp_image_features import (
     aggregate_fields_count,
@@ -6,11 +7,9 @@ from .cp_image_features import (
 )
 from .DeepProfiler_processing import AggregateDeepProfiler
 from .features import (
-    Blocklist,
     convert_compartment_format_to_list,
     count_na_features,
     drop_outlier_features,
-    get_blocklist_features,
     infer_cp_features,
     label_compartment,
 )

@@ -97,14 +97,18 @@ def feature_select(
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
     blocklist : str, list of str, or Blocklist, optional
-        Feature name(s) to exclude for the blocklist operation. A ``Blocklist``
-        object may also be provided directly.
+        Features to exclude when ``operation`` includes ``"blocklist"``.
+        Accepts a feature name string, a list of feature name strings, or a
+        :class:`~pycytominer.cyto_utils.blocklist.Blocklist` object.  When
+        ``None`` and ``blocklist_name`` is also ``None``, the packaged default
+        blocklist is applied automatically.  For advanced usage — custom YAML
+        registries, combining named lists with explicit features — construct a
+        :class:`~pycytominer.cyto_utils.blocklist.Blocklist` directly and pass
+        it here.
     blocklist_name : str or list of str, optional
-        Name(s) of packaged blocklists to use when ``blocklist`` is None. Each
-        name is a top-level YAML key in the packaged blocklist registry (for
-        example, ``default`` in ``blocklists.yaml``). If None, no packaged
-        blocklist is loaded. Use ``"default"`` to explicitly load the packaged
-        default blocklist. Multiple names are loaded in the order provided.
+        Name(s) of packaged blocklists to load when ``blocklist`` is ``None``.
+        Each name is a top-level key in the blocklist YAML registry (e.g.
+        ``"default"``).  Ignored when ``blocklist`` is provided.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
@@ -122,6 +126,11 @@ def feature_select(
         str:
             If output_file is provided, then the function returns the path to the
             output file.
+
+    See Also
+    --------
+    Blocklist : Full reference for blocklist construction, custom YAML
+        registries, and combining named lists with explicit feature exclusions.
 
     """
 
