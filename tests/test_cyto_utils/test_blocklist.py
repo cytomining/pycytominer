@@ -5,9 +5,9 @@ import pytest
 import yaml
 
 from pycytominer.cyto_utils.blocklist import (
+    DEFAULT_BLOCKLIST_NAME,
     Blocklist,
     blocklists_file,
-    default_blocklist_name,
     get_blocklist_features,
 )
 
@@ -70,11 +70,11 @@ def test_blocklist_df_no_args_filters_default_to_population():
 
 def test_default_blocklist_df():
     blocklist_from_func = get_blocklist_features(
-        blocklist_name=default_blocklist_name,
+        blocklist_name=DEFAULT_BLOCKLIST_NAME,
         population_df=data_blocklist_df,
     )
 
-    assert default_blocklist_name == packaged_blocklist_name
+    assert packaged_blocklist_name == DEFAULT_BLOCKLIST_NAME
     assert blocklist_from_func == data_blocklist_df.columns.tolist()
 
 

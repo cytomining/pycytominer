@@ -18,7 +18,7 @@ blocklists_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "blocklists.yaml"
 )
 
-default_blocklist_name = "default"
+DEFAULT_BLOCKLIST_NAME = "default"
 
 
 class Blocklist:
@@ -251,7 +251,7 @@ def get_blocklist_features(
     blocklist_name : str or list of str, optional
         Name(s) of packaged blocklists to load when ``blocklist`` is
         ``None``.  If both are ``None``, falls back to
-        ``default_blocklist_name`` (``"default"``).
+        ``DEFAULT_BLOCKLIST_NAME`` (``"default"``).
     population_df : pd.DataFrame, optional
         When provided, the returned list is filtered to only feature names
         that appear as columns in this DataFrame.
@@ -270,7 +270,7 @@ def get_blocklist_features(
         # No explicit features were provided; use the named registry entry if
         # requested, otherwise fall back to the packaged default blocklist.
         resolved_name = (
-            blocklist_name if blocklist_name is not None else default_blocklist_name
+            blocklist_name if blocklist_name is not None else DEFAULT_BLOCKLIST_NAME
         )
         blocklist_features = Blocklist(blocklist_name=resolved_name).to_list()
     elif isinstance(blocklist, Blocklist):
