@@ -15,7 +15,7 @@ import pandas as pd
 import yaml
 
 blocklists_file = os.path.join(
-    os.path.dirname(__file__), "..", "data", "blocklists.yaml"
+    os.path.dirname(__file__), "..", "data", "default_blocklists.yaml"
 )
 
 DEFAULT_BLOCKLIST_NAME = "default"
@@ -31,7 +31,7 @@ class Blocklist:
     morphological measurements, or any other feature type.  It can be built
     from any combination of three sources:
 
-    1. **Packaged named lists** — pycytominer ships a ``blocklists.yaml``
+    1. **Packaged named lists** — pycytominer ships a ``default_blocklists.yaml``
        registry whose top-level keys are named lists of features.  Pass one or
        more names via ``blocklist_name`` to load them.  The key ``"default"``
        loads the curated pycytominer default, which is derived from
@@ -68,7 +68,7 @@ class Blocklist:
         Additional feature names to append after loading any named list(s).
         If ``blocklist_name`` is ``None``, these are the only blocklisted
         features.
-    blocklists_file : path-like, default packaged ``blocklists.yaml``
+    blocklists_file : path-like, default packaged ``default_blocklists.yaml``
         Path to a YAML registry mapping list names to feature lists.
         Defaults to pycytominer's packaged registry.  Supply a custom path
         to use your own feature lists (see format above).
@@ -177,8 +177,8 @@ class Blocklist:
         blocklist_name : str
             Name of the blocklist to load. This is the top-level YAML key in
             ``blocklists_file``; for example, ``"default"`` loads the list under
-            the ``default:`` key in ``blocklists.yaml``.
-        blocklists_file : str or pathlib.Path, default packaged blocklists.yaml
+            the ``default:`` key in ``default_blocklists.yaml``.
+        blocklists_file : str or pathlib.Path, default packaged default_blocklists.yaml
             YAML file mapping blocklist names to feature lists.
 
         Returns

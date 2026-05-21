@@ -108,7 +108,7 @@ def feature_select(
     blocklist_name : str or list of str, optional
         Name(s) of packaged blocklists to use when ``blocklist`` is None. Each
         name is a top-level YAML key in the packaged blocklist registry (for
-        example, ``default`` in ``blocklists.yaml``). If None and ``blocklist``
+        example, ``default`` in ``default_blocklists.yaml``). If None and ``blocklist``
         is also None, the packaged default blocklist is loaded. Use
         ``"default"`` to load that registry entry explicitly. Multiple names
         are loaded in the order provided.
