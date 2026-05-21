@@ -1,4 +1,5 @@
 import pathlib
+import warnings
 
 import pandas as pd
 import pytest
@@ -9,6 +10,11 @@ from pycytominer.cyto_utils.blocklist import (
     Blocklist,
     blocklists_file,
     get_blocklist_features,
+)
+
+# Path to the old-style CSV blocklist file kept for backward compatibility.
+_legacy_blocklist_file = (
+    pathlib.Path(blocklists_file).parent.parent / "data" / "blocklist_features.txt"
 )
 
 packaged_blocklist_name = "default"
@@ -260,3 +266,69 @@ def test_load_named_blocklist_non_mapping_registry_raises(tmp_path):
     f.write_text("- Cells_Custom\n", encoding="utf-8")
     with pytest.raises(ValueError, match="must be a mapping"):
         Blocklist._load_named_blocklist("custom", f)
+
+
+# ---------------------------------------------------------------------------
+# Backward-compatibility: deprecated blocklist_file parameter
+# ---------------------------------------------------------------------------
+
+
+def test_blocklist_file_deprecation_warning():
+    """Passing blocklist_file emits a DeprecationWarning."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        get_blocklist_features(blocklist_file=_legacy_blocklist_file)
+
+    deprecation_warnings = [
+        w for w in caught if issubclass(w.category, DeprecationWarning)
+    ]
+    assert len(deprecation_warnings) == 1
+    assert "blocklist_file" in str(deprecation_warnings[0].message)
+
+
+def test_blocklist_file_returns_same_features_as_default():
+    """Legacy blocklist_file produces the same feature list as the packaged default."""
+    legacy = get_blocklist_features(blocklist_file=_legacy_blocklist_file)
+    default = get_blocklist_features()
+    assert legacy == default
+
+
+def test_blocklist_file_custom_csv(tmp_path):
+    """A user-supplied CSV with a 'blocklist' column is read correctly."""
+    csv_file = tmp_path / "my_blocklist.txt"
+    csv_file.write_text("blocklist\nCells_Custom\nNuclei_Custom\n", encoding="utf-8")
+
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        result = get_blocklist_features(blocklist_file=csv_file)
+
+    assert result == ["Cells_Custom", "Nuclei_Custom"]
+
+
+def test_blocklist_file_missing_column_raises(tmp_path):
+    """A CSV without a 'blocklist' column raises a clear ValueError."""
+    csv_file = tmp_path / "bad.txt"
+    csv_file.write_text("features\nCells_Custom\n", encoding="utf-8")
+
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        with pytest.raises(ValueError, match="column named 'blocklist'"):
+            get_blocklist_features(blocklist_file=csv_file)
+
+
+def test_blocklist_file_filters_to_population(tmp_path):
+    """blocklist_file respects population_df filtering."""
+    csv_file = tmp_path / "my_blocklist.txt"
+    csv_file.write_text(
+        "blocklist\nNuclei_Correlation_Manders_AGP_DNA\nCells_Custom\n",
+        encoding="utf-8",
+    )
+
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        result = get_blocklist_features(
+            blocklist_file=csv_file,
+            population_df=data_blocklist_df,
+        )
+
+    assert result == ["Nuclei_Correlation_Manders_AGP_DNA"]

@@ -42,6 +42,7 @@ def feature_select(
     float_format: Optional[str] = None,
     blocklist: Optional[Union[str, list[str], Blocklist]] = None,
     blocklist_name: Optional[Union[str, list[str]]] = None,
+    blocklist_file: Optional[str] = None,
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
@@ -112,6 +113,12 @@ def feature_select(
         is also None, the packaged default blocklist is loaded. Use
         ``"default"`` to load that registry entry explicitly. Multiple names
         are loaded in the order provided.
+    blocklist_file : str, optional
+        .. deprecated::
+            Use ``blocklist`` (a list of feature names or a
+            :class:`~pycytominer.cyto_utils.blocklist.Blocklist` object) instead.
+            Previously accepted a path to a CSV file with a single ``blocklist``
+            column.  This parameter will be removed in a future release.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
@@ -196,6 +203,7 @@ def feature_select(
                 population_df=profiles,
                 blocklist=blocklist,
                 blocklist_name=blocklist_name,
+                blocklist_file=blocklist_file,
             )
         elif op == "drop_outliers":
             exclude = drop_outlier_features(

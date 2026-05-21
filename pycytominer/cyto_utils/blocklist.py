@@ -9,6 +9,7 @@ profile type.
 
 import os
 import pathlib
+import warnings
 from typing import Optional, Union
 
 import pandas as pd
@@ -237,6 +238,7 @@ def get_blocklist_features(
     blocklist: Optional[Union[str, list[str], "Blocklist"]] = None,
     blocklist_name: Optional[Union[str, list[str]]] = None,
     population_df: Optional[pd.DataFrame] = None,
+    blocklist_file: Optional[Union[str, pathlib.Path]] = None,
 ) -> list[str]:
     """Resolve blocklist inputs to a list of feature names present in a DataFrame.
 
@@ -261,6 +263,12 @@ def get_blocklist_features(
     population_df : pd.DataFrame, optional
         When provided, the returned list is filtered to only feature names
         that appear as columns in this DataFrame.
+    blocklist_file : str or path-like, optional
+        .. deprecated::
+            Pass feature names via ``blocklist`` (a list or :class:`Blocklist`
+            object) instead.  ``blocklist_file`` accepted a CSV file with a
+            single ``blocklist`` column; that format is no longer the primary
+            interface.  This parameter will be removed in a future release.
 
     Returns
     -------
@@ -271,6 +279,24 @@ def get_blocklist_features(
     --------
     Blocklist : Full reference for blocklist construction and customization.
     """
+
+    if blocklist_file is not None:
+        warnings.warn(
+            "The `blocklist_file` parameter is deprecated and will be removed in a "
+            "future release. Pass feature names directly via `blocklist` (a list or "
+            "Blocklist object), or use a YAML registry via `blocklist_name` and "
+            "`blocklists_file`. See pycytominer.cyto_utils.blocklist.Blocklist for "
+            "details.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        _df = pd.read_csv(blocklist_file)
+        if "blocklist" not in _df.columns:
+            raise ValueError(
+                "The file passed to `blocklist_file` must contain a column named "
+                "'blocklist'."
+            )
+        blocklist = _df["blocklist"].tolist()
 
     if blocklist is None:
         # No explicit features were provided; use the named registry entry if

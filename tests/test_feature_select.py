@@ -1,13 +1,21 @@
 import os
+import pathlib
 import random
 import tempfile
+import warnings
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from pycytominer.cyto_utils import Blocklist
+from pycytominer.cyto_utils.blocklist import blocklists_file
 from pycytominer.feature_select import feature_select
+
+# Path to the old-style CSV blocklist file kept for backward compatibility.
+_legacy_blocklist_file = (
+    pathlib.Path(blocklists_file).parent.parent / "data" / "blocklist_features.txt"
+)
 
 random.seed(123)
 
@@ -530,6 +538,35 @@ def test_feature_select_blocklist():
         "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
         "zz": [0, -3, 8, 9, 6, 9],
     })
+    pd.testing.assert_frame_equal(result, expected_result)
+
+
+def test_feature_select_blocklist_file_deprecated():
+    """feature_select warns and applies the legacy blocklist_file correctly."""
+    data_blocklist_df = pd.DataFrame({
+        "Nuclei_Correlation_Manders_AGP_DNA": [1, 3, 8, 5, 2, 2],
+        "y": [1, 2, 8, 5, 2, 1],
+        "Nuclei_Correlation_RWC_ER_RNA": [9, 3, 8, 9, 2, 9],
+        "zz": [0, -3, 8, 9, 6, 9],
+    }).reset_index(drop=True)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        result = feature_select(
+            data_blocklist_df,
+            features=data_blocklist_df.columns.tolist(),
+            operation="blocklist",
+            blocklist_file=str(_legacy_blocklist_file),
+        )
+
+    deprecation_warnings = [
+        w for w in caught if issubclass(w.category, DeprecationWarning)
+    ]
+    assert len(deprecation_warnings) == 1
+    assert "blocklist_file" in str(deprecation_warnings[0].message)
+
+    # Blocklisted CellProfiler features should be dropped; plain columns remain.
+    expected_result = pd.DataFrame({"y": [1, 2, 8, 5, 2, 1], "zz": [0, -3, 8, 9, 6, 9]})
     pd.testing.assert_frame_equal(result, expected_result)
 
 
