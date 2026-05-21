@@ -302,9 +302,10 @@ class PycytominerCLI:
             blocklist: Optional blocklist feature name(s).
             blocklist_name: Named packaged blocklist(s) to use. These are
                 top-level YAML keys in the packaged blocklist registry. If None,
-                no packaged blocklist is loaded. Use "default" to explicitly
-                load the packaged default blocklist. Comma-delimited names load
-                multiple blocklists in order.
+                the packaged default blocklist is loaded when `blocklist` is
+                also unset. Use "default" to load that registry entry
+                explicitly. Comma-delimited names load multiple blocklists in
+                order.
             outlier_cutoff: Outlier cutoff for feature removal.
             noise_removal_perturb_groups: Metadata column or list for noise removal.
             noise_removal_stdev_cutoff: Standard deviation cutoff for noise removal.
