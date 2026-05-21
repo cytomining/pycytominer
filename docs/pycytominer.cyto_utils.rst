@@ -3,6 +3,14 @@ Cyto utilities
 
 Functions enabling smooth interaction with CellProfiler and DeepProfiler output formats.
 
+pycytominer.cyto\_utils.blocklist module
+-----------------------------------------
+
+.. automodule:: pycytominer.cyto_utils.blocklist
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pycytominer.cyto\_utils.cells module
 ------------------------------------
 

@@ -132,8 +132,9 @@ def feature_select(
 
     See Also
     --------
-    Blocklist : Full reference for blocklist construction, custom YAML
-        registries, and combining named lists with explicit feature exclusions.
+    pycytominer.cyto_utils.blocklist.Blocklist : Full reference for blocklist
+        construction, custom YAML registries, and combining named lists with
+        explicit feature exclusions.
 
     """
 
