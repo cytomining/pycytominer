@@ -209,3 +209,54 @@ def test_blocklist_from_list():
 def test_blocklist_features_requires_list_or_blocklist():
     with pytest.raises(TypeError, match="feature-name string, a list"):
         get_blocklist_features(blocklist=1)
+
+
+def test_normalize_blocklist_names_none():
+    assert Blocklist._normalize_blocklist_names(None) == []
+
+
+def test_normalize_blocklist_names_string():
+    assert Blocklist._normalize_blocklist_names("default") == ["default"]
+
+
+def test_normalize_blocklist_names_list():
+    assert Blocklist._normalize_blocklist_names(["a", "b"]) == ["a", "b"]
+
+
+def test_normalize_blocklist_names_list_converts_to_strings():
+    assert Blocklist._normalize_blocklist_names([1, 2]) == ["1", "2"]
+
+
+def test_normalize_blocklist_names_invalid_type():
+    with pytest.raises(TypeError, match="string, a list of strings, or None"):
+        Blocklist._normalize_blocklist_names(42)
+
+
+def test_load_named_blocklist_returns_features(dummy_blocklists_file):
+    result = Blocklist._load_named_blocklist("custom", dummy_blocklists_file)
+    assert result == ["Cells_Custom", "Cytoplasm_Custom"]
+
+
+def test_load_named_blocklist_converts_to_strings(tmp_path):
+    f = tmp_path / "blocklists.yaml"
+    f.write_text("custom:\n  - 1\n  - Cells_Custom\n", encoding="utf-8")
+    assert Blocklist._load_named_blocklist("custom", f) == ["1", "Cells_Custom"]
+
+
+def test_load_named_blocklist_unknown_name_raises(dummy_blocklists_file):
+    with pytest.raises(ValueError, match="Unknown blocklist name"):
+        Blocklist._load_named_blocklist("nonexistent", dummy_blocklists_file)
+
+
+def test_load_named_blocklist_non_list_entry_raises(tmp_path):
+    f = tmp_path / "blocklists.yaml"
+    f.write_text("custom: Cells_Custom\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="must be a list of feature names"):
+        Blocklist._load_named_blocklist("custom", f)
+
+
+def test_load_named_blocklist_non_mapping_registry_raises(tmp_path):
+    f = tmp_path / "blocklists.yaml"
+    f.write_text("- Cells_Custom\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="must be a mapping"):
+        Blocklist._load_named_blocklist("custom", f)

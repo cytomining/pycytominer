@@ -134,8 +134,8 @@ class Blocklist:
         self.features: list[str] = []
 
         # Start with features from any packaged blocklist names the user chose.
-        for name in _normalize_blocklist_names(blocklist_name):
-            self.features.extend(_load_named_blocklist(name, blocklists_file))
+        for name in self._normalize_blocklist_names(blocklist_name):
+            self.features.extend(self._load_named_blocklist(name, blocklists_file))
 
         # Then append explicit feature names so users can combine packaged
         # blocklists with project-specific exclusions.
@@ -159,72 +159,72 @@ class Blocklist:
     def __len__(self):
         return len(self.features)
 
+    @staticmethod
+    def _load_named_blocklist(
+        blocklist_name: str,
+        blocklists_file: Union[str, pathlib.Path] = blocklists_file,
+    ) -> list[str]:
+        """Load a blocklist entry by name from the YAML registry.
 
-def _load_named_blocklist(
-    blocklist_name: str,
-    blocklists_file: Union[str, pathlib.Path] = blocklists_file,
-) -> list[str]:
-    """Load a blocklist entry by name from the YAML registry.
+        Parameters
+        ----------
+        blocklist_name : str
+            Name of the blocklist to load. This is the top-level YAML key in
+            ``blocklists_file``; for example, ``"default"`` loads the list under
+            the ``default:`` key in ``blocklists.yaml``.
+        blocklists_file : str or pathlib.Path, default packaged blocklists.yaml
+            YAML file mapping blocklist names to feature lists.
 
-    Parameters
-    ----------
-    blocklist_name : str
-        Name of the blocklist to load. This is the top-level YAML key in
-        ``blocklists_file``; for example, ``"default"`` loads the list under
-        the ``default:`` key in ``blocklists.yaml``.
-    blocklists_file : str or pathlib.Path, default packaged blocklists.yaml
-        YAML file mapping blocklist names to feature lists.
+        Returns
+        -------
+        list of str
+            Feature names from the named blocklist. Values loaded from YAML are
+            converted to strings.
 
-    Returns
-    -------
-    list of str
-        Feature names from the named blocklist. Values loaded from YAML are
-        converted to strings.
+        Raises
+        ------
+        ValueError
+            If the registry is not a mapping, ``blocklist_name`` is not present,
+            or the selected registry entry is not a list of feature names.
+        """
+        with pathlib.Path(blocklists_file).open() as blocklist_stream:
+            blocklists = yaml.safe_load(blocklist_stream)
 
-    Raises
-    ------
-    ValueError
-        If the registry is not a mapping, ``blocklist_name`` is not present, or
-        the selected registry entry is not a list of feature names.
-    """
-    with pathlib.Path(blocklists_file).open() as blocklist_stream:
-        blocklists = yaml.safe_load(blocklist_stream)
+        if not isinstance(blocklists, dict):
+            raise ValueError(
+                "Blocklist registry must be a mapping of blocklist names to feature lists."
+            )
 
-    if not isinstance(blocklists, dict):
-        raise ValueError(
-            "Blocklist registry must be a mapping of blocklist names to feature lists."
-        )
+        if blocklist_name not in blocklists:
+            blocklist_names = ", ".join(sorted(blocklists))
+            raise ValueError(
+                f"Unknown blocklist name '{blocklist_name}'. "
+                f"Choose one of: {blocklist_names}"
+            )
 
-    if blocklist_name not in blocklists:
-        blocklist_names = ", ".join(sorted(blocklists))
-        raise ValueError(
-            f"Unknown blocklist name '{blocklist_name}'. "
-            f"Choose one of: {blocklist_names}"
-        )
+        entry = blocklists[blocklist_name]
+        if not isinstance(entry, list):
+            raise ValueError(
+                "Each blocklist registry entry must be a list of feature names. "
+                "Feature names may be strings or values that can be converted to "
+                "strings."
+            )
 
-    blocklist = blocklists[blocklist_name]
-    if not isinstance(blocklist, list):
-        raise ValueError(
-            "Each blocklist registry entry must be a list of feature names. "
-            "Feature names may be strings or values that can be converted to "
-            "strings."
-        )
+        return [str(feature) for feature in entry]
 
-    return [str(feature) for feature in blocklist]
+    @staticmethod
+    def _normalize_blocklist_names(
+        blocklist_name: Optional[Union[str, list[str]]],
+    ) -> list[str]:
+        """Return blocklist names normalised to a list of strings."""
+        if blocklist_name is None:
+            return []
+        if isinstance(blocklist_name, str):
+            return [blocklist_name]
+        if isinstance(blocklist_name, list):
+            return [str(name) for name in blocklist_name]
 
-
-def _normalize_blocklist_names(
-    blocklist_name: Optional[Union[str, list[str]]],
-) -> list[str]:
-    """Return blocklist names as a list."""
-    if blocklist_name is None:
-        return []
-    if isinstance(blocklist_name, str):
-        return [blocklist_name]
-    if isinstance(blocklist_name, list):
-        return [str(name) for name in blocklist_name]
-
-    raise TypeError("blocklist_name must be a string, a list of strings, or None.")
+        raise TypeError("blocklist_name must be a string, a list of strings, or None.")
 
 
 def get_blocklist_features(
