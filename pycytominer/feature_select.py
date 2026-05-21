@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional, Union
 import pandas as pd
 
 from pycytominer.cyto_utils import (
+    Blocklist,
     drop_outlier_features,
     get_blocklist_features,
     infer_cp_features,
@@ -39,6 +40,8 @@ def feature_select(
     unique_cut: float = 0.01,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
+    blocklist: Optional[Union[str, list[str], Blocklist]] = None,
+    blocklist_name: Optional[Union[str, list[str]]] = None,
     blocklist_file: Optional[str] = None,
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
@@ -94,8 +97,28 @@ def feature_select(
         Decimal precision to use in writing output file as input to
         pd.DataFrame.to_csv(float_format=float_format). For example, use "%.3g" for 3
         decimal precision.
+    blocklist : str, list of str, or Blocklist, optional
+        Features to exclude when ``operation`` includes ``"blocklist"``.
+        Accepts a feature name string, a list of feature name strings, or a
+        :class:`~pycytominer.cyto_utils.blocklist.Blocklist` object.  When
+        ``None`` and ``blocklist_name`` is also ``None``, the packaged default
+        blocklist is applied automatically.  For advanced usage — custom YAML
+        registries, combining named lists with explicit features — construct a
+        :class:`~pycytominer.cyto_utils.blocklist.Blocklist` directly and pass
+        it here.
+    blocklist_name : str or list of str, optional
+        Name(s) of packaged blocklists to use when ``blocklist`` is None. Each
+        name is a top-level YAML key in the packaged blocklist registry (for
+        example, ``default`` in ``default_blocklists.yaml``). If None and ``blocklist``
+        is also None, the packaged default blocklist is loaded. Use
+        ``"default"`` to load that registry entry explicitly. Multiple names
+        are loaded in the order provided.
     blocklist_file : str, optional
-        File location of datafrmame with with features to exclude. Note that if "blocklist" in operation then will remove standard blocklist
+        .. deprecated:: 2.0
+            Use ``blocklist`` (a list of feature names or a
+            :class:`~pycytominer.cyto_utils.blocklist.Blocklist` object) instead.
+            Previously accepted a path to a CSV file with a single ``blocklist``
+            column.  This parameter will be removed in a future release.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
@@ -113,6 +136,12 @@ def feature_select(
         str:
             If output_file is provided, then the function returns the path to the
             output file.
+
+    See Also
+    --------
+    pycytominer.cyto_utils.blocklist.Blocklist : Full reference for blocklist
+        construction, custom YAML registries, and combining named lists with
+        explicit feature exclusions.
 
     """
 
@@ -170,12 +199,12 @@ def feature_select(
                 method=corr_method,
             )
         elif op == "blocklist":
-            if blocklist_file:
-                exclude = get_blocklist_features(
-                    population_df=profiles, blocklist_file=blocklist_file
-                )
-            else:
-                exclude = get_blocklist_features(population_df=profiles)
+            exclude = get_blocklist_features(
+                population_df=profiles,
+                blocklist=blocklist,
+                blocklist_name=blocklist_name,
+                blocklist_file=blocklist_file,
+            )
         elif op == "drop_outliers":
             exclude = drop_outlier_features(
                 population_df=profiles,

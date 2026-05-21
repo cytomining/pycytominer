@@ -2912,6 +2912,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "types-openpyxl" },
+    { name = "types-pyyaml" },
     { name = "types-sqlalchemy" },
 ]
 docs = [
@@ -2943,6 +2944,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.16.5" },
     { name = "pandas", specifier = ">=1.2" },
     { name = "pyarrow", specifier = ">=8" },
+    { name = "pyyaml", specifier = ">=6" },
     { name = "s3fs", marker = "extra == 'cell-locations'", specifier = ">=2023.4" },
     { name = "scikit-learn", specifier = ">=0.21.2" },
     { name = "scipy", marker = "python_full_version == '3.10.*'", specifier = ">=1.5" },
@@ -2966,6 +2968,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=4.1,<8" },
     { name = "ruff", specifier = ">=0.3.4,<0.16" },
     { name = "types-openpyxl", specifier = ">=3.1.5.20240918,<4" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20260518" },
     { name = "types-sqlalchemy", specifier = ">=1.4.53.38,<2" },
 ]
 docs = [
@@ -4051,6 +4054,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ba/2e/a545aae2c4d2af7e3b7b967049c2f271b2f5338d96a58224fe1ee53a54f3/types_pytz-2026.2.0.20260506.tar.gz", hash = "sha256:fc6a0de6a1b7da82a748fb4065e152372dac3016559cb1eef5e8af1e338eb627", size = 10844, upload-time = "2026-05-06T05:17:51.964Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4f/cd/df3e4ccccb2a5a0b7e59c9fb2baafb6dac0817e80799e4c9854fe4d2eba3/types_pytz-2026.2.0.20260506-py3-none-any.whl", hash = "sha256:58ab5307c20885f9bcd42ff106616eb0e32710791f8cbdc770aee2ea0c4f01fb", size = 10120, upload-time = "2026-05-06T05:17:51.026Z" },
+]
+
+[[package]]
+name = "types-pyyaml"
+version = "6.0.12.20260518"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/83/4a1afc3fbfcf5b8d46fc390cd95ed6b0dc9010a265f4e9f46314efffa37a/types_pyyaml-6.0.12.20260518.tar.gz", hash = "sha256:d917f83fb38462550338c1297faedd860b3ec83912b96b1e3d73255f7473e466", size = 17850, upload-time = "2026-05-18T06:01:58.675Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/06/a2/c01db32be2ae7d6a1689972f3c492b149ee4e164b12fdfd9f64b50888215/types_pyyaml-6.0.12.20260518-py3-none-any.whl", hash = "sha256:d2150f75a231c9fe9c7463bd29487d93e60bac90400287351384bc2284eba7cd", size = 20312, upload-time = "2026-05-18T06:01:57.368Z" },
 ]
 
 [[package]]

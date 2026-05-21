@@ -2,47 +2,9 @@
 Utility function to manipulate cell profiler features
 """
 
-import os
-import pathlib
-from typing import Optional, Union
+from typing import Union
 
 import pandas as pd
-
-blocklist_file = os.path.join(
-    os.path.dirname(__file__), "..", "data", "blocklist_features.txt"
-)
-
-
-def get_blocklist_features(
-    blocklist_file: Union[str, pathlib.Path] = blocklist_file,
-    population_df: Optional[pd.DataFrame] = None,
-) -> list[str]:
-    """Get a list of blocklist features.
-
-    Parameters
-    ----------
-    blocklist_file : path-like object
-        Location of the dataframe with features to exclude.
-    population_df : pd.DataFrame, optional
-        Profile dataframe used to subset blocklist features.
-
-    Returns
-    -------
-    blocklist_features : list of str
-        Features to exclude from downstream analysis.
-    """
-
-    blocklist = pd.read_csv(blocklist_file)
-
-    if not any(x == "blocklist" for x in blocklist.columns):
-        raise ValueError("one column must be named 'blocklist'")
-
-    blocklist_features = blocklist.blocklist.to_list()
-    if isinstance(population_df, pd.DataFrame):
-        population_features = population_df.columns.tolist()
-        blocklist_features = [x for x in blocklist_features if x in population_features]
-
-    return blocklist_features
 
 
 def label_compartment(

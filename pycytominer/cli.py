@@ -276,7 +276,8 @@ class PycytominerCLI:
         unique_cut: float = 0.01,
         compression_options: str | dict[str, Any] | None = None,
         float_format: str | None = None,
-        blocklist_file: str | None = None,
+        blocklist: str | list[str] | None = None,
+        blocklist_name: str | Sequence[str] | None = None,
         outlier_cutoff: float = 500.0,
         noise_removal_perturb_groups: str | None = None,
         noise_removal_stdev_cutoff: float | None = None,
@@ -298,7 +299,13 @@ class PycytominerCLI:
             unique_cut: Unique value cutoff for variance thresholding.
             compression_options: Compression options for writing output.
             float_format: Decimal precision for output formatting.
-            blocklist_file: Optional blocklist file path.
+            blocklist: Optional blocklist feature name(s).
+            blocklist_name: Named packaged blocklist(s) to use. These are
+                top-level YAML keys in the packaged blocklist registry. If None,
+                the packaged default blocklist is loaded when `blocklist` is
+                also unset. Use "default" to load that registry entry
+                explicitly. Comma-delimited names load multiple blocklists in
+                order.
             outlier_cutoff: Outlier cutoff for feature removal.
             noise_removal_perturb_groups: Metadata column or list for noise removal.
             noise_removal_stdev_cutoff: Standard deviation cutoff for noise removal.
@@ -319,6 +326,14 @@ class PycytominerCLI:
             operation_value = list(operation)
 
         noise_removal_groups_value = _parse_list_or_str(noise_removal_perturb_groups)
+        blocklist_value = (
+            _split_csv_arg(blocklist) if isinstance(blocklist, str) else blocklist
+        )
+        blocklist_name_value = (
+            _split_csv_arg(blocklist_name)
+            if isinstance(blocklist_name, (str, Sequence))
+            else blocklist_name
+        )
 
         result = feature_select(
             profiles=profiles,
@@ -335,7 +350,8 @@ class PycytominerCLI:
             unique_cut=unique_cut,
             compression_options=compression_options,
             float_format=float_format,
-            blocklist_file=blocklist_file,
+            blocklist=blocklist_value,
+            blocklist_name=blocklist_name_value,
             outlier_cutoff=outlier_cutoff,
             noise_removal_perturb_groups=noise_removal_groups_value,
             noise_removal_stdev_cutoff=noise_removal_stdev_cutoff,
