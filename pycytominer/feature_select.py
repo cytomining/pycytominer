@@ -102,9 +102,10 @@ def feature_select(
     blocklist_name : str or list of str, optional
         Name(s) of packaged blocklists to use when ``blocklist`` is None. Each
         name is a top-level YAML key in the packaged blocklist registry (for
-        example, ``default`` in ``blocklists.yaml``). If None, no packaged
-        blocklist is loaded. Use ``"default"`` to explicitly load the packaged
-        default blocklist. Multiple names are loaded in the order provided.
+        example, ``default`` in ``blocklists.yaml``). If None and ``blocklist``
+        is also None, the packaged default blocklist is loaded. Use
+        ``"default"`` to load that registry entry explicitly. Multiple names
+        are loaded in the order provided.
     outlier_cutoff : float, default 500
         The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
     noise_removal_perturb_groups: str or list of str, optional
