@@ -275,3 +275,74 @@ def test_cli_propagates_file_not_found_error() -> None:
             features=["Feature_1"],
             meta_features=["Metadata_Plate"],
         )
+
+
+def _write_profiles_with_blocklist_features(tmp_path: pathlib.Path) -> pathlib.Path:
+    """Write profiles containing one default-blocklisted and one non-blocklisted feature."""
+    df = pd.DataFrame({
+        "Metadata_Plate": ["P1", "P1"],
+        # In the packaged default blocklist:
+        "Nuclei_Correlation_Manders_AGP_DNA": [0.1, 0.2],
+        # Not in the blocklist — generic feature:
+        "Cells_AreaShape_Area": [100.0, 200.0],
+    })
+    path = tmp_path / "profiles_blocklist.csv"
+    df.to_csv(path, index=False)
+    return path
+
+
+def test_cli_feature_select_blocklist_default(tmp_path: pathlib.Path) -> None:
+    """CLI feature_select with operation=blocklist uses the packaged default when no blocklist args are given."""
+    profiles_path = _write_profiles_with_blocklist_features(tmp_path)
+    output_path = tmp_path / "out_default.csv"
+
+    cli = PycytominerCLI()
+    cli.feature_select(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Nuclei_Correlation_Manders_AGP_DNA,Cells_AreaShape_Area",
+        operation="blocklist",
+    )
+
+    result = pd.read_csv(output_path)
+    assert "Nuclei_Correlation_Manders_AGP_DNA" not in result.columns
+    assert "Cells_AreaShape_Area" in result.columns
+
+
+def test_cli_feature_select_blocklist_name_default(tmp_path: pathlib.Path) -> None:
+    """CLI feature_select with blocklist_name='default' is identical to the implicit default."""
+    profiles_path = _write_profiles_with_blocklist_features(tmp_path)
+    output_path = tmp_path / "out_named.csv"
+
+    cli = PycytominerCLI()
+    cli.feature_select(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Nuclei_Correlation_Manders_AGP_DNA,Cells_AreaShape_Area",
+        operation="blocklist",
+        blocklist_name="default",
+    )
+
+    result = pd.read_csv(output_path)
+    assert "Nuclei_Correlation_Manders_AGP_DNA" not in result.columns
+    assert "Cells_AreaShape_Area" in result.columns
+
+
+def test_cli_feature_select_blocklist_explicit(tmp_path: pathlib.Path) -> None:
+    """CLI feature_select drops features listed explicitly via blocklist (comma-delimited string)."""
+    _, profiles_path = _write_profiles(tmp_path)
+    output_path = tmp_path / "out_explicit.csv"
+
+    cli = PycytominerCLI()
+    cli.feature_select(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Feature_1,Feature_2,Feature_3",
+        operation="blocklist",
+        blocklist="Feature_1,Feature_3",
+    )
+
+    result = pd.read_csv(output_path)
+    assert "Feature_1" not in result.columns
+    assert "Feature_3" not in result.columns
+    assert "Feature_2" in result.columns
