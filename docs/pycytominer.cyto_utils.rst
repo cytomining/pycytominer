@@ -1,84 +1,15 @@
-Cyto utilities
+Cyto Utilities
 ==============
 
-Functions enabling smooth interaction with CellProfiler and DeepProfiler output formats.
+.. toctree::
+   :maxdepth: 1
 
-pycytominer.cyto\_utils.blocklist module
------------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.blocklist
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.cells module
-------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.cells
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.collate module
---------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.collate
-  :members:
-  :undoc-members:
-  :show-inheritance:
-
-pycytominer.cyto\_utils.features module
----------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.features
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.load module
------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.load
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.modz module
------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.modz
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.output module
--------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.output
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.util module
------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.util
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pycytominer.cyto\_utils.write\_gct module
------------------------------------------
-
-.. automodule:: pycytominer.cyto_utils.write_gct
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: pycytominer.cyto_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   pycytominer.cyto_utils.blocklist
+   pycytominer.cyto_utils.cells
+   pycytominer.cyto_utils.collate
+   pycytominer.cyto_utils.features
+   pycytominer.cyto_utils.load
+   pycytominer.cyto_utils.modz
+   pycytominer.cyto_utils.output
+   pycytominer.cyto_utils.util
+   pycytominer.cyto_utils.write_gct
