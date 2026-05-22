@@ -1,29 +1,59 @@
 /*
  * Custom overrides for the Furo theme.
  *
- * Goal: make function-signature parameter names and their default values
- * visually distinct from each other, similar to the style used by pandas docs.
+ * Goal: give function-signature tokens clearly distinct colours, similar
+ * to the style used in the pandas and NumPy documentation.
  *
- * Sphinx wraps each parameter in <em class="sig-param"> and uses these classes
- * inside it:
- *   .n             – parameter name
+ * Sphinx uses these CSS classes inside <em class="sig-param">:
+ *   .n             – names (parameter name AND type annotation names share this!)
  *   .default_value – the default value (e.g. None, True, "hello")
  *   .o             – operators (=, *, **)
- *   .p             – punctuation (: , )
+ *   .p             – punctuation (: , [ ] )
  *
- * Furo exposes --color-brand-primary which already switches automatically
- * between the light (#88239A) and dark (#CF72DF) values we set in conf.py,
- * so we get dark-mode support for free.
+ * Strategy:
+ *   1. Set ALL .n inside .sig-param to the foreground colour → parameter names.
+ *   2. Override: .n elements that follow a .p sibling are type annotations
+ *      (the colon is always the first .p; brackets in complex types are also .p
+ *      but they still come after the colon, so the cascade handles nesting too).
+ *   3. Linked type annotations sit inside <a> elements after the colon .p.
+ *   4. Return-type annotations live in .sig-return-annotation.
  */
 
-/* Parameter names – use the brand accent colour so they stand out from
-   the surrounding grey punctuation and default values. */
-.sig-param .n {
-    color: var(--color-brand-primary);
+/* Type-annotation colour — defined once here; auto-switches with Furo's
+   dark-mode data attribute so no media query is needed. */
+:root {
+    --color-sig-type: #0969da;   /* GitHub blue, light mode */
 }
 
-/* Default values – keep them secondary: slightly muted and italic so
-   they read as "optional context" rather than the primary label. */
+[data-theme="dark"] {
+    --color-sig-type: #58a6ff;   /* GitHub blue, dark mode  */
+}
+
+/* 1. Parameter names — standard body text so they are clearly distinct
+      from the brand-coloured function name. */
+.sig-param .n {
+    color: var(--color-foreground-primary);
+}
+
+/* 2. Type annotation names (unlinked) — any .n that follows a .p sibling
+      (i.e. comes after the colon, or inside brackets of a complex type). */
+.sig-param > .p ~ .n {
+    color: var(--color-sig-type);
+}
+
+/* 3. Type annotation names that hyperlink to their definition. */
+.sig-param > .p ~ a .n {
+    color: var(--color-sig-type);
+}
+
+/* 4. Return type annotation after the → arrow. */
+.sig-return-annotation .n,
+.sig-return-annotation a .n {
+    color: var(--color-sig-type);
+}
+
+/* Default values — muted and italic so they read as "optional context"
+   rather than the primary label. */
 .sig-param .default_value {
     color: var(--color-foreground-secondary);
     font-style: italic;
