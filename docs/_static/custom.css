@@ -1,0 +1,30 @@
+/*
+ * Custom overrides for the Furo theme.
+ *
+ * Goal: make function-signature parameter names and their default values
+ * visually distinct from each other, similar to the style used by pandas docs.
+ *
+ * Sphinx wraps each parameter in <em class="sig-param"> and uses these classes
+ * inside it:
+ *   .n             – parameter name
+ *   .default_value – the default value (e.g. None, True, "hello")
+ *   .o             – operators (=, *, **)
+ *   .p             – punctuation (: , )
+ *
+ * Furo exposes --color-brand-primary which already switches automatically
+ * between the light (#88239A) and dark (#CF72DF) values we set in conf.py,
+ * so we get dark-mode support for free.
+ */
+
+/* Parameter names – use the brand accent colour so they stand out from
+   the surrounding grey punctuation and default values. */
+.sig-param .n {
+    color: var(--color-brand-primary);
+}
+
+/* Default values – keep them secondary: slightly muted and italic so
+   they read as "optional context" rather than the primary label. */
+.sig-param .default_value {
+    color: var(--color-foreground-secondary);
+    font-style: italic;
+}
