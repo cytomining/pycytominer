@@ -16,6 +16,7 @@
 
 ### Docs
 
+- expand left navigation bar to specific functions and differentiate colors for css docstrings (#680)
 - fix API docs rendering: correct code blocks in core function docs, add doc build integration, fix RTD integration (#677)
 - update docs build to use uv, parse readme, remove legacy docs, and point RTD to cytomining.github.io/pycytominer (#676)
 - clarify CellProfiler and CytoTable input guidance (#669)
