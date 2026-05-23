@@ -1,3 +1,36 @@
+## v1.5.0 (2026-05-21)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.5.0)
+
+### Feat
+
+- **blocklist**: introduce `Blocklist` class and `get_blocklist_features` with named YAML registry, custom registry support, and `blocklist_name` parameter; deprecate `blocklist_file` (#674)
+- **annotate**: update annotate to support parquet ingest and QC workflows (#657)
+- **cells**: make `SingleCells.count_cells()` use configurable count columns (#671)
+- **load**: add CytoTable warehouse profile loading; ignore OME-Arrow payload columns during normalization (#643)
+
+### Refactor
+
+- **collate**: remove `noqa: S603` suppression in subprocess calls (#666)
+- replace `tmp` path usage with `tempfile.gettempdir()` for cross-platform compatibility (#670)
+
+### Docs
+
+- expand left navigation bar to specific functions and differentiate colors for css docstrings (#680)
+- fix API docs rendering: correct code blocks in core function docs, add doc build integration, fix RTD integration (#677)
+- update docs build to use uv, parse readme, remove legacy docs, and point RTD to cytomining.github.io/pycytominer (#676)
+- clarify CellProfiler and CytoTable input guidance (#669)
+
+### Build
+
+- migrate from poetry to uv (#650)
+- **deps**: various dependency updates automated by dependabot
+
+### CI
+
+- add Python 3.14 CI support (#668)
+- add contribution interest checkbox to issue templates (#665)
+
 ## v1.4.0 (2026-02-20)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.4.0)
