@@ -197,6 +197,7 @@ class PycytominerCLI:
         meta_features: str | Sequence[str] = "infer",
         samples: str = "all",
         method: str = "standardize",
+        drop_cosmicqc_rows: bool = False,
         output_type: Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
         | None = "csv",
         compression_options: str | dict[str, Any] | None = None,
@@ -216,6 +217,7 @@ class PycytominerCLI:
             meta_features: Metadata list or "infer" for metadata inference.
             samples: Query string to choose normalization samples.
             method: Normalization method.
+            drop_cosmicqc_rows: Whether to drop rows flagged by Metadata_cqc_ columns.
             output_type: Output type to write.
             compression_options: Compression options for writing output.
             float_format: Decimal precision for output formatting.
@@ -243,6 +245,7 @@ class PycytominerCLI:
             meta_features=meta_features_value,
             samples=samples,
             method=method,
+            drop_cosmicqc_rows=drop_cosmicqc_rows,
             output_file=output_file,
             output_type=output_type,
             compression_options=compression_options,

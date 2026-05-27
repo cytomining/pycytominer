@@ -101,6 +101,46 @@ def test_cli_normalize(tmp_path: pathlib.Path) -> None:
     assert np.isclose(result["Feature_2"].mean(), 0.0, atol=1e-7)
 
 
+def test_cli_normalize_drop_cosmicqc_rows(tmp_path: pathlib.Path) -> None:
+    """Ensure CLI normalize forwards drop_cosmicqc_rows."""
+    profiles = pd.DataFrame({
+        "Metadata_Plate": ["P1"] * 4,
+        "Metadata_Well": ["A01", "A02", "A03", "A04"],
+        "Metadata_cqc_clustered_nuclei_is_outlier": [False, True, False, False],
+        "Feature_1": [0.0, 1000.0, 1.0, 2.0],
+        "Feature_2": [10.0, 9999.0, 20.0, 30.0],
+    })
+    profiles_path = tmp_path / "profiles_qc.csv"
+    profiles.to_csv(profiles_path, index=False)
+    output_path = tmp_path / "normalized_qc.csv"
+
+    cli = PycytominerCLI()
+    cli.normalize(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Feature_1,Feature_2",
+        meta_features="Metadata_Plate,Metadata_Well,Metadata_cqc_clustered_nuclei_is_outlier",
+        method="standardize",
+        drop_cosmicqc_rows=True,
+    )
+
+    result = pd.read_csv(output_path)
+    assert result["Metadata_Well"].tolist() == ["A01", "A03", "A04"]
+    assert result["Metadata_cqc_clustered_nuclei_is_outlier"].tolist() == [
+        False,
+        False,
+        False,
+    ]
+    assert np.allclose(
+        result["Feature_1"],
+        [-1.224744871391589, 0.0, 1.224744871391589],
+    )
+    assert np.allclose(
+        result["Feature_2"],
+        [-1.224744871391589, 0.0, 1.224744871391589],
+    )
+
+
 def test_cli_feature_select(tmp_path: pathlib.Path) -> None:
     """Ensure CLI feature_select drops low-variance features."""
     _, profiles_path = _write_profiles(tmp_path)

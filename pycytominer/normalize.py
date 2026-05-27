@@ -22,6 +22,7 @@ def normalize(
     meta_features: Union[str, list[str]] = "infer",
     samples: str = "all",
     method: str = "standardize",
+    drop_cosmicqc_rows: bool = False,
     output_file: Optional[str] = None,
     output_type: Optional[
         Literal["csv", "parquet", "anndata_h5ad", "anndata_zarr"]
@@ -70,6 +71,10 @@ def normalize(
     method : str
         How to normalize the dataframe. Defaults to "standardize". Check avail_methods
         for available normalization methods.
+    drop_cosmicqc_rows : bool
+        Whether to drop rows that are flagged as QC failures. The function looks for columns
+        from coSMicQC with "Metadata_cqc_" prefix and drop rows with True. Defaults to False.
+        Suggested use after a prior call to `pycytominer.annotate(external_metadata=qc.parquet)`.
     output_file : str, optional
         If provided, will write normalized profiles to file. If not specified, will
         return the normalized profiles as output. We recommend that this output file be
@@ -156,6 +161,23 @@ def normalize(
 
     # Load Data
     profiles = load_profiles(profiles)
+
+    # If drop_cosmicqc_rows is True, drop rows that are flagged (True) as QC failures from coSMicQC
+    if drop_cosmicqc_rows:
+        qc_columns = [
+            col for col in profiles.columns if col.startswith("Metadata_cqc_")
+        ]
+        if qc_columns:
+            passed_qc = ~profiles[qc_columns].any(axis="columns")
+            profiles = profiles[passed_qc]
+            if profiles.empty:
+                raise ValueError(
+                    "All rows were dropped after QC filtering; cannot normalize an empty dataset."
+                )
+        else:
+            raise ValueError(
+                "No QC columns found with prefix 'Metadata_cqc_'. Cannot drop QC rows."
+            )
 
     # Define which scaler to use
     method = method.lower()
