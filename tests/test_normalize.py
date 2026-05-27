@@ -430,7 +430,7 @@ def test_normalize_standardize_ctrlsamples():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
-def test_normalize_drop_qc_rows_before_normalization():
+def test_normalize_drop_cosmicqc_rows_before_normalization():
     profiles = pd.DataFrame({
         "Metadata_plate": ["plate_1"] * 4,
         "Metadata_well": ["A01", "A02", "A03", "A04"],
@@ -445,7 +445,7 @@ def test_normalize_drop_qc_rows_before_normalization():
         meta_features="infer",
         samples="all",
         method="standardize",
-        drop_qc_rows=True,
+        drop_cosmicqc_rows=True,
     )
 
     expected_result = pd.DataFrame(
@@ -461,6 +461,91 @@ def test_normalize_drop_qc_rows_before_normalization():
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
+def test_normalize_drop_cosmicqc_rows_error_when_qc_columns_missing():
+    """
+    Testing the normalize pycytominer function
+    drop_cosmicqc_rows = True when there are
+    no QC columns in the dataframe.
+    """
+    profiles = pd.DataFrame({
+        "Metadata_plate": ["plate_1"] * 4,
+        "Metadata_well": ["A01", "A02", "A03", "A04"],
+        "Cells_x": [0, 1000, 1, 2],
+        "Nuclei_y": [10, 9999, 20, 30],
+    })
+
+    with pytest.raises(ValueError, match="QC columns"):
+        normalize(
+            profiles=profiles,
+            features="infer",
+            meta_features="infer",
+            samples="all",
+            method="standardize",
+            drop_cosmicqc_rows=True,
+        )
+
+def test_normalize_drop_cosmicqc_rows_drops_rows_with_true():
+    """
+    Testing the normalize pycytominer function
+    drop_cosmicqc_rows = True when all rows
+    are True and all rows will be dropped.
+    """
+    profiles = pd.DataFrame({
+        "Metadata_plate": ["plate_1"] * 4,
+        "Metadata_well": ["A01", "A02", "A03", "A04"],
+        "Metadata_cqc_clustered_nuclei_is_outlier": [True] * 4,
+        "Cells_x": [0, 1000, 1, 2],
+        "Nuclei_y": [10, 9999, 20, 30],
+    })
+
+    with pytest.raises(ValueError, match="All rows were dropped"):
+        normalize(
+            profiles=profiles,
+            features="infer",
+            meta_features="infer",
+            samples="all",
+            method="standardize",
+            drop_cosmicqc_rows=True,
+        )
+
+def test_normalize_drop_cosmicqc_rows_multiple_qc_columns():
+    """
+    Testing the normalize pycytominer function
+    drop_cosmicqc_rows = True when there are multiple
+    QC columns and rows with True in any of the QC columns
+    will be dropped.
+    """
+    profiles = pd.DataFrame({
+        "Metadata_plate": ["plate_1"] * 4,
+        "Metadata_well": ["A01", "A02", "A03", "A04"],
+        "Metadata_cqc_clustered_nuclei_is_outlier": [False, True, False, False],
+        "Metadata_cqc_abnormal_small_cell_is_outlier": [False, False, True, False],
+        "Cells_x": [0, 1000, 1, 2],
+        "Nuclei_y": [10, 9999, 20, 30],
+    })
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features="infer",
+        meta_features="infer",
+        samples="all",
+        method="standardize",
+        drop_cosmicqc_rows=True,
+    )
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_plate": ["plate_1"] * 2,
+            "Metadata_well": ["A01", "A04"],
+            "Metadata_cqc_clustered_nuclei_is_outlier": [False, False],
+            "Metadata_cqc_abnormal_small_cell_is_outlier": [False, False],
+            "Cells_x": [-1.0, 1.0],
+            "Nuclei_y": [-1.0, 1.0],
+        },
+        index=[0, 3],
+    )
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 def test_normalize_robustize_allsamples():
     """
