@@ -4,3 +4,9 @@ include README.md
 include pyproject.toml
 include uv.lock
 include pycytominer/data/*
+prune tests
+prune docs
+prune walkthroughs
+prune media
+prune logo
+prune dev_tools
