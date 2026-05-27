@@ -3,7 +3,7 @@ Tutorials
 
 New to pycytominer? Start here.
 
-Tutorials are **learning-oriented**, guiding you through concepts step by step and explain
+Tutorials are **learning-oriented**, guiding you through concepts step by step and explaining
 the *why* behind each decision. They use small synthetic datasets so you can focus on understanding
 the pipeline rather than managing data.
 
