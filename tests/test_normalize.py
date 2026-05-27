@@ -434,7 +434,7 @@ def test_normalize_drop_qc_rows_before_normalization():
     profiles = pd.DataFrame({
         "Metadata_plate": ["plate_1"] * 4,
         "Metadata_well": ["A01", "A02", "A03", "A04"],
-        "Metadata_cqc_clustered_nuclei": [False, True, False, False],
+        "Metadata_cqc_clustered_nuclei_is_outlier": [False, True, False, False],
         "Cells_x": [0, 1000, 1, 2],
         "Nuclei_y": [10, 9999, 20, 30],
     })
@@ -452,7 +452,7 @@ def test_normalize_drop_qc_rows_before_normalization():
         {
             "Metadata_plate": ["plate_1"] * 3,
             "Metadata_well": ["A01", "A03", "A04"],
-            "Metadata_cqc_clustered_nuclei": [False, False, False],
+            "Metadata_cqc_clustered_nuclei_is_outlier": [False, False, False],
             "Cells_x": [-1.224744871391589, 0.0, 1.224744871391589],
             "Nuclei_y": [-1.224744871391589, 0.0, 1.224744871391589],
         },

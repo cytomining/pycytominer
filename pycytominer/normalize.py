@@ -165,8 +165,8 @@ def normalize(
     if drop_qc_rows:
         qc_columns = [col for col in profiles.columns if col.startswith("Metadata_cqc_")]
         if qc_columns:
-            qc_filter = np.logical_not(profiles[qc_columns].any(axis="columns"))
-            profiles = profiles[qc_filter]
+            passed_qc = ~profiles[qc_columns].any(axis="columns")
+            profiles = profiles[passed_qc]
         else:
             raise ValueError(
                 "No QC columns found with prefix 'Metadata_cqc_'. Cannot drop QC rows."
