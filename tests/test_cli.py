@@ -126,7 +126,11 @@ def test_cli_normalize_drop_cosmicqc_rows(tmp_path: pathlib.Path) -> None:
 
     result = pd.read_csv(output_path)
     assert result["Metadata_Well"].tolist() == ["A01", "A03", "A04"]
-    assert result["Metadata_cqc_clustered_nuclei_is_outlier"].tolist() == [False, False, False]
+    assert result["Metadata_cqc_clustered_nuclei_is_outlier"].tolist() == [
+        False,
+        False,
+        False,
+    ]
     assert np.allclose(
         result["Feature_1"],
         [-1.224744871391589, 0.0, 1.224744871391589],
