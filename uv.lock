@@ -3418,7 +3418,7 @@ wheels = [
 
 [[package]]
 name = "pycytominer"
-version = "1.4.1.dev36+g584a9ccac.d20260527"
+version = "1.4.1.dev37+gcaa6b2d04"
 source = { editable = "." }
 dependencies = [
     { name = "fire" },
