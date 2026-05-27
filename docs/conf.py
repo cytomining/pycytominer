@@ -14,6 +14,8 @@ import os
 import sys
 from datetime import date
 
+import dunamai
+
 sys.path.insert(0, os.path.abspath(".."))
 
 # Ignore rules regarding import order which is required for sphinx build process
@@ -24,8 +26,6 @@ import pycytominer  # noqa: E402, RUF100
 project = "Pycytominer"
 author = pycytominer.__about__.__author__
 project_copyright = f"Copyright 2019 - {date.today().year} {author}"
-
-import dunamai
 
 # Get the version from Git tags via dunamai
 auto_version = dunamai.Version.from_git()
