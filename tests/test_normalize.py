@@ -430,6 +430,38 @@ def test_normalize_standardize_ctrlsamples():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
+def test_normalize_drop_qc_rows_before_normalization():
+    profiles = pd.DataFrame({
+        "Metadata_plate": ["plate_1"] * 4,
+        "Metadata_well": ["A01", "A02", "A03", "A04"],
+        "Metadata_cqc_clustered_nuclei": [False, True, False, False],
+        "Cells_x": [0, 1000, 1, 2],
+        "Nuclei_y": [10, 9999, 20, 30],
+    })
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features="infer",
+        meta_features="infer",
+        samples="all",
+        method="standardize",
+        drop_qc_rows=True,
+    )
+
+    expected_result = pd.DataFrame(
+        {
+            "Metadata_plate": ["plate_1"] * 3,
+            "Metadata_well": ["A01", "A03", "A04"],
+            "Metadata_cqc_clustered_nuclei": [False, False, False],
+            "Cells_x": [-1.224744871391589, 0.0, 1.224744871391589],
+            "Nuclei_y": [-1.224744871391589, 0.0, 1.224744871391589],
+        },
+        index=[0, 2, 3],
+    )
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
 def test_normalize_robustize_allsamples():
     """
     Testing normalize pycytominer function
