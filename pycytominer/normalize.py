@@ -163,7 +163,9 @@ def normalize(
 
     # If drop_qc_rows is True, drop rows that are flagged (True) as QC failures from coSMicQC
     if drop_qc_rows:
-        qc_columns = [col for col in profiles.columns if col.startswith("Metadata_cqc_")]
+        qc_columns = [
+            col for col in profiles.columns if col.startswith("Metadata_cqc_")
+        ]
         if qc_columns:
             passed_qc = ~profiles[qc_columns].any(axis="columns")
             profiles = profiles[passed_qc]
