@@ -169,6 +169,10 @@ def normalize(
         if qc_columns:
             passed_qc = ~profiles[qc_columns].any(axis="columns")
             profiles = profiles[passed_qc]
+            if profiles.empty:
+                raise ValueError(
+                    "All rows were dropped after QC filtering; cannot normalize an empty dataset."
+                )
         else:
             raise ValueError(
                 "No QC columns found with prefix 'Metadata_cqc_'. Cannot drop QC rows."
