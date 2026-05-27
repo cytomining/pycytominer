@@ -41,13 +41,26 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx_copybutton",
+    "sphinx_togglebutton",
     "nbsphinx",
     "myst_parser",
+    "sphinxcontrib.mermaid",
 ]
 
-# Render notebooks without executing them during docs builds because the CI docs
-# environment does not provision the optional kernels/dependencies used there.
+# Render notebooks without executing them during docs builds — outputs are
+# pre-computed locally and committed, so no kernel is needed at build time.
 nbsphinx_execute = "never"
+
+# Disable require.js: nbsphinx loads it for interactive widgets, but our
+# tutorials have none.  Leaving it enabled causes a conflict where mermaid.js
+# detects AMD, registers as a module, and never sets window.mermaid, so
+# mermaid.initialize() throws a ReferenceError and diagrams fail to render.
+nbsphinx_requirejs_path = ""
+
+# Use a mermaid version with solid Unicode + flowchart syntax support.
+# v10.2.0 (the sphinxcontrib-mermaid default) misparses non-ASCII characters
+# such as middle-dot (U+00B7) and right-arrow (U+2192) in node labels.
+mermaid_version = "10.6.1"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -55,7 +68,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["**tests**"]
+exclude_patterns = ["_build", "build", "**tests**"]
 
 
 # -- Options for HTML output -------------------------------------------------

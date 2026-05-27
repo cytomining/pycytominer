@@ -11,6 +11,7 @@
    :caption: Contents:
 
    contributing
+   tutorials
    walkthrough
    modules
 
