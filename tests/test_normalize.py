@@ -461,6 +461,7 @@ def test_normalize_drop_cosmicqc_rows_before_normalization():
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
+
 def test_normalize_drop_cosmicqc_rows_error_when_qc_columns_missing():
     """
     Testing the normalize pycytominer function
@@ -483,6 +484,7 @@ def test_normalize_drop_cosmicqc_rows_error_when_qc_columns_missing():
             method="standardize",
             drop_cosmicqc_rows=True,
         )
+
 
 def test_normalize_drop_cosmicqc_rows_drops_rows_with_true():
     """
@@ -507,6 +509,7 @@ def test_normalize_drop_cosmicqc_rows_drops_rows_with_true():
             method="standardize",
             drop_cosmicqc_rows=True,
         )
+
 
 def test_normalize_drop_cosmicqc_rows_multiple_qc_columns():
     """
@@ -546,6 +549,7 @@ def test_normalize_drop_cosmicqc_rows_multiple_qc_columns():
     )
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
+
 
 def test_normalize_robustize_allsamples():
     """
