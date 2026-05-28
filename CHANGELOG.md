@@ -1,3 +1,20 @@
+## v1.5.1 (2026-05-28)
+
+[Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.5.1)
+
+### Feat
+
+- **normalize**: add `drop_cosmicqc_rows` parameter to drop coSMicQC-flagged cells before normalization (#682)
+
+### Docs
+
+- add introduction to pycytominer tutorial with simulated pipeline walkthrough (#681)
+- add single-cell QC profiling tutorial demonstrating CytoTable + coSMicQC + Pycytominer workflow
+
+### Build
+
+- prune test data, media, and walkthroughs from PyPI sdist to reduce package size (#683)
+
 ## v1.5.0 (2026-05-21)
 
 [Detailed release notes](https://github.com/cytomining/pycytominer/releases/tag/v1.5.0)
