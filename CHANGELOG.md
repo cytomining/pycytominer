@@ -9,7 +9,6 @@
 ### Docs
 
 - add introduction to pycytominer tutorial with simulated pipeline walkthrough (#681)
-- add single-cell QC profiling tutorial demonstrating CytoTable + coSMicQC + Pycytominer workflow
 
 ### Build
 
