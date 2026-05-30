@@ -23,6 +23,10 @@ inputs:
   install-deps:
     description: Whether to install dependencies
     required: true
+  install-docs-group:
+    description: Whether to install the docs dependency group (set false for pytest jobs to avoid heavy doc-only deps like cosmicqc/llvmlite)
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -78,4 +82,8 @@ runs:
       env:
         UV_PYTHON: ${{ inputs.python-version }}
       run: |
-        uv sync --frozen --all-extras --group dev --group docs
+        GROUPS="--group dev"
+        if [ "${{ inputs.install-docs-group }}" == "true" ]; then
+          GROUPS="$GROUPS --group docs"
+        fi
+        uv sync --frozen --all-extras $GROUPS
