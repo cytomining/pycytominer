@@ -16,17 +16,16 @@ jobs:
     runs-on: ubuntu-24.04
     environment: release
     permissions:
+      contents: read
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          # We do not need to fetch all the history of the repository
-          # as commit being released is guaranteed to have a tag.
-          # poetry-dynamic-versioning will use that tag use to set the
-          # build version of the package.
-          fetch-depth: 1
+          # Full history is required for setuptools-scm to derive the version
+          # from the published release tag.
+          fetch-depth: 0
       - name: Setup base environment
         uses: ./.github/actions/setup-env
         with:
