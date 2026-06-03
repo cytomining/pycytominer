@@ -27,8 +27,8 @@ env:
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
 
 jobs:
-  minimal-install-smoke-test:
-    name: Minimal install smoke test
+  minimal-install-test:
+    name: Minimal install test
     strategy:
       fail-fast: false
       matrix:
