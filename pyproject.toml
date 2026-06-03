@@ -117,7 +117,7 @@ docs = [
   "sphinx-autobuild>=2021.3.14,<2025",
   "sphinx-copybutton>=0.5.2,<0.6",
   "sphinx-togglebutton>=0.4,<0.5",
-  "sphinxcontrib-mermaid>=0.9,<1",
+  "sphinxcontrib-mermaid>=0.9,<3",
   "tabulate>=0.10",
 ]
 
