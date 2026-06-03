@@ -1,40 +1,20 @@
 ---
-# Configuration for release-drafter.
-# See: https://github.com/release-drafter/release-drafter
-name-template: "v$RESOLVED_VERSION"
-tag-template: "v$RESOLVED_VERSION"
+# template configuration for release-drafter
+# see: https://github.com/release-drafter/release-drafter
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
 version-resolver:
   major:
     labels:
-      - "release-major"
+      - 'release-major'
   minor:
     labels:
-      - "release-minor"
+      - 'release-minor'
   patch:
     labels:
-      - "release-patch"
+      - 'release-patch'
   default: patch
-categories:
-  - title: "Breaking changes"
-    labels:
-      - "release-major"
-  - title: "Features"
-    labels:
-      - "release-minor"
-      - "enhancement"
-  - title: "Bug fixes"
-    labels:
-      - "bug"
-      - "release-patch"
-  - title: "Maintenance"
-    labels:
-      - "documentation"
-      - "dependencies"
-      - "maintenance"
-      - "refactor"
-change-template: "- $TITLE (@$AUTHOR via #$NUMBER)"
-exclude-labels:
-  - "skip-release-notes"
+change-template: '- $TITLE (@$AUTHOR via #$NUMBER)'
 template: |
   ## Changes
 
