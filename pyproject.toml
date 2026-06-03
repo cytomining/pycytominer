@@ -77,7 +77,7 @@ optional-dependencies.collate = [
   "cytominer-database==0.3.4",
   # cytominer-database requires `pkg_resources`, which
   # setuptools deprecated in v70
-  "setuptools>=65,<70",
+  "setuptools>=65,<83",
 ]
 urls.Homepage = "https://pycytominer.readthedocs.io/"
 urls.Repository = "https://github.com/cytomining/pycytominer"
