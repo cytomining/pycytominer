@@ -100,6 +100,7 @@ dev = [
 ]
 docs = [
   "autodoc>=0.5,<0.6",
+  "cosmicqc>=1.0.1",
   "dunamai>=1.19,<2",
   "furo>=2023.9.10,<2026",
   "groundwork-sphinx-theme>=1.1.1,<2",
@@ -117,6 +118,7 @@ docs = [
   "sphinx-copybutton>=0.5.2,<0.6",
   "sphinx-togglebutton>=0.4,<0.5",
   "sphinxcontrib-mermaid>=0.9,<1",
+  "tabulate>=0.10",
 ]
 
 [tool.setuptools]

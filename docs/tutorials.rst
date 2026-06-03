@@ -14,3 +14,4 @@ that assume familiarity with the pipeline and get straight to a more advanced go
    :maxdepth: 1
 
    tutorials/introduction_to_pycytominer.ipynb
+   tutorials/single_cell_qc_profiling.ipynb
