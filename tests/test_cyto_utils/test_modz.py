@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from pycytominer.cyto_utils import modz
@@ -190,4 +191,52 @@ def test_modz_unbalanced_sample_numbers():
             "Nuclei_z": [2.9997, 1],
         },
     )
+    pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+
+def test_modz_preserves_na_replicate_groups():
+    data_replicate_na_df = pd.DataFrame({
+        "Metadata_g": ["a", "a", np.nan, np.nan],
+        "Cells_x": [1, 1, 2, 2],
+        "Cytoplasm_y": [5, 5, 6, 6],
+        "Nuclei_z": [2, 2, 3, 3],
+    })
+
+    consensus_df = modz(
+        data_replicate_na_df,
+        replicate_columns="Metadata_g",
+        min_weight=0,
+        precision=precision,
+    )
+
+    expected_result = pd.DataFrame({
+        "Metadata_g": ["a", np.nan],
+        "Cells_x": [1.0, 2.0],
+        "Cytoplasm_y": [5.0, 6.0],
+        "Nuclei_z": [2.0, 3.0],
+    })
+    pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+
+def test_modz_zero_profile_does_not_zero_consensus():
+    zero_profile_df = pd.DataFrame({
+        "Metadata_g": ["a", "a", "a"],
+        "Cells_x": [0, 1, 1],
+        "Cytoplasm_y": [0, 5, 5],
+        "Nuclei_z": [0, 2, 2],
+    })
+
+    consensus_df = modz(
+        zero_profile_df,
+        replicate_columns="Metadata_g",
+        min_weight=0,
+        precision=precision,
+    )
+
+    expected_result = pd.DataFrame({
+        "Metadata_g": ["a"],
+        "Cells_x": [1.0],
+        "Cytoplasm_y": [5.0],
+        "Nuclei_z": [2.0],
+    })
     pd.testing.assert_frame_equal(expected_result, consensus_df)

@@ -73,13 +73,17 @@ def modz_base(
     cor_df = cor_df.clip(lower=0)
 
     # Get average correlation for each profile (will ignore NaN)
-    raw_weights = cor_df.mean(axis=1)
+    raw_weights = cor_df.mean(axis=1).fillna(min_weight)
 
     # Threshold weights (any value < min_weight will become min_weight)
     raw_weights = raw_weights.clip(lower=min_weight)
 
     # normalize raw_weights so that they add to 1
-    weights = raw_weights / sum(raw_weights)
+    weight_sum = raw_weights.sum()
+    if weight_sum == 0:
+        weights = pd.Series(1 / len(raw_weights), index=raw_weights.index)
+    else:
+        weights = raw_weights / weight_sum
     weights = weights.round(precision)
 
     # Step 3: Normalize
@@ -151,7 +155,7 @@ def modz(
 
     modz_df = (
         population_df
-        .groupby(replicate_columns)
+        .groupby(replicate_columns, dropna=False)
         .apply(
             lambda x: modz_base(
                 x.loc[:, features],
