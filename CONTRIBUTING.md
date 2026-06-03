@@ -255,7 +255,7 @@ Creating a new release includes the following steps:
 4. Edit the draft release notes directly in GitHub if the generated notes need clarification.
 5. Publish the draft release.
 6. The release tag created by GitHub is used by `setuptools-scm` to set the package version dynamically.
-7. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via Github Actions.
+7. The release will be automatically published to [PyPI](https://pypi.org/project/pycytominer/) via GitHub Actions.
 8. Approve automatically generated release under [conda-forge/pycytominer](https://anaconda.org/conda-forge/pycytominer).
 
 #### Docker Hub Image Releases
