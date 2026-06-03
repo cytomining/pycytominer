@@ -5,12 +5,18 @@ Utility function to augment a metadata file with X,Y locations of cells in each 
 import collections
 import pathlib
 import tempfile
+import warnings
 from typing import Optional, Union
 
 import boto3
 import botocore
 import pandas as pd
 import sqlalchemy
+
+warnings.warn(
+    "The cell_locations module is deprecated and will be removed in a " \
+    "future pycytominer release."
+)
 
 
 class CellLocation:
