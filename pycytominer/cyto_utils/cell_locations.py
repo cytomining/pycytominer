@@ -385,6 +385,11 @@ class CellLocation:
 
         joined_df = pd.read_sql_query(join_query, engine, dtype=column_types)
 
+        # Dispose the engine before removing the temp file.
+        # On Windows, SQLAlchemy's connection pool keeps the file open;
+        # unlink() would raise PermissionError unless the engine is disposed first.
+        engine.dispose()
+
         # if the single_cell file was downloaded from S3, delete the temporary file
         if temp_single_cell_input is not None:
             pathlib.Path(temp_single_cell_input).unlink()

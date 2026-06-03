@@ -242,6 +242,11 @@ def collate(
     )
     database.aggregate_profiles(output_file=str(aggregated_file))
 
+    # Release the SQLite connection so the file can be removed or renamed on
+    # Windows (which holds an exclusive lock on open database files).
+    database.conn.close()
+    database.engine.dispose()
+
     if aws_remote:
         if printtoscreen:
             print(f"Uploading {aggregated_file} to {remote_aggregated_file}")
