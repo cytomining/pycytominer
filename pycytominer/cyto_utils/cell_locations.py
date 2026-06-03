@@ -14,7 +14,7 @@ import pandas as pd
 import sqlalchemy
 
 warnings.warn(
-    "The cell_locations module is deprecated and will be removed in a " \
+    "The cell_locations module is deprecated and will be removed in a "
     "future pycytominer release."
 )
 

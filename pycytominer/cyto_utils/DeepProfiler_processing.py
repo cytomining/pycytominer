@@ -18,7 +18,7 @@ from pycytominer.cyto_utils.load import load_npz_features, load_npz_locations
 from pycytominer.cyto_utils.output import output
 
 warnings.warn(
-    "The DeepProfiler_processing module is deprecated and will be removed in a future " \
+    "The DeepProfiler_processing module is deprecated and will be removed in a future "
     "pycytominer release."
 )
 
