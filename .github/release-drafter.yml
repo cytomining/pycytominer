@@ -1,20 +1,20 @@
 ---
 # template configuration for release-drafter
 # see: https://github.com/release-drafter/release-drafter
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
 version-resolver:
   major:
     labels:
-      - 'release-major'
+      - "release-major"
   minor:
     labels:
-      - 'release-minor'
+      - "release-minor"
   patch:
     labels:
-      - 'release-patch'
+      - "release-patch"
   default: patch
-change-template: '- $TITLE (@$AUTHOR via #$NUMBER)'
+change-template: "- $TITLE (@$AUTHOR via #$NUMBER)"
 template: |
   ## Changes
 
