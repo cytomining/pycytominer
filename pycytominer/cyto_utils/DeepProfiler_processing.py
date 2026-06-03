@@ -17,6 +17,11 @@ from pycytominer.cyto_utils.features import (  # type: ignore[no-redef]
 from pycytominer.cyto_utils.load import load_npz_features, load_npz_locations
 from pycytominer.cyto_utils.output import output
 
+warnings.warn(
+    "The DeepProfiler_processing module is deprecated and will be removed in a future " \
+    "pycytominer release."
+)
+
 
 class DeepProfilerData:
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
