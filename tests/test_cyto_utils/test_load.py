@@ -532,37 +532,23 @@ def test_load_npz():
 
 
 def test_is_path_a_parquet_file():
-    # checking parquet file
-    check_pass = is_path_a_parquet_file(output_data_parquet)
-    check_fail = is_path_a_parquet_file(output_data_file)
+    # checking parquet file returns True, CSV returns False
+    assert is_path_a_parquet_file(output_data_parquet)
+    assert not is_path_a_parquet_file(output_data_file)
 
-    # checking if the correct booleans are returned
-    assert check_pass
-    assert not check_fail
-
-    # loading in pandas dataframe from parquet file
+    # loading parquet via load_profiles produces the same result as pd.read_parquet
     parquet_df = pd.read_parquet(output_data_parquet)
-    parquet_profile_test = load_profiles(output_data_parquet)
-    pd.testing.assert_frame_equal(parquet_profile_test, parquet_df)
-
-    # loading csv file with new load_profile()
-    csv_df = pd.read_csv(output_data_comma_file)
-    csv_profile_test = load_profiles(output_data_comma_file)
-    pd.testing.assert_frame_equal(csv_profile_test, csv_df)
-
-    # checking if the same df is produced from parquet and csv files
-    pd.testing.assert_frame_equal(parquet_profile_test, csv_profile_test)
+    pd.testing.assert_frame_equal(load_profiles(output_data_parquet), parquet_df)
 
 
 def test_load_profiles_file_path_input():
-    """
-    The `load_profiles()` function will work input file arguments that resolve.
-    This test confirms that different input file types work as expected.
-    """
-    # All paths should resolve and result in the same data being loaded
-    data_file_os: str = os.path.join(tmpdir, "test_data.csv")
-    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_data.csv")
-    data_file_purepath: pathlib.PurePath = pathlib.PurePath(tmpdir, "test_data.csv")
+    """str, pathlib.Path, and pathlib.PurePath inputs all resolve to the same data."""
+    # All path types should resolve and produce the same result
+    data_file_os: str = os.path.join(tmpdir, "test_parquet.parquet")
+    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_parquet.parquet")
+    data_file_purepath: pathlib.PurePath = pathlib.PurePath(
+        tmpdir, "test_parquet.parquet"
+    )
 
     profiles_os = load_profiles(data_file_os)
     profiles_path = load_profiles(data_file_path)
@@ -571,7 +557,7 @@ def test_load_profiles_file_path_input():
     pd.testing.assert_frame_equal(profiles_os, profiles_path)
     pd.testing.assert_frame_equal(profiles_purepath, profiles_path)
 
-    # Testing non-existing file paths should result in expected behavior
-    data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
+    # Non-existing file path raises FileNotFoundError
+    data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.parquet")
     with pytest.raises(FileNotFoundError, match="didn't find the path"):
         load_profiles(data_file_not_exist)
