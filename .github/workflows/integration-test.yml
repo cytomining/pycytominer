@@ -106,6 +106,7 @@ jobs:
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
+    needs: quality-test
     strategy:
       fail-fast: false
       matrix:
