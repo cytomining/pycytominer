@@ -127,7 +127,13 @@ jobs:
           cache-pre-commit: false
           cache-venv: true
           setup-uv: true
-          install-deps: true
+          install-deps: false
+      - name: Install dev dependencies (without docs group)
+        # Docs-only deps (cosmicqc -> llvmlite) cannot build on Python 3.14,
+        # so pytest jobs install only the dev group.
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+        run: uv sync --frozen --all-extras --group dev
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
         if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
