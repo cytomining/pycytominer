@@ -106,13 +106,22 @@ jobs:
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
+    needs: quality-test
     strategy:
       fail-fast: false
       matrix:
         os:
           - macos-14
           - ubuntu-24.04
+          - windows-2022
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        exclude:
+          # NumPy's MINGW-W64 Windows build for Python 3.14 is self-described as
+          # "experimental" with crashes expected. Exclude until NumPy ships a
+          # stable Windows wheel for 3.14.
+          # https://github.com/numpy/numpy/issues/26038
+          - os: windows-2022
+            python-version: "3.14"
     runs-on: ${{ matrix.os }}
     env:
       OS: ${{ matrix.os }}
@@ -127,7 +136,13 @@ jobs:
           cache-pre-commit: false
           cache-venv: true
           setup-uv: true
-          install-deps: true
+          install-deps: false
+      - name: Install dev dependencies (without docs group)
+        # Docs-only deps (cosmicqc -> llvmlite) cannot build on Python 3.14,
+        # so pytest jobs install only the dev group.
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+        run: uv sync --frozen --all-extras --group dev
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
         if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)

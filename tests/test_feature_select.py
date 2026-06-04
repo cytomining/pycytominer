@@ -387,8 +387,8 @@ def test_feature_select_all():
     tmpdir = tempfile.gettempdir()
 
     # Write file to output
-    data_file = os.path.join(tmpdir, "test_feature_select.csv")
-    data_all_test_df.to_csv(data_file, index=False, sep=",")
+    data_file = os.path.join(tmpdir, "test_feature_select.parquet")
+    data_all_test_df.to_parquet(data_file, index=False)
     out_file = os.path.join(tmpdir, "test_feature_select_out.csv")
     _ = feature_select(
         profiles=data_file,

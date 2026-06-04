@@ -1,10 +1,12 @@
 # GitHub Dependabot configuration
-# Note: there is no interaction between this configuration and dependabot security updates.
+# Note: there is no interaction between this configuration and Dependabot security updates.
 # See here for more information:
 # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/about-dependabot-security-updates#about-dependabot-security-updates
 
 version: 2
 updates:
+  # Cooldown docs:
+  # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#cooldown
   # GitHub Actions checks
   # See here for more information:
   # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates
@@ -12,33 +14,58 @@ updates:
     # checks for updates by default under `/.github/workflows`
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every week
-      interval: "weekly"
+      # Check for updates to GitHub Actions every month
+      interval: "monthly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
   - package-ecosystem: "github-actions"
     # checks for updates under custom action setup-env
     directory: "/.github/actions/setup-env"
     schedule:
-      # Check for updates to GitHub Actions every week
-      interval: "weekly"
-  # Perform checks and updates for the Python project dependencies.
+      # Check for updates to GitHub Actions every month
+      interval: "monthly"
+    cooldown:
+      default-days: 7
+    groups:
+      setup-env-actions:
+        patterns:
+          - "*"
+
+  # Perform checks and updates for the Python uv environment.
   # See here for more information:
-  # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#pip-and-pip-compile
-  - package-ecosystem: "pip"
+  # https://docs.astral.sh/uv/guides/integration/dependabot/
+  - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      # Check for updates to the project lockfile every month
+      # Check for updates to uv environment files every month
       interval: "monthly"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
     groups:
       python-packages:
         patterns:
           - "*"
-        update-types:
-          - "minor"
-          - "patch"
-        exclude-patterns:
-          - "pandas"
-          - "scipy"
-          - "sqlalchemy"
     ignore:
       # ignore cytominer-database as it is deprecated
       - dependency-name: "cytominer-database"
+
+  # Perform checks and updates for pre-commit hook versions.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      # Check for updates to pre-commit hooks every month
+      interval: "monthly"
+    cooldown:
+      default-days: 7
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"

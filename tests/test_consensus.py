@@ -13,7 +13,7 @@ random.seed(123)
 tmpdir = tempfile.gettempdir()
 output_test_file_csv = os.path.join(tmpdir, "test.csv")
 output_test_file_parquet = os.path.join(tmpdir, "test.parquet")
-input_test_file = os.path.join(tmpdir, "example_input.csv")
+input_test_file = os.path.join(tmpdir, "example_input.parquet")
 
 # Set example data
 data_df = pd.DataFrame({
@@ -34,7 +34,7 @@ data_df = pd.DataFrame({
     "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
 }).reset_index(drop=True)
 
-data_df.to_csv(input_test_file, index=False)
+data_df.to_parquet(input_test_file, index=False)
 
 
 def test_consensus_aggregate():
