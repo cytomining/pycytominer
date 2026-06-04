@@ -110,14 +110,18 @@ class DeepProfilerData:
         loc : dict
             dict with metadata
         """
+        npz_path = pathlib.PurePath(npz_file)
         if delimiter == "/":
-            site = str(npz_file).split("/")[-1].strip(".npz")
-            well = str(npz_file).split("/")[-2]
+            # Layout: .../plate/well/site.npz
+            site = npz_path.stem
+            well = npz_path.parent.name
+            plate = npz_path.parent.parent.name
         else:
-            base_file = os.path.basename(npz_file).strip(".npz").split(delimiter)
+            # Layout: .../plate/well{delimiter}site.npz
+            base_file = npz_path.stem.split(delimiter)
             site = base_file[-1]
             well = base_file[-2]
-        plate = str(npz_file).split("/")[-2]
+            plate = npz_path.parent.name
 
         loc = {"site": site, "well": well, "plate": plate}
         return loc

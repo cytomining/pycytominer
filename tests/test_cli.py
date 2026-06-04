@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pathlib
+import sys
 
 import fire
 import numpy as np
@@ -14,13 +15,16 @@ from pycytominer.cli import PycytominerCLI, PycytominerCLIError
 
 
 def _write_profiles(tmp_path: pathlib.Path) -> tuple[pd.DataFrame, pathlib.Path]:
-    """Write a small profiles CSV for CLI tests.
+    """Write a small profiles Parquet file for CLI tests.
+
+    Parquet is used rather than CSV so tests run on all platforms, including
+    Windows where load_profiles() raises OSError for CSV/TSV inputs.
 
     Args:
         tmp_path: Pytest temporary directory.
 
     Returns:
-        The dataframe and the path to the saved CSV.
+        The dataframe and the path to the saved Parquet file.
     """
     df = pd.DataFrame({
         "Metadata_Plate": ["P1", "P1", "P1", "P1"],
@@ -29,8 +33,8 @@ def _write_profiles(tmp_path: pathlib.Path) -> tuple[pd.DataFrame, pathlib.Path]
         "Feature_2": [5.0, 6.0, 7.0, 8.0],
         "Feature_3": [1.0, 1.0, 1.0, 1.0],
     })
-    path = tmp_path / "profiles.csv"
-    df.to_csv(path, index=False)
+    path = tmp_path / "profiles.parquet"
+    df.to_parquet(path, index=False)
     return df, path
 
 
@@ -110,8 +114,8 @@ def test_cli_normalize_drop_cosmicqc_rows(tmp_path: pathlib.Path) -> None:
         "Feature_1": [0.0, 1000.0, 1.0, 2.0],
         "Feature_2": [10.0, 9999.0, 20.0, 30.0],
     })
-    profiles_path = tmp_path / "profiles_qc.csv"
-    profiles.to_csv(profiles_path, index=False)
+    profiles_path = tmp_path / "profiles_qc.parquet"
+    profiles.to_parquet(profiles_path, index=False)
     output_path = tmp_path / "normalized_qc.csv"
 
     cli = PycytominerCLI()
@@ -317,6 +321,61 @@ def test_cli_propagates_file_not_found_error() -> None:
         )
 
 
+@pytest.mark.skipif(
+    sys.platform != "win32",
+    reason="Windows-specific behaviour test — run on Windows CI only",
+)
+def test_cli_csv_profiles_raises_on_windows(tmp_path: pathlib.Path) -> None:
+    """On Windows, passing a CSV profiles path to any CLI command raises OSError.
+
+    load_profiles() rejects CSV/TSV on Windows due to unreliable delimiter
+    detection (csv.Sniffer, cpython#119123). The error message directs users
+    to reprocess with CytoTable to produce Parquet output.
+    """
+    profiles_path = tmp_path / "profiles.csv"
+    pd.DataFrame({"Metadata_Plate": ["P1"], "Feature_1": [1.0]}).to_csv(
+        profiles_path, index=False
+    )
+    cli = PycytominerCLI()
+    with pytest.raises(OSError, match="not supported on Windows"):
+        cli.normalize(
+            profiles=str(profiles_path),
+            output_file=str(tmp_path / "out.csv"),
+            features=["Feature_1"],
+            meta_features=["Metadata_Plate"],
+        )
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="CSV loading not supported on Windows (cpython#119123) — POSIX only",
+)
+def test_cli_csv_profiles_works_on_posix(tmp_path: pathlib.Path) -> None:
+    """On Linux/macOS, CSV profiles load normally through the CLI."""
+    profiles_path = tmp_path / "profiles.csv"
+    df = pd.DataFrame({
+        "Metadata_Plate": ["P1", "P1"],
+        "Metadata_Well": ["A01", "A02"],
+        "Feature_1": [1.0, 3.0],
+        "Feature_2": [5.0, 7.0],
+    })
+    df.to_csv(profiles_path, index=False)
+    output_path = tmp_path / "normalized.csv"
+
+    cli = PycytominerCLI()
+    cli.normalize(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Feature_1,Feature_2",
+        meta_features="Metadata_Plate,Metadata_Well",
+        method="standardize",
+    )
+
+    result = pd.read_csv(output_path)
+    assert np.isclose(result["Feature_1"].mean(), 0.0, atol=1e-7)
+    assert np.isclose(result["Feature_2"].mean(), 0.0, atol=1e-7)
+
+
 def _write_profiles_with_blocklist_features(tmp_path: pathlib.Path) -> pathlib.Path:
     """Write profiles containing one default-blocklisted and one non-blocklisted feature."""
     df = pd.DataFrame({
@@ -326,8 +385,8 @@ def _write_profiles_with_blocklist_features(tmp_path: pathlib.Path) -> pathlib.P
         # Not in the blocklist — generic feature:
         "Cells_AreaShape_Area": [100.0, 200.0],
     })
-    path = tmp_path / "profiles_blocklist.csv"
-    df.to_csv(path, index=False)
+    path = tmp_path / "profiles_blocklist.parquet"
+    df.to_parquet(path, index=False)
     return path
 
 

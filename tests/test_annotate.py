@@ -61,6 +61,40 @@ def test_annotate():
     pd.testing.assert_frame_equal(result, expected_result)
 
 
+def test_annotate_platemap_sep(tmp_path):
+    """platemap_sep bypasses infer_delim — runs on all platforms including Windows."""
+    # Write platemap as TSV and CSV to tmp_path
+    tsv_path = tmp_path / "platemap.tsv"
+    csv_path = tmp_path / "platemap.csv"
+    PLATEMAP_DF.to_csv(tsv_path, sep="\t", index=False)
+    PLATEMAP_DF.to_csv(csv_path, sep=",", index=False)
+
+    expected_result = (
+        PLATEMAP_DF
+        .merge(DATA_DF, left_on="well_position", right_on="Metadata_Well")
+        .rename(columns={"gene": "Metadata_gene"})
+        .drop("well_position", axis="columns")
+    )
+
+    # TSV platemap loaded via explicit platemap_sep
+    result_tsv = annotate(
+        profiles=DATA_DF,
+        platemap=str(tsv_path),
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        platemap_sep="\t",
+    )
+    pd.testing.assert_frame_equal(result_tsv, expected_result)
+
+    # CSV platemap loaded via explicit platemap_sep
+    result_csv = annotate(
+        profiles=DATA_DF,
+        platemap=str(csv_path),
+        join_on=["Metadata_well_position", "Metadata_Well"],
+        platemap_sep=",",
+    )
+    pd.testing.assert_frame_equal(result_csv, expected_result)
+
+
 def test_annotate_platemap_naming():
     # Test annotate with the same column name in platemap and data.
     platemap_modified_df = PLATEMAP_DF.copy().rename(

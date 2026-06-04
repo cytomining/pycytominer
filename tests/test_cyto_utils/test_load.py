@@ -2,6 +2,7 @@ import os
 import pathlib
 import random
 import shutil
+import sys
 import tempfile
 
 import anndata as ad
@@ -146,6 +147,19 @@ np.savez_compressed(
 np.savez_compressed(output_npz_without_metadata_file, features=npz_feats)
 
 
+# csv.Sniffer unreliably detects tab delimiters on Windows due to known CPython bugs:
+# https://github.com/python/cpython/issues/119123
+# https://github.com/python/cpython/issues/97611
+#
+# As a result, CSV/TSV loading via automatic delimiter detection is not supported
+# on Windows. load_profiles() raises an OSError with a CytoTable reprocessing
+# recommendation when a text file is passed on Windows — see the guard in
+# pycytominer/cyto_utils/load.py. Windows users should use Parquet input instead.
+# For platemap files specifically, pass sep= explicitly (see test_load_platemap_explicit_sep).
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="csv.Sniffer tab detection unreliable on Windows (cpython#119123, cpython#97611)",
+)
 def test_infer_delim():
     delim = infer_delim(output_platemap_file)
     assert delim == "\t"
@@ -157,10 +171,51 @@ def test_infer_delim():
     assert delim == "\t"
 
 
+@pytest.mark.skipif(
+    sys.platform != "win32",
+    reason="Windows-specific behaviour test — run on Windows CI only",
+)
+def test_load_profiles_windows(monkeypatch):
+    """Windows load_profiles behaviour: CSV/TSV raises, all other formats work."""
+    monkeypatch.setattr(sys, "platform", "win32")
+
+    # CSV/TSV raises OSError directing users to reprocess with CytoTable
+    with pytest.raises(OSError, match="not supported on Windows"):
+        load_profiles(output_data_file)
+
+    # All non-text formats are unaffected
+    pd.testing.assert_frame_equal(data_df, load_profiles(data_df))
+    pd.testing.assert_frame_equal(data_df, load_profiles(output_data_parquet))
+    pd.testing.assert_frame_equal(data_df, load_profiles(output_data_adata_hda5))
+    pd.testing.assert_frame_equal(data_df, load_profiles(output_data_adata_zarr))
+    pd.testing.assert_frame_equal(data_df, load_profiles(adata))
+
+    expected = pd.read_parquet(
+        resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
+    )
+    pd.testing.assert_frame_equal(
+        expected, load_profiles(example_iceberg_profiles_table)
+    )
+    pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_warehouse))
+    pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_root))
+
+
+# CSV loading not supported on Windows — see the OSError guard in
+# pycytominer/cyto_utils/load.py and test_load_profiles_windows for Windows coverage.
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="CSV loading not supported on Windows (cpython#119123)",
+)
 def test_load_profiles():
+    # tab-separated CSV
     profiles = load_profiles(output_data_file)
     pd.testing.assert_frame_equal(data_df, profiles)
 
+    # comma-separated CSV
+    profiles_comma = load_profiles(output_data_comma_file)
+    pd.testing.assert_frame_equal(data_df, profiles_comma)
+
+    # gzip-compressed tab-separated CSV
     profiles_gzip = load_profiles(output_data_gzip_file)
     pd.testing.assert_frame_equal(data_df, profiles_gzip)
 
@@ -333,7 +388,11 @@ def test_load_cytotable_profiles_with_explicit_table_name_and_namespace():
 
 
 def test_load_cytotable_profiles_rejects_missing_or_malformed_targets(tmp_path):
-    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+    with pytest.raises(
+        FileNotFoundError,
+        # POSIX: "No such file or directory"; Windows: "cannot find the file"
+        match=r"No such file or directory|cannot find the file",
+    ):
         load_cytotable_profiles(tmp_path / "missing")
 
     malformed_root = tmp_path / "warehouse"
@@ -347,6 +406,15 @@ def test_load_cytotable_profiles_rejects_missing_or_malformed_targets(tmp_path):
         load_cytotable_profiles(malformed_root)
 
 
+# Skipped on Windows for the same csv.Sniffer reason as test_infer_delim above;
+# load_platemap delegates delimiter detection to infer_delim when sep= is not
+# provided. On Windows, pass sep= explicitly instead (test_load_platemap_explicit_sep
+# covers that path and runs on all platforms). See the OSError guard in
+# pycytominer/cyto_utils/load.py for how load_profiles() surfaces this limitation.
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="csv.Sniffer tab detection unreliable on Windows (cpython#119123, cpython#97611)",
+)
 def test_load_platemap():
     platemap = load_platemap(output_platemap_file, add_metadata_id=False)
     pd.testing.assert_frame_equal(platemap, platemap_df)
@@ -360,6 +428,39 @@ def test_load_platemap():
     platemap_with_annotation = load_platemap(output_platemap_file, add_metadata_id=True)
     platemap_df.columns = [f"Metadata_{x}" for x in platemap_df.columns]
     pd.testing.assert_frame_equal(platemap_with_annotation, platemap_df)
+
+
+def test_load_platemap_explicit_sep():
+    """Explicit sep bypasses infer_delim, so this test runs on all platforms including Windows.
+
+    Uses a local expected DataFrame rather than the module-level platemap_df, which
+    test_load_platemap mutates in-place when it runs (adding Metadata_ prefixes).
+    """
+    expected = pd.DataFrame({
+        "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
+        "gene": ["x", "y", "z"] * 2,
+    }).reset_index(drop=True)
+
+    # TSV file with explicit sep="\t"
+    pd.testing.assert_frame_equal(
+        load_platemap(output_platemap_file, add_metadata_id=False, sep="\t"), expected
+    )
+
+    # CSV file with explicit sep=","
+    pd.testing.assert_frame_equal(
+        load_platemap(output_platemap_comma_file, add_metadata_id=False, sep=","),
+        expected,
+    )
+
+    # Explicit sep also works alongside add_metadata_id=True
+    expected_annotated = expected.copy()
+    expected_annotated.columns = pd.Index([
+        f"Metadata_{x}" for x in expected_annotated.columns
+    ])
+    pd.testing.assert_frame_equal(
+        load_platemap(output_platemap_file, add_metadata_id=True, sep="\t"),
+        expected_annotated,
+    )
 
 
 def test_load_npz():
@@ -431,37 +532,23 @@ def test_load_npz():
 
 
 def test_is_path_a_parquet_file():
-    # checking parquet file
-    check_pass = is_path_a_parquet_file(output_data_parquet)
-    check_fail = is_path_a_parquet_file(output_data_file)
+    # checking parquet file returns True, CSV returns False
+    assert is_path_a_parquet_file(output_data_parquet)
+    assert not is_path_a_parquet_file(output_data_file)
 
-    # checking if the correct booleans are returned
-    assert check_pass
-    assert not check_fail
-
-    # loading in pandas dataframe from parquet file
+    # loading parquet via load_profiles produces the same result as pd.read_parquet
     parquet_df = pd.read_parquet(output_data_parquet)
-    parquet_profile_test = load_profiles(output_data_parquet)
-    pd.testing.assert_frame_equal(parquet_profile_test, parquet_df)
-
-    # loading csv file with new load_profile()
-    csv_df = pd.read_csv(output_data_comma_file)
-    csv_profile_test = load_profiles(output_data_comma_file)
-    pd.testing.assert_frame_equal(csv_profile_test, csv_df)
-
-    # checking if the same df is produced from parquet and csv files
-    pd.testing.assert_frame_equal(parquet_profile_test, csv_profile_test)
+    pd.testing.assert_frame_equal(load_profiles(output_data_parquet), parquet_df)
 
 
 def test_load_profiles_file_path_input():
-    """
-    The `load_profiles()` function will work input file arguments that resolve.
-    This test confirms that different input file types work as expected.
-    """
-    # All paths should resolve and result in the same data being loaded
-    data_file_os: str = os.path.join(tmpdir, "test_data.csv")
-    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_data.csv")
-    data_file_purepath: pathlib.PurePath = pathlib.PurePath(tmpdir, "test_data.csv")
+    """str, pathlib.Path, and pathlib.PurePath inputs all resolve to the same data."""
+    # All path types should resolve and produce the same result
+    data_file_os: str = os.path.join(tmpdir, "test_parquet.parquet")
+    data_file_path: pathlib.Path = pathlib.Path(tmpdir, "test_parquet.parquet")
+    data_file_purepath: pathlib.PurePath = pathlib.PurePath(
+        tmpdir, "test_parquet.parquet"
+    )
 
     profiles_os = load_profiles(data_file_os)
     profiles_path = load_profiles(data_file_path)
@@ -470,7 +557,7 @@ def test_load_profiles_file_path_input():
     pd.testing.assert_frame_equal(profiles_os, profiles_path)
     pd.testing.assert_frame_equal(profiles_purepath, profiles_path)
 
-    # Testing non-existing file paths should result in expected behavior
-    data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.csv")
+    # Non-existing file path raises FileNotFoundError
+    data_file_not_exist: pathlib.Path = pathlib.Path(tmpdir, "file_not_exist.parquet")
     with pytest.raises(FileNotFoundError, match="didn't find the path"):
         load_profiles(data_file_not_exist)

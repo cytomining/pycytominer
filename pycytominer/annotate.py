@@ -34,6 +34,7 @@ def annotate(
     compression_options: Optional[Union[str, dict[str, str]]] = None,
     float_format: Optional[str] = None,
     cmap_args: Optional[dict[str, Union[str]]] = None,
+    platemap_sep: Optional[str] = None,
     **kwargs,
 ) -> Union[pd.DataFrame, str]:
     """Add metadata to aggregated profiles.
@@ -64,7 +65,9 @@ def annotate(
     external_metadata : pd.DataFrame or file, optional
         DataFrame or file with additional metadata information.
         Most common use case is a QC.parquet file with QC flags for each profile
-        that comes from coSMicQC.
+        that comes from coSMicQC. File paths are loaded via :func:`load_profiles`;
+        on Windows, CSV/TSV files are not supported — pass a Parquet file or a
+        pre-loaded DataFrame instead (see the Windows note in :func:`load_profiles`).
     external_join_on : str or list, optional
         Merge column(s) shared by the annotated profiles and external metadata.
         When provided, these keys are used on both sides of the external merge.
@@ -77,6 +80,14 @@ def annotate(
         decimal precision.
     cmap_args : dict, default None
         Potential keyword arguments for annotate_cmap(). See cyto_utils/annotate_custom.py for more details.
+    platemap_sep : str, optional
+        Column delimiter for the platemap file (e.g. ``","`` for CSV, ``"\\t"``
+        for TSV). Only applies when ``platemap`` is a file path — ignored when
+        a DataFrame is passed directly.
+
+        When ``None`` (the default), the delimiter is detected automatically.
+        Automatic detection can be unreliable on Windows for tab-separated files;
+        pass ``platemap_sep="\\t"`` explicitly in that case.
 
     Returns
     -------
@@ -91,7 +102,7 @@ def annotate(
 
     # Load Data
     profiles = load_profiles(profiles)
-    platemap = load_platemap(platemap, add_metadata_id_to_platemap)
+    platemap = load_platemap(platemap, add_metadata_id_to_platemap, sep=platemap_sep)
 
     annotated = platemap.merge(
         profiles,
