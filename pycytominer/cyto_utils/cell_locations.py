@@ -3,6 +3,7 @@ Utility function to augment a metadata file with X,Y locations of cells in each 
 """
 
 import collections
+import os
 import pathlib
 import tempfile
 from typing import Optional, Union
@@ -171,19 +172,23 @@ class CellLocation:
 
         bucket, key = self._parse_s3_path(uri)
 
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=pathlib.Path(key).name
-        ) as tmp_file:
-            self.s3.download_file(bucket, key, tmp_file.name)
+        # Use mkstemp so the file descriptor is closed before boto3 touches it.
+        # NamedTemporaryFile holds an exclusive OS lock while open on Windows;
+        # s3transfer does os.remove() + rename onto the same path internally,
+        # which raises PermissionError [WinError 32] if the fd is still open.
+        fd, tmp_path = tempfile.mkstemp(suffix=pathlib.Path(key).name)
+        os.close(fd)
 
-            # Check if the downloaded file exists and has a size greater than 0
-            tmp_file_path = pathlib.Path(tmp_file.name)
-            if tmp_file_path.exists() and tmp_file_path.stat().st_size > 0:
-                return tmp_file.name
-            else:
-                raise ValueError(
-                    f"Downloaded file '{tmp_file.name}' is empty or does not exist."
-                )
+        self.s3.download_file(bucket, key, tmp_path)
+
+        # Check if the downloaded file exists and has a size greater than 0
+        tmp_file_path = pathlib.Path(tmp_path)
+        if tmp_file_path.exists() and tmp_file_path.stat().st_size > 0:
+            return tmp_path
+        else:
+            raise ValueError(
+                f"Downloaded file '{tmp_path}' is empty or does not exist."
+            )
 
     def _load_metadata(self):
         """Load the metadata into a Pandas DataFrame
