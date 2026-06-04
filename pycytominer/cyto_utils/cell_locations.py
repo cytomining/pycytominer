@@ -372,27 +372,26 @@ class CellLocation:
             # check that the single_cell file has the required tables and columns
             self._check_single_cell_correctness(engine)
 
-            image_index_str = ", ".join(self.image_key)
-
+            # CAST each column at the database level.
+            # SQLite uses type affinity rather than strict column types, so
+            # values may not match their declared type; CAST enforces the
+            # expected types in the query itself rather than via a slower
+            # post-hoc pandas dtype conversion.
             join_query = f"""
-            SELECT Nuclei.{self.table_column},Nuclei.{self.image_column},Nuclei.{self.object_column},Nuclei.{self.cell_x_loc},Nuclei.{self.cell_y_loc},Image.{image_index_str}
+            SELECT
+                CAST(Nuclei.{self.table_column} AS INTEGER) AS {self.table_column},
+                CAST(Nuclei.{self.image_column} AS INTEGER) AS {self.image_column},
+                CAST(Nuclei.{self.object_column} AS INTEGER) AS {self.object_column},
+                CAST(Nuclei.{self.cell_x_loc} AS REAL) AS {self.cell_x_loc},
+                CAST(Nuclei.{self.cell_y_loc} AS REAL) AS {self.cell_y_loc},
+                {", ".join(f"CAST(Image.{k} AS TEXT) AS {k}" for k in self.image_key)}
             FROM Nuclei
             INNER JOIN Image
-            ON Nuclei.{self.image_column} = Image.{self.image_column} and Nuclei.{self.table_column} = Image.{self.table_column};
+                ON Nuclei.{self.image_column} = Image.{self.image_column}
+                AND Nuclei.{self.table_column} = Image.{self.table_column};
             """
 
-            column_types = {
-                self.image_column: "int64",
-                self.table_column: "int64",
-                self.object_column: "int64",
-                self.cell_x_loc: "float",
-                self.cell_y_loc: "float",
-            }
-
-            for image_key in self.image_key:
-                column_types[image_key] = "str"
-
-            return pd.read_sql_query(join_query, engine, dtype=column_types)
+            return pd.read_sql_query(join_query, engine)
         finally:
             # Always dispose the engine and remove the temp file.
             # On Windows, SQLAlchemy's connection pool keeps the SQLite file open;
