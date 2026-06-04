@@ -396,27 +396,41 @@ def load_profiles(
 
 
 def load_platemap(
-    platemap: Union[str, pd.DataFrame], add_metadata_id=True
+    platemap: Union[str, pd.DataFrame],
+    add_metadata_id: bool = True,
+    sep: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Unless a dataframe is provided, load the given platemap dataframe from path or string
+    Unless a dataframe is provided, load the given platemap dataframe from path or string.
 
     Parameters
     ----------
     platemap : pd.DataFrame or str
-        location or actual pd.DataFrame of platemap file
+        Location or actual pd.DataFrame of platemap file.
 
-    add_metadata_id : bool
-        boolean if ``Metadata_`` should be appended to all platemap columns
+    add_metadata_id : bool, default True
+        Whether ``Metadata_`` should be prepended to all platemap columns.
+
+    sep : str, optional
+        The column delimiter used in the platemap file (e.g. ``","`` for CSV,
+        ``"\\t"`` for TSV). Only relevant when ``platemap`` is a file path rather
+        than a DataFrame — has no effect when a DataFrame is passed directly.
+
+        When ``None`` (the default), the delimiter is detected automatically via
+        :func:`infer_delim`. Automatic detection relies on Python's
+        ``csv.Sniffer``, which can be unreliable on Windows for tab-separated
+        files (see `cpython#119123
+        <https://github.com/python/cpython/issues/119123>`_). If you are on
+        Windows and loading a TSV platemap, pass ``sep="\\t"`` explicitly.
 
     Returns
     -------
     platemap : pd.DataFrame
-        pandas DataFrame of profiles
+        pandas DataFrame of platemap.
     """
     if not isinstance(platemap, pd.DataFrame):
         try:
-            delim = infer_delim(platemap)
+            delim = sep if sep is not None else infer_delim(platemap)
             platemap = pd.read_csv(platemap, sep=delim)
         except FileNotFoundError:
             raise FileNotFoundError(f"{platemap} platemap file not found")

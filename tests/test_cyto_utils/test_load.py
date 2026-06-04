@@ -380,6 +380,25 @@ def test_load_platemap():
     pd.testing.assert_frame_equal(platemap_with_annotation, platemap_df)
 
 
+def test_load_platemap_explicit_sep():
+    """Explicit sep bypasses infer_delim, so this test runs on all platforms including Windows."""
+    # TSV file with explicit sep="\t"
+    platemap = load_platemap(output_platemap_file, add_metadata_id=False, sep="\t")
+    pd.testing.assert_frame_equal(platemap, platemap_df)
+
+    # CSV file with explicit sep=","
+    platemap = load_platemap(output_platemap_comma_file, add_metadata_id=False, sep=",")
+    pd.testing.assert_frame_equal(platemap, platemap_df)
+
+    # Explicit sep also works alongside add_metadata_id=True
+    platemap_with_annotation = load_platemap(
+        output_platemap_file, add_metadata_id=True, sep="\t"
+    )
+    expected = platemap_df.copy()
+    expected.columns = pd.Index([f"Metadata_{x}" for x in expected.columns])
+    pd.testing.assert_frame_equal(platemap_with_annotation, expected)
+
+
 def test_load_npz():
     npz_df = load_npz_features(output_npz_file)
     npz_custom_prefix_df = load_npz_features(
