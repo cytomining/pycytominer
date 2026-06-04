@@ -240,12 +240,13 @@ def collate(
         add_image_features=add_image_features,
         image_feature_categories=image_feature_categories,
     )
-    database.aggregate_profiles(output_file=str(aggregated_file))
-
-    # Release the SQLite connection so the file can be removed or renamed on
-    # Windows (which holds an exclusive lock on open database files).
-    database.conn.close()
-    database.engine.dispose()
+    try:
+        database.aggregate_profiles(output_file=str(aggregated_file))
+    finally:
+        # Release the SQLite connection so the file can be removed or renamed on
+        # Windows (which holds an exclusive lock on open database files).
+        database.conn.close()
+        database.engine.dispose()
 
     if aws_remote:
         if printtoscreen:
