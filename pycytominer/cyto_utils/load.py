@@ -5,6 +5,7 @@ Module for loading profiles from files or dataframes.
 import csv
 import gzip
 import pathlib
+import sys
 from typing import Any, Optional, Union
 
 import numpy as np
@@ -390,7 +391,23 @@ def load_profiles(
         if anndata_type := is_anndata(profiles):
             return read_anndata(profiles, anndata_type)
 
-    # otherwise, assume its a csv/tsv file and infer the delimiter
+    # CSV/TSV fallback — not supported on Windows.
+    # Python's csv.Sniffer unreliably detects tab-separated files on Windows
+    # (https://github.com/python/cpython/issues/119123), and there is no
+    # safe way to auto-detect the delimiter cross-platform without risking
+    # silently loading data with the wrong separator.
+    if sys.platform == "win32":
+        raise OSError(
+            "Loading CSV/TSV profiles via automatic delimiter detection is not "
+            "supported on Windows (see https://github.com/python/cpython/issues/119123).\n"
+            "We recommend reprocessing your CellProfiler output with CytoTable "
+            "(https://github.com/cytomining/CytoTable) to produce a standardised "
+            "Parquet file, which is supported on all platforms and is the preferred "
+            "input format for pycytominer.\n"
+            "If reprocessing is not an option, load the file manually with "
+            "pd.read_csv(path, sep=',') or pd.read_csv(path, sep='\\t') and pass "
+            "the resulting DataFrame directly."
+        )
     delim = infer_delim(profiles)
     return pd.read_csv(str(profiles), sep=delim)
 

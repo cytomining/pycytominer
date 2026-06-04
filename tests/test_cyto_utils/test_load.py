@@ -150,6 +150,12 @@ np.savez_compressed(output_npz_without_metadata_file, features=npz_feats)
 # csv.Sniffer unreliably detects tab delimiters on Windows due to known CPython bugs:
 # https://github.com/python/cpython/issues/119123
 # https://github.com/python/cpython/issues/97611
+#
+# As a result, CSV/TSV loading via automatic delimiter detection is not supported
+# on Windows. load_profiles() raises an OSError with a CytoTable reprocessing
+# recommendation when a text file is passed on Windows — see the guard in
+# pycytominer/cyto_utils/load.py. Windows users should use Parquet input instead.
+# For platemap files specifically, pass sep= explicitly (see test_load_platemap_explicit_sep).
 @pytest.mark.skipif(
     sys.platform == "win32",
     reason="csv.Sniffer tab detection unreliable on Windows (cpython#119123, cpython#97611)",
@@ -163,6 +169,53 @@ def test_infer_delim():
 
     delim = infer_delim(output_platemap_file_gzip)
     assert delim == "\t"
+
+
+@pytest.mark.skipif(
+    sys.platform != "win32",
+    reason="Windows-specific behaviour test — run on Windows CI only",
+)
+def test_load_profiles_csv_raises_on_windows(monkeypatch):
+    """load_profiles raises OSError for CSV/TSV on Windows (monkeypatched)."""
+    monkeypatch.setattr(sys, "platform", "win32")
+    with pytest.raises(OSError, match="not supported on Windows"):
+        load_profiles(output_data_file)
+
+
+@pytest.mark.skipif(
+    sys.platform != "win32",
+    reason="Windows-specific behaviour test — run on Windows CI only",
+)
+def test_load_profiles_non_csv_unaffected_on_windows(monkeypatch):
+    """All non-CSV/TSV formats are unaffected by the Windows CSV restriction."""
+    monkeypatch.setattr(sys, "platform", "win32")
+
+    # In-memory DataFrame passes through unchanged
+    pd.testing.assert_frame_equal(data_df, load_profiles(data_df))
+
+    # Parquet file
+    pd.testing.assert_frame_equal(data_df, load_profiles(output_data_parquet))
+
+    # AnnData h5ad file
+    pd.testing.assert_frame_equal(data_df, load_profiles(output_data_adata_hda5))
+
+    # AnnData zarr directory
+    pd.testing.assert_frame_equal(data_df, load_profiles(output_data_adata_zarr))
+
+    # In-memory AnnData object
+    pd.testing.assert_frame_equal(data_df, load_profiles(adata))
+
+    # CytoTable warehouse table
+    expected = pd.read_parquet(
+        resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
+    )
+    pd.testing.assert_frame_equal(
+        expected, load_profiles(example_iceberg_profiles_table)
+    )
+
+    # CytoTable warehouse root
+    pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_warehouse))
+    pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_root))
 
 
 def test_load_profiles():
@@ -360,7 +413,10 @@ def test_load_cytotable_profiles_rejects_missing_or_malformed_targets(tmp_path):
 
 
 # Skipped on Windows for the same csv.Sniffer reason as test_infer_delim above;
-# load_platemap delegates delimiter detection to infer_delim.
+# load_platemap delegates delimiter detection to infer_delim when sep= is not
+# provided. On Windows, pass sep= explicitly instead (test_load_platemap_explicit_sep
+# covers that path and runs on all platforms). See the OSError guard in
+# pycytominer/cyto_utils/load.py for how load_profiles() surfaces this limitation.
 @pytest.mark.skipif(
     sys.platform == "win32",
     reason="csv.Sniffer tab detection unreliable on Windows (cpython#119123, cpython#97611)",
