@@ -200,10 +200,22 @@ def test_load_profiles_windows(monkeypatch):
     pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_root))
 
 
+# CSV loading not supported on Windows — see the OSError guard in
+# pycytominer/cyto_utils/load.py and test_load_profiles_windows for Windows coverage.
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="CSV loading not supported on Windows (cpython#119123)",
+)
 def test_load_profiles():
+    # tab-separated CSV
     profiles = load_profiles(output_data_file)
     pd.testing.assert_frame_equal(data_df, profiles)
 
+    # comma-separated CSV
+    profiles_comma = load_profiles(output_data_comma_file)
+    pd.testing.assert_frame_equal(data_df, profiles_comma)
+
+    # gzip-compressed tab-separated CSV
     profiles_gzip = load_profiles(output_data_gzip_file)
     pd.testing.assert_frame_equal(data_df, profiles_gzip)
 
