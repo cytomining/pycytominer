@@ -29,7 +29,9 @@ env:
 jobs:
   minimal-install-test:
     name: Minimal install test
-    needs: build
+    needs: 
+      - build
+      - quality-test
     strategy:
       fail-fast: false
       matrix:
