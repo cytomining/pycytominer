@@ -225,21 +225,44 @@ jobs:
           name: wheel
           path: dist
       - name: Prepare isolated minimal install tests
+        shell: bash
         run: |
-          mkdir -p "$RUNNER_TEMP/minimal-install-tests/tests"
-          cp -R tests/minimal_tests "$RUNNER_TEMP/minimal-install-tests/tests/"
-          mkdir -p "$RUNNER_TEMP/minimal-install-tests/tests/test_data"
-          cp -R tests/test_data/minimal_install "$RUNNER_TEMP/minimal-install-tests/tests/test_data/"
+          minimal_root="$RUNNER_TEMP"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            minimal_root="$(cygpath -u "$RUNNER_TEMP")"
+          fi
+          mkdir -p "$minimal_root/minimal-install-tests/tests"
+          cp -R tests/minimal_tests "$minimal_root/minimal-install-tests/tests/"
+          mkdir -p "$minimal_root/minimal-install-tests/tests/test_data"
+          cp -R tests/test_data/minimal_install "$minimal_root/minimal-install-tests/tests/test_data/"
       - name: Install built wheel
+        shell: bash
         env:
           UV_PYTHON: ${{ matrix.python-version }}
         run: |
-          uv venv "$RUNNER_TEMP/minimal-install-venv"
-          uv pip install --python "$RUNNER_TEMP/minimal-install-venv/bin/python" pytest dist/*.whl
+          minimal_root="$RUNNER_TEMP"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            minimal_root="$(cygpath -u "$RUNNER_TEMP")"
+          fi
+          uv venv "$minimal_root/minimal-install-venv"
+          venv_python="$minimal_root/minimal-install-venv/bin/python"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            venv_python="$minimal_root/minimal-install-venv/Scripts/python.exe"
+          fi
+          uv pip install --python "$venv_python" pytest dist/*.whl
       - name: Run minimal install tests
+        shell: bash
         run: |
-          cd "$RUNNER_TEMP/minimal-install-tests"
-          "$RUNNER_TEMP/minimal-install-venv/bin/python" -m pytest tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
+          minimal_root="$RUNNER_TEMP"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            minimal_root="$(cygpath -u "$RUNNER_TEMP")"
+          fi
+          venv_python="$minimal_root/minimal-install-venv/bin/python"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            venv_python="$minimal_root/minimal-install-venv/Scripts/python.exe"
+          fi
+          cd "$minimal_root/minimal-install-tests"
+          "$venv_python" -m pytest tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
   docker-image-test-and-push:
     runs-on: ubuntu-24.04
     # set a dependency sequence to occur after build job completion
