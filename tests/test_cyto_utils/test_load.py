@@ -175,45 +175,27 @@ def test_infer_delim():
     sys.platform != "win32",
     reason="Windows-specific behaviour test — run on Windows CI only",
 )
-def test_load_profiles_csv_raises_on_windows(monkeypatch):
-    """load_profiles raises OSError for CSV/TSV on Windows (monkeypatched)."""
+def test_load_profiles_windows(monkeypatch):
+    """Windows load_profiles behaviour: CSV/TSV raises, all other formats work."""
     monkeypatch.setattr(sys, "platform", "win32")
+
+    # CSV/TSV raises OSError directing users to reprocess with CytoTable
     with pytest.raises(OSError, match="not supported on Windows"):
         load_profiles(output_data_file)
 
-
-@pytest.mark.skipif(
-    sys.platform != "win32",
-    reason="Windows-specific behaviour test — run on Windows CI only",
-)
-def test_load_profiles_non_csv_unaffected_on_windows(monkeypatch):
-    """All non-CSV/TSV formats are unaffected by the Windows CSV restriction."""
-    monkeypatch.setattr(sys, "platform", "win32")
-
-    # In-memory DataFrame passes through unchanged
+    # All non-text formats are unaffected
     pd.testing.assert_frame_equal(data_df, load_profiles(data_df))
-
-    # Parquet file
     pd.testing.assert_frame_equal(data_df, load_profiles(output_data_parquet))
-
-    # AnnData h5ad file
     pd.testing.assert_frame_equal(data_df, load_profiles(output_data_adata_hda5))
-
-    # AnnData zarr directory
     pd.testing.assert_frame_equal(data_df, load_profiles(output_data_adata_zarr))
-
-    # In-memory AnnData object
     pd.testing.assert_frame_equal(data_df, load_profiles(adata))
 
-    # CytoTable warehouse table
     expected = pd.read_parquet(
         resolve_parquet_path(example_iceberg_profiles_table), engine="pyarrow"
     )
     pd.testing.assert_frame_equal(
         expected, load_profiles(example_iceberg_profiles_table)
     )
-
-    # CytoTable warehouse root
     pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_warehouse))
     pd.testing.assert_frame_equal(expected, load_profiles(example_iceberg_root))
 
@@ -437,22 +419,36 @@ def test_load_platemap():
 
 
 def test_load_platemap_explicit_sep():
-    """Explicit sep bypasses infer_delim, so this test runs on all platforms including Windows."""
+    """Explicit sep bypasses infer_delim, so this test runs on all platforms including Windows.
+
+    Uses a local expected DataFrame rather than the module-level platemap_df, which
+    test_load_platemap mutates in-place when it runs (adding Metadata_ prefixes).
+    """
+    expected = pd.DataFrame({
+        "well_position": ["A01", "A02", "A03", "B01", "B02", "B03"],
+        "gene": ["x", "y", "z"] * 2,
+    }).reset_index(drop=True)
+
     # TSV file with explicit sep="\t"
-    platemap = load_platemap(output_platemap_file, add_metadata_id=False, sep="\t")
-    pd.testing.assert_frame_equal(platemap, platemap_df)
+    pd.testing.assert_frame_equal(
+        load_platemap(output_platemap_file, add_metadata_id=False, sep="\t"), expected
+    )
 
     # CSV file with explicit sep=","
-    platemap = load_platemap(output_platemap_comma_file, add_metadata_id=False, sep=",")
-    pd.testing.assert_frame_equal(platemap, platemap_df)
+    pd.testing.assert_frame_equal(
+        load_platemap(output_platemap_comma_file, add_metadata_id=False, sep=","),
+        expected,
+    )
 
     # Explicit sep also works alongside add_metadata_id=True
-    platemap_with_annotation = load_platemap(
-        output_platemap_file, add_metadata_id=True, sep="\t"
+    expected_annotated = expected.copy()
+    expected_annotated.columns = pd.Index([
+        f"Metadata_{x}" for x in expected_annotated.columns
+    ])
+    pd.testing.assert_frame_equal(
+        load_platemap(output_platemap_file, add_metadata_id=True, sep="\t"),
+        expected_annotated,
     )
-    expected = platemap_df.copy()
-    expected.columns = pd.Index([f"Metadata_{x}" for x in expected.columns])
-    pd.testing.assert_frame_equal(platemap_with_annotation, expected)
 
 
 def test_load_npz():
