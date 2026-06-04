@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
 
+import fire
 import numpy as np
 import pandas as pd
+
+from pycytominer.cli import PycytominerCLI
 
 
 def test_minimal_install_imports() -> None:
@@ -26,11 +27,9 @@ def test_minimal_install_cli_aggregate(
     """Ensure the installed CLI can aggregate a tiny checked-in profiles file."""
     output_path = tmp_path / "aggregated.csv"
 
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "pycytominer.cli",
+    fire.Fire(
+        PycytominerCLI,
+        command=[
             "aggregate",
             f"--profiles={minimal_install_profiles_file}",
             f"--output_file={output_path}",
@@ -38,7 +37,6 @@ def test_minimal_install_cli_aggregate(
             "--features=Feature_1,Feature_2",
             "--operation=median",
         ],
-        check=True,
     )
 
     result = pd.read_csv(output_path)
