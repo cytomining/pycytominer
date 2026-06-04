@@ -36,8 +36,8 @@ data_df = pd.DataFrame({
     "zz": [14, 46, 1, 6, 30, 100, 2, 2],
 }).reset_index(drop=True)
 
-data_file = os.path.join(tmpdir, "test_normalize.csv")
-data_df.to_csv(data_file, index=False, sep=",")
+data_file = os.path.join(tmpdir, "test_normalize.parquet")
+data_df.to_parquet(data_file, index=False)
 
 data_feature_infer_df = pd.DataFrame({
     "Metadata_plate": ["a", "a", "a", "a", "b", "b", "b", "b"],
@@ -57,8 +57,8 @@ data_feature_infer_df = pd.DataFrame({
     "Nuclei_zz": [14, 46, 1, 6, 30, 100, 2, 2],
 }).reset_index(drop=True)
 
-data_feature_infer_file = os.path.join(tmpdir, "test_normalize_infer.csv")
-data_feature_infer_df.to_csv(data_feature_infer_file, index=False, sep=",")
+data_feature_infer_file = os.path.join(tmpdir, "test_normalize_infer.parquet")
+data_feature_infer_df.to_parquet(data_feature_infer_file, index=False)
 
 a_feature = random.sample(range(1, 100), 10)
 b_feature = random.sample(range(1, 100), 10)
