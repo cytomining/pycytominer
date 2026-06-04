@@ -33,11 +33,12 @@ jobs:
       - build
       - quality-test
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os:
           - ubuntu-24.04
           - macos-14
+          - windows-2022
     runs-on: ${{ matrix.os }}
     if: github.event_name != 'schedule'
     steps:
