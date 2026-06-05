@@ -22,7 +22,7 @@ def fixture_minimal_install_profiles_file(minimal_test_data_dir: Path) -> Path:
     Provide a profiles input file for minimal install tests
     """
 
-    return minimal_test_data_dir / "profiles.csv"
+    return minimal_test_data_dir / "profiles.parquet"
 
 
 @pytest.fixture(name="minimal_install_blocklist_profiles_file")
@@ -33,4 +33,4 @@ def fixture_minimal_install_blocklist_profiles_file(
     Provide a blocklist-focused profiles input file for minimal install tests
     """
 
-    return minimal_test_data_dir / "profiles_blocklist.csv"
+    return minimal_test_data_dir / "profiles_blocklist.parquet"
