@@ -17,11 +17,6 @@ from pycytominer.cyto_utils.features import (  # type: ignore[no-redef]
 from pycytominer.cyto_utils.load import load_npz_features, load_npz_locations
 from pycytominer.cyto_utils.output import output
 
-warnings.warn(
-    "The DeepProfiler_processing module is deprecated and will be removed in a future "
-    "pycytominer release."
-)
-
 
 class DeepProfilerData:
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
@@ -65,6 +60,14 @@ class DeepProfilerData:
 
         See above for all other parameters.
         """
+
+        # setting DeepProfilerData deprecation warning
+        warnings.warn(
+            "The DeepProfilerData class is deprecated and will be removed in a future "
+            "pycytominer release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
 
         self.index_df = pd.read_csv(index_file, dtype=str)
         self.profile_dir = profile_dir
@@ -176,6 +179,15 @@ class AggregateDeepProfiler:
         ---------
         See above for all parameters.
         """
+
+        # setting AggregateDeepProfiler deprecation warning
+        warnings.warn(
+            "The AggregateDeepProfiler class is deprecated and will be removed in a future "
+            "pycytominer release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         if aggregate_operation not in [
             "median",
             "mean",
@@ -370,7 +382,13 @@ class SingleCellDeepProfiler:
         ---------
         See above for all parameters.
         """
-
+        # setting SingleCellDeepProfiler deprecation warning
+        warnings.warn(
+            "The SingleCellDeepProfiler class is deprecated and will be removed in a future "
+            "pycytominer release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
         self.deep_data = deep_data
 
     def get_single_cells(
