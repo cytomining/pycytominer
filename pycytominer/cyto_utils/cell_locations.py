@@ -13,11 +13,6 @@ import botocore
 import pandas as pd
 import sqlalchemy
 
-warnings.warn(
-    "The cell_locations module is deprecated and will be removed in a "
-    "future pycytominer release."
-)
-
 
 class CellLocation:
     """This class holds all the functions augment a metadata file with X,Y
@@ -96,6 +91,15 @@ class CellLocation:
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
+
+        # setting deprecation warning for the cell_locations module
+        warnings.warn(
+            "The CellLocations class is deprecated and will be removed in a "
+            "future pycytominer release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         self.metadata_input = self._expanduser(metadata_input)
         self.augmented_metadata_output = self._expanduser(augmented_metadata_output)
         self.single_cell_input = self._expanduser(single_cell_input)
