@@ -106,7 +106,9 @@ jobs:
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
-    needs: quality-test
+    needs:
+      - quality-test
+      - build
     strategy:
       fail-fast: false
       matrix:
@@ -168,6 +170,36 @@ jobs:
         # For every other version and/or OS, run pytest without coverage
         if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
         run: uv run pytest --ignore=tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
+      - name: Download wheel artifact
+        if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        uses: actions/download-artifact@v8
+        with:
+          name: wheel
+          path: dist
+      - name: Prepare isolated minimal install tests
+        if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        run: |
+          minimal_root="$RUNNER_TEMP"
+          mkdir -p "$minimal_root/minimal-install-tests/tests"
+          cp -R tests/minimal_tests "$minimal_root/minimal-install-tests/tests/"
+          mkdir -p "$minimal_root/minimal-install-tests/tests/test_data"
+          cp -R tests/test_data/minimal_install "$minimal_root/minimal-install-tests/tests/test_data/"
+      - name: Install built wheel
+        if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+        run: |
+          minimal_root="$RUNNER_TEMP"
+          uv venv "$minimal_root/minimal-install-venv"
+          venv_python="$minimal_root/minimal-install-venv/bin/python"
+          uv pip install --python "$venv_python" pytest dist/*.whl
+      - name: Run minimal install tests
+        if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        run: |
+          minimal_root="$RUNNER_TEMP"
+          venv_python="$minimal_root/minimal-install-venv/bin/python"
+          cd "$minimal_root/minimal-install-tests"
+          "$venv_python" -m pytest tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
@@ -209,75 +241,6 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
           retention-days: 90
-  minimal-install-test:
-    name: Minimal install pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
-    # Runs tests that validate the built wheel in an isolated install environment.
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-14
-          - ubuntu-24.04
-          - windows-2022
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-    runs-on: ${{ matrix.os }}
-    if: github.event_name != 'schedule'
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-      - name: Setup python, and load cache
-        uses: ./.github/actions/setup-env
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache-pre-commit: false
-          cache-venv: false
-          setup-uv: true
-          install-deps: false
-      - name: Download wheel artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: wheel
-          path: dist
-      - name: Prepare isolated minimal install tests
-        shell: bash
-        run: |
-          minimal_root="$RUNNER_TEMP"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            minimal_root="$(cygpath -u "$RUNNER_TEMP")"
-          fi
-          mkdir -p "$minimal_root/minimal-install-tests/tests"
-          cp -R tests/minimal_tests "$minimal_root/minimal-install-tests/tests/"
-          mkdir -p "$minimal_root/minimal-install-tests/tests/test_data"
-          cp -R tests/test_data/minimal_install "$minimal_root/minimal-install-tests/tests/test_data/"
-      - name: Install built wheel
-        shell: bash
-        env:
-          UV_PYTHON: ${{ matrix.python-version }}
-        run: |
-          minimal_root="$RUNNER_TEMP"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            minimal_root="$(cygpath -u "$RUNNER_TEMP")"
-          fi
-          uv venv "$minimal_root/minimal-install-venv"
-          venv_python="$minimal_root/minimal-install-venv/bin/python"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            venv_python="$minimal_root/minimal-install-venv/Scripts/python.exe"
-          fi
-          uv pip install --python "$venv_python" pytest dist/*.whl
-      - name: Run minimal install tests
-        shell: bash
-        run: |
-          minimal_root="$RUNNER_TEMP"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            minimal_root="$(cygpath -u "$RUNNER_TEMP")"
-          fi
-          venv_python="$minimal_root/minimal-install-venv/bin/python"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            venv_python="$minimal_root/minimal-install-venv/Scripts/python.exe"
-          fi
-          cd "$minimal_root/minimal-install-tests"
-          "$venv_python" -m pytest tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
   docker-image-test-and-push:
     runs-on: ubuntu-24.04
     # set a dependency sequence to occur after build job completion
