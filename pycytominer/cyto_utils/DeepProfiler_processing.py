@@ -64,7 +64,7 @@ class DeepProfilerData:
         # setting DeepProfilerData deprecation warning
         warnings.warn(
             "The DeepProfilerData class is deprecated and will be removed in a future "
-            "pycytominer release.",
+            "Pycytominer release.",
             category=DeprecationWarning,
             stacklevel=2,
         )
@@ -183,7 +183,7 @@ class AggregateDeepProfiler:
         # setting AggregateDeepProfiler deprecation warning
         warnings.warn(
             "The AggregateDeepProfiler class is deprecated and will be removed in a future "
-            "pycytominer release.",
+            "Pycytominer release.",
             category=DeprecationWarning,
             stacklevel=2,
         )
@@ -385,7 +385,7 @@ class SingleCellDeepProfiler:
         # setting SingleCellDeepProfiler deprecation warning
         warnings.warn(
             "The SingleCellDeepProfiler class is deprecated and will be removed in a future "
-            "pycytominer release.",
+            "Pycytominer release.",
             category=DeprecationWarning,
             stacklevel=2,
         )

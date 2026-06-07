@@ -140,7 +140,7 @@ class SingleCells:
         # set SingleCells deprecation warning and recommend CytoTable
         warnings.warn(
             "The SingleCells class is deprecated and will be removed in a future "
-            "pycytominer release. Please use CytoTable instead: "
+            "Pycytominer release. Please use CytoTable instead: "
             "https://github.com/cytomining/CytoTable",
             category=DeprecationWarning,
             stacklevel=2,

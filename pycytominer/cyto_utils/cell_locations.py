@@ -94,8 +94,8 @@ class CellLocation:
 
         # setting deprecation warning for the cell_locations module
         warnings.warn(
-            "The CellLocations class is deprecated and will be removed in a "
-            "future pycytominer release.",
+            "The CellLocation class is deprecated and will be removed in a "
+            "future Pycytominer release.",
             category=DeprecationWarning,
             stacklevel=2,
         )
