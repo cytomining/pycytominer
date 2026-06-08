@@ -35,6 +35,11 @@ class SingleCells:
     """This is a class to interact with single cell morphological profiles. Interaction
     includes aggregation, normalization, and output.
 
+    .. warning::
+        The ``SingleCells`` class is deprecated and will be removed in a
+        future Pycytominer release. Please use
+        `CytoTable <https://github.com/cytomining/CytoTable>`_ instead.
+
     Attributes
     ----------
     sql_file : str

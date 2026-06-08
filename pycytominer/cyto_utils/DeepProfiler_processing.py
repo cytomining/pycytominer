@@ -21,6 +21,11 @@ from pycytominer.cyto_utils.output import output
 class DeepProfilerData:
     """This class holds all functions needed to load and annotate the DeepProfiler (DP) run.
 
+    .. warning::
+        The ``DeepProfilerData`` class is deprecated and will be removed in a
+        future Pycytominer release. Please use
+        `CytoTable <https://github.com/cytomining/CytoTable>`_ instead.
+
     Attributes
     ----------
     profile_dir : str
@@ -138,6 +143,11 @@ class DeepProfilerData:
 
 class AggregateDeepProfiler:
     """This class holds all functions needed to aggregate the DeepProfiler (DP) run.
+
+    .. warning::
+        The ``AggregateDeepProfiler`` class is deprecated and will be removed
+        in a future Pycytominer release. Please use
+        `CytoTable <https://github.com/cytomining/CytoTable>`_ instead.
 
     Attributes
     ----------
@@ -345,6 +355,11 @@ class AggregateDeepProfiler:
 
 class SingleCellDeepProfiler:
     """This class holds functions needed to analyze single cells from the DeepProfiler (DP) run. Only pycytominer.normalization() is implemented.
+
+    .. warning::
+        The ``SingleCellDeepProfiler`` class is deprecated and will be removed
+        in a future Pycytominer release. Please use
+        `CytoTable <https://github.com/cytomining/CytoTable>`_ instead.
 
     Attributes
     ----------

@@ -78,6 +78,10 @@ def annotate_cmap(
 ) -> pd.DataFrame:
     """Annotates data frame with custom options according to CMAP specifications
 
+    .. warning::
+        ``annotate_cmap`` is deprecated and will be removed in a future
+        Pycytominer release.
+
     Parameters
     ----------
     annotated : pd.DataFrame

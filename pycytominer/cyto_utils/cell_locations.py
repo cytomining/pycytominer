@@ -19,6 +19,10 @@ class CellLocation:
     """This class holds all the functions augment a metadata file with X,Y
     locations of cells in each image.
 
+    .. warning::
+        The ``CellLocation`` class is deprecated and will be removed in a
+        future Pycytominer release.
+
     In the metadata file, which is either a CSV or a Parquet file,
     - Each row is single multi-channel image
     - Each image is indexed by multiple columns, e.g., `Metadata_Plate`, `Metadata_Well`,`Metadata_Site`
