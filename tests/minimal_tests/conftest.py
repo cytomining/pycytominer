@@ -1,6 +1,4 @@
-"""
-conftest.py for minimal install pytest checks
-"""
+"""Shared pytest fixtures for minimal install tests."""
 
 from pathlib import Path
 
