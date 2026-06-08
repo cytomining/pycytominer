@@ -2,6 +2,7 @@
 Class to interact with single cell morphological profiles.
 """
 
+import warnings
 from typing import Optional, Union, cast
 
 import numpy as np
@@ -33,6 +34,11 @@ default_linking_cols = get_default_linking_cols()
 class SingleCells:
     """This is a class to interact with single cell morphological profiles. Interaction
     includes aggregation, normalization, and output.
+
+    .. warning::
+        The ``SingleCells`` class is deprecated and will be removed in a
+        future Pycytominer release. Please use
+        `CytoTable <https://github.com/cytomining/CytoTable>`_ instead.
 
     Attributes
     ----------
@@ -135,6 +141,15 @@ class SingleCells:
         # Check that the subsample_frac is between 0 and 1
         if not subsample_frac > 0 and subsample_frac <= 1:
             raise ValueError("subsample_frac must be between 0 and 1")
+
+        # set SingleCells deprecation warning and recommend CytoTable
+        warnings.warn(
+            "The SingleCells class is deprecated and will be removed in a future "
+            "Pycytominer release. Please use CytoTable instead: "
+            "https://github.com/cytomining/CytoTable",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
 
         self.sql_file = sql_file
         self.strata = strata

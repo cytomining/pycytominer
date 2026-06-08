@@ -46,6 +46,13 @@ def collate(
 ):
     """Collate the CellProfiler-created CSVs into a single SQLite file by calling cytominer-database
 
+    .. warning::
+        With the deprecation of cytominer-database, ``collate`` is deprecated
+        and will be removed in a future Pycytominer release. Please consider
+        using CellProfiler's ``ExportToDatabase`` module to create single-cell
+        SQLite files, or `CytoTable <https://github.com/cytomining/CytoTable>`_
+        to create single-cell Parquet files.
+
     Parameters
     ----------
     batch : str

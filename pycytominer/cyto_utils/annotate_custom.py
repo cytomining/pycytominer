@@ -3,6 +3,7 @@ Custom annotation functions for CMAP specific data
 """
 
 import contextlib
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,7 @@ def prepare_external_metadata_for_annotate(
     external_metadata : pd.DataFrame
         External metadata with columns renamed to be compatible with annotate() conventions.
     """
+    # Setting deprecation warning
     # Protect certain columns with specific prefixes ("Metadata_", "Image_Metadata", and "Image_").
     # The function will protect only non-numeric columns with "Image_" prefix.
     # This prevents adding a "Metadata_" prefix, which will occur during `cp_clean`, later
@@ -76,6 +78,10 @@ def annotate_cmap(
 ) -> pd.DataFrame:
     """Annotates data frame with custom options according to CMAP specifications
 
+    .. warning::
+        ``annotate_cmap`` is deprecated and will be removed in a future
+        Pycytominer release.
+
     Parameters
     ----------
     annotated : pd.DataFrame
@@ -92,6 +98,14 @@ def annotate_cmap(
     annotated: pd.DataFrame
         CMAP annotated data
     """
+
+    # setting deprecation warning
+    warnings.warn(
+        "annotate_cmap is deprecated and will be removed in a future release.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+
     pert_opts = ["none", "chemical", "genetic"]
 
     if perturbation_mode not in pert_opts:

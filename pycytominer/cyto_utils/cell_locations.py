@@ -6,6 +6,7 @@ import collections
 import os
 import pathlib
 import tempfile
+import warnings
 from typing import Optional, Union
 
 import boto3
@@ -17,6 +18,10 @@ import sqlalchemy
 class CellLocation:
     """This class holds all the functions augment a metadata file with X,Y
     locations of cells in each image.
+
+    .. warning::
+        The ``CellLocation`` class is deprecated and will be removed in a
+        future Pycytominer release.
 
     In the metadata file, which is either a CSV or a Parquet file,
     - Each row is single multi-channel image
@@ -91,6 +96,15 @@ class CellLocation:
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
+
+        # setting deprecation warning for the cell_locations module
+        warnings.warn(
+            "The CellLocation class is deprecated and will be removed in a "
+            "future Pycytominer release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         self.metadata_input = self._expanduser(metadata_input)
         self.augmented_metadata_output = self._expanduser(augmented_metadata_output)
         self.single_cell_input = self._expanduser(single_cell_input)
