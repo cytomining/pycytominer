@@ -1,4 +1,9 @@
-"""Minimal installed-package pytest checks for Pycytominer."""
+"""Minimal installed-package pytest checks for Pycytominer.
+
+These tests run against the built wheel in an isolated environment, not the
+source checkout. This catches packaging and runtime dependency issues that the
+normal dev pytest environment can hide.
+"""
 
 from __future__ import annotations
 
