@@ -57,6 +57,10 @@ def annotate(
         Whether the plate map variables possibly need "Metadata" pre-pended
     format_broad_cmap : bool, default False
         Whether we need to add columns to make compatible with Broad CMAP naming conventions.
+
+        .. warning::
+            The ``format_broad_cmap`` parameter is deprecated and will be
+            removed in a future Pycytominer release.
     clean_cellprofiler: bool, default True
         Clean specific CellProfiler feature names by dropping
         Image_ prefix.
@@ -81,6 +85,10 @@ def annotate(
         decimal precision.
     cmap_args : dict, default None
         Potential keyword arguments for annotate_cmap(). See cyto_utils/annotate_custom.py for more details.
+
+        .. warning::
+            The ``cmap_args`` parameter is deprecated and will be
+            removed in a future Pycytominer release.
     platemap_sep : str, optional
         Column delimiter for the platemap file (e.g. ``","`` for CSV, ``"\\t"``
         for TSV). Only applies when ``platemap`` is a file path — ignored when
