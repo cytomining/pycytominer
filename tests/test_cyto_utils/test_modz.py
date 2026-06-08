@@ -195,6 +195,7 @@ def test_modz_unbalanced_sample_numbers():
 
 
 def test_modz_preserves_na_replicate_groups():
+    """Test that NaN replicate groups are preserved in MODZ output."""
     data_replicate_na_df = pd.DataFrame({
         "Metadata_g": ["a", "a", np.nan, np.nan],
         "Cells_x": [1, 1, 2, 2],
@@ -219,6 +220,7 @@ def test_modz_preserves_na_replicate_groups():
 
 
 def test_modz_zero_profile_does_not_zero_consensus():
+    """Test that a zero profile does not zero out the MODZ consensus."""
     zero_profile_df = pd.DataFrame({
         "Metadata_g": ["a", "a", "a"],
         "Cells_x": [0, 1, 1],
@@ -240,3 +242,18 @@ def test_modz_zero_profile_does_not_zero_consensus():
         "Nuclei_z": [2.0],
     })
     pd.testing.assert_frame_equal(expected_result, consensus_df)
+
+
+def test_modz_base_zero_weight_fallback():
+    """Test equal-weight fallback when all raw MODZ weights are zero."""
+    anticorrelated_df = pd.DataFrame({
+        "x": [1, 2],
+        "y": [5, -5],
+        "z": [2, 1],
+    })
+    anticorrelated_df.index = ["sample_0", "sample_1"]
+
+    consensus_df = modz_base(anticorrelated_df, min_weight=0, precision=precision)
+
+    expected_result = anticorrelated_df.mean().round(precision)
+    pd.testing.assert_series_equal(expected_result, consensus_df)
