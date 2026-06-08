@@ -2,6 +2,7 @@
 Annotates profiles with metadata information
 """
 
+import warnings
 from typing import Literal, Optional, Union
 
 import pandas as pd
@@ -116,6 +117,14 @@ def annotate(
 
     # Add specific Connectivity Map (CMAP) formatting
     if format_broad_cmap:
+        # raise deprecation warning when format_broad_cmap is set to True
+        warnings.warn(
+            "The `format_broad_cmap` parameter in annotate() is deprecated and will be "
+            "removed in a future release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         annotated = annotate_cmap(
             annotated,
             annotate_join_on=join_on[1],

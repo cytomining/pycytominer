@@ -61,6 +61,15 @@ class DeepProfilerData:
         See above for all other parameters.
         """
 
+        # setting DeepProfilerData deprecation warning
+        warnings.warn(
+            "The DeepProfilerData class is deprecated and will be removed in a future "
+            "Pycytominer release. Please use CytoTable instead: "
+            "https://github.com/cytomining/CytoTable",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         self.index_df = pd.read_csv(index_file, dtype=str)
         self.profile_dir = profile_dir
         self.filename_delimiter = filename_delimiter
@@ -175,6 +184,16 @@ class AggregateDeepProfiler:
         ---------
         See above for all parameters.
         """
+
+        # setting AggregateDeepProfiler deprecation warning
+        warnings.warn(
+            "The AggregateDeepProfiler class is deprecated and will be removed in a future "
+            "Pycytominer release. Please use CytoTable instead: "
+            "https://github.com/cytomining/CytoTable",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         if aggregate_operation not in [
             "median",
             "mean",
@@ -369,7 +388,14 @@ class SingleCellDeepProfiler:
         ---------
         See above for all parameters.
         """
-
+        # setting SingleCellDeepProfiler deprecation warning
+        warnings.warn(
+            "The SingleCellDeepProfiler class is deprecated and will be removed in a future "
+            "Pycytominer release. Please use CytoTable instead: "
+            "https://github.com/cytomining/CytoTable",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
         self.deep_data = deep_data
 
     def get_single_cells(

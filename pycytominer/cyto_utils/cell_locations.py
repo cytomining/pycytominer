@@ -6,6 +6,7 @@ import collections
 import os
 import pathlib
 import tempfile
+import warnings
 from typing import Optional, Union
 
 import boto3
@@ -91,6 +92,15 @@ class CellLocation:
         cell_x_loc: str = "Nuclei_Location_Center_X",
         cell_y_loc: str = "Nuclei_Location_Center_Y",
     ):
+
+        # setting deprecation warning for the cell_locations module
+        warnings.warn(
+            "The CellLocation class is deprecated and will be removed in a "
+            "future Pycytominer release.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
         self.metadata_input = self._expanduser(metadata_input)
         self.augmented_metadata_output = self._expanduser(augmented_metadata_output)
         self.single_cell_input = self._expanduser(single_cell_input)
