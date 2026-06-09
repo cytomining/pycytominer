@@ -213,8 +213,8 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
           retention-days: 90
-  minimal-wheel-build-test:
-    name: Minimal wheel build test
+  minimal-wheel-build-tests:
+    name: Minimal wheel build tests
     # Validate the built wheel in an isolated environment so packaging and
     # runtime dependency issues are caught outside the normal source checkout.
     runs-on: ubuntu-24.04
@@ -245,7 +245,7 @@ jobs:
 
           mkdir -p "$test_root/tests/test_data"
           cp -R tests/minimal_wheel_build_tests "$test_root/tests/"
-          cp -R tests/test_data/minimal_install "$test_root/tests/test_data/"
+          cp -R tests/test_data/minimal_wheel_build_tests "$test_root/tests/test_data/"
 
           uv venv "$venv"
           uv pip install --python "$venv/bin/python" pytest dist/*.whl

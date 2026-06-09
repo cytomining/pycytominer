@@ -11,11 +11,11 @@ def fixture_minimal_wheel_build_test_data_dir() -> Path:
     Provide a data directory for minimal wheel build test data
     """
 
-    return Path(__file__).resolve().parent.parent / "test_data" / "minimal_install"
+    return Path(__file__).resolve().parent.parent / "test_data" / "minimal_wheel_build_tests"
 
 
-@pytest.fixture(name="minimal_install_profiles_file")
-def fixture_minimal_install_profiles_file(
+@pytest.fixture(name="minimal_wheel_build_test_profiles_file")
+def fixture_minimal_wheel_build_test_profiles_file(
     minimal_wheel_build_test_data_dir: Path,
 ) -> Path:
     """
@@ -25,8 +25,8 @@ def fixture_minimal_install_profiles_file(
     return minimal_wheel_build_test_data_dir / "profiles.parquet"
 
 
-@pytest.fixture(name="minimal_install_blocklist_profiles_file")
-def fixture_minimal_install_blocklist_profiles_file(
+@pytest.fixture(name="minimal_wheel_build_test_blocklist_profiles_file")
+def fixture_minimal_wheel_build_test_blocklist_profiles_file(
     minimal_wheel_build_test_data_dir: Path,
 ) -> Path:
     """

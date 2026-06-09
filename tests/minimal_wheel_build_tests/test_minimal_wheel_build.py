@@ -1,4 +1,4 @@
-"""Minimal wheel-build pytest checks for Pycytominer.
+"""Minimal wheel build pytest checks for Pycytominer.
 
 These tests run against the built wheel in an isolated environment, not the
 source checkout. This catches packaging and runtime dependency issues that the
@@ -26,7 +26,7 @@ def test_minimal_wheel_build_imports_yml_file() -> None:
 
 
 def test_minimal_wheel_build_cli_aggregate_yml_file(
-    minimal_install_profiles_file: Path,
+    minimal_wheel_build_test_profiles_file: Path,
     tmp_path: Path,
 ) -> None:
     """Ensure the installed CLI can aggregate a tiny checked-in profiles file."""
@@ -36,7 +36,7 @@ def test_minimal_wheel_build_cli_aggregate_yml_file(
         PycytominerCLI,
         command=[
             "aggregate",
-            f"--profiles={minimal_install_profiles_file}",
+            f"--profiles={minimal_wheel_build_test_profiles_file}",
             f"--output_file={output_path}",
             "--strata=Metadata_Plate,Metadata_Well",
             "--features=Feature_1,Feature_2",
@@ -55,7 +55,7 @@ def test_minimal_wheel_build_cli_aggregate_yml_file(
 
 
 def test_minimal_wheel_build_feature_select_uses_packaged_blocklist_yml_file(
-    minimal_install_blocklist_profiles_file: Path,
+    minimal_wheel_build_test_blocklist_profiles_file: Path,
     tmp_path: Path,
 ) -> None:
     """Ensure packaged blocklist data is available in the installed artifact."""
@@ -64,7 +64,7 @@ def test_minimal_wheel_build_feature_select_uses_packaged_blocklist_yml_file(
     output_path = tmp_path / "feature_selected.csv"
 
     feature_select(
-        profiles=str(minimal_install_blocklist_profiles_file),
+        profiles=str(minimal_wheel_build_test_blocklist_profiles_file),
         output_file=str(output_path),
         features=[
             "Nuclei_Correlation_Manders_AGP_DNA",
