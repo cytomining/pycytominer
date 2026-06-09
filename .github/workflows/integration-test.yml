@@ -147,7 +147,7 @@ jobs:
         run: uv sync --frozen --all-extras --group dev
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
-        # Minimal wheel build tests run separately against the built wheel.
+        # Minimal wheel build tests run separately to confirm successful install.
         if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
         run: uv run pytest --ignore=tests/minimal_wheel_build_tests --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
