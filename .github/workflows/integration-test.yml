@@ -169,7 +169,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
-        # Minimal wheel build tests run separately against the built wheel.
+        # Minimal wheel build tests run separately to confirm successful install.
         if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
         run: uv run pytest --ignore=tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   build:
