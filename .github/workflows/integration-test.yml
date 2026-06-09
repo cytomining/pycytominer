@@ -147,9 +147,9 @@ jobs:
         run: uv sync --frozen --all-extras --group dev
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
-        # Minimal install tests run separately against the built wheel.
+        # Minimal wheel build tests run separately against the built wheel.
         if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
-        run: uv run pytest --ignore=tests/minimal_tests --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
+        run: uv run pytest --ignore=tests/minimal_wheel_build_tests --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
         if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
@@ -169,9 +169,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
-        # Minimal install tests run separately against the built wheel.
+        # Minimal wheel build tests run separately against the built wheel.
         if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
-        run: uv run pytest --ignore=tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
+        run: uv run pytest --ignore=tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
@@ -213,8 +213,8 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
           retention-days: 90
-  minimal-install-test:
-    name: Minimal install test
+  minimal-wheel-build-test:
+    name: Minimal wheel build test
     runs-on: ubuntu-24.04
     needs: build
     if: github.event_name != 'schedule'
@@ -234,22 +234,22 @@ jobs:
         with:
           name: wheel
           path: dist
-      - name: Run minimal install tests
+      - name: Run minimal wheel build tests
         env:
           UV_PYTHON: ${{ env.TARGET_PYTHON_VERSION }}
         run: |
-          test_root="$RUNNER_TEMP/minimal-install-tests"
-          venv="$RUNNER_TEMP/minimal-install-venv"
+          test_root="$RUNNER_TEMP/minimal-wheel-build-tests"
+          venv="$RUNNER_TEMP/minimal-wheel-build-venv"
 
           mkdir -p "$test_root/tests/test_data"
-          cp -R tests/minimal_tests "$test_root/tests/"
+          cp -R tests/minimal_wheel_build_tests "$test_root/tests/"
           cp -R tests/test_data/minimal_install "$test_root/tests/test_data/"
 
           uv venv "$venv"
           uv pip install --python "$venv/bin/python" pytest dist/*.whl
 
           cd "$test_root"
-          "$venv/bin/python" -m pytest tests/minimal_tests ${{ github.event.inputs.pytest_addopts }}
+          "$venv/bin/python" -m pytest tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   docker-image-test-and-push:
     runs-on: ubuntu-24.04
     # set a dependency sequence to occur after build job completion

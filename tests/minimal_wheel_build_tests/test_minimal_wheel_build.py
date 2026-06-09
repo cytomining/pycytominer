@@ -1,4 +1,4 @@
-"""Minimal installed-package pytest checks for Pycytominer.
+"""Minimal wheel-build pytest checks for Pycytominer.
 
 These tests run against the built wheel in an isolated environment, not the
 source checkout. This catches packaging and runtime dependency issues that the
@@ -16,7 +16,7 @@ import pandas as pd
 from pycytominer.cli import PycytominerCLI
 
 
-def test_minimal_install_imports() -> None:
+def test_minimal_wheel_build_imports_yml_file() -> None:
     """Ensure core Pycytominer modules import in a minimal environment."""
     import pycytominer
     import pycytominer.cyto_utils
@@ -25,7 +25,7 @@ def test_minimal_install_imports() -> None:
     assert pycytominer.cyto_utils is not None
 
 
-def test_minimal_install_cli_aggregate(
+def test_minimal_wheel_build_cli_aggregate_yml_file(
     minimal_install_profiles_file: Path,
     tmp_path: Path,
 ) -> None:
@@ -54,7 +54,7 @@ def test_minimal_install_cli_aggregate(
     )
 
 
-def test_minimal_install_feature_select_uses_packaged_blocklist(
+def test_minimal_wheel_build_feature_select_uses_packaged_blocklist_yml_file(
     minimal_install_blocklist_profiles_file: Path,
     tmp_path: Path,
 ) -> None:
