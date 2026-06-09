@@ -240,16 +240,20 @@ jobs:
         env:
           UV_PYTHON: ${{ env.TARGET_PYTHON_VERSION }}
         run: |
+          # Use runner temp paths so these tests do not import from the source checkout.
           test_root="$RUNNER_TEMP/minimal-wheel-build-tests"
           venv="$RUNNER_TEMP/minimal-wheel-build-venv"
 
+          # Copy only the minimal wheel build tests and their fixture data.
           mkdir -p "$test_root/tests/test_data"
           cp -R tests/minimal_wheel_build_tests "$test_root/tests/"
           cp -R tests/test_data/minimal_wheel_build_tests "$test_root/tests/test_data/"
 
+          # Create a clean virtual environment and install the built wheel artifact.
           uv venv "$venv"
           uv pip install --python "$venv/bin/python" pytest dist/*.whl
 
+          # Run pytest from the isolated test root against the installed wheel.
           cd "$test_root"
           "$venv/bin/python" -m pytest tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   docker-image-test-and-push:
