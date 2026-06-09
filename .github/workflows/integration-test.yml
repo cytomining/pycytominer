@@ -215,6 +215,8 @@ jobs:
           retention-days: 90
   minimal-wheel-build-test:
     name: Minimal wheel build test
+    # Validate the built wheel in an isolated environment so packaging and
+    # runtime dependency issues are caught outside the normal source checkout.
     runs-on: ubuntu-24.04
     needs: build
     if: github.event_name != 'schedule'
