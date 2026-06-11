@@ -4,7 +4,7 @@ Pycytominer's vision is to perform the image-based profiling pipeline **reproduc
 This roadmap outlines the milestones toward a v2 release that fulfills that vision through a modernized API, a structured data model, and a high-performance DataFrame backend.
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': {'cScale2': '#6d28d9', 'cScale4': '#111111'}}}%%
+%%{init: {'theme': 'dark', 'themeVariables': {'cScale0': '#1e40af', 'cScale1': '#0f766e', 'cScale2': '#6d28d9', 'cScale3': '#b91c1c', 'cScale4': '#111111'}}}%%
 timeline
     title Pycytominer Roadmap
     section New API Foundations
