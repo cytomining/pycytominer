@@ -106,7 +106,9 @@ jobs:
   integration-test:
     name: Pytest (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     # Runs pytest on all tested versions of python and OSes
-    needs: quality-test
+    needs:
+      - quality-test
+      - build
     strategy:
       fail-fast: false
       matrix:
@@ -145,8 +147,9 @@ jobs:
         run: uv sync --frozen --all-extras --group dev
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
+        # Minimal wheel build tests run separately to confirm successful install.
         if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
-        run: uv run pytest --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
+        run: uv run pytest --ignore=tests/minimal_wheel_build_tests --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
         if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
@@ -166,8 +169,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
+        # Minimal wheel build tests run separately to confirm successful install.
         if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
-        run: uv run pytest ${{ github.event.inputs.pytest_addopts }}
+        run: uv run pytest --ignore=tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
@@ -209,6 +213,49 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
           retention-days: 90
+  minimal-wheel-build-tests:
+    name: Minimal wheel build tests
+    # Validate the built wheel in an isolated environment so packaging and
+    # runtime dependency issues are caught outside the normal source checkout.
+    runs-on: ubuntu-24.04
+    needs: build
+    if: github.event_name != 'schedule'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Setup python, and load cache
+        uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ env.TARGET_PYTHON_VERSION }}
+          cache-pre-commit: false
+          cache-venv: false
+          setup-uv: true
+          install-deps: false
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: wheel
+          path: dist
+      - name: Run minimal wheel build tests
+        env:
+          UV_PYTHON: ${{ env.TARGET_PYTHON_VERSION }}
+        run: |
+          # Use runner temp paths so these tests do not import from the source checkout.
+          test_root="$RUNNER_TEMP/minimal-wheel-build-tests"
+          venv="$RUNNER_TEMP/minimal-wheel-build-venv"
+
+          # Copy only the minimal wheel build tests and their fixture data.
+          mkdir -p "$test_root/tests/test_data"
+          cp -R tests/minimal_wheel_build_tests "$test_root/tests/"
+          cp -R tests/test_data/minimal_wheel_build_tests "$test_root/tests/test_data/"
+
+          # Create a clean virtual environment and install the built wheel artifact.
+          uv venv "$venv"
+          uv pip install --python "$venv/bin/python" pytest dist/*.whl
+
+          # Run pytest from the isolated test root against the installed wheel.
+          cd "$test_root"
+          "$venv/bin/python" -m pytest tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   docker-image-test-and-push:
     runs-on: ubuntu-24.04
     # set a dependency sequence to occur after build job completion

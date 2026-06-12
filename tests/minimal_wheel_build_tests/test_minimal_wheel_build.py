@@ -1,0 +1,78 @@
+"""Minimal wheel build pytest checks for Pycytominer.
+
+These tests run against the built wheel in an isolated environment, not the
+source checkout. This catches packaging and runtime dependency issues that the
+normal dev pytest environment can hide.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import fire
+import numpy as np
+import pandas as pd
+
+from pycytominer.cli import PycytominerCLI
+
+
+def test_minimal_wheel_build_imports_yml_file() -> None:
+    """Ensure core Pycytominer modules import in a minimal environment."""
+    import pycytominer
+    import pycytominer.cyto_utils
+
+    assert pycytominer is not None
+    assert pycytominer.cyto_utils is not None
+
+
+def test_minimal_wheel_build_cli_aggregate_yml_file(
+    minimal_wheel_build_test_profiles_file: Path,
+    tmp_path: Path,
+) -> None:
+    """Ensure the installed CLI can aggregate a tiny checked-in profiles file."""
+    output_path = tmp_path / "aggregated.csv"
+
+    fire.Fire(
+        PycytominerCLI,
+        command=[
+            "aggregate",
+            f"--profiles={minimal_wheel_build_test_profiles_file}",
+            f"--output_file={output_path}",
+            "--strata=Metadata_Plate,Metadata_Well",
+            "--features=Feature_1,Feature_2",
+            "--operation=median",
+        ],
+    )
+
+    result = pd.read_csv(output_path)
+    assert result.shape[0] == 2
+    assert np.isclose(
+        result.loc[result["Metadata_Well"] == "A01", "Feature_1"].item(), 1.5
+    )
+    assert np.isclose(
+        result.loc[result["Metadata_Well"] == "A02", "Feature_2"].item(), 7.5
+    )
+
+
+def test_minimal_wheel_build_feature_select_uses_packaged_blocklist_yml_file(
+    minimal_wheel_build_test_blocklist_profiles_file: Path,
+    tmp_path: Path,
+) -> None:
+    """Ensure packaged blocklist data is available in the installed artifact."""
+    from pycytominer import feature_select
+
+    output_path = tmp_path / "feature_selected.csv"
+
+    feature_select(
+        profiles=str(minimal_wheel_build_test_blocklist_profiles_file),
+        output_file=str(output_path),
+        features=[
+            "Nuclei_Correlation_Manders_AGP_DNA",
+            "Cells_AreaShape_Area",
+        ],
+        operation="blocklist",
+    )
+
+    result = pd.read_csv(output_path)
+    assert "Nuclei_Correlation_Manders_AGP_DNA" not in result.columns
+    assert "Cells_AreaShape_Area" in result.columns
