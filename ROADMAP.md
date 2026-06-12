@@ -18,10 +18,11 @@ timeline
              : Provenance and logging via chaining
     section Performance
         v1.9 : Parallel execution across plates and batches
-             : Pandas to Polars migration inside ProfileData
+             : Add Polars functionality inside ProfileData
              : Benchmark suite
     section Clean API and Deprecation
         v2.0 : Remove legacy functions and deprecated shims
+             : Drop pandas support
              : Finalize clean public API
              : Schema improvements
              : Decouple institution-specific utilities
@@ -36,7 +37,7 @@ timeline
 ## Current State — v1.6
 
 Pycytominer provides a suite of standalone functions (`aggregate`, `normalize`, `annotate`, `feature_select`, `consensus`) that cover the full image-based profiling pipeline.
-The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable Warehouse), runs on Linux, macOS, and Windows, and is tested across Python 3.10–3.14.
+The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable Warehouse), runs on Linux, macOS, and Windows.
 
 ---
 
@@ -73,7 +74,7 @@ The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable War
 
 - [ ] Add pipeline methods to `ProfileData` (`.normalize()`, `.feature_select()`, `.aggregate()`, `.annotate()`, `.consensus()`) — each delegates to the existing standalone function and returns a new `ProfileData`
 - [ ] Core functions accept `ProfileData` as input in addition to `str` / `pd.DataFrame` — no breaking changes
-- [ ] Provenance and logging emerge naturally from chaining: for example, callers can compare `.features` before and after `feature_select` to see exactly which features were dropped by which operation
+- [ ] Capture provenance through logging features
 
 ```python
 # Example chaining
@@ -87,25 +88,24 @@ result = (
 
 ---
 
-## Milestone 3 — Parallelization and High Performance Backend (v1.9)
+## Milestone 3 — Performance enhancements (v1.9)
 
-**Goal:** Make pycytominer extremely fast by enabling parallel execution across the pipeline.
+**Goal:** Make pycytominer fast by enabling parallel execution across the pipeline.
 
 - [ ] Parallel execution of independent pipeline steps across plates, batches, or wells
 - [ ] Leverage `ProfileData` as the natural unit of parallelism — each object is self-contained and stateless
 - [ ] Benchmark suite to track performance across releases
 
-### Polars Migration
-
-- [ ] Swap the DataFrame backend inside `ProfileData` from pandas to Polars — the change is contained within `ProfileData`, isolating all call sites from the migration
-- [ ] Validate performance improvements across the full pipeline
-- [ ] Maintain backward compatibility where possible; document breaking changes clearly
-
 ---
 
 ## Milestone 4 — Clean API (v2.0)
 
-**Goal:** Finalize a clean, stable public API, deprecate old institution-specific functions and introduce other minor, but breaking changes (e.g., some stale parameter names).
+**Goal:** Replace pandas with polars, finalize a clean, stable public API, deprecate old institution-specific functions and introduce other minor, but breaking changes (e.g., some stale parameter names).
+
+### Polars Migration
+
+- [ ] Swap the DataFrame backend inside `ProfileData` from pandas to Polars
+- [ ] Validate performance improvements across the full pipeline
 
 ### API Cleanup
 
