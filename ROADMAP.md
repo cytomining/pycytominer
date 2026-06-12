@@ -8,21 +8,18 @@ This roadmap outlines the milestones toward a v2 release that fulfills that visi
 timeline
     title Pycytominer Roadmap
     section New API Foundations
-        v1.7 : ProfileData and OutputConfig dataclasses
-             : Feature selection improvements
+        v1.7 : Feature selection improvements
              : API consistency fixes
              : Deprecation warnings on legacy functions
     section Fluent Pipeline
-        v1.8 : ProfileData pipeline methods
-             : Core functions accept ProfileData as input
+        v1.8 : Core functions accept CytoDataFrames as input
              : Provenance and logging via chaining
     section Performance
         v1.9 : Parallel execution across plates and batches
-             : Add Polars functionality inside ProfileData
              : Benchmark suite
-    section Clean API and Deprecation
+    section Clean API and Polars
         v2.0 : Remove legacy functions and deprecated shims
-             : Drop pandas support
+             : Replace pandas with polars
              : Finalize clean public API
              : Schema improvements
              : Decouple institution-specific utilities
@@ -43,12 +40,7 @@ The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable War
 
 ## Milestone 1 — API Foundations (v1.7)
 
-**Goal:** Introduce a structured data model and eliminate repeated boilerplate across the API.
-
-### ProfileData
-
-- [ ] Add `ProfileData` dataclass ([#327](https://github.com/cytomining/pycytominer/issues/327)) to bundle a DataFrame with its resolved feature and metadata column lists so they are computed once, not inferred repeatedly across function calls
-- [ ] Add `OutputConfig` dataclass to consolidate the four repeated output parameters (`output_file`, `output_type`, `compression_options`, `float_format`) shared across all core functions into a single per-call object
+**Goal:** Ensure consistency in API, add new methods.
 
 ### Feature Selection
 
@@ -70,16 +62,16 @@ The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable War
 
 ## Milestone 2 — Fluent Pipeline (v1.8)
 
-**Goal:** Make `ProfileData` the primary entry point for running the profiling pipeline (still supporting original API), enabling method chaining and natural provenance tracking.
+**Goal:** Make `CytoDataFrame` an entry point for running the profiling pipeline (still supporting original API), enabling method chaining and natural provenance tracking.
 
-- [ ] Add pipeline methods to `ProfileData` (`.normalize()`, `.feature_select()`, `.aggregate()`, `.annotate()`, `.consensus()`) — each delegates to the existing standalone function and returns a new `ProfileData`
-- [ ] Core functions accept `ProfileData` as input in addition to `str` / `pd.DataFrame` — no breaking changes
+- [ ] Add pipeline methods extensibility to `CytoDataFrame` (`.normalize()`, `.feature_select()`, `.aggregate()`, `.annotate()`, `.consensus()`) — each delegates to the existing standalone function and returns a new `CytoDataFrame`
+- [ ] Core functions accept `CytoDataFrame` as input in addition to `str` / `pd.DataFrame` — no breaking changes
 - [ ] Capture provenance through logging features
 
 ```python
 # Example chaining
 result = (
-    ProfileData.from_file("profiles.parquet")
+    CytoDataFrame.from_file("profiles.parquet")
     .aggregate(strata=["Metadata_Well"])
     .normalize(method="standardize", samples="Metadata_treatment == 'DMSO'")
     .feature_select(operations=["variance_threshold", "correlation_threshold"])
@@ -93,18 +85,17 @@ result = (
 **Goal:** Make pycytominer fast by enabling parallel execution across the pipeline.
 
 - [ ] Parallel execution of independent pipeline steps across plates, batches, or wells
-- [ ] Leverage `ProfileData` as the natural unit of parallelism — each object is self-contained and stateless
 - [ ] Benchmark suite to track performance across releases
 
 ---
 
-## Milestone 4 — Clean API (v2.0)
+## Milestone 4 — Clean API and Polars (v2.0)
 
 **Goal:** Replace pandas with polars, finalize a clean, stable public API, deprecate old institution-specific functions and introduce other minor, but breaking changes (e.g., some stale parameter names).
 
 ### Polars Migration
 
-- [ ] Swap the DataFrame backend inside `ProfileData` from pandas to Polars
+- [ ] Swap the DataFrame backend inside `CytoDataFrame` from pandas to Polars
 - [ ] Validate performance improvements across the full pipeline
 
 ### API Cleanup
@@ -123,7 +114,7 @@ result = (
 
 **Goal:** Make pycytominer natively usable by AI agents as a set of composable, callable skills.
 
-The fluent `ProfileData` pipeline and the clean v2 API lay the groundwork for exposing pycytominer's capabilities as agent-callable tools. At this stage, individual pipeline steps (normalize, feature_select, aggregate, etc.) can be registered as skills that an AI agent can discover, invoke, and chain autonomously — enabling fully automated, reproducible profiling workflows driven by natural language or high-level objectives.
+The fluent `CytoDataFrame` pipeline and the clean v2 API lay the groundwork for exposing pycytominer's capabilities as agent-callable tools. At this stage, individual pipeline steps (normalize, feature_select, aggregate, etc.) can be registered as skills that an AI agent can discover, invoke, and chain autonomously — enabling fully automated, reproducible profiling workflows driven by natural language or high-level objectives.
 
 This is exploratory and will be shaped by the broader ecosystem of agent frameworks and tool standards as they mature.
 
