@@ -78,8 +78,14 @@ def modz_base(
     # Threshold weights (any value < min_weight will become min_weight)
     raw_weights = raw_weights.clip(lower=min_weight)
 
-    # normalize raw_weights so that they add to 1
-    weights = raw_weights / sum(raw_weights)
+    # Normalize raw weights so the weighted sum remains on the original feature scale.
+    weight_sum = raw_weights.sum()
+    if weight_sum == 0:
+        # If all profiles have zero weight, use equal weights to avoid division by zero
+        # and still produce a valid consensus profile.
+        weights = pd.Series(1 / len(raw_weights), index=raw_weights.index)
+    else:
+        weights = raw_weights / weight_sum
     weights = weights.round(precision)
 
     # Step 3: Normalize
@@ -151,7 +157,7 @@ def modz(
 
     modz_df = (
         population_df
-        .groupby(replicate_columns)
+        .groupby(replicate_columns, dropna=False)
         .apply(
             lambda x: modz_base(
                 x.loc[:, features],
