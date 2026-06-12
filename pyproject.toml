@@ -60,7 +60,6 @@ dependencies = [
   "scipy>=1.16.1; python_version>='3.11'",
   "sqlalchemy>=1.3.6,<3",
 ]
-
 optional-dependencies.anndata = [
   "anndata<0.12.2; python_version<'3.11'",
   "anndata>=0.12.2; python_version>='3.11'",
@@ -121,10 +120,8 @@ docs = [
 ]
 
 [tool.setuptools]
+packages.find.include = [ "pycytominer*" ]
 include-package-data = true
-
-[tool.setuptools.packages.find]
-include = [ "pycytominer*" ]
 
 [tool.setuptools_scm]
 root = "."
@@ -133,7 +130,6 @@ root = "."
 target-version = "py39"
 line-length = 88
 fix = true
-
 format.preview = true
 lint.select = [
   # flake8-builtins
@@ -184,23 +180,14 @@ lint.per-file-ignores."pycytominer/cyto_utils/*" = [
 # Ignore assert statements in tests
 lint.per-file-ignores."tests/*" = [ "S101" ]
 
-[tool.pytest.ini_options]
-testpaths = "tests"
-filterwarnings = [
-  "ignore::DeprecationWarning:pycytominer.*",
-]
-markers = [
-  "large_data_tests: tests which involve the use of large data and could involve longer time durations.",
-]
-
 [tool.mypy]
 exclude = [
   # ignore build artifacts
   "build",
-  # ignore notebook-based walkthroughs
-  "walkthroughs",
   # ignore tests dir
   "tests",
+  # ignore notebook-based walkthroughs
+  "walkthroughs",
 ]
 
 [[tool.mypy.overrides]]
@@ -208,14 +195,23 @@ exclude = [
 # packages which do not have standard type stubs
 # or experience issues with imported types.
 module = [
-  "sklearn.*",
-  "scipy.*",
-  "cytominer_database.*",
-  "fire.*",
+  "anndata.*",
   "boto3.*",
   "botocore.*",
-  "anndata.*",
-  "zarr.*",
+  "cytominer_database.*",
+  "fire.*",
   "h5py.*",
+  "scipy.*",
+  "sklearn.*",
+  "zarr.*",
 ]
 ignore_missing_imports = true
+
+[tool.pytest]
+ini_options.testpaths = "tests"
+ini_options.markers = [
+  "large_data_tests: tests which involve the use of large data and could involve longer time durations.",
+]
+ini_options.filterwarnings = [
+  "ignore::DeprecationWarning:pycytominer.*",
+]
