@@ -73,7 +73,7 @@ optional-dependencies.cell-locations = [
   "s3fs>=2023.4",
 ]
 optional-dependencies.collate = [
-  "csvkit>=1,<3",
+  "csvkit>=1,<1.5",
   "cytominer-database==0.3.4",
   # cytominer-database requires `pkg_resources`, which
   # setuptools deprecated in v70
