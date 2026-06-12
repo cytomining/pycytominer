@@ -1114,7 +1114,7 @@ toml = [
 
 [[package]]
 name = "csvkit"
-version = "1.5.0"
+version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agate" },
@@ -1125,9 +1125,9 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "xlrd" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/ae/df3f0a1d55a93eeae5be6e1537ecebc4e2c2ca038311e60e8b2e358a1221/csvkit-1.5.0.tar.gz", hash = "sha256:967a8be8fc58edf5621225b5a6a697b0e8730b962ea68085916a91860b22211c", size = 3811034, upload-time = "2024-03-28T15:27:22.731Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/83/1f594a8a3ce48fb1ec52fe2ae9948da07225a02c53e324def55ee0839a6b/csvkit-1.4.0.tar.gz", hash = "sha256:2cfec43367a05cc5e5df99c90990b95a636d8cf984ba46ce78fcee8ffca7aff8", size = 3796472, upload-time = "2024-02-13T20:38:56.839Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/aa/6d15ccff35e6cbfbfca0a4bbb8b6fa266a667561a9c9571bda8c6247ad5d/csvkit-1.5.0-py2.py3-none-any.whl", hash = "sha256:3f81e6f9af1774688ee30f4bdf8abd7f927995c85cad6491cf7478c658cfe7be", size = 44158, upload-time = "2024-03-28T15:27:20.926Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/84/b10374471438b12122b9050e5b8b7652a08e4286f02293c379bc93e640d5/csvkit-1.4.0-py2.py3-none-any.whl", hash = "sha256:f02d57f2379c07f8f7214091d1eab3b9719e90510558d757231eea9e6b825fc2", size = 43864, upload-time = "2024-02-13T20:38:55.167Z" },
 ]
 
 [[package]]
@@ -4291,7 +4291,7 @@ requires-dist = [
     { name = "anndata", marker = "python_full_version >= '3.11' and extra == 'anndata'", specifier = ">=0.12.2" },
     { name = "anndata", marker = "python_full_version < '3.11' and extra == 'anndata'", specifier = "<0.12.2" },
     { name = "boto3", marker = "extra == 'cell-locations'", specifier = ">=1.26.79" },
-    { name = "csvkit", marker = "extra == 'collate'", specifier = ">=1,<2" },
+    { name = "csvkit", marker = "extra == 'collate'", specifier = ">=1,<1.5" },
     { name = "cytominer-database", marker = "extra == 'collate'", specifier = "==0.3.4" },
     { name = "fire", specifier = ">=0.5" },
     { name = "fsspec", marker = "extra == 'cell-locations'", specifier = ">=2023.1" },
@@ -4303,7 +4303,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=0.21.2" },
     { name = "scipy", marker = "python_full_version == '3.10.*'", specifier = ">=1.5" },
     { name = "scipy", marker = "python_full_version >= '3.11'", specifier = ">=1.16.1" },
-    { name = "setuptools", marker = "extra == 'collate'", specifier = ">=65,<70" },
+    { name = "setuptools", marker = "extra == 'collate'", specifier = ">=65,<83" },
     { name = "sqlalchemy", specifier = ">=1.3.6,<3" },
     { name = "zarr", marker = "python_full_version >= '3.11' and extra == 'anndata'", specifier = ">=3.1.1" },
     { name = "zarr", marker = "python_full_version < '3.11' and extra == 'anndata'", specifier = "<3.1.1" },
@@ -4313,7 +4313,7 @@ provides-extras = ["anndata", "cell-locations", "collate"]
 [package.metadata.requires-dev]
 dev = [
     { name = "codecov", specifier = ">=2.1.12" },
-    { name = "mypy", specifier = ">=1.11.2,<1.21" },
+    { name = "mypy", specifier = ">=1.11.2,<2.2" },
     { name = "pandas-stubs", marker = "python_full_version < '3.10'", specifier = "<2.2.2.240909" },
     { name = "pandas-stubs", marker = "python_full_version >= '3.10'", specifier = "==2.3.3.260113" },
     { name = "pre-commit", specifier = ">=3.3.2" },
@@ -4330,7 +4330,7 @@ docs = [
     { name = "dunamai", specifier = ">=1.19,<2" },
     { name = "furo", specifier = ">=2023.9.10,<2026" },
     { name = "groundwork-sphinx-theme", specifier = ">=1.1.1,<2" },
-    { name = "ipykernel", specifier = ">=6.29,<7" },
+    { name = "ipykernel", specifier = ">=6.29,<8" },
     { name = "ipython", specifier = ">=8.12,<9" },
     { name = "lxml", extras = ["html-clean"], specifier = ">=5.4,<7" },
     { name = "matplotlib", specifier = ">=3.8,<4" },
@@ -4343,7 +4343,7 @@ docs = [
     { name = "sphinx-autobuild", specifier = ">=2021.3.14,<2025" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2,<0.6" },
     { name = "sphinx-togglebutton", specifier = ">=0.4,<0.5" },
-    { name = "sphinxcontrib-mermaid", specifier = ">=0.9,<1" },
+    { name = "sphinxcontrib-mermaid", specifier = ">=0.9,<3" },
     { name = "tabulate", specifier = ">=0.10" },
 ]
 
