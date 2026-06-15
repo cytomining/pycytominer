@@ -14,9 +14,6 @@ timeline
     section Fluent Pipeline
         v1.8 : Core functions accept CytoDataFrames as input
              : Provenance and logging via chaining
-    section Performance
-        v1.9 : Parallel execution across plates and batches
-             : Benchmark suite
     section Clean API and Polars
         v2.0 : Remove legacy functions and deprecated shims
              : Replace pandas with polars
@@ -35,6 +32,7 @@ timeline
 
 Pycytominer provides a suite of standalone functions (`aggregate`, `normalize`, `annotate`, `feature_select`, `consensus`) that cover the full image-based profiling pipeline.
 The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable Warehouse), runs on Linux, macOS, and Windows.
+Windows does not support CSV files (see ([#704](https://github.com/cytomining/pycytominer/issues/704))).
 
 ---
 
@@ -80,16 +78,7 @@ result = (
 
 ---
 
-## Milestone 3 — Performance enhancements (v1.9)
-
-**Goal:** Make pycytominer fast by enabling parallel execution across the pipeline.
-
-- [ ] Parallel execution of independent pipeline steps across plates, batches, or wells
-- [ ] Benchmark suite to track performance across releases
-
----
-
-## Milestone 4 — Clean API and Polars (v2.0)
+## Milestone 3 — Clean API and Polars (v2.0)
 
 **Goal:** Replace pandas with polars, finalize a clean, stable public API, deprecate old institution-specific functions and introduce other minor, but breaking changes (e.g., some stale parameter names).
 
