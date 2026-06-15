@@ -27,7 +27,7 @@ def aggregate(
     subset_data_df: Optional[pd.DataFrame] = None,
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
-) -> Union[pd.DataFrame, str]:
+) -> pd.DataFrame:
     """Combine population dataframe variables by strata groups using given operation.
 
     Parameters
@@ -68,14 +68,10 @@ def aggregate(
 
     Returns
     -------
-    str or pd.DataFrame
-        pd.DataFrame:
-            DataFrame of aggregated features. If output_file=None, then return the
-            DataFrame. If you specify output_file, then write to file and do not return
-            data.
-        str:
-            If output_file is provided, then the function returns the path to the
-            output file.
+    pd.DataFrame
+        DataFrame of aggregated features. If output_file=None, then return the
+        DataFrame. If you specify output_file, profiles will be written on disk
+        based on provided output_file path.
     """
 
     # Check that the operation is supported

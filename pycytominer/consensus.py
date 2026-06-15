@@ -24,7 +24,7 @@ def consensus(
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
     modz_args: Optional[dict[str, Union[int, float, str]]] = {"method": "spearman"},
-) -> Union[pd.DataFrame, str]:
+) -> pd.DataFrame:
     """Form level 5 consensus profile data.
 
     Parameters
@@ -60,12 +60,9 @@ def consensus(
     Returns
     -------
     pd.DataFrame
-        The consensus profile DataFrame. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
-    str
-        If output_file is provided, then the function returns the path to the
-        output file.
+        DataFrame of consensus features. If output_file=None, then return the
+        DataFrame. If you specify output_file, profiles will be written on disk
+        based on provided output_file path.
 
     Examples
     --------
