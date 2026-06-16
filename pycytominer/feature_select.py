@@ -129,7 +129,7 @@ def feature_select(
     Returns
     -------
     pd.DataFrame
-        DataFrame of selected features. if output_file=none, then return the
+        DataFrame of selected features. if output_file=None, then return the
         DataFrame. if you specify output_file, profiles will be written on disk
         based on provided output_file path
 
@@ -138,8 +138,8 @@ def feature_select(
     Parameters: `output_file`, `output_type`, `compression_options`, and `float_format`
     are passed as kwargs to the `write_to_file_if_user_specifies_output_details` decorator,
     which handles writing the output DataFrame to file if the user specifies output
-    details. If `output_file` is not specified, the function will return the aggregated
-    DataFrame instead of writing to file.
+    details. If `output_file` is not specified, the function will return the feature
+    selected DataFrame instead of writing to file.
 
     See Also
     --------

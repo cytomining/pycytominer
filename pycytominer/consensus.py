@@ -69,7 +69,7 @@ def consensus(
     Parameters: `output_file`, `output_type`, `compression_options`, and `float_format`
     are passed as kwargs to the `write_to_file_if_user_specifies_output_details` decorator,
     which handles writing the output DataFrame to file if the user specifies output
-    details. If `output_file` is not specified, the function will return the aggregated
+    details. If `output_file` is not specified, the function will return the consensus
     DataFrame instead of writing to file.
 
     Examples
