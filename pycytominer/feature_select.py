@@ -133,6 +133,14 @@ def feature_select(
         DataFrame. if you specify output_file, profiles will be written on disk
         based on provided output_file path
 
+    Notes
+    -----
+    Parameters: `output_file`, `output_type`, `compression_options`, and `float_format`
+    are passed as kwargs to the `write_to_file_if_user_specifies_output_details` decorator,
+    which handles writing the output DataFrame to file if the user specifies output
+    details. If `output_file` is not specified, the function will return the aggregated
+    DataFrame instead of writing to file.
+
     See Also
     --------
     pycytominer.cyto_utils.blocklist.Blocklist : Full reference for blocklist
