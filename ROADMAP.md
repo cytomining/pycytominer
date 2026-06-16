@@ -1,7 +1,7 @@
 # Pycytominer Roadmap
 
 Pycytominer's vision is to perform the image-based profiling pipeline **reproducibly and extremely fast** for humans and AI agents.
-This roadmap outlines the milestones toward a v2 release that fulfills that vision through a modernized API, a structured data model, and a high-performance DataFrame backend.
+This roadmap outlines the milestones toward a v2 release that fulfills that vision through a modernized API, a shared profile schema, and a high-performance DataFrame backend.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': {'cScale0': '#1e40af', 'cScale1': '#0f766e', 'cScale2': '#6d28d9', 'cScale3': '#b91c1c', 'cScale4': '#111111'}}}%%
@@ -18,7 +18,7 @@ timeline
         v2.0 : Remove legacy functions and deprecated shims
              : Replace pandas with polars
              : Finalize clean public API
-             : Schema improvements
+             : Shared ProfileSchema
              : Decouple institution-specific utilities
     section Agentic Infrastructure
         v2+ : Expose pipeline steps as agent-callable skills
@@ -51,6 +51,13 @@ Windows does not support CSV files (see ([#704](https://github.com/cytomining/py
 - [ ] Align `aggregate` parameter naming with other core functions ([#635](https://github.com/cytomining/pycytominer/issues/635))
 - [ ] Improve `annotate` to avoid unintended column renaming ([#660](https://github.com/cytomining/pycytominer/issues/660))
 - [ ] Minor schema decisions (e.g., handling of location columns ([#224](https://github.com/cytomining/pycytominer/issues/224)))
+- [ ] Consolidate repeated output handling through `write_to_file_if_user_specifies_output_details`, keeping file output as a compatibility path while richer data containers handle persistence outside pycytominer when appropriate
+
+### Profile Schema
+
+- [ ] Add a lightweight `ProfileSchema` dataclass ([#327](https://github.com/cytomining/pycytominer/issues/327)) that stores resolved metadata and feature column names without wrapping profile data itself
+- [ ] Use `ProfileSchema` internally to avoid repeatedly inferring metadata and feature columns across core function calls
+- [ ] Keep `ProfileSchema` independent of pandas, Polars, `CytoDataFrame`, and AnnData so each data container can adopt the same schema without becoming a hard dependency
 
 ### Documentation
 
@@ -60,19 +67,25 @@ Windows does not support CSV files (see ([#704](https://github.com/cytomining/py
 
 ## Milestone 2 — Fluent Pipeline (v1.8)
 
-**Goal:** Make `CytoDataFrame` an entry point for running the profiling pipeline (still supporting original API), enabling method chaining and natural provenance tracking.
+**Goal:** Integrate `ProfileSchema` across the profiling pipeline so metadata and feature columns are resolved once and shared consistently by standalone functions, `CytoDataFrame`, and optional data adapters.
 
 - [ ] Add pipeline methods extensibility to `CytoDataFrame` (`.normalize()`, `.feature_select()`, `.aggregate()`, `.annotate()`, `.consensus()`) — each delegates to the existing standalone function and returns a new `CytoDataFrame`
 - [ ] Core functions accept `CytoDataFrame` as input in addition to `str` / `pd.DataFrame` — no breaking changes
+- [ ] Store or expose a `ProfileSchema` on `CytoDataFrame` so schema inference is shared with the standalone function API instead of duplicated in a second data wrapper
+- [ ] Define a small profile-data protocol for optional adapters, such as `to_profile_dataframe()` plus an optional `schema`, so AnnData and other containers can participate without pycytominer owning their full object model
 - [ ] Capture provenance through logging features
 
+The existing standalone API remains the primary recognizable workflow. Core functions can infer or reuse a `ProfileSchema` internally so callers do not need a required wrapping step before running the pipeline.
+
 ```python
-# Example chaining
-result = (
-    CytoDataFrame.from_file("profiles.parquet")
-    .aggregate(strata=["Metadata_Well"])
-    .normalize(method="standardize", samples="Metadata_treatment == 'DMSO'")
-    .feature_select(operations=["variance_threshold", "correlation_threshold"])
+import pycytominer as pm
+
+profiles = ...  # Load the data using pandas, pycytominer.load_profiles, or another adapter.
+profiles = pm.aggregate(profiles, strata=["Metadata_Well"])
+profiles = pm.normalize(profiles, method="standardize", samples="Metadata_treatment == 'DMSO'")
+profiles = pm.feature_select(
+    profiles,
+    operations=["variance_threshold", "correlation_threshold"],
 )
 ```
 
