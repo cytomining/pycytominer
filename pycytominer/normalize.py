@@ -33,7 +33,7 @@ def normalize(
     spherize_center: bool = True,
     spherize_method: str = "ZCA-cor",
     spherize_epsilon: float = 1e-6,
-) -> Union[pd.DataFrame, str]:
+) -> pd.DataFrame:
     """Normalize profiling features
 
     Parameters
@@ -107,12 +107,9 @@ def normalize(
     Returns
     -------
     pd.DataFrame
-        The normalized profile DataFrame. If output_file=None, then return the
-        DataFrame. If you specify output_file, then write to file and do not return
-        data.
-    str
-        If output_file is provided, then the function returns the path to the
-        output file.
+        DataFrame of normalized features. if output_file=none, then return the
+        DataFrame. if you specify output_file, profiles will be written on disk
+        based on provided output_file path.
 
     Raises
     ------
@@ -122,6 +119,14 @@ def normalize(
         only. In that case, select numeric features explicitly before calling
         ``normalize()``, for example by passing a curated feature list or by
         running ``feature_select()`` first.
+
+    Notes
+    -----
+    Parameters: `output_file`, `output_type`, `compression_options`, and `float_format`
+    are passed as kwargs to the `write_to_file_if_user_specifies_output_details` decorator,
+    which handles writing the output DataFrame to file if the user specifies output
+    details. If `output_file` is not specified, the function will return the normalized
+    DataFrame instead of writing to file.
 
     Examples
     --------

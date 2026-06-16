@@ -37,7 +37,7 @@ def annotate(
     cmap_args: Optional[dict[str, Union[str]]] = None,
     platemap_sep: Optional[str] = None,
     **kwargs,
-) -> Union[pd.DataFrame, str]:
+) -> pd.DataFrame:
     """Add metadata to aggregated profiles.
 
     Parameters
@@ -100,13 +100,18 @@ def annotate(
 
     Returns
     -------
-    str or pd.DataFrame
-        pd.DataFrame:
-            DataFrame of annotated features. If output_file=None, then return the
-            DataFrame. If you specify output_file, then write to file and do not return
-            data.
-        str:
-            If output_file is provided, then the function returns the path to the
+    pd.DataFrame
+        DataFrame of annotated features. If output_file=None, then return the
+        DataFrame. If you specify output_file, profiles will be written on disk
+        based on provided output_file path.
+
+    Notes
+    -----
+    Parameters: `output_file`, `output_type`, `compression_options`, and `float_format`
+    are passed as kwargs to the `write_to_file_if_user_specifies_output_details` decorator,
+    which handles writing the output DataFrame to file if the user specifies output
+    details. If `output_file` is not specified, the function will return the annotated
+    DataFrame instead of writing to file.
     """
 
     # Load Data
