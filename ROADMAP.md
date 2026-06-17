@@ -11,14 +11,15 @@ timeline
         v1.7 : Feature selection improvements
              : API consistency fixes
              : Deprecation warnings on legacy functions
-    section Fluent Pipeline
+    section CytoDataFrame Integration
         v1.8 : Core functions accept CytoDataFrames as input
-             : Provenance and logging via chaining
+             : ProfileSchema integration
+             : Provenance and logging
     section Clean API and Polars
         v2.0 : Remove legacy functions and deprecated shims
              : Replace pandas with polars
+             : Fluent chaining via LazyFrame
              : Finalize clean public API
-             : Shared ProfileSchema
              : Decouple institution-specific utilities
     section Agentic Infrastructure
         v2+ : Expose pipeline steps as agent-callable skills
@@ -32,7 +33,7 @@ timeline
 
 Pycytominer provides a suite of standalone functions (`aggregate`, `normalize`, `annotate`, `feature_select`, `consensus`) that cover the full image-based profiling pipeline.
 The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable Warehouse), runs on Linux, macOS, and Windows.
-Windows does not support CSV files (see ([#704](https://github.com/cytomining/pycytominer/issues/704))).
+Windows does not support CSV files (see [#704](https://github.com/cytomining/pycytominer/issues/704)).
 
 ---
 
@@ -51,11 +52,11 @@ Windows does not support CSV files (see ([#704](https://github.com/cytomining/py
 - [ ] Align `aggregate` parameter naming with other core functions ([#635](https://github.com/cytomining/pycytominer/issues/635))
 - [ ] Improve `annotate` to avoid unintended column renaming ([#660](https://github.com/cytomining/pycytominer/issues/660))
 - [ ] Minor schema decisions (e.g., handling of location columns ([#224](https://github.com/cytomining/pycytominer/issues/224)))
-- [ ] Consolidate repeated output handling through `write_to_file_if_user_specifies_output_details`, keeping file output as a compatibility path while richer data containers handle persistence outside pycytominer when appropriate
+- [ ] Consolidate repeated output handling through `write_to_file_if_user_specifies_output_details`, keeping file output as a compatibility path while richer data containers handle persistence outside Pycytominer when appropriate
 
 ### Profile Schema
 
-- [ ] Add a lightweight `ProfileSchema` dataclass ([#327](https://github.com/cytomining/pycytominer/issues/327)) that stores resolved metadata and feature column names without wrapping profile data itself
+- [ ] Add `ProfileSchema` ([#327](https://github.com/cytomining/pycytominer/issues/327)), a lightweight dataclass that stores resolved metadata and feature column names without wrapping profile data itself
 - [ ] Use `ProfileSchema` internally to avoid repeatedly inferring metadata and feature columns across core function calls
 - [ ] Keep `ProfileSchema` independent of pandas, Polars, `CytoDataFrame`, and AnnData so each data container can adopt the same schema without becoming a hard dependency
 
@@ -65,17 +66,18 @@ Windows does not support CSV files (see ([#704](https://github.com/cytomining/py
 
 ---
 
-## Milestone 2 — Fluent Pipeline (v1.8)
+## Milestone 2 — CytoDataFrame Integration (v1.8)
 
 **Goal:** Integrate `ProfileSchema` across the profiling pipeline so metadata and feature columns are resolved once and shared consistently by standalone functions, `CytoDataFrame`, and optional data adapters.
+[`CytoDataFrame`](https://github.com/cytomining/CytoDataFrame) is a cytomining library that provides an in-memory data format for single-cell profiles alongside their corresponding images and segmentation masks.
 
-- [ ] Add pipeline methods extensibility to `CytoDataFrame` (`.normalize()`, `.feature_select()`, `.aggregate()`, `.annotate()`, `.consensus()`) — each delegates to the existing standalone function and returns a new `CytoDataFrame`
 - [ ] Core functions accept `CytoDataFrame` as input in addition to `str` / `pd.DataFrame` — no breaking changes
 - [ ] Store or expose a `ProfileSchema` on `CytoDataFrame` so schema inference is shared with the standalone function API instead of duplicated in a second data wrapper
-- [ ] Define a small profile-data protocol for optional adapters, such as `to_profile_dataframe()` plus an optional `schema`, so AnnData and other containers can participate without pycytominer owning their full object model
+- [ ] Define a small profile-data protocol for optional adapters, such as `to_profile_dataframe()` plus an optional `schema`, so AnnData and other containers can participate without Pycytominer owning their full object model
 - [ ] Capture provenance through logging features
 
-The existing standalone API remains the primary recognizable workflow. Core functions can infer or reuse a `ProfileSchema` internally so callers do not need a required wrapping step before running the pipeline.
+The existing standalone API remains the primary workflow.
+Core functions can infer or reuse a `ProfileSchema` internally so callers do not need to explicitly construct a schema before running the pipeline.
 
 ```python
 import pycytominer as pm
@@ -95,10 +97,24 @@ profiles = pm.feature_select(
 
 **Goal:** Replace pandas with polars, finalize a clean, stable public API, deprecate old institution-specific functions and introduce other minor, but breaking changes (e.g., some stale parameter names).
 
-### Polars Migration
+### Polars Migration and Fluent Pipeline
 
 - [ ] Swap the DataFrame backend inside `CytoDataFrame` from pandas to Polars
+- [ ] Add pipeline methods to `CytoDataFrame` (`.normalize()`, `.feature_select()`, `.aggregate()`, `.annotate()`, `.consensus()`) — each delegates to the existing standalone function and returns a new `CytoDataFrame`
+- [ ] Leverage Polars `LazyFrame` so chained pipeline methods execute as a single optimized query plan rather than materializing an intermediate DataFrame at each step
 - [ ] Validate performance improvements across the full pipeline
+
+```python
+import pycytominer as pm
+
+result = (
+    pm.CytoDataFrame(profiles)
+    .aggregate(strata=["Metadata_Well"])
+    .normalize(method="standardize", samples="Metadata_treatment == 'DMSO'")
+    .feature_select(operations=["variance_threshold", "correlation_threshold"])
+    .collect()
+)
+```
 
 ### API Cleanup
 
@@ -114,9 +130,10 @@ profiles = pm.feature_select(
 
 ## Beyond v2 — Agentic Infrastructure
 
-**Goal:** Make pycytominer natively usable by AI agents as a set of composable, callable skills.
+**Goal:** Make Pycytominer natively usable by AI agents as a set of composable, callable skills.
 
-The fluent `CytoDataFrame` pipeline and the clean v2 API lay the groundwork for exposing pycytominer's capabilities as agent-callable tools. At this stage, individual pipeline steps (normalize, feature_select, aggregate, etc.) can be registered as skills that an AI agent can discover, invoke, and chain autonomously — enabling fully automated, reproducible profiling workflows driven by natural language or high-level objectives.
+The fluent `CytoDataFrame` pipeline and the clean v2 API lay the groundwork for exposing Pycytominer's capabilities as agent-callable tools.
+At this stage, individual pipeline steps (`normalize`, `feature_select`, `aggregate`, etc.) can be registered as skills that an AI agent can discover, invoke, and chain autonomously — enabling fully automated, reproducible profiling workflows driven by natural language or high-level objectives.
 
 This is exploratory and will be shaped by the broader ecosystem of agent frameworks and tool standards as they mature.
 
