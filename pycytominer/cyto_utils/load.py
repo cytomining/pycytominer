@@ -297,6 +297,11 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     ------
     str
         the delimiter used in the dataframe (typically either tab or commas)
+
+    Raises
+    ------
+    ValueError
+        Raised when no delimiter can be detected.
     """
     try:
         with open(file) as csvfile:
@@ -306,8 +311,12 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
             line = gzipfile.readline().decode()
 
     dialect = clevercsv.Sniffer().sniff(line)
+    delimiter = dialect.delimiter if dialect is not None else None
 
-    return dialect.delimiter
+    if not delimiter:
+        raise ValueError(f"Could not determine the delimiter for {file}.")
+
+    return delimiter
 
 
 def load_profiles(

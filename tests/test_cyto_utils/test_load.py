@@ -157,6 +157,14 @@ def test_infer_delim():
     assert delim == "\t"
 
 
+def test_infer_delim_raises_when_no_delimiter_is_detected(tmp_path):
+    single_column_file = tmp_path / "single_column.csv"
+    single_column_file.write_text("header\nvalue\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Could not determine the delimiter"):
+        infer_delim(single_column_file)
+
+
 def test_load_profiles():
     # tab-separated CSV
     profiles = load_profiles(output_data_file)
