@@ -3,6 +3,7 @@ import pathlib
 import random
 import shutil
 import tempfile
+from io import StringIO
 
 import anndata as ad
 import numpy as np
@@ -163,6 +164,19 @@ def test_infer_delim_raises_when_no_delimiter_is_detected(tmp_path):
 
     with pytest.raises(ValueError, match="Could not determine the delimiter"):
         infer_delim(single_column_file)
+
+
+def test_infer_delim_detects_gzip_from_magic_bytes(monkeypatch):
+    real_open = open
+
+    def permissive_text_open(file, mode="r", *args, **kwargs):
+        if file == output_platemap_file_gzip and mode == "r":
+            return StringIO("\x1f\x8b\x00\x00")
+        return real_open(file, mode, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", permissive_text_open)
+
+    assert infer_delim(output_platemap_file_gzip) == "\t"
 
 
 def test_load_profiles():

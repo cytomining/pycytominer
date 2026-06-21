@@ -303,12 +303,15 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     ValueError
         Raised when no delimiter can be detected.
     """
-    try:
-        with open(file) as csvfile:
+    with open(file, "rb") as raw_file:
+        is_gzip = raw_file.read(2) == b"\x1f\x8b"
+
+    if is_gzip:
+        with gzip.open(file, "rt", encoding="utf-8-sig") as gzipfile:
+            line = gzipfile.readline()
+    else:
+        with open(file, encoding="utf-8-sig") as csvfile:
             line = csvfile.readline()
-    except UnicodeDecodeError:
-        with gzip.open(file, "r") as gzipfile:
-            line = gzipfile.readline().decode()
 
     dialect = clevercsv.Sniffer().sniff(line)
     delimiter = dialect.delimiter if dialect is not None else None
