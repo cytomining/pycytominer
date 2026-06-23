@@ -100,6 +100,50 @@ def test_variance_threshold():
     assert len(excluded_features_freq) == 0
 
 
+def test_variance_threshold_var_eps():
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
+    excluded_features = variance_threshold(
+        population_df=data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        freq_cut=0,
+        unique_cut=0,
+        var_eps=0.000001,
+    )
+
+    assert excluded_features == ["low_var"]
+
+
+def test_variance_threshold_var_eps_zero_excludes_no_features():
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
+    excluded_features = variance_threshold(
+        population_df=data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        freq_cut=0,
+        unique_cut=0,
+        var_eps=0.0,
+    )
+
+    assert excluded_features == []
+
+
+@pytest.mark.parametrize("var_eps", [-0.1, 1, "0.1"])
+def test_variance_threshold_var_eps_invalid(var_eps):
+    with pytest.raises(ValueError):
+        variance_threshold(
+            population_df=data_unique_test_df,
+            features=data_unique_test_df.columns.tolist(),
+            var_eps=var_eps,
+        )
+
+
 def test_variance_threshold_featureinfer():
     unique_cut = 0.01
     with pytest.raises(ValueError) as nocp:

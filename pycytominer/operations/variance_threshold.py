@@ -17,6 +17,7 @@ def variance_threshold(
     samples: str = "all",
     freq_cut: float = 0.05,
     unique_cut: float = 0.01,
+    var_eps: float | None = None,
 ) -> list[str]:
     """Exclude features that have low variance (low information content)
 
@@ -43,6 +44,10 @@ def variance_threshold(
         Ratio (num unique features / num samples). Must range between 0 and 1.
         Remove features less than unique cut. A low unique_cut will remove features
         that have very few different measurements compared to the number of samples.
+    var_eps: float, default None
+        If not None, remove features with variance less than var_eps. A low var_eps will
+        remove features that have very low variance (e.g. this will remove a feature:
+        [1, 1, 1, 1, 1].
 
     Returns
     -------
@@ -56,6 +61,10 @@ def variance_threshold(
         raise ValueError("freq_cut variable must be between (0 and 1)")
     if not 0 <= unique_cut <= 1:
         raise ValueError("unique_cut variable must be between (0 and 1)")
+    if not isinstance(var_eps, (float, type(None))):
+        raise ValueError("'var_eps must be a float value")
+    if isinstance(var_eps, float) and var_eps < 0:
+        raise ValueError("var_eps must be a non-negative")
 
     # Subset the DataFrame if specific samples are specified
     # If "all", use the entire DataFrame without subsetting
@@ -74,7 +83,10 @@ def variance_threshold(
     # Subset the DataFrame to only include the features of interest
     population_df = population_df.loc[:, inferred_features]
 
-    # Exclude features based on frequency
+    # initalize to store excluded features
+    excluded_features = []
+
+    # 1. Exclude features based on frequency
     # Frequency is the ratio of the second most common value to the most common value.
     # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
     excluded_features_freq = population_df.apply(
@@ -85,6 +97,7 @@ def variance_threshold(
     excluded_features_freq_index_list = excluded_features_freq[
         excluded_features_freq.isna()
     ].index.tolist()
+    excluded_features.extend(excluded_features_freq_index_list)
 
     # Get the number of samples
     n = population_df.shape[0]
@@ -92,7 +105,7 @@ def variance_threshold(
     # Get the number of unique features
     num_unique_features = population_df.nunique()
 
-    # Exclude features with too many (defined by unique_ratio) values in common, where
+    # 2. Exclude features with too many (defined by unique_ratio) values in common, where
     # unique_ratio is defined as the number of unique features divided by the total
     # number of samples
     unique_ratio = num_unique_features / n
@@ -102,12 +115,18 @@ def variance_threshold(
     # This represents features that have too few unique values compared to the number
     # of samples.
     excluded_features_unique = unique_ratio_mask[unique_ratio_mask].index.tolist()
+    excluded_features.extend(excluded_features_unique)
 
-    # Combine the two lists of features to exclude
-    excluded_features = list(
-        set(excluded_features_freq_index_list + excluded_features_unique)
-    )
-    return excluded_features
+    # 3. Exclude features with low variance
+    # If var_eps is not None, calculate the variance of each feature and exclude those
+    # with variance less than var_eps
+    if var_eps is not None:
+        exclude_features_low_variance = population_df.var(ddof=0, skipna=True) < var_eps
+        excluded_features.extend(
+            exclude_features_low_variance[exclude_features_low_variance].index.tolist()
+        )
+
+    return list(set(excluded_features))
 
 
 def calculate_frequency(
