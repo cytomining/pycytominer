@@ -1,3 +1,4 @@
+import gzip
 import os
 import pathlib
 import random
@@ -177,6 +178,17 @@ def test_infer_delim_gzip_does_not_depend_on_plain_text_decode_error(monkeypatch
     monkeypatch.setattr("builtins.open", permissive_text_open)
 
     assert infer_delim(output_platemap_file_gzip) == "\t"
+
+
+@pytest.mark.parametrize("compressed", [False, True])
+def test_infer_delim_uses_multiple_rows(tmp_path, compressed):
+    output_file = tmp_path / ("multirow.csv.gz" if compressed else "multirow.csv")
+    file_open = gzip.open if compressed else open
+
+    with file_open(output_file, "wt", encoding="utf-8") as csvfile:
+        csvfile.write("metadata preamble\na,b\n1,2\n")
+
+    assert infer_delim(output_file) == ","
 
 
 def test_load_profiles():

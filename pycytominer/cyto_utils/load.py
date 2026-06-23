@@ -12,6 +12,8 @@ import pandas as pd
 
 from pycytominer.cyto_utils.anndata_utils import AnnDataLike
 
+_DELIMITER_SAMPLE_SIZE = 10_000
+
 
 def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
     """Checks if the provided file path is a parquet file.
@@ -305,12 +307,12 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     """
     try:
         with gzip.open(file, "rt", encoding="utf-8-sig") as gzipfile:
-            line = gzipfile.readline()
+            sample = gzipfile.read(_DELIMITER_SAMPLE_SIZE)
     except gzip.BadGzipFile:
         with open(file, encoding="utf-8-sig") as csvfile:
-            line = csvfile.readline()
+            sample = csvfile.read(_DELIMITER_SAMPLE_SIZE)
 
-    dialect = clevercsv.Sniffer().sniff(line)
+    dialect = clevercsv.Sniffer().sniff(sample)
     delimiter = dialect.delimiter if dialect is not None else None
 
     if not delimiter:
