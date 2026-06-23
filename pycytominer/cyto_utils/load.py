@@ -303,13 +303,10 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     ValueError
         Raised when no delimiter can be detected.
     """
-    with open(file, "rb") as raw_file:
-        is_gzip = raw_file.read(2) == b"\x1f\x8b"
-
-    if is_gzip:
+    try:
         with gzip.open(file, "rt", encoding="utf-8-sig") as gzipfile:
             line = gzipfile.readline()
-    else:
+    except gzip.BadGzipFile:
         with open(file, encoding="utf-8-sig") as csvfile:
             line = csvfile.readline()
 

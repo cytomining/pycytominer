@@ -166,7 +166,7 @@ def test_infer_delim_raises_when_no_delimiter_is_detected(tmp_path):
         infer_delim(single_column_file)
 
 
-def test_infer_delim_detects_gzip_from_magic_bytes(monkeypatch):
+def test_infer_delim_gzip_does_not_depend_on_plain_text_decode_error(monkeypatch):
     real_open = open
 
     def permissive_text_open(file, mode="r", *args, **kwargs):
