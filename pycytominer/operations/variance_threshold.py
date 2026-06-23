@@ -126,7 +126,7 @@ def variance_threshold(
             exclude_features_low_variance[exclude_features_low_variance].index.tolist()
         )
 
-    return list(set(excluded_features))
+    return list(dict.fromkeys(excluded_features))
 
 
 def calculate_frequency(
