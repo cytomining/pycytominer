@@ -2,16 +2,17 @@
 Module for loading profiles from files or dataframes.
 """
 
-import csv
 import gzip
 import pathlib
-import sys
 from typing import Any, Optional, Union
 
+import clevercsv
 import numpy as np
 import pandas as pd
 
 from pycytominer.cyto_utils.anndata_utils import AnnDataLike
+
+_DELIMITER_SAMPLE_SIZE = 10_000
 
 
 def is_path_a_parquet_file(file: Union[str, pathlib.Path]) -> bool:
@@ -298,17 +299,26 @@ def infer_delim(file: Union[str, pathlib.Path, Any]) -> str:
     ------
     str
         the delimiter used in the dataframe (typically either tab or commas)
+
+    Raises
+    ------
+    ValueError
+        Raised when no delimiter can be detected.
     """
     try:
-        with open(file) as csvfile:
-            line = csvfile.readline()
-    except UnicodeDecodeError:
-        with gzip.open(file, "r") as gzipfile:
-            line = gzipfile.readline().decode()
+        with gzip.open(file, "rt", encoding="utf-8-sig") as gzipfile:
+            sample = gzipfile.read(_DELIMITER_SAMPLE_SIZE)
+    except gzip.BadGzipFile:
+        with open(file, encoding="utf-8-sig") as csvfile:
+            sample = csvfile.read(_DELIMITER_SAMPLE_SIZE)
 
-    dialect = csv.Sniffer().sniff(line)
+    dialect = clevercsv.Sniffer().sniff(sample)
+    delimiter = dialect.delimiter if dialect is not None else None
 
-    return dialect.delimiter
+    if not delimiter:
+        raise ValueError(f"Could not determine the delimiter for {file}.")
+
+    return delimiter
 
 
 def load_profiles(
@@ -391,23 +401,6 @@ def load_profiles(
         if anndata_type := is_anndata(profiles):
             return read_anndata(profiles, anndata_type)
 
-    # CSV/TSV fallback — not supported on Windows.
-    # Python's csv.Sniffer unreliably detects tab-separated files on Windows
-    # (https://github.com/python/cpython/issues/119123), and there is no
-    # safe way to auto-detect the delimiter cross-platform without risking
-    # silently loading data with the wrong separator.
-    if sys.platform == "win32":
-        raise OSError(
-            "Loading CSV/TSV profiles via automatic delimiter detection is not "
-            "supported on Windows (see https://github.com/python/cpython/issues/119123).\n"
-            "We recommend reprocessing your CellProfiler output with CytoTable "
-            "(https://github.com/cytomining/CytoTable) to produce a standardised "
-            "Parquet file, which is supported on all platforms and is the preferred "
-            "input format for pycytominer.\n"
-            "If reprocessing is not an option, load the file manually with "
-            "pd.read_csv(path, sep=',') or pd.read_csv(path, sep='\\t') and pass "
-            "the resulting DataFrame directly."
-        )
     delim = infer_delim(profiles)
     return pd.read_csv(str(profiles), sep=delim)
 
@@ -434,11 +427,7 @@ def load_platemap(
         than a DataFrame — has no effect when a DataFrame is passed directly.
 
         When ``None`` (the default), the delimiter is detected automatically via
-        :func:`infer_delim`. Automatic detection relies on Python's
-        ``csv.Sniffer``, which can be unreliable on Windows for tab-separated
-        files (see `cpython#119123
-        <https://github.com/python/cpython/issues/119123>`_). If you are on
-        Windows and loading a TSV platemap, pass ``sep="\\t"`` explicitly.
+        :func:`infer_delim`.
 
     Returns
     -------

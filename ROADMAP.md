@@ -33,7 +33,7 @@ timeline
 
 Pycytominer provides a suite of standalone functions (`aggregate`, `normalize`, `annotate`, `feature_select`, `consensus`) that cover the full image-based profiling pipeline.
 The library supports multiple file formats (CSV, Parquet, AnnData, CytoTable Warehouse), runs on Linux, macOS, and Windows.
-Windows does not support CSV files (see [#704](https://github.com/cytomining/pycytominer/issues/704)).
+CSV and TSV files are supported across Linux, macOS, and Windows.
 
 ---
 
@@ -122,7 +122,7 @@ result = (
 - [ ] Remove `normalize()` string-encoded missing value shim ([#646](https://github.com/cytomining/pycytominer/issues/646))
 - [ ] Decouple `format_broad_cmap` / `clean_cellprofiler` ([#625](https://github.com/cytomining/pycytominer/issues/625))
 - [ ] Refactor `SingleCells` ([#269](https://github.com/cytomining/pycytominer/issues/269))
-- [ ] Replace `csv.sniffer` ([#704](https://github.com/cytomining/pycytominer/issues/704))
+- [x] Replace `csv.Sniffer` ([#704](https://github.com/cytomining/pycytominer/issues/704))
 - [ ] Retire `collate.py` upload/download flags ([#231](https://github.com/cytomining/pycytominer/issues/231))
 - [ ] Fix `collate.py` compartment handling ([#272](https://github.com/cytomining/pycytominer/issues/272))
 

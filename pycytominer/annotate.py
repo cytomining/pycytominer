@@ -70,9 +70,7 @@ def annotate(
     external_metadata : pd.DataFrame or file, optional
         DataFrame or file with additional metadata information.
         Most common use case is a QC.parquet file with QC flags for each profile
-        that comes from coSMicQC. File paths are loaded via :func:`load_profiles`;
-        on Windows, CSV/TSV files are not supported — pass a Parquet file or a
-        pre-loaded DataFrame instead (see the Windows note in :func:`load_profiles`).
+        that comes from coSMicQC. File paths are loaded via :func:`load_profiles`.
     external_join_on : str or list, optional
         Merge column(s) shared by the annotated profiles and external metadata.
         When provided, these keys are used on both sides of the external merge.
@@ -95,8 +93,6 @@ def annotate(
         a DataFrame is passed directly.
 
         When ``None`` (the default), the delimiter is detected automatically.
-        Automatic detection can be unreliable on Windows for tab-separated files;
-        pass ``platemap_sep="\\t"`` explicitly in that case.
 
     Returns
     -------

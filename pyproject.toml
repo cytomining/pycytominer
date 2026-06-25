@@ -50,6 +50,7 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 dependencies = [
+  "clevercsv>=0.8.5,<0.9",
   "fire>=0.5",
   "numpy>=1.16.5",
   "pandas>=1.2",

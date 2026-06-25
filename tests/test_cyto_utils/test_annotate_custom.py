@@ -1,6 +1,5 @@
 import os
 import random
-import sys
 import tempfile
 
 import pandas as pd
@@ -194,13 +193,6 @@ def test_annotate_cmap_pertchemical():
     assert all(x in anno_result.columns for x in added_cols)
 
 
-# external_metadata is loaded via load_profiles(); CSV/TSV is not supported on
-# Windows (see OSError guard in pycytominer/cyto_utils/load.py). Use Parquet
-# for external_metadata on Windows.
-@pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="CSV external_metadata not supported on Windows — use Parquet instead",
-)
 def test_annotate_cmap_externalmetadata():
     external_data_example = pd.DataFrame({
         "Well": ["A01"],

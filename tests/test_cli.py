@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pathlib
-import sys
 
 import fire
 import numpy as np
@@ -17,8 +16,7 @@ from pycytominer.cli import PycytominerCLI, PycytominerCLIError
 def _write_profiles(tmp_path: pathlib.Path) -> tuple[pd.DataFrame, pathlib.Path]:
     """Write a small profiles Parquet file for CLI tests.
 
-    Parquet is used rather than CSV so tests run on all platforms, including
-    Windows where load_profiles() raises OSError for CSV/TSV inputs.
+    Parquet is used to cover the preferred profile storage format.
 
     Args:
         tmp_path: Pytest temporary directory.
@@ -321,37 +319,8 @@ def test_cli_propagates_file_not_found_error() -> None:
         )
 
 
-@pytest.mark.skipif(
-    sys.platform != "win32",
-    reason="Windows-specific behaviour test — run on Windows CI only",
-)
-def test_cli_csv_profiles_raises_on_windows(tmp_path: pathlib.Path) -> None:
-    """On Windows, passing a CSV profiles path to any CLI command raises OSError.
-
-    load_profiles() rejects CSV/TSV on Windows due to unreliable delimiter
-    detection (csv.Sniffer, cpython#119123). The error message directs users
-    to reprocess with CytoTable to produce Parquet output.
-    """
-    profiles_path = tmp_path / "profiles.csv"
-    pd.DataFrame({"Metadata_Plate": ["P1"], "Feature_1": [1.0]}).to_csv(
-        profiles_path, index=False
-    )
-    cli = PycytominerCLI()
-    with pytest.raises(OSError, match="not supported on Windows"):
-        cli.normalize(
-            profiles=str(profiles_path),
-            output_file=str(tmp_path / "out.csv"),
-            features=["Feature_1"],
-            meta_features=["Metadata_Plate"],
-        )
-
-
-@pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="CSV loading not supported on Windows (cpython#119123) — POSIX only",
-)
-def test_cli_csv_profiles_works_on_posix(tmp_path: pathlib.Path) -> None:
-    """On Linux/macOS, CSV profiles load normally through the CLI."""
+def test_cli_csv_profiles(tmp_path: pathlib.Path) -> None:
+    """CSV profiles load normally through the CLI on every platform."""
     profiles_path = tmp_path / "profiles.csv"
     df = pd.DataFrame({
         "Metadata_Plate": ["P1", "P1"],
