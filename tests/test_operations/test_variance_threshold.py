@@ -4,7 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pycytominer.operations import calculate_frequency, variance_threshold
+from pycytominer.operations import (
+    calculate_frequency,
+    frequency_threshold,
+    variance_threshold,
+)
 
 random.seed(123)
 
@@ -67,9 +71,10 @@ def test_calculate_frequency():
     assert missing_data.isna().sum() == 3
 
 
-def test_variance_threshold():
+def test_frequency_threshold():
+    """Test that frequency_threshold removes low-frequency and low-unique features."""
     unique_cut = 0.01
-    excluded_features = variance_threshold(
+    excluded_features = frequency_threshold(
         population_df=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         unique_cut=unique_cut,
@@ -79,7 +84,7 @@ def test_variance_threshold():
     assert sorted(excluded_features) == sorted(expected_result)
 
     unique_cut = 0.03
-    excluded_features = variance_threshold(
+    excluded_features = frequency_threshold(
         population_df=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         unique_cut=unique_cut,
@@ -100,7 +105,8 @@ def test_variance_threshold():
     assert len(excluded_features_freq) == 0
 
 
-def test_variance_threshold_var_eps():
+def test_variance_threshold():
+    """Test that variance_threshold removes low-variance continuous features."""
     data_var_test_df = pd.DataFrame({
         "low_var": [1, 1, 1, 1, 1.001, 1.001],
         "high_var": [0, 0, 10, 10, 20, 20],
@@ -109,15 +115,14 @@ def test_variance_threshold_var_eps():
     excluded_features = variance_threshold(
         population_df=data_var_test_df,
         features=data_var_test_df.columns.tolist(),
-        freq_cut=0,
-        unique_cut=0,
-        var_eps=0.000001,
+        min_variance=0.000001,
     )
 
     assert excluded_features == ["low_var"]
 
 
-def test_variance_threshold_var_eps_zero_excludes_no_features():
+def test_variance_threshold_min_variance_zero_excludes_no_features():
+    """Test that variance_threshold keeps all features when min_variance is zero."""
     data_var_test_df = pd.DataFrame({
         "low_var": [1, 1, 1, 1, 1.001, 1.001],
         "high_var": [0, 0, 10, 10, 20, 20],
@@ -126,28 +131,28 @@ def test_variance_threshold_var_eps_zero_excludes_no_features():
     excluded_features = variance_threshold(
         population_df=data_var_test_df,
         features=data_var_test_df.columns.tolist(),
-        freq_cut=0,
-        unique_cut=0,
-        var_eps=0.0,
+        min_variance=0.0,
     )
 
     assert excluded_features == []
 
 
-@pytest.mark.parametrize("var_eps", [-0.1, 1, "0.1"])
-def test_variance_threshold_var_eps_invalid(var_eps):
+@pytest.mark.parametrize("min_variance", [-0.1, 1, "0.1"])
+def test_variance_threshold_min_variance_invalid(min_variance):
+    """Test that variance_threshold rejects invalid min_variance values."""
     with pytest.raises(ValueError):
         variance_threshold(
             population_df=data_unique_test_df,
             features=data_unique_test_df.columns.tolist(),
-            var_eps=var_eps,
+            min_variance=min_variance,
         )
 
 
-def test_variance_threshold_featureinfer():
+def test_frequency_threshold_featureinfer():
+    """Test that frequency_threshold supports inferred CellProfiler features."""
     unique_cut = 0.01
     with pytest.raises(ValueError) as nocp:
-        excluded_features = variance_threshold(
+        excluded_features = frequency_threshold(
             population_df=data_unique_test_df, features="infer", unique_cut=unique_cut
         )
 
@@ -156,7 +161,7 @@ def test_variance_threshold_featureinfer():
     data_cp_df = data_unique_test_df.copy()
     data_cp_df.columns = [f"Cells_{x}" for x in data_unique_test_df.columns]
 
-    excluded_features = variance_threshold(
+    excluded_features = frequency_threshold(
         population_df=data_cp_df, features="infer", unique_cut=unique_cut
     )
 
@@ -165,9 +170,24 @@ def test_variance_threshold_featureinfer():
     assert excluded_features == expected_result
 
 
-def test_variance_threshold_samples():
-    unique_cut = 0.01
+def test_variance_threshold_featureinfer():
+    """Test that variance_threshold supports inferred CellProfiler features."""
+    data_cp_df = pd.DataFrame({
+        "Cells_low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "Cells_high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
     excluded_features = variance_threshold(
+        population_df=data_cp_df, features="infer", min_variance=0.000001
+    )
+
+    assert excluded_features == ["Cells_low_var"]
+
+
+def test_frequency_threshold_samples():
+    """Test that frequency_threshold calculates exclusions from selected samples."""
+    unique_cut = 0.01
+    excluded_features = frequency_threshold(
         population_df=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         samples="all",
@@ -182,7 +202,7 @@ def test_variance_threshold_samples():
         Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
     )
 
-    excluded_features = variance_threshold(
+    excluded_features = frequency_threshold(
         population_df=data_sample_id_df,
         features=data_sample_id_df.columns.tolist(),
         samples="Metadata_sample != 'sample_5'",
@@ -190,3 +210,21 @@ def test_variance_threshold_samples():
     )
     expected_result = ["a", "b"]
     assert sorted(excluded_features) == sorted(expected_result)
+
+
+def test_variance_threshold_samples():
+    """Test that variance_threshold calculates exclusions from selected samples."""
+    data_sample_id_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 100],
+        "high_var": [0, 0, 10, 10, 20, 20],
+        "Metadata_sample": [f"sample_{x}" for x in range(0, 6)],
+    }).reset_index(drop=True)
+
+    excluded_features = variance_threshold(
+        population_df=data_sample_id_df,
+        features=["low_var", "high_var"],
+        samples="Metadata_sample != 'sample_5'",
+        min_variance=0.000001,
+    )
+
+    assert excluded_features == ["low_var"]

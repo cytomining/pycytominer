@@ -299,13 +299,38 @@ def test_feature_select_get_na_columns_feature_infer():
 
 
 def test_feature_select_variance_threshold():
-    """
-    Testing feature_select and variance_threshold pycytominer function
-    """
+    """Test that feature_select removes low-variance continuous features."""
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
+    result = feature_select(
+        data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        operation="variance_threshold",
+        min_variance=0.000001,
+    )
+    expected_result = pd.DataFrame({"high_var": [0, 0, 10, 10, 20, 20]}).reset_index(
+        drop=True
+    )
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        operation="variance_threshold",
+        min_variance=0.0,
+    )
+    pd.testing.assert_frame_equal(result, data_var_test_df)
+
+
+def test_feature_select_frequency_threshold():
+    """Test that feature_select removes low-frequency and low-unique features."""
     result = feature_select(
         data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
-        operation="variance_threshold",
+        operation="frequency_threshold",
         unique_cut=0.01,
     )
     expected_result = pd.DataFrame({
@@ -320,7 +345,7 @@ def test_feature_select_variance_threshold():
     result = feature_select(
         na_data_unique_test_df,
         features=na_data_unique_test_df.columns.tolist(),
-        operation=["drop_na_columns", "variance_threshold"],
+        operation=["drop_na_columns", "frequency_threshold"],
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -333,7 +358,7 @@ def test_feature_select_variance_threshold():
     result = feature_select(
         na_data_unique_test_df,
         features=na_data_unique_test_df.columns.tolist(),
-        operation=["variance_threshold", "drop_na_columns"],
+        operation=["frequency_threshold", "drop_na_columns"],
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -403,7 +428,7 @@ def test_feature_select_all():
     result = feature_select(
         profiles=data_all_test_df,
         features=data_all_test_df.columns.tolist(),
-        operation=["drop_na_columns", "correlation_threshold", "variance_threshold"],
+        operation=["drop_na_columns", "correlation_threshold", "frequency_threshold"],
         corr_threshold=0.7,
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
@@ -651,6 +676,7 @@ def test_samples_parameter_in_feature_select():
         "noise_removal",
         "drop_na_columns",
         "variance_threshold",
+        "frequency_threshold",
         "correlation_threshold",
         "drop_outliers",
     ]

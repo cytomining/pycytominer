@@ -16,6 +16,7 @@ from pycytominer.cyto_utils import (
 from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 from pycytominer.operations import (
     correlation_threshold,
+    frequency_threshold,
     get_na_columns,
     noise_removal,
     variance_threshold,
@@ -46,6 +47,7 @@ def feature_select(
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
+    min_variance: Optional[float] = 1e-6,
 ) -> pd.DataFrame:
     """Performs feature selection based on the given operation.
 
@@ -120,11 +122,20 @@ def feature_select(
             Previously accepted a path to a CSV file with a single ``blocklist``
             column.  This parameter will be removed in a future release.
     outlier_cutoff : float, default 500
-        The threshold at which the maximum or minimum value of a feature across a full experiment is excluded. Note that this procedure is typically applied after normalization.
+        The threshold at which the maximum or minimum value of a feature across a full
+        experiment is excluded. Note that this procedure is typically applied after
+        normalization.
     noise_removal_perturb_groups: str or list of str, optional
-        Perturbation groups corresponding to rows in profiles or the the name of the metadata column containing this information.
+        Perturbation groups corresponding to rows in profiles or the the name of the
+        metadata column containing this information.
     noise_removal_stdev_cutoff: float,optional
-        Maximum mean feature standard deviation to be kept for noise removal, grouped by the identity of the perturbation from perturb_list. The data must already be normalized so that this cutoff can apply to all columns.
+        Maximum mean feature standard deviation to be kept for noise removal, grouped
+        by the identity of the perturbation from perturb_list. The data must already be
+        normalized so that this cutoff can apply to all columns.
+    min_variance: float
+        Removes features with variance less than this value. A low value will remove
+        continuous features that have very low variance (e.g. this will remove a feature:
+        [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]). Default is 1e-6.
 
     Returns
     -------
@@ -151,6 +162,7 @@ def feature_select(
 
     all_ops = [
         "variance_threshold",
+        "frequency_threshold",
         "correlation_threshold",
         "drop_na_columns",
         "blocklist",
@@ -181,6 +193,13 @@ def feature_select(
     for op in operation:
         if op == "variance_threshold":
             exclude = variance_threshold(
+                population_df=profiles,
+                features=features,
+                samples=samples,
+                min_variance=min_variance,
+            )
+        if op == "frequency_threshold":
+            exclude = frequency_threshold(
                 population_df=profiles,
                 features=features,
                 samples=samples,
