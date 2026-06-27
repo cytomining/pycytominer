@@ -1,6 +1,7 @@
 """
-Remove variables with near-zero variance.
-Modified from caret::nearZeroVar()
+Remove features with low information content.
+
+This module supports low-variance filtering for and frequency/uniqueness filtering.
 """
 
 from typing import Union
@@ -88,9 +89,9 @@ def variance_threshold(
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
     min_variance: float, default 1e-6
-        If not None, remove continuous features with variance less than this value.
-        A low value will remove features that have very low variance (e.g. this will
-        remove a feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
+        Removes continuous features with variance less than this value.  A low value
+        will remove features that have very low variance (e.g. this will remove a
+        feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
 
     Returns
     -------
@@ -100,7 +101,7 @@ def variance_threshold(
     """
 
     # check if freq_cut and unique_cut are between 0 and 1
-    if not isinstance(min_variance, (float, type(None))):
+    if not isinstance(min_variance, float):
         raise ValueError("'min_variance must be a float value")
     if isinstance(min_variance, float) and min_variance < 0:
         raise ValueError("min_variance must be a non-negative")
@@ -113,7 +114,6 @@ def variance_threshold(
     )
 
     # Exclude low-variance features (var < var_eps)
-    # Return empty list if var_eps is None
     excluded_low_variance_features = calculate_variance(
         population_df=population_df, var_eps=min_variance
     )
