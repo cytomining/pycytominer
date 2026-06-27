@@ -68,6 +68,11 @@ def variance_threshold(
 ) -> list[str]:
     """Exclude features that have low variance (low information content)
 
+    This is done by calculating the variance of each feature in the population_df and then
+    removing features with variance less than the `min_variance` threshold. A low value
+    will remove continuous features that have very low variance (e.g. this will remove a
+    feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
+
     Parameters
     ----------
     population_df : pd.DataFrame
@@ -217,6 +222,12 @@ def calculate_frequency(
     """Calculate frequency of second most common to most common feature.
     Used in pandas.apply()
 
+    This is done for discrete feature values by calculating the value counts of the
+    feature column, and then taking the ratio of the second most common value to the
+    most common value. If the ratio is less than freq_cut, return np.nan, otherwise
+    return the feature name. Example: [1, 1, 1, 1, 2, 2, ...] will return np.nan if
+    freq_cut is 0.05.
+
     Parameters
     ----------
     feature_column : pd.Series
@@ -225,7 +236,7 @@ def calculate_frequency(
         Ratio (2nd most common feature val / most common). Must range between 0 and 1.
         Remove features lower than freq_cut. A low freq_cut will remove features
         that have large difference between the most common feature and second most
-        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
+        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 2, 2, ...])
 
     Returns
     -------
@@ -251,14 +262,14 @@ def calculate_frequency(
         return str(feature_column.name)
 
 
-def calculate_variance(population_df: pd.DataFrame, var_eps: float = 1e-6) -> list[str]:
+def calculate_variance(population_df: pd.DataFrame, var_eps: float) -> list[str]:
     """Calculate variance of a feature column.
 
     Parameters
     ----------
     population_df : pd.DataFrame
         Pandas DataFrame containing the population data
-    var_eps : float, optional
+    var_eps : float
         Variance threshold. Features with variance less than this value will be excluded.
 
     Returns
