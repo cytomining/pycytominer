@@ -137,7 +137,7 @@ def test_variance_threshold_min_variance_zero_excludes_no_features():
     assert excluded_features == []
 
 
-@pytest.mark.parametrize("min_variance", [-0.1, 1, "0.1"])
+@pytest.mark.parametrize("min_variance", [-0.1, 1, "0.1", None])
 def test_variance_threshold_min_variance_invalid(min_variance):
     """Test that variance_threshold rejects invalid min_variance values."""
     with pytest.raises(ValueError):

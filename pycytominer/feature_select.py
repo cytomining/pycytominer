@@ -47,7 +47,7 @@ def feature_select(
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
-    min_variance: Optional[float] = 1e-6,
+    min_variance: float = 1e-6,
 ) -> pd.DataFrame:
     """Performs feature selection based on the given operation.
 
