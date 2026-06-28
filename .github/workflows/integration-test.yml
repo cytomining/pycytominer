@@ -193,6 +193,8 @@ jobs:
           setup-uv: true
           install-deps: true
       - name: Build
+        env:
+          UV_CACHE_DIR: ${{ runner.temp }}/.cache/uv
         run: uv build
       - name: Get Pycytominer version
         id: get_version
