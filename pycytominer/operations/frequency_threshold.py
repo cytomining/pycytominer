@@ -2,6 +2,7 @@
 This module contains the frequency_threshold function, which is used to exclude features
 that have low variance (low information content) based on frequency and uniqueness.
 """
+
 from typing import Union
 
 import numpy as np
