@@ -65,7 +65,9 @@ def test_variance_threshold_min_variance_invalid(min_variance):
 @pytest.mark.parametrize("features", ["not-infer", ("feature",)])
 def test_variance_threshold_features_invalid(features):
     """Test that variance_threshold rejects unsupported features values."""
-    with pytest.raises(ValueError, match='features must be a list of column names or "infer"'):
+    with pytest.raises(
+        ValueError, match='features must be a list of column names or "infer"'
+    ):
         variance_threshold(
             population_df=pd.DataFrame({"feature": [1, 2, 3]}),
             features=features,
