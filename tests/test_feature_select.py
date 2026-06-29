@@ -308,8 +308,15 @@ def test_feature_select_variance_threshold():
             0.73120,
             0.73122,
             0.73119,
-        ], # low_variance feature
-        "Cells_AreaShape_Area": [113.4, 128.7, 141.2, 176.8, 190.5, 224.9], # high_variance feature
+        ],  # low_variance feature
+        "Cells_AreaShape_Area": [
+            113.4,
+            128.7,
+            141.2,
+            176.8,
+            190.5,
+            224.9,
+        ],  # high_variance feature
     }).reset_index(drop=True)
 
     result = feature_select(
