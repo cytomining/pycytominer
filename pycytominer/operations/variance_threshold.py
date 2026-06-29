@@ -13,7 +13,7 @@ def variance_threshold(
     population_df: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
-    min_variance: int | float = 0,
+    min_variance: int | float = 1e-6,
 ) -> list[str]:
     """Exclude features that have low variance (low information content)
 
@@ -36,7 +36,7 @@ def variance_threshold(
         function, so you should  structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
-    min_variance: float, default 0
+    min_variance: float, default 1e-6
         Removes features with variance less than this value.
 
     Returns

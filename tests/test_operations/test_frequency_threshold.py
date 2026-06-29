@@ -101,6 +101,36 @@ def test_frequency_threshold():
     assert len(excluded_features_freq) == 0
 
 
+@pytest.mark.parametrize(
+    "kwargs, expected_error",
+    [
+        ({"freq_cut": -0.1}, "freq_cut variable must be between"),
+        ({"freq_cut": 1.1}, "freq_cut variable must be between"),
+        ({"unique_cut": -0.1}, "unique_cut variable must be between"),
+        ({"unique_cut": 1.1}, "unique_cut variable must be between"),
+        (
+            {"features": "not-infer"},
+            'features must be a list of column names or "infer"',
+        ),
+        (
+            {"features": ("a", "b")},
+            'features must be a list of column names or "infer"',
+        ),
+        ({"samples": ["a > 1"]}, "samples must be a string"),
+    ],
+)
+def test_frequency_threshold_invalid_inputs(kwargs, expected_error):
+    """Test that frequency_threshold rejects invalid threshold and subset inputs."""
+    threshold_kwargs = {
+        "population_df": data_unique_test_df,
+        "features": data_unique_test_df.columns.tolist(),
+    }
+    threshold_kwargs.update(kwargs)
+
+    with pytest.raises(ValueError, match=expected_error):
+        frequency_threshold(**threshold_kwargs)
+
+
 def test_frequency_threshold_featureinfer():
     """Test that frequency_threshold supports inferred CellProfiler features."""
     unique_cut = 0.01

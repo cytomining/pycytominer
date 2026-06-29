@@ -20,6 +20,21 @@ def test_variance_threshold():
     assert excluded_features == ["low_var"]
 
 
+def test_variance_threshold_default_min_variance():
+    """Test that variance_threshold defaults to removing very low-variance features."""
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
+    excluded_features = variance_threshold(
+        population_df=data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+    )
+
+    assert excluded_features == ["low_var"]
+
+
 def test_variance_threshold_min_variance_zero_excludes_no_features():
     """Test that variance_threshold keeps all features when min_variance is zero."""
     data_var_test_df = pd.DataFrame({
@@ -36,7 +51,7 @@ def test_variance_threshold_min_variance_zero_excludes_no_features():
     assert excluded_features == []
 
 
-@pytest.mark.parametrize("min_variance", [-0.1, "0.1", None])
+@pytest.mark.parametrize("min_variance", [-0.1, "0.1", None, True])
 def test_variance_threshold_min_variance_invalid(min_variance):
     """Test that variance_threshold rejects invalid min_variance values."""
     with pytest.raises(ValueError):
@@ -44,6 +59,26 @@ def test_variance_threshold_min_variance_invalid(min_variance):
             population_df=pd.DataFrame({"feature": [1, 2, 3]}),
             features=["feature"],
             min_variance=min_variance,
+        )
+
+
+@pytest.mark.parametrize("features", ["not-infer", ("feature",)])
+def test_variance_threshold_features_invalid(features):
+    """Test that variance_threshold rejects unsupported features values."""
+    with pytest.raises(ValueError, match='features must be a list of column names or "infer"'):
+        variance_threshold(
+            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            features=features,
+        )
+
+
+def test_variance_threshold_samples_invalid():
+    """Test that variance_threshold rejects non-string sample filters."""
+    with pytest.raises(ValueError, match="samples must be a string"):
+        variance_threshold(
+            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            features=["feature"],
+            samples=["feature > 1"],
         )
 
 
