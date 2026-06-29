@@ -37,9 +37,9 @@ runs:
       # version or the default packages change. Both of the remaining
       # cache keys depend on PY.
       shell: bash
-      run:
-        echo "PY=$((python -VV; pip freeze) | shasum -a 256 | cut -d' ' -f1)" >>
-        $GITHUB_ENV
+      run: |
+        echo "PY=$((python -VV; pip freeze) | shasum -a 256 | cut -d' ' -f1)" >> $GITHUB_ENV
+        echo "UV_CACHE_DIR=${{ runner.temp }}/.cache/uv" >> $GITHUB_ENV
     - name: Cache pre-commit installation
       # The cache key for the pre-commit installation is a hash of the
       # operating system, PY (see above), and the pre-commit config.
@@ -62,7 +62,7 @@ runs:
       with:
         path: |
           .cache
-          .cache/uv
+          ${{ runner.temp }}/.cache/uv
           .venv
         key:
           cache|${{ runner.os }}|${{ runner.arch }}|${{ env.PY }}|${{ hashFiles('pyproject.toml') }}|${{

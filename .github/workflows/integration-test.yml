@@ -24,7 +24,7 @@ env:
   PYTEST_ADDOPTS: ${{ github.event.inputs.pytest_addopts }}
   PYTHONIOENCODING: "UTF-8"
   TARGET_PYTHON_VERSION: "3.10"
-  UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
+  UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv # overridden per-job by setup-env action via $GITHUB_ENV
 
 jobs:
   quality-test:
@@ -193,8 +193,6 @@ jobs:
           setup-uv: true
           install-deps: true
       - name: Build
-        env:
-          UV_CACHE_DIR: ${{ runner.temp }}/.cache/uv
         run: uv build
       - name: Get Pycytominer version
         id: get_version
