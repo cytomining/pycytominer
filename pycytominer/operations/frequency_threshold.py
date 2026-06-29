@@ -1,6 +1,5 @@
 """
-This module contains the frequency_threshold function, which is used to exclude features
-that have low variance (low information content) based on frequency and uniqueness.
+Identify low-information features based on repeated values and low uniqueness.
 """
 
 from typing import Union
@@ -76,7 +75,6 @@ def frequency_threshold(
     # Subset the population_df based on features and samples
     if samples != "all":
         population_df = population_df.query(expr=samples)
-
     if features == "infer":
         inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):

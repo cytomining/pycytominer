@@ -1,7 +1,5 @@
 """
-Remove features with low information content.
-
-This module supports low-variance filtering for and frequency/uniqueness filtering.
+Identify low-information features by filtering columns with variance below a threshold.
 """
 
 from typing import Union
@@ -38,7 +36,7 @@ def variance_threshold(
         function, so you should  structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
-    min_variance: float, default 0.0
+    min_variance: float, default 1e-6
         Removes features with variance less than this value.
 
     Returns
@@ -49,10 +47,10 @@ def variance_threshold(
     """
 
     # Checking for min_variance type and value
-    if not isinstance(min_variance, float):
-        raise ValueError("'min_variance must be a float value")
-    if isinstance(min_variance, float) and min_variance < 0:
-        raise ValueError("min_variance must be a non-negative")
+    if not isinstance(min_variance, float) or isinstance(min_variance, bool):
+        raise ValueError("min_variance must be a float value")
+    if min_variance < 0:
+        raise ValueError("min_variance must be non-negative")
 
     # Checking for features type and value
     if features == "infer":
