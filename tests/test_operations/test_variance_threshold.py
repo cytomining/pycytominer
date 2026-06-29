@@ -5,7 +5,7 @@ from pycytominer.operations import variance_threshold
 
 
 def test_variance_threshold():
-    """Test that variance_threshold removes low-variance continuous features."""
+    """Test that variance_threshold removes low-variance features."""
     data_var_test_df = pd.DataFrame({
         "low_var": [1, 1, 1, 1, 1.001, 1.001],
         "high_var": [0, 0, 10, 10, 20, 20],

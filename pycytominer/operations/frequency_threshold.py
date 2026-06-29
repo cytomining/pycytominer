@@ -61,13 +61,19 @@ def frequency_threshold(
     if not 0 <= unique_cut <= 1:
         raise ValueError("unique_cut variable must be between (0 and 1)")
 
-    # Subset the population_df based on features and samples
-    # type checking for features and samples
-    if not isinstance(features, (str, list)):
-        raise ValueError("features must be a string or a list of strings")
+    # Checking for features type and value
+    if features == "infer":
+        inferred_features = infer_cp_features(population_df)
+    elif isinstance(features, list):
+        inferred_features = features
+    else:
+        raise ValueError('features must be a list of column names or "infer"')
+
+    # Checking for samples type and value
     if not isinstance(samples, str):
         raise ValueError("samples must be a string")
 
+    # Subset the population_df based on features and samples
     if samples != "all":
         population_df = population_df.query(expr=samples)
 
@@ -122,12 +128,6 @@ def calculate_frequency(
     """Calculate frequency of second most common to most common feature.
     Used in pandas.apply()
 
-    This is done for discrete feature values by calculating the value counts of the
-    feature column, and then taking the ratio of the second most common value to the
-    most common value. If the ratio is less than freq_cut, return np.nan, otherwise
-    return the feature name. Example: [1, 1, 1, 1, 2, 2, ...] will return np.nan if
-    freq_cut is 0.05.
-
     Parameters
     ----------
     feature_column : pd.Series
@@ -136,7 +136,7 @@ def calculate_frequency(
         Ratio (2nd most common feature val / most common). Must range between 0 and 1.
         Remove features lower than freq_cut. A low freq_cut will remove features
         that have large difference between the most common feature and second most
-        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 2, 2, ...])
+        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
 
     Returns
     -------

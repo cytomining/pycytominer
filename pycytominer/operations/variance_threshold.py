@@ -21,7 +21,7 @@ def variance_threshold(
 
     This is done by calculating the variance of each feature in the population_df and then
     removing features with variance less than the `min_variance` threshold. A low value
-    will remove continuous features that have very low variance (e.g. this will remove a
+    will remove features that have very low variance (e.g. this will remove a
     feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
 
     Parameters
@@ -39,9 +39,7 @@ def variance_threshold(
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
     min_variance: float, default 0.0
-        Removes continuous features with variance less than this value.  A low value
-        will remove features that have very low variance (e.g. this will remove a
-        feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
+        Removes features with variance less than this value.
 
     Returns
     -------
@@ -50,15 +48,21 @@ def variance_threshold(
 
     """
 
-    # check if freq_cut and unique_cut are between 0 and 1
+    # Checking for min_variance type and value
     if not isinstance(min_variance, float):
         raise ValueError("'min_variance must be a float value")
     if isinstance(min_variance, float) and min_variance < 0:
         raise ValueError("min_variance must be a non-negative")
 
-    # type checking for features and samples
-    if not isinstance(features, (str, list)):
-        raise ValueError("features must be a string or a list of strings")
+    # Checking for features type and value
+    if features == "infer":
+        inferred_features = infer_cp_features(population_df)
+    elif isinstance(features, list):
+        inferred_features = features
+    else:
+        raise ValueError('features must be a list of column names or "infer"')
+
+    # Checking for samples type and value
     if not isinstance(samples, str):
         raise ValueError("samples must be a string")
 

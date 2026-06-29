@@ -299,10 +299,17 @@ def test_feature_select_get_na_columns_feature_infer():
 
 
 def test_feature_select_variance_threshold():
-    """Test that feature_select removes low-variance continuous features."""
+    """Test that feature_select removes low-variance features."""
     data_var_test_df = pd.DataFrame({
-        "low_var": [1, 1, 1, 1, 1.001, 1.001],
-        "high_var": [0, 0, 10, 10, 20, 20],
+        "Cells_AreaShape_Eccentricity": [
+            0.73120,
+            0.73121,
+            0.73119,
+            0.73120,
+            0.73122,
+            0.73119,
+        ], # low_variance feature
+        "Cells_AreaShape_Area": [113.4, 128.7, 141.2, 176.8, 190.5, 224.9], # high_variance feature
     }).reset_index(drop=True)
 
     result = feature_select(
@@ -311,9 +318,9 @@ def test_feature_select_variance_threshold():
         operation="variance_threshold",
         min_variance=0.000001,
     )
-    expected_result = pd.DataFrame({"high_var": [0, 0, 10, 10, 20, 20]}).reset_index(
-        drop=True
-    )
+    expected_result = pd.DataFrame({
+        "Cells_AreaShape_Area": [113.4, 128.7, 141.2, 176.8, 190.5, 224.9]
+    }).reset_index(drop=True)
     pd.testing.assert_frame_equal(result, expected_result)
 
     result = feature_select(
