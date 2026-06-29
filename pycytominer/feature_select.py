@@ -47,7 +47,7 @@ def feature_select(
     outlier_cutoff: float = 500.0,
     noise_removal_perturb_groups: Optional[Union[str, list[str]]] = None,
     noise_removal_stdev_cutoff: Optional[float] = None,
-    min_variance: float = 1e-6,
+    min_variance: float = 0,
 ) -> pd.DataFrame:
     """Performs feature selection based on the given operation.
 
@@ -134,8 +134,8 @@ def feature_select(
         normalized so that this cutoff can apply to all columns.
     min_variance: float
         Removes features with variance less than this value. A low value will remove
-        continuous features that have very low variance (e.g. this will remove a feature:
-        [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]). Default is 1e-6.
+        features that have very low variance (e.g. this will remove a feature:
+        [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]). Default is 0.
 
     Returns
     -------

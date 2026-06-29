@@ -77,12 +77,14 @@ def frequency_threshold(
         population_df = population_df.query(expr=samples)
     if features == "infer":
         inferred_features = infer_cp_features(population_df)
+    if features == "infer":
+        inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):
         inferred_features = features
+    else:
+        raise ValueError('features must be a list of column names or "infer"')
 
     population_df = population_df.loc[:, inferred_features]
-
-    # Exclude features based on frequency
     # Frequency is the ratio of the second most common value to the most common value.
     # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
     excluded_features_freq = population_df.apply(
