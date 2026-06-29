@@ -13,7 +13,7 @@ def variance_threshold(
     population_df: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
-    min_variance: float = 1e-6,
+    min_variance: int | float = 1e-6,
 ) -> list[str]:
     """Exclude features that have low variance (low information content)
 
@@ -47,7 +47,7 @@ def variance_threshold(
     """
 
     # Checking for min_variance type and value
-    if not isinstance(min_variance, float) or isinstance(min_variance, bool):
+    if not isinstance(min_variance, (int, float)) or isinstance(min_variance, bool):
         raise ValueError("min_variance must be a float value")
     if min_variance < 0:
         raise ValueError("min_variance must be non-negative")
@@ -77,7 +77,7 @@ def variance_threshold(
     population_df = population_df.loc[:, inferred_features]
 
     # Calculate the variance of each feature in the population_df.
-    # This returns a series of feature names as the index and the variance as the values.
+    # Returns a pd.Series of feature names as the index and the variance as the values.
     feature_variances = population_df.var(ddof=0, skipna=True)
 
     # Set a mask for features with variance less than min_variance.
