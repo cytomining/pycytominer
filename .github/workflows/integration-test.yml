@@ -39,7 +39,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Full history required for branch-based pre-commit checks
           fetch-depth: 0
@@ -52,7 +52,7 @@ jobs:
           setup-uv: true
           install-deps: false
       - name: Run pre-commit checks on all files (with prek)
-        uses: j178/prek-action@v2
+        uses: j178/prek-action@v2.0.4
         id: pre_commit
       # run pre-commit ci lite for automated fixes
       - uses: pre-commit-ci/lite-action@v1.1.0
@@ -67,7 +67,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup python, and check pre-commit cache
         uses: ./.github/actions/setup-env
         with:
@@ -91,7 +91,7 @@ jobs:
       - name: Install pandoc
         uses: pandoc/actions/setup@v1
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup python, and check pre-commit cache
         uses: ./.github/actions/setup-env
         with:
@@ -130,7 +130,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup python, and load cache
         uses: ./.github/actions/setup-env
         with:
@@ -153,7 +153,7 @@ jobs:
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
         if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           OS: ${{ matrix.os }}
           PYTHON: ${{ matrix.python-version }}
@@ -181,7 +181,7 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Setup python, and load cache
@@ -222,7 +222,7 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup python, and load cache
         uses: ./.github/actions/setup-env
         with:
@@ -265,7 +265,7 @@ jobs:
     steps:
       # checks out selected files for docker image build testing
       - name: Checkout selected files
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           sparse-checkout: |
             build/docker/Dockerfile
@@ -283,7 +283,7 @@ jobs:
       # note: roughly follows Docker documentation on GitHub Actions usage
       # found on the following https://github.com/docker/build-push-action
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@v4.1.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       # attempts to build a test image for observing test behavior
@@ -320,7 +320,7 @@ jobs:
       - name: Schedule-based docker image push
         # only run this task if we have a schedule trigger from main on cytomining/pycytominer
         if: github.event_name == 'schedule' &&  github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.2.0
         with:
           context: "."
           push: true
@@ -331,7 +331,7 @@ jobs:
       - name: Push-based docker image push
         # only run this task if we have a pull request which is merged
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'cytomining/pycytominer'
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.2.0
         with:
           context: "."
           push: true
