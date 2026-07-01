@@ -5,6 +5,7 @@ Identify low-information features by filtering columns with variance below a thr
 from typing import Union
 
 import pandas as pd
+from sklearn.feature_selection import VarianceThreshold
 
 from pycytominer.cyto_utils.features import infer_cp_features
 
@@ -76,15 +77,16 @@ def variance_threshold(
     # Subset the population_df based on the inferred features
     population_df = population_df.loc[:, inferred_features]
 
-    # Calculate the variance of each feature in the population_df.
-    # Returns a pd.Series of feature names as the index and the variance as the values.
-    feature_variances = population_df.var(ddof=0, skipna=True)
+    # Create a VarianceThreshold object with the specified min_variance threshold
+    # and fit it to the population_df to identify low-variance features.
+    variance_selector = VarianceThreshold(threshold=min_variance)
+    variance_selector.fit(population_df)
 
     # Set a mask for features with variance less than min_variance.
-    is_low_variance_mask = feature_variances < min_variance
+    is_low_variance_mask = ~variance_selector.get_support()
 
     # return features with low variance as a list of feature names
-    excluded_low_variance_features = feature_variances.index[
+    excluded_low_variance_features = population_df.columns[
         is_low_variance_mask
     ].tolist()
 
