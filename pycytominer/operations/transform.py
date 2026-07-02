@@ -346,6 +346,10 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     Apply a rank-based quantile transformation to each feature independently
     and map the resulting values to a normal distribution.
 
+    1) Rank the values of each feature independently.
+    2) Map the ranks to quantiles of a normal distribution.
+    3) Return the transformed values.
+
     This class wraps sklearn.preprocessing.QuantileTransformer with
     output_distribution="normal".
 
@@ -354,7 +358,6 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     n_quantiles : int
         Number of quantiles to be computed. Must be less than or equal to the number of
         samples.
-
 
     Notes
     -----
@@ -383,6 +386,8 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         self
             Fitted inverse normal transform.
         """
+        # Set number of quantiles, if n_quantiles is greater than the number of samples\
+        # set it to the number of samples.
         self.n_quantiles_ = min(self.n_quantiles, x.shape[0])
 
         # Initialize transformer and set output distribution to normal.
