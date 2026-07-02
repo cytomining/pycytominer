@@ -11,7 +11,7 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
 from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
-from pycytominer.operations import RobustMAD, Spherize
+from pycytominer.operations import RobustMAD, Spherize, InverseNormalTransform
 
 
 @write_to_file_if_user_specifies_output_details
@@ -33,6 +33,7 @@ def normalize(
     spherize_center: bool = True,
     spherize_method: str = "ZCA-cor",
     spherize_epsilon: float = 1e-6,
+    inverse_normal_n_quantiles: int = 1000,
 ) -> pd.DataFrame:
     """Normalize profiling features
 
@@ -103,6 +104,9 @@ def normalize(
     spherize_epsilon : float, default 1e-6.
         The sphering (aka whitening) fudge factor parameter. The function only uses
         this variable if method = "spherize".
+    inverse_normal_n_quantiles : int, default 1000
+        The number of quantiles to use for the inverse normal transformation. The
+        function only uses this variable if method = "inverse_normal".
 
     Returns
     -------
@@ -187,7 +191,13 @@ def normalize(
     # Define which scaler to use
     method = method.lower()
 
-    avail_methods = ["standardize", "robustize", "mad_robustize", "spherize"]
+    avail_methods = [
+        "standardize",
+        "robustize",
+        "mad_robustize",
+        "spherize",
+        "inverse_normal",
+    ]
     if method not in avail_methods:
         raise ValueError(f"operation must be one {avail_methods}")
 
@@ -206,6 +216,8 @@ def normalize(
             epsilon=spherize_epsilon,
             return_numpy=True,
         )
+    elif method == "inverse_normal":
+        scaler = InverseNormalTransform(n_quantiles=inverse_normal_n_quantiles)
 
     if features == "infer":
         features = infer_cp_features(profiles, image_features=image_features)
