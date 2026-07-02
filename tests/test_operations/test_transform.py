@@ -4,8 +4,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from scipy.stats import median_abs_deviation
+from sklearn.preprocessing import QuantileTransformer
 
-from pycytominer.operations.transform import RobustMAD, Spherize
+from pycytominer.operations.transform import InverseNormalTransform, RobustMAD, Spherize
 
 random.seed(123)
 
@@ -98,3 +99,31 @@ def test_robust_mad():
     expected_result = data_df.shape[1]
 
     assert int(result) == expected_result
+
+
+def test_inverse_normal_transform_matches_quantile_transformer():
+    """
+    Testing the InverseNormalTransform class
+    """
+    scaler = InverseNormalTransform(n_quantiles=5)
+    scaler = scaler.fit(data_df)
+    transform_df = scaler.transform(data_df)
+
+    expected_transform_df = QuantileTransformer(
+        n_quantiles=5,
+        output_distribution="normal",
+    ).fit_transform(data_df)
+
+    assert scaler.n_quantiles_ == 5
+    np.testing.assert_allclose(transform_df, expected_transform_df)
+
+
+def test_inverse_normal_transform_fit_transform():
+    """
+    Testing sklearn TransformerMixin fit_transform support
+    """
+    scaler = InverseNormalTransform(n_quantiles=5)
+    transform_df = scaler.fit_transform(data_df)
+
+    assert transform_df.shape == data_df.shape
+    assert np.isfinite(transform_df).all()

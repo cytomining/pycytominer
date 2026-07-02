@@ -5,6 +5,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.preprocessing import QuantileTransformer
 
 from pycytominer.normalize import normalize
 
@@ -698,6 +699,81 @@ def test_normalize_robustize_mad_allsamples_novar():
     # Check that infinite or nan values are not introduced
     assert np.isfinite(normalize_result.loc[:, features].values).all()
     assert normalize_result.isna().sum().sum() == 0
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_inverse_normal_inferred_image_profile_features():
+    """
+    Testing normalize pycytominer function
+    method = "inverse_normal"
+    features = "infer"
+    samples = "all"
+    """
+    # Set features to the inferred image profile features
+    features = ["Cells_x", "Cells_y", "Cytoplasm_z", "Nuclei_zz"]
+
+    # Run normalize with the inferred features
+    normalize_result = normalize(
+        profiles=data_feature_infer_df.copy(),
+        features="infer",
+        meta_features=["Metadata_plate", "Metadata_treatment"],
+        samples="all",
+        method="inverse_normal",
+        inverse_normal_n_quantiles=5,
+    )
+
+    # Compute the expected result using QuantileTransformer with the same parameters
+    expected_features = QuantileTransformer(
+        n_quantiles=5,
+        output_distribution="normal",
+    ).fit_transform(data_feature_infer_df.loc[:, features])
+    expected_result = pd.concat(
+        [
+            data_feature_infer_df.loc[:, ["Metadata_plate", "Metadata_treatment"]],
+            pd.DataFrame(expected_features, columns=features),
+        ],
+        axis="columns",
+    )
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
+
+
+def test_normalize_inverse_normal_control_samples():
+    """
+    Testing normalize pycytominer function
+    method = "inverse_normal"
+    samples = "Metadata_treatment == 'control'"
+    """
+
+    # Set features to the inferred image profile features
+    # and add a control query to select only control samples
+    features = ["Cells_x", "Cells_y", "Cytoplasm_z", "Nuclei_zz"]
+    control_query = "Metadata_treatment == 'control'"
+
+    # Run normalize with the inferred features and control samples
+    normalize_result = normalize(
+        profiles=data_feature_infer_df.copy(),
+        features=features,
+        meta_features=["Metadata_plate", "Metadata_treatment"],
+        samples=control_query,
+        method="inverse_normal",
+        inverse_normal_n_quantiles=3,
+    )
+
+    # Set up the expected result using QuantileTransformer with the same parameters
+    expected_scaler = QuantileTransformer(
+        n_quantiles=3,
+        output_distribution="normal",
+    ).fit(data_feature_infer_df.query(control_query).loc[:, features])
+    expected_features = expected_scaler.transform(data_feature_infer_df.loc[:, features])
+    expected_result = pd.concat(
+        [
+            data_feature_infer_df.loc[:, ["Metadata_plate", "Metadata_treatment"]],
+            pd.DataFrame(expected_features, columns=features),
+        ],
+        axis="columns",
+    )
 
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
