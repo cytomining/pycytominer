@@ -766,7 +766,9 @@ def test_normalize_inverse_normal_control_samples():
         n_quantiles=3,
         output_distribution="normal",
     ).fit(data_feature_infer_df.query(control_query).loc[:, features])
-    expected_features = expected_scaler.transform(data_feature_infer_df.loc[:, features])
+    expected_features = expected_scaler.transform(
+        data_feature_infer_df.loc[:, features]
+    )
     expected_result = pd.concat(
         [
             data_feature_infer_df.loc[:, ["Metadata_plate", "Metadata_treatment"]],
