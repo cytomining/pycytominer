@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, QuantileTransformer
 
 Spherize_type = TypeVar("Spherize_type", bound="Spherize")
 RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
@@ -338,3 +338,76 @@ class RobustMAD(BaseEstimator, TransformerMixin):
             RobustMAD transformed dataframe
         """
         return (X - self.median) / (self.mad + self.epsilon)
+
+
+class InverseNormalTransform:
+    """Inverse normal transform.
+
+    Apply a rank-based quantile transformation to each feature independently
+    and map the resulting values to a normal distribution.
+
+    This class wraps sklearn.preprocessing.QuantileTransformer with
+    output_distribution="normal".
+
+    Attributes
+    ---------
+    n_quantiles : int
+        Number of quantiles to be computed. Must be less than or equal to the number of
+        samples.
+
+
+    Notes
+    -----
+    This transform is rank-based: values are first converted to quantile ranks,
+    then mapped to a normal distribution. The transformed values are therefore
+    normal scores, not the original raw measurements, and distances between raw
+    values are not preserved.
+    """
+
+    def __init__(
+        self,
+        n_quantiles=1000,
+    ):
+        self.n_quantiles = n_quantiles
+
+    def fit(self, x):
+        """Fit inverse normal transform.
+
+        Parameters
+        ----------
+        x : pandas.DataFrame or numpy.ndarray
+            Data to fit.
+
+        Returns
+        -------
+        self
+            Fitted inverse normal transform.
+        """
+        self.n_quantiles_ = min(self.n_quantiles, x.shape[0])
+
+        # Initialize transformer and set output distribution to normal.
+        # We set it to normal because we want to map the ranks to a normal distribution.
+        self.transformer = QuantileTransformer(
+            n_quantiles=self.n_quantiles_,
+            output_distribution="normal",
+            random_state=self.random_state,
+        )
+
+        self.transformer.fit(x)
+
+        return self
+
+    def transform(self, x):
+        """Apply inverse normal transform.
+
+        Parameters
+        ----------
+        x : pandas.DataFrame or numpy.ndarray
+            Data to transform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Transformed data.
+        """
+        return self.transformer.transform(x)
