@@ -56,6 +56,9 @@ updates:
     ignore:
       # ignore cytominer-database as it is deprecated
       - dependency-name: "cytominer-database"
+      # csvkit>=2 drops the csvclean `-n` flag that cytominer-database==0.3.4 depends on
+      - dependency-name: "csvkit"
+        update-types: ["version-update:semver-major"]
 
   # Perform checks and updates for pre-commit hook versions.
   - package-ecosystem: "pre-commit"
