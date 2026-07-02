@@ -340,7 +340,7 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         return (X - self.median) / (self.mad + self.epsilon)
 
 
-class InverseNormalTransform:
+class InverseNormalTransform(BaseEstimator, TransformerMixin):
     """Inverse normal transform.
 
     Apply a rank-based quantile transformation to each feature independently
@@ -390,7 +390,6 @@ class InverseNormalTransform:
         self.transformer = QuantileTransformer(
             n_quantiles=self.n_quantiles_,
             output_distribution="normal",
-            random_state=self.random_state,
         )
 
         self.transformer.fit(x)
