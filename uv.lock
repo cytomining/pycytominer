@@ -1239,7 +1239,7 @@ toml = [
 
 [[package]]
 name = "csvkit"
-version = "2.2.0"
+version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agate" },
@@ -1250,9 +1250,9 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "xlrd" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/bf/59b035abead12d9498c96dc05b965ec77683d3c794305dec2648e23830cc/csvkit-2.2.0.tar.gz", hash = "sha256:147318a8dbaec07c0bbb9291c14b78de5fa32ed3d4a5c2396e52a83c0a30df6b", size = 3820365, upload-time = "2025-12-15T18:52:59.738Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/13/ae/df3f0a1d55a93eeae5be6e1537ecebc4e2c2ca038311e60e8b2e358a1221/csvkit-1.5.0.tar.gz", hash = "sha256:967a8be8fc58edf5621225b5a6a697b0e8730b962ea68085916a91860b22211c", size = 3811034, upload-time = "2024-03-28T15:27:22.731Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/76/7ffa26fcd79eb0a51daf73d18481d4d5214685545d27aadc5e76e01d522d/csvkit-2.2.0-py3-none-any.whl", hash = "sha256:c16660ba1582e26a635577e0a060fb4c95842d07913b46bd642f1a5597ae0176", size = 76059, upload-time = "2025-12-15T18:52:58.45Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/aa/6d15ccff35e6cbfbfca0a4bbb8b6fa266a667561a9c9571bda8c6247ad5d/csvkit-1.5.0-py2.py3-none-any.whl", hash = "sha256:3f81e6f9af1774688ee30f4bdf8abd7f927995c85cad6491cf7478c658cfe7be", size = 44158, upload-time = "2024-03-28T15:27:20.926Z" },
 ]
 
 [[package]]
@@ -4404,7 +4404,7 @@ requires-dist = [
     { name = "anndata", marker = "python_full_version < '3.11' and extra == 'anndata'", specifier = "<0.12.2" },
     { name = "boto3", marker = "extra == 'cell-locations'", specifier = ">=1.26.79" },
     { name = "clevercsv", specifier = ">=0.8.5,<0.9" },
-    { name = "csvkit", marker = "extra == 'collate'", specifier = ">=1,<2.3" },
+    { name = "csvkit", marker = "extra == 'collate'", specifier = ">=1,<2" },
     { name = "cytominer-database", marker = "extra == 'collate'", specifier = "==0.3.4" },
     { name = "fire", specifier = ">=0.5" },
     { name = "fsspec", marker = "extra == 'cell-locations'", specifier = ">=2023.1" },
