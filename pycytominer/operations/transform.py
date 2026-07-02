@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import StandardScaler, QuantileTransformer
+from sklearn.preprocessing import QuantileTransformer, StandardScaler
 
 Spherize_type = TypeVar("Spherize_type", bound="Spherize")
 RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")

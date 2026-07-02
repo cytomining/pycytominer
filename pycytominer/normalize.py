@@ -11,7 +11,7 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
 from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
-from pycytominer.operations import RobustMAD, Spherize, InverseNormalTransform
+from pycytominer.operations import InverseNormalTransform, RobustMAD, Spherize
 
 
 @write_to_file_if_user_specifies_output_details
@@ -70,8 +70,9 @@ def normalize(
         structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes). Defaults to "all".
     method : str
-        How to normalize the dataframe. Defaults to "standardize". Check avail_methods
-        for available normalization methods.
+        How to normalize the dataframe. Defaults to "standardize". Available
+        methods are "standardize", "robustize", "mad_robustize", "spherize",
+        and "inverse_normal".
     drop_cosmicqc_rows : bool
         Whether to drop rows that are flagged as QC failures. The function looks for columns
         from coSMicQC with "Metadata_cqc_" prefix and drop rows with True. Defaults to False.
@@ -126,6 +127,11 @@ def normalize(
 
     Notes
     -----
+    When ``method="inverse_normal"``, feature values are transformed by their
+    rank within each feature and mapped to a normal distribution. The output
+    values are normal scores rather than raw measurement values, and distances
+    between raw values are not preserved.
+
     Parameters: `output_file`, `output_type`, `compression_options`, and `float_format`
     are passed as kwargs to the `write_to_file_if_user_specifies_output_details` decorator,
     which handles writing the output DataFrame to file if the user specifies output
