@@ -79,7 +79,7 @@ def frequency_threshold(
     population_df = population_df.loc[:, inferred_features]
 
     # Calculate the frequency ratio (2nd most common value count / most common value
-    # count) for each feature. Returns a pandas Series [feature name, ratio]. 
+    # count) for each feature. Returns a pandas Series [feature name, ratio].
     freq_ratios = population_df.apply(calculate_frequency, axis=0)
 
     # Get the feature names that have a frequency ratio below the freq_cut threshold
