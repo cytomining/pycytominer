@@ -66,6 +66,8 @@ def variance_threshold(
         inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):
         inferred_features = features
+    else:
+        raise ValueError('features must be a list of column names or "infer"')
 
     # Subset the population_df based on the inferred features
     population_df = population_df.loc[:, inferred_features]
