@@ -404,7 +404,10 @@ def test_feature_select_correlation_threshold():
 
 
 def test_feature_select_all():
-    data_all_test_df = data_unique_test_df.assign(zz=a_feature)
+    low_variance_feature = [1] * 95 + [1.0001] * 5
+    data_all_test_df = data_unique_test_df.assign(
+        zz=a_feature, low_variance=low_variance_feature
+    )
     data_all_test_df.iloc[1, 4] = 2
     data_all_test_df.iloc[list(range(0, 50)), 1] = np.nan
 
@@ -418,6 +421,7 @@ def test_feature_select_all():
         "c": c_feature,
         "d": d_feature,
         "zz": a_feature,
+        "low_variance": low_variance_feature,
     }).reset_index(drop=True)
     expected_result.iloc[1, 2] = 2
     pd.testing.assert_frame_equal(result, expected_result)
@@ -439,10 +443,16 @@ def test_feature_select_all():
     from_file_result = pd.read_csv(out_file)
     pd.testing.assert_frame_equal(from_file_result, expected_result)
 
+    # Test that the order of operations does not matter
     result = feature_select(
         profiles=data_all_test_df,
         features=data_all_test_df.columns.tolist(),
-        operation=["drop_na_columns", "correlation_threshold", "frequency_threshold"],
+        operation=[
+            "drop_na_columns",
+            "correlation_threshold",
+            "frequency_threshold",
+            "variance_threshold",
+        ],
         corr_threshold=0.7,
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
