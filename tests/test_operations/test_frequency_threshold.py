@@ -31,40 +31,28 @@ def test_calculate_frequency():
     """
     Testing calculate_frequency pycytominer function for frequency threshold calculation
     """
-    freq_cut = 0.05
-
-    excluded_features_freq = data_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
-    )
+    freq_ratios = data_df.apply(calculate_frequency, axis="rows")
 
     expect_names = ["a", "b", "c", "x", "y", "z", "zz"]
-    expected_result = pd.Series(expect_names)
-    expected_result.index = expect_names
-    expected_result.a = np.nan
-
-    pd.testing.assert_series_equal(
-        excluded_features_freq.fillna("found me!"), expected_result.fillna("found me!")
+    expected_result = pd.Series(
+        [0.0, 1 / 5, 1 / 4, 1 / 2, 1.0, 1 / 3, 1 / 2], index=expect_names
     )
 
-    freq_cut = 0.25
-    excluded_features_freq = data_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
-    )
-    expected_result = pd.Series(expect_names)
-    expected_result.index = expect_names
-    expected_result.a = np.nan
-    expected_result.b = np.nan
+    pd.testing.assert_series_equal(freq_ratios, expected_result)
 
-    pd.testing.assert_series_equal(
-        excluded_features_freq.fillna("found me!"), expected_result.fillna("found me!")
-    )
+    # freq_cut of 0.05 should only exclude "a"
+    assert (freq_ratios < 0.05).sum() == 1
+    assert freq_ratios[freq_ratios < 0.05].index.tolist() == ["a"]
+
+    # freq_cut of 0.25 should exclude "a" and "b"
+    assert sorted(freq_ratios[freq_ratios < 0.25].index.tolist()) == ["a", "b"]
 
     # Test missing value (see issue #69)
-    missing_data = data_df.assign(missing=np.nan).apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
+    missing_freq_ratios = data_df.assign(missing=np.nan).apply(
+        calculate_frequency, axis="rows"
     )
 
-    assert missing_data.isna().sum() == 3
+    assert (missing_freq_ratios < 0.25).sum() == 3
 
 
 def test_frequency_threshold():
@@ -90,13 +78,8 @@ def test_frequency_threshold():
     assert sorted(excluded_features) == sorted(expected_result)
 
     freq_cut = -1
-    excluded_features_freq = data_unique_test_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
-    )
-
-    excluded_features_freq = excluded_features_freq[
-        excluded_features_freq.isna()
-    ].index.tolist()
+    freq_ratios = data_unique_test_df.apply(calculate_frequency, axis="rows")
+    excluded_features_freq = freq_ratios[freq_ratios < freq_cut].index.tolist()
 
     assert len(excluded_features_freq) == 0
 

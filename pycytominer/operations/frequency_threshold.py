@@ -4,7 +4,6 @@ Identify low-information features based on repeated values and low uniqueness.
 
 from typing import Union
 
-import numpy as np
 import pandas as pd
 
 from pycytominer.cyto_utils.features import infer_cp_features
@@ -79,16 +78,13 @@ def frequency_threshold(
     # set population df with only the features of interest
     population_df = population_df.loc[:, inferred_features]
 
-    # Calculate the frequency of each feature in the population_df and then remove features
-    # with frequency less than the `freq_cut` threshold.
-    features_freqs = population_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis=0
-    )
+    # Calculate the frequency ratio (2nd most common value count / most common value
+    # count) for each feature. Returns a pandas Series [feature name, ratio]. 
+    freq_ratios = population_df.apply(calculate_frequency, axis=0)
 
-    # Get the feature names that have a frequency below the freq_cut threshold
-    excluded_features_freq_index_list = features_freqs[
-        features_freqs.isna()
-    ].index.tolist()
+    # Get the feature names that have a frequency ratio below the freq_cut threshold
+    low_freq_mask = freq_ratios < freq_cut
+    excluded_features_freq_index_list = low_freq_mask[low_freq_mask].index.tolist()
 
     # Get the number of samples
     n = population_df.shape[0]
@@ -116,43 +112,25 @@ def frequency_threshold(
     return excluded_features
 
 
-def calculate_frequency(
-    feature_column: pd.Series, freq_cut: float
-) -> Union[str, float]:
-    """Calculate frequency of second most common to most common feature.
-    Used in pandas.apply()
+def calculate_frequency(feature_column: pd.Series) -> float:
+    """Calculate the ratio of the second most common value count to the most common
+    value count for a feature. Used in pandas.apply()
 
     Parameters
     ----------
     feature_column : pd.Series
         Pandas series of the specific feature in the population_df
-    freq_cut : float
-        Ratio threshold for the second most common value count divided by the most
-        common value count. Must be between 0 and 1. If the feature's frequency ratio
-        is less than `freq_cut`, the feature is marked for exclusion by returning
-        `np.nan`; otherwise, the feature name is returned.
 
     Returns
     -------
-    Union[str, float]
-        `np.nan` if the feature's frequency ratio is below `freq_cut`, or if the
-        feature has fewer than two observed values. Otherwise, returns the feature
-        column name.
+    float
+        Ratio of the second most common value count to the most common value count.
+        Returns 0.0 if the feature has fewer than two observed values.
     """
 
-    val_count = feature_column.value_counts()
-    try:
-        max_count = val_count.iloc[0]
-    except IndexError:
-        return np.nan
-    try:
-        second_max_count = val_count.iloc[1]
-    except IndexError:
-        return np.nan
+    # Calculate the value counts for the feature column
+    val_counts = feature_column.value_counts()
+    if len(val_counts) < 2:
+        return 0.0
 
-    freq = second_max_count / max_count
-
-    if freq < freq_cut:
-        return np.nan
-    else:
-        return str(feature_column.name)
+    return val_counts.iloc[1] / val_counts.iloc[0]
