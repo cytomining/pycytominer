@@ -60,14 +60,6 @@ def frequency_threshold(
     if not 0 <= unique_cut <= 1:
         raise ValueError("unique_cut variable must be between (0 and 1)")
 
-    # Checking for features type and value
-    if features == "infer":
-        inferred_features = infer_cp_features(population_df)
-    elif isinstance(features, list):
-        inferred_features = features
-    else:
-        raise ValueError('features must be a list of column names or "infer"')
-
     # Checking for samples type and value
     if not isinstance(samples, str):
         raise ValueError("samples must be a string")
@@ -75,16 +67,15 @@ def frequency_threshold(
     # Subset the population_df based on features and samples
     if samples != "all":
         population_df = population_df.query(expr=samples)
-    if features == "infer":
-        inferred_features = infer_cp_features(population_df)
+
+    # infer features or set features based on user input
     if features == "infer":
         inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):
         inferred_features = features
-    else:
-        raise ValueError('features must be a list of column names or "infer"')
 
     population_df = population_df.loc[:, inferred_features]
+
     # Frequency is the ratio of the second most common value to the most common value.
     # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
     excluded_features_freq = population_df.apply(

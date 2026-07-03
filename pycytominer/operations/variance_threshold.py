@@ -48,18 +48,10 @@ def variance_threshold(
     """
 
     # Checking for min_variance type and value
-    if not isinstance(min_variance, (int, float)) or isinstance(min_variance, bool):
+    if not isinstance(min_variance, (int, float)):
         raise ValueError("min_variance must be a float value")
     if min_variance < 0:
         raise ValueError("min_variance must be non-negative")
-
-    # Checking for features type and value
-    if features == "infer":
-        inferred_features = infer_cp_features(population_df)
-    elif isinstance(features, list):
-        inferred_features = features
-    else:
-        raise ValueError('features must be a list of column names or "infer"')
 
     # Checking for samples type and value
     if not isinstance(samples, str):
@@ -69,6 +61,7 @@ def variance_threshold(
     if samples != "all":
         population_df = population_df.query(expr=samples)
 
+    # infer features or set features based on user input
     if features == "infer":
         inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):
