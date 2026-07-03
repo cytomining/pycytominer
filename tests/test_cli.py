@@ -160,6 +160,32 @@ def test_cli_feature_select(tmp_path: pathlib.Path) -> None:
     assert "Feature_3" not in result.columns
 
 
+def test_cli_feature_select_min_variance(tmp_path: pathlib.Path) -> None:
+    """Ensure CLI feature_select forwards the variance threshold cutoff."""
+    profiles = pd.DataFrame({
+        "Metadata_Plate": ["P1", "P1", "P1", "P1"],
+        "Metadata_Well": ["A01", "A02", "A03", "A04"],
+        "Feature_1": [1.0, 2.0, 3.0, 4.0],
+        "Feature_2": [1.0, 1.0, 1.0, 1.1],
+    })
+    profiles_path = tmp_path / "profiles.parquet"
+    profiles.to_parquet(profiles_path, index=False)
+    output_path = tmp_path / "feature_selected_min_variance.csv"
+
+    cli = PycytominerCLI()
+    cli.feature_select(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Feature_1,Feature_2",
+        operation="variance_threshold",
+        min_variance=0.01,
+    )
+
+    result = pd.read_csv(output_path)
+    assert "Feature_1" in result.columns
+    assert "Feature_2" not in result.columns
+
+
 def test_cli_consensus(tmp_path: pathlib.Path) -> None:
     """Ensure CLI consensus writes median consensus profiles."""
     _, profiles_path = _write_profiles(tmp_path)
