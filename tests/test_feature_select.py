@@ -443,7 +443,6 @@ def test_feature_select_all():
     from_file_result = pd.read_csv(out_file)
     pd.testing.assert_frame_equal(from_file_result, expected_result)
 
-    # Test that the order of operations does not matter
     result = feature_select(
         profiles=data_all_test_df,
         features=data_all_test_df.columns.tolist(),
