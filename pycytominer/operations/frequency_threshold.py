@@ -73,18 +73,21 @@ def frequency_threshold(
         inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):
         inferred_features = features
+    else:
+        raise ValueError('features must be a list of column names or "infer"')
 
+    # set population df with only the features of interest
     population_df = population_df.loc[:, inferred_features]
 
-    # Frequency is the ratio of the second most common value to the most common value.
-    # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
-    excluded_features_freq = population_df.apply(
+    # Calculate the frequency of each feature in the population_df and then remove features
+    # with frequency less than the `freq_cut` threshold.
+    features_freqs = population_df.apply(
         lambda x: calculate_frequency(x, freq_cut), axis=0
     )
 
-    # Remove features with NA values
-    excluded_features_freq_index_list = excluded_features_freq[
-        excluded_features_freq.isna()
+    # Get the feature names that have a frequency below the freq_cut threshold
+    excluded_features_freq_index_list = features_freqs[
+        features_freqs.isna()
     ].index.tolist()
 
     # Get the number of samples
@@ -123,16 +126,18 @@ def calculate_frequency(
     ----------
     feature_column : pd.Series
         Pandas series of the specific feature in the population_df
-    freq_cut : float, (suggested but unenforced default of 0.05)
-        Ratio (2nd most common feature val / most common). Must range between 0 and 1.
-        Remove features lower than freq_cut. A low freq_cut will remove features
-        that have large difference between the most common feature and second most
-        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
+    freq_cut : float
+        Ratio threshold for the second most common value count divided by the most
+        common value count. Must be between 0 and 1. If the feature's frequency ratio
+        is less than `freq_cut`, the feature is marked for exclusion by returning
+        `np.nan`; otherwise, the feature name is returned.
 
     Returns
     -------
     Union[str, float]
-        Feature name if it passes threshold, "NA" otherwise
+        `np.nan` if the feature's frequency ratio is below `freq_cut`, or if the
+        feature has fewer than two observed values. Otherwise, returns the feature
+        column name.
     """
 
     val_count = feature_column.value_counts()
