@@ -55,6 +55,45 @@ def test_calculate_frequency():
     assert (missing_freq_ratios < 0.25).sum() == 3
 
 
+@pytest.mark.parametrize(
+    "feature_values, expected_ratio",
+    [
+        ([1, 1, 2, 3], 0.5),
+        (["a", "a", "b", "c"], 0.5),
+        ([1, 1, 2, 2], 1.0),
+        ([1, 1, 1, 1], 0.0),
+        ([1, pd.NA, pd.NA, pd.NA], 0.0),
+        ([pd.NA, pd.NA, pd.NA, pd.NA], 0.0),
+    ],
+)
+def test_calculate_frequency_edge_cases(feature_values, expected_ratio):
+    """Test frequency ratios for ties, strings, and sparse observed values."""
+    frequency_ratio = calculate_frequency(pd.Series(feature_values))
+
+    assert np.isclose(frequency_ratio, expected_ratio)
+
+
+def test_frequency_threshold_returns_low_frequency_feature_names():
+    """Test frequency_threshold returns names for features below freq_cut."""
+    population_df = pd.DataFrame({
+        "below_cut": [1, 1, 1, 2],
+        "at_cut": [1, 1, 2, 3],
+        "above_cut": [1, 1, 2, 2],
+        "single_value": [5, 5, 5, 5],
+        "all_missing": [pd.NA, pd.NA, pd.NA, pd.NA],
+    })
+
+    excluded_features = frequency_threshold(
+        population_df=population_df,
+        features=population_df.columns.tolist(),
+        freq_cut=0.5,
+        unique_cut=0.0,
+    )
+
+    expected_features = ["all_missing", "below_cut", "single_value"]
+    assert sorted(excluded_features) == expected_features
+
+
 def test_frequency_threshold():
     """Test that frequency_threshold removes low-frequency and low-unique features."""
     unique_cut = 0.01
