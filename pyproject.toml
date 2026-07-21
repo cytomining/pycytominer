@@ -73,7 +73,9 @@ optional-dependencies.cell-locations = [
   "s3fs>=2023.4",
 ]
 optional-dependencies.collate = [
-  "csvkit>=1,<1.5",
+  # csvkit>=2 removes the `-n`/`--dry-run` flag from `csvclean` that
+  # cytominer-database==0.3.4 relies on internally, so it must stay <2.
+  "csvkit>=1,<2",
   "cytominer-database==0.3.4",
   # cytominer-database requires `pkg_resources`, which
   # setuptools deprecated in v70
