@@ -370,16 +370,20 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         n_quantiles=1000,
+        random_state=None,
     ):
         self.n_quantiles = n_quantiles
+        self.random_state = random_state
 
-    def fit(self, x):
+    def fit(self, x, y=None):
         """Fit inverse normal transform.
 
         Parameters
         ----------
         x : pandas.DataFrame or numpy.ndarray
             Data to fit.
+        y : None
+            Has no effect; only used for consistency in sklearn transform API
 
         Returns
         -------
@@ -392,12 +396,13 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
 
         # Initialize transformer and set output distribution to normal.
         # We set it to normal because we want to map the ranks to a normal distribution.
-        self.transformer = QuantileTransformer(
+        self.transformer_ = QuantileTransformer(
             n_quantiles=self.n_quantiles_,
             output_distribution="normal",
+            random_state=self.random_state,
         )
 
-        self.transformer.fit(x)
+        self.transformer_.fit(x)
 
         return self
 
@@ -414,4 +419,4 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         numpy.ndarray
             Transformed data.
         """
-        return self.transformer.transform(x)
+        return self.transformer_.transform(x)
