@@ -73,11 +73,13 @@ optional-dependencies.cell-locations = [
   "s3fs>=2023.4",
 ]
 optional-dependencies.collate = [
-  "csvkit>=1,<1.5",
+  # csvkit>=2 removes the `-n`/`--dry-run` flag from `csvclean` that
+  # cytominer-database==0.3.4 relies on internally, so it must stay <2.
+  "csvkit>=1,<2",
   "cytominer-database==0.3.4",
   # cytominer-database requires `pkg_resources`, which
   # setuptools deprecated in v70
-  "setuptools>=65,<83",
+  "setuptools>=65,<84",
 ]
 urls.Homepage = "https://pycytominer.readthedocs.io/"
 urls.Repository = "https://github.com/cytomining/pycytominer"
@@ -86,7 +88,7 @@ scripts.pycytominer = "pycytominer.cli:main"
 [dependency-groups]
 dev = [
   "codecov>=2.1.12",
-  "mypy>=1.11.2,<2.2",
+  "mypy>=1.11.2,<2.4",
   "pandas-stubs<2.2.2.240909; python_version<'3.10'",
   "pandas-stubs==2.3.3.260113; python_version>='3.10'",
   "pre-commit>=3.3.2",

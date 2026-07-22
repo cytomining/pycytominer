@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Update release draft
-        uses: release-drafter/release-drafter@v7
+        uses: release-drafter/release-drafter@v7.5.1
         with:
           config-name: release-drafter.yml
         env:

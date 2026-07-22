@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.16"
+    rev: "v0.15.21"
     hooks:
     -   id: ruff-check
         exclude: tutorials/nbconverted/
@@ -28,13 +28,13 @@ repos:
     hooks:
     -   id: hadolint-docker
 -   repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.23.0"
+    rev: "v2.25.3"
     hooks:
     -   id: pyproject-fmt
         # tomli is vendored inside pyproject-fmt but not declared as a direct
         # dependency, so pre-commit's isolated env doesn't install it on
         # Python 3.10 (tomllib is stdlib only from 3.11+). Remove once fixed upstream.
-        additional_dependencies: ["tomli>=2.2.1"]
+        additional_dependencies: ["tomli>=2.4.1"]
     # validates CITATION.cff file formatting expectations
 -   repo: https://github.com/citation-file-format/cffconvert
     rev: b6045d78aac9e02b039703b030588d54d53262ac
