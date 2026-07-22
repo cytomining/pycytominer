@@ -6,6 +6,7 @@ import pytest
 from scipy.stats import median_abs_deviation
 from sklearn.preprocessing import QuantileTransformer
 
+from pycytominer.normalize import normalize
 from pycytominer.operations.transform import InverseNormalTransform, RobustMAD, Spherize
 
 random.seed(123)
@@ -102,9 +103,7 @@ def test_robust_mad():
 
 
 def test_inverse_normal_transform_matches_quantile_transformer():
-    """
-    Testing the InverseNormalTransform class
-    """
+    """Test that InverseNormalTransform wraps QuantileTransformer to produce normal quantile scores."""
     scaler = InverseNormalTransform(n_quantiles=5)
     scaler = scaler.fit(data_df)
     transform_df = scaler.transform(data_df)
@@ -119,11 +118,46 @@ def test_inverse_normal_transform_matches_quantile_transformer():
 
 
 def test_inverse_normal_transform_fit_transform():
-    """
-    Testing sklearn TransformerMixin fit_transform support
-    """
+    """Test that InverseNormalTransform supports sklearn fit_transform usage and returns finite values."""
     scaler = InverseNormalTransform(n_quantiles=5)
     transform_df = scaler.fit_transform(data_df)
 
     assert transform_df.shape == data_df.shape
     assert np.isfinite(transform_df).all()
+
+
+def test_inverse_normal_transform_normalize_usage():
+    """Test that normalize uses InverseNormalTransform to inverse-normalize features while preserving metadata."""
+    profiles = pd.concat(
+        [
+            pd.DataFrame({
+                "Metadata_plate": ["plate_a"] * data_df.shape[0],
+                "Metadata_well": [f"A{i + 1}" for i in range(data_df.shape[0])],
+            }),
+            data_df,
+        ],
+        axis="columns",
+    )
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features=["a", "b", "c", "d"],
+        meta_features=["Metadata_plate", "Metadata_well"],
+        samples="all",
+        method="inverse_normal",
+        inverse_normal_n_quantiles=5,
+    )
+
+    expected_features = QuantileTransformer(
+        n_quantiles=5,
+        output_distribution="normal",
+    ).fit_transform(data_df)
+    expected_result = pd.concat(
+        [
+            profiles.loc[:, ["Metadata_plate", "Metadata_well"]],
+            pd.DataFrame(expected_features, columns=data_df.columns),
+        ],
+        axis="columns",
+    )
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)
