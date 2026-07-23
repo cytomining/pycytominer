@@ -1,148 +1,116 @@
-import random
-
-import numpy as np
 import pandas as pd
 import pytest
 
-from pycytominer.operations import calculate_frequency, variance_threshold
-
-random.seed(123)
-
-# Build data to use in tests
-data_df = pd.DataFrame({
-    "a": [1, 1, 1, 1, 1, 1],
-    "b": [1, 1, 1, 1, 1, 2],
-    "c": [1, 1, 1, 1, 2, 3],
-    "x": [1, 3, 8, 5, 2, 2],
-    "y": [1, 2, 8, 5, 2, 1],
-    "z": [9, 3, 8, 9, 2, 9],
-    "zz": [0, -3, 8, 9, 6, 9],
-}).reset_index(drop=True)
-
-data_unique_test_df = pd.DataFrame({
-    "a": [1] * 99 + [2],
-    "b": [1, 2] * 50,
-    "c": [1, 2] * 25 + random.sample(range(1, 1000), 50),
-    "d": random.sample(range(1, 1000), 100),
-}).reset_index(drop=True)
-
-
-def test_calculate_frequency():
-    """
-    Testing calculate_frequency pycytominer function for variance threshold calculation
-    """
-    freq_cut = 0.05
-
-    excluded_features_freq = data_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
-    )
-
-    expect_names = ["a", "b", "c", "x", "y", "z", "zz"]
-    expected_result = pd.Series(expect_names)
-    expected_result.index = expect_names
-    expected_result.a = np.nan
-
-    pd.testing.assert_series_equal(
-        excluded_features_freq.fillna("found me!"), expected_result.fillna("found me!")
-    )
-
-    freq_cut = 0.25
-    excluded_features_freq = data_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
-    )
-    expected_result = pd.Series(expect_names)
-    expected_result.index = expect_names
-    expected_result.a = np.nan
-    expected_result.b = np.nan
-
-    pd.testing.assert_series_equal(
-        excluded_features_freq.fillna("found me!"), expected_result.fillna("found me!")
-    )
-
-    # Test missing value (see issue #69)
-    missing_data = data_df.assign(missing=np.nan).apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
-    )
-
-    assert missing_data.isna().sum() == 3
+from pycytominer.operations import variance_threshold
 
 
 def test_variance_threshold():
-    unique_cut = 0.01
+    """Test that variance_threshold removes low-variance features."""
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
     excluded_features = variance_threshold(
-        population_df=data_unique_test_df,
-        features=data_unique_test_df.columns.tolist(),
-        unique_cut=unique_cut,
+        population_df=data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        min_variance=0.000001,
     )
-    expected_result = ["a"]
 
-    assert sorted(excluded_features) == sorted(expected_result)
+    assert excluded_features == ["low_var"]
 
-    unique_cut = 0.03
+
+def test_variance_threshold_default_min_variance():
+    """Test that variance_threshold defaults to removing very low-variance features."""
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
     excluded_features = variance_threshold(
-        population_df=data_unique_test_df,
-        features=data_unique_test_df.columns.tolist(),
-        unique_cut=unique_cut,
-    )
-    expected_result = ["a", "b"]
-
-    assert sorted(excluded_features) == sorted(expected_result)
-
-    freq_cut = -1
-    excluded_features_freq = data_unique_test_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis="rows"
+        population_df=data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
     )
 
-    excluded_features_freq = excluded_features_freq[
-        excluded_features_freq.isna()
-    ].index.tolist()
+    assert excluded_features == ["low_var"]
 
-    assert len(excluded_features_freq) == 0
+
+def test_variance_threshold_min_variance_zero_excludes_no_features():
+    """Test that variance_threshold keeps all features when min_variance is zero."""
+    data_var_test_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
+
+    excluded_features = variance_threshold(
+        population_df=data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        min_variance=0.0,
+    )
+
+    assert excluded_features == []
+
+
+@pytest.mark.parametrize("min_variance", [-0.1, "0.1", None, True])
+def test_variance_threshold_min_variance_invalid(min_variance):
+    """Test that variance_threshold rejects invalid min_variance values."""
+    with pytest.raises(ValueError):
+        variance_threshold(
+            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            features=["feature"],
+            min_variance=min_variance,
+        )
+
+
+@pytest.mark.parametrize("features", ["not-infer", ("feature",)])
+def test_variance_threshold_features_invalid(features):
+    """Test that variance_threshold rejects unsupported features values."""
+    with pytest.raises(
+        ValueError, match='features must be a list of column names or "infer"'
+    ):
+        variance_threshold(
+            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            features=features,
+        )
+
+
+def test_variance_threshold_samples_invalid():
+    """Test that variance_threshold rejects non-string sample filters."""
+    with pytest.raises(ValueError, match="samples must be a string"):
+        variance_threshold(
+            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            features=["feature"],
+            samples=["feature > 1"],
+        )
 
 
 def test_variance_threshold_featureinfer():
-    unique_cut = 0.01
-    with pytest.raises(ValueError) as nocp:
-        excluded_features = variance_threshold(
-            population_df=data_unique_test_df, features="infer", unique_cut=unique_cut
-        )
-
-        assert "No features found." in str(nocp.value)
-
-    data_cp_df = data_unique_test_df.copy()
-    data_cp_df.columns = [f"Cells_{x}" for x in data_unique_test_df.columns]
+    """Test that variance_threshold supports inferred CellProfiler features."""
+    data_cp_df = pd.DataFrame({
+        "Cells_low_var": [1, 1, 1, 1, 1.001, 1.001],
+        "Cells_high_var": [0, 0, 10, 10, 20, 20],
+    }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
-        population_df=data_cp_df, features="infer", unique_cut=unique_cut
+        population_df=data_cp_df, features="infer", min_variance=0.000001
     )
 
-    expected_result = ["Cells_a"]
-
-    assert excluded_features == expected_result
+    assert excluded_features == ["Cells_low_var"]
 
 
 def test_variance_threshold_samples():
-    unique_cut = 0.01
-    excluded_features = variance_threshold(
-        population_df=data_unique_test_df,
-        features=data_unique_test_df.columns.tolist(),
-        samples="all",
-        unique_cut=unique_cut,
-    )
-    expected_result = ["a"]
-
-    assert sorted(excluded_features) == sorted(expected_result)
-
-    # Add metadata_sample column
-    data_sample_id_df = data_df.assign(
-        Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
-    )
+    """Test that variance_threshold calculates exclusions from selected samples."""
+    data_sample_id_df = pd.DataFrame({
+        "low_var": [1, 1, 1, 1, 1.001, 100],
+        "high_var": [0, 0, 10, 10, 20, 20],
+        "Metadata_sample": [f"sample_{x}" for x in range(0, 6)],
+    }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
         population_df=data_sample_id_df,
-        features=data_sample_id_df.columns.tolist(),
+        features=["low_var", "high_var"],
         samples="Metadata_sample != 'sample_5'",
-        unique_cut=unique_cut,
+        min_variance=0.000001,
     )
-    expected_result = ["a", "b"]
-    assert sorted(excluded_features) == sorted(expected_result)
+
+    assert excluded_features == ["low_var"]

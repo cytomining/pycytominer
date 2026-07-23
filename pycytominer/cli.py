@@ -282,6 +282,7 @@ class PycytominerCLI:
         corr_method: str = "pearson",
         freq_cut: float = 0.05,
         unique_cut: float = 0.01,
+        min_variance: float = 1e-6,
         compression_options: str | dict[str, Any] | None = None,
         float_format: str | None = None,
         blocklist: str | list[str] | None = None,
@@ -303,8 +304,9 @@ class PycytominerCLI:
             na_cutoff: Missing value cutoff for dropping columns.
             corr_threshold: Correlation threshold for dropping columns.
             corr_method: Correlation method.
-            freq_cut: Frequency cutoff for variance thresholding.
-            unique_cut: Unique value cutoff for variance thresholding.
+            freq_cut: Frequency cutoff for frequency thresholding.
+            unique_cut: Unique value cutoff for frequency thresholding.
+            min_variance: Minimum variance cutoff for variance thresholding.
             compression_options: Compression options for writing output.
             float_format: Decimal precision for output formatting.
             blocklist: Optional blocklist feature name(s).
@@ -356,6 +358,7 @@ class PycytominerCLI:
             corr_method=corr_method,
             freq_cut=freq_cut,
             unique_cut=unique_cut,
+            min_variance=min_variance,
             compression_options=compression_options,
             float_format=float_format,
             blocklist=blocklist_value,
