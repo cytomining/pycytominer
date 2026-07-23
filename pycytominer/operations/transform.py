@@ -353,11 +353,18 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     This class wraps sklearn.preprocessing.QuantileTransformer with
     output_distribution="normal".
 
-    Attributes
-    ---------
-    n_quantiles : int
-        Number of quantiles to be computed. Must be less than or equal to the number of
-        samples.
+    Parameters
+    ----------
+    n_quantiles : int, default=1000
+        Number of quantiles to be computed. It corresponds to the number of landmarks
+        used to discretize the cumulative distribution function. If ``n_quantiles`` is
+        larger than the number of samples, it is set to the number of samples because
+        a larger number of quantiles does not improve the cumulative distribution
+        function estimate. The actual number used after fitting is available as
+        ``n_quantiles_``.
+    random_state : int, RandomState instance or None, default=None
+        Determines random number generation for smoothing noise. Pass an int for
+        reproducible results across multiple calls.
 
     Notes
     -----
