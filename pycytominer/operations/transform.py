@@ -361,7 +361,7 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         larger than the number of samples, it is set to the number of samples because
         a larger number of quantiles does not improve the cumulative distribution
         function estimate. The actual number used after fitting is available as
-        ``n_quantiles_``.
+        ``n_quantiles_``. See sklearn.preprocessing.QuantileTransformer for more details.
     random_state : int, RandomState instance or None, default=None
         Determines random number generation for smoothing noise. Pass an int for
         reproducible results across multiple calls.
