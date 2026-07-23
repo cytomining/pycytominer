@@ -104,9 +104,10 @@ def normalize(
     spherize_epsilon : float, default 1e-6.
         The sphering (aka whitening) fudge factor parameter. The function only uses
         this variable if method = "spherize".
-    inverse_normal_n_quantiles : int, default 1000
-        The number of quantiles to use for the inverse normal transformation. The
-        function only uses this variable if method = "inverse_normal".
+    inverse_normal_n_quantiles : int, default=1000
+        Number of cumulative distribution function landmarks used for the inverse
+        normal transformation. Values larger than the number of samples are capped
+        at the number of samples. Only used when ``method="inverse_normal"``.
 
     Returns
     -------

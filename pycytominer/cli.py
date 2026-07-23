@@ -226,7 +226,9 @@ class PycytominerCLI:
             spherize_center: Whether to center data before sphering.
             spherize_method: Spherize method to use.
             spherize_epsilon: Spherize epsilon parameter.
-            inverse_normal_n_quantiles: Number of quantiles for inverse normal normalization.
+            inverse_normal_n_quantiles: Number of cumulative distribution function
+                landmarks used for inverse normal normalization. Values larger than
+                the number of samples are capped at the number of samples.
 
         Returns:
             The output file path.
