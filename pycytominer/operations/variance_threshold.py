@@ -1,12 +1,11 @@
 """
-Remove variables with near-zero variance.
-Modified from caret::nearZeroVar()
+Identify low-information features by filtering columns with variance below a threshold.
 """
 
 from typing import Union
 
-import numpy as np
 import pandas as pd
+from sklearn.feature_selection import VarianceThreshold
 
 from pycytominer.cyto_utils.features import infer_cp_features
 
@@ -15,10 +14,14 @@ def variance_threshold(
     population_df: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
-    freq_cut: float = 0.05,
-    unique_cut: float = 0.01,
+    min_variance: Union[int, float] = 1e-6,
 ) -> list[str]:
     """Exclude features that have low variance (low information content)
+
+    This is done by calculating the variance of each feature in the population_df and then
+    removing features with variance less than the `min_variance` threshold. A low value
+    will remove features that have very low variance (e.g. this will remove a
+    feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
 
     Parameters
     ----------
@@ -34,117 +37,52 @@ def variance_threshold(
         function, so you should  structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
-    freq_cut : float, default 0.05
-        Ratio (2nd most common feature val / most common). Must range between 0 and 1.
-        Remove features lower than freq_cut. A low freq_cut will remove features
-        that have large difference between the most common feature value and second most
-        common feature value. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
-    unique_cut: float, default 0.01
-        Ratio (num unique features / num samples). Must range between 0 and 1.
-        Remove features less than unique cut. A low unique_cut will remove features
-        that have very few different measurements compared to the number of samples.
+    min_variance: float, default 1e-6
+        Removes features with variance less than this value.
 
     Returns
     -------
-    excluded_features : list of str
+    excluded_features : list[str]
          List of features to exclude from the population_df.
 
     """
 
-    # check if freq_cut and unique_cut are between 0 and 1
-    if not 0 <= freq_cut <= 1:
-        raise ValueError("freq_cut variable must be between (0 and 1)")
-    if not 0 <= unique_cut <= 1:
-        raise ValueError("unique_cut variable must be between (0 and 1)")
+    # Checking for min_variance type and value
+    if not isinstance(min_variance, (int, float)):
+        raise ValueError("min_variance must be a float value")
+    if min_variance < 0:
+        raise ValueError("min_variance must be non-negative")
 
-    # Subset the DataFrame if specific samples are specified
-    # If "all", use the entire DataFrame without subsetting
+    # Checking for samples type and value
+    if not isinstance(samples, str):
+        raise ValueError("samples must be a string")
+
+    # Subset the population_df based on features and samples
     if samples != "all":
-        # Using pandas query to filter rows based on the conditions provided in the
-        # samples parameter
         population_df = population_df.query(expr=samples)
 
-    # Infer CellProfiler features if 'features' is set to 'infer'
+    # infer features or set features based on user input
     if features == "infer":
-        # Infer CellProfiler features
         inferred_features = infer_cp_features(population_df)
     elif isinstance(features, list):
         inferred_features = features
+    else:
+        raise ValueError('features must be a list of column names or "infer"')
 
-    # Subset the DataFrame to only include the features of interest
+    # Subset the population_df based on the inferred features
     population_df = population_df.loc[:, inferred_features]
 
-    # Exclude features based on frequency
-    # Frequency is the ratio of the second most common value to the most common value.
-    # Features with a frequency below the `freq_cut` threshold are flagged for exclusion.
-    excluded_features_freq = population_df.apply(
-        lambda x: calculate_frequency(x, freq_cut), axis=0
-    )
+    # Create a VarianceThreshold object with the specified min_variance threshold
+    # and fit it to the population_df to identify low-variance features.
+    variance_selector = VarianceThreshold(threshold=min_variance)
+    variance_selector.fit(population_df)
 
-    # Remove features with NA values
-    excluded_features_freq_index_list = excluded_features_freq[
-        excluded_features_freq.isna()
-    ].index.tolist()
+    # Set a mask for features with variance less than min_variance.
+    is_low_variance_mask = ~variance_selector.get_support()
 
-    # Get the number of samples
-    n = population_df.shape[0]
+    # return features with low variance as a list of feature names
+    excluded_low_variance_features = population_df.columns[
+        is_low_variance_mask
+    ].tolist()
 
-    # Get the number of unique features
-    num_unique_features = population_df.nunique()
-
-    # Exclude features with too many (defined by unique_ratio) values in common, where
-    # unique_ratio is defined as the number of unique features divided by the total
-    # number of samples
-    unique_ratio = num_unique_features / n
-    unique_ratio_mask = unique_ratio < unique_cut
-
-    # Get the feature names that have a unique ratio less than the unique_cut
-    # This represents features that have too few unique values compared to the number
-    # of samples.
-    excluded_features_unique = unique_ratio_mask[unique_ratio_mask].index.tolist()
-
-    # Combine the two lists of features to exclude
-    excluded_features = list(
-        set(excluded_features_freq_index_list + excluded_features_unique)
-    )
-    return excluded_features
-
-
-def calculate_frequency(
-    feature_column: pd.Series, freq_cut: float
-) -> Union[str, float]:
-    """Calculate frequency of second most common to most common feature.
-    Used in pandas.apply()
-
-    Parameters
-    ----------
-    feature_column : pd.Series
-        Pandas series of the specific feature in the population_df
-    freq_cut : float, (suggested but unenforced default of 0.05)
-        Ratio (2nd most common feature val / most common). Must range between 0 and 1.
-        Remove features lower than freq_cut. A low freq_cut will remove features
-        that have large difference between the most common feature and second most
-        common feature. (e.g. this will remove a feature: [1, 1, 1, 1, 0.01, 0.01, ...])
-
-    Returns
-    -------
-    Union[str, float]
-        Feature name if it passes threshold, "NA" otherwise
-    """
-
-    val_count = feature_column.value_counts()
-    try:
-        max_count = val_count.iloc[0]
-    except IndexError:
-        return np.nan
-    try:
-        second_max_count = val_count.iloc[1]
-    except IndexError:
-        return np.nan
-
-    freq = second_max_count / max_count
-
-    if freq < freq_cut:
-        return np.nan
-    else:
-        return str(feature_column.name)
+    return excluded_low_variance_features

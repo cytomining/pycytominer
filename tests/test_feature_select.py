@@ -299,13 +299,52 @@ def test_feature_select_get_na_columns_feature_infer():
 
 
 def test_feature_select_variance_threshold():
-    """
-    Testing feature_select and variance_threshold pycytominer function
-    """
+    """Test that feature_select removes low-variance features."""
+    data_var_test_df = pd.DataFrame({
+        "Cells_AreaShape_Eccentricity": [
+            0.73120,
+            0.73121,
+            0.73119,
+            0.73120,
+            0.73122,
+            0.73119,
+        ],  # low_variance feature
+        "Cells_AreaShape_Area": [
+            113.4,
+            128.7,
+            141.2,
+            176.8,
+            190.5,
+            224.9,
+        ],  # high_variance feature
+    }).reset_index(drop=True)
+
+    result = feature_select(
+        data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        operation="variance_threshold",
+        min_variance=0.000001,
+    )
+    expected_result = pd.DataFrame({
+        "Cells_AreaShape_Area": [113.4, 128.7, 141.2, 176.8, 190.5, 224.9]
+    }).reset_index(drop=True)
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    result = feature_select(
+        data_var_test_df,
+        features=data_var_test_df.columns.tolist(),
+        operation="variance_threshold",
+        min_variance=0.0,
+    )
+    pd.testing.assert_frame_equal(result, data_var_test_df)
+
+
+def test_feature_select_frequency_threshold():
+    """Test that feature_select removes low-frequency and low-unique features."""
     result = feature_select(
         data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
-        operation="variance_threshold",
+        operation="frequency_threshold",
         unique_cut=0.01,
     )
     expected_result = pd.DataFrame({
@@ -320,7 +359,7 @@ def test_feature_select_variance_threshold():
     result = feature_select(
         na_data_unique_test_df,
         features=na_data_unique_test_df.columns.tolist(),
-        operation=["drop_na_columns", "variance_threshold"],
+        operation=["drop_na_columns", "frequency_threshold"],
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -333,7 +372,7 @@ def test_feature_select_variance_threshold():
     result = feature_select(
         na_data_unique_test_df,
         features=na_data_unique_test_df.columns.tolist(),
-        operation=["variance_threshold", "drop_na_columns"],
+        operation=["frequency_threshold", "drop_na_columns"],
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
         drop=True
@@ -365,7 +404,10 @@ def test_feature_select_correlation_threshold():
 
 
 def test_feature_select_all():
-    data_all_test_df = data_unique_test_df.assign(zz=a_feature)
+    low_variance_feature = [1] * 95 + [1.0001] * 5
+    data_all_test_df = data_unique_test_df.assign(
+        zz=a_feature, low_variance=low_variance_feature
+    )
     data_all_test_df.iloc[1, 4] = 2
     data_all_test_df.iloc[list(range(0, 50)), 1] = np.nan
 
@@ -379,6 +421,7 @@ def test_feature_select_all():
         "c": c_feature,
         "d": d_feature,
         "zz": a_feature,
+        "low_variance": low_variance_feature,
     }).reset_index(drop=True)
     expected_result.iloc[1, 2] = 2
     pd.testing.assert_frame_equal(result, expected_result)
@@ -403,7 +446,12 @@ def test_feature_select_all():
     result = feature_select(
         profiles=data_all_test_df,
         features=data_all_test_df.columns.tolist(),
-        operation=["drop_na_columns", "correlation_threshold", "variance_threshold"],
+        operation=[
+            "drop_na_columns",
+            "correlation_threshold",
+            "frequency_threshold",
+            "variance_threshold",
+        ],
         corr_threshold=0.7,
     )
     expected_result = pd.DataFrame({"c": c_feature, "d": d_feature}).reset_index(
@@ -651,6 +699,7 @@ def test_samples_parameter_in_feature_select():
         "noise_removal",
         "drop_na_columns",
         "variance_threshold",
+        "frequency_threshold",
         "correlation_threshold",
         "drop_outliers",
     ]
