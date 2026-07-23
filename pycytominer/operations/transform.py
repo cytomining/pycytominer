@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import median_abs_deviation
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import QuantileTransformer, StandardScaler
 
 Spherize_type = TypeVar("Spherize_type", bound="Spherize")
 RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
@@ -338,3 +338,92 @@ class RobustMAD(BaseEstimator, TransformerMixin):
             RobustMAD transformed dataframe
         """
         return (X - self.median) / (self.mad + self.epsilon)
+
+
+class InverseNormalTransform(BaseEstimator, TransformerMixin):
+    """Inverse normal transform.
+
+    Apply a rank-based quantile transformation to each feature independently
+    and map the resulting values to a normal distribution.
+
+    1) Rank the values of each feature independently.
+    2) Map the ranks to quantiles of a normal distribution.
+    3) Return the transformed values.
+
+    This class wraps sklearn.preprocessing.QuantileTransformer with
+    output_distribution="normal".
+
+    Parameters
+    ----------
+    n_quantiles : int, default=1000
+        Number of quantiles to be computed. It corresponds to the number of landmarks
+        used to discretize the cumulative distribution function. If ``n_quantiles`` is
+        larger than the number of samples, it is set to the number of samples because
+        a larger number of quantiles does not improve the cumulative distribution
+        function estimate. The actual number used after fitting is available as
+        ``n_quantiles_``. See sklearn.preprocessing.QuantileTransformer for more details.
+    random_state : int, RandomState instance or None, default=None
+        Determines random number generation for smoothing noise. Pass an int for
+        reproducible results across multiple calls.
+
+    Notes
+    -----
+    This transform is rank-based: values are first converted to quantile ranks,
+    then mapped to a normal distribution. The transformed values are therefore
+    normal scores, not the original raw measurements, and distances between raw
+    values are not preserved.
+    """
+
+    def __init__(
+        self,
+        n_quantiles=1000,
+        random_state=None,
+    ):
+        self.n_quantiles = n_quantiles
+        self.random_state = random_state
+
+    def fit(self, x, y=None):
+        """Fit inverse normal transform.
+
+        Parameters
+        ----------
+        x : pandas.DataFrame or numpy.ndarray
+            Data to fit.
+        y : None
+            Has no effect; only used for consistency in sklearn transform API
+
+        Returns
+        -------
+        self
+            Fitted inverse normal transform.
+        """
+        # Set number of quantiles, if n_quantiles is greater than the number of samples\
+        # set it to the number of samples.
+        self.n_quantiles_ = min(self.n_quantiles, x.shape[0])
+
+        # Initialize transformer and set output distribution to normal.
+        # We set it to normal because we want to map the ranks to a normal distribution.
+        self.transformer_ = QuantileTransformer(
+            n_quantiles=self.n_quantiles_,
+            output_distribution="normal",
+            random_state=self.random_state,
+        )
+
+        self.transformer_.fit(x)
+
+        return self
+
+    def transform(self, x):
+        """Apply inverse normal transform.
+
+        Parameters
+        ----------
+        x : pandas.DataFrame or numpy.ndarray
+            Data to transform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Transformed data.
+        """
+        return self.transformer_.transform(x)

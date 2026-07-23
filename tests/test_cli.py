@@ -8,6 +8,7 @@ import fire
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.preprocessing import QuantileTransformer
 
 from pycytominer import cli as pycytominer_cli
 from pycytominer.cli import PycytominerCLI, PycytominerCLIError
@@ -101,6 +102,36 @@ def test_cli_normalize(tmp_path: pathlib.Path) -> None:
     result = pd.read_csv(output_path)
     assert np.isclose(result["Feature_1"].mean(), 0.0, atol=1e-7)
     assert np.isclose(result["Feature_2"].mean(), 0.0, atol=1e-7)
+
+
+def test_cli_normalize_inverse_normal(tmp_path: pathlib.Path) -> None:
+    """Ensure CLI normalize forwards inverse normal options."""
+    df, profiles_path = _write_profiles(tmp_path)
+    output_path = tmp_path / "normalized_inverse_normal.csv"
+
+    cli = PycytominerCLI()
+    cli.normalize(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Feature_1,Feature_2",
+        meta_features="Metadata_Plate,Metadata_Well",
+        method="inverse_normal",
+        inverse_normal_n_quantiles=3,
+    )
+
+    result = pd.read_csv(output_path)
+    expected_features = QuantileTransformer(
+        n_quantiles=3,
+        output_distribution="normal",
+    ).fit_transform(df.loc[:, ["Feature_1", "Feature_2"]])
+
+    assert result.loc[:, ["Metadata_Plate", "Metadata_Well"]].equals(
+        df.loc[:, ["Metadata_Plate", "Metadata_Well"]]
+    )
+    np.testing.assert_allclose(
+        result.loc[:, ["Feature_1", "Feature_2"]],
+        expected_features,
+    )
 
 
 def test_cli_normalize_drop_cosmicqc_rows(tmp_path: pathlib.Path) -> None:

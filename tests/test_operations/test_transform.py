@@ -4,8 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 from scipy.stats import median_abs_deviation
+from sklearn.preprocessing import QuantileTransformer
 
-from pycytominer.operations.transform import RobustMAD, Spherize
+from pycytominer.normalize import normalize
+from pycytominer.operations.transform import InverseNormalTransform, RobustMAD, Spherize
 
 random.seed(123)
 
@@ -98,3 +100,79 @@ def test_robust_mad():
     expected_result = data_df.shape[1]
 
     assert int(result) == expected_result
+
+
+def test_inverse_normal_transform_matches_quantile_transformer():
+    """Test that InverseNormalTransform wraps QuantileTransformer to produce normal quantile scores."""
+    scaler = InverseNormalTransform(n_quantiles=5)
+    scaler = scaler.fit(data_df)
+    transform_df = scaler.transform(data_df)
+
+    expected_transform_df = QuantileTransformer(
+        n_quantiles=5,
+        output_distribution="normal",
+    ).fit_transform(data_df)
+
+    assert scaler.n_quantiles_ == 5
+    np.testing.assert_allclose(transform_df, expected_transform_df)
+
+
+def test_inverse_normal_transform_matches_quantile_transformer_default_n_quantiles():
+    """Test that the default number of quantiles matches QuantileTransformer."""
+    scaler = InverseNormalTransform().fit(data_df)
+    transform_df = scaler.transform(data_df)
+
+    with pytest.warns(UserWarning, match="n_quantiles .* greater"):
+        expected_transform_df = QuantileTransformer(
+            output_distribution="normal",
+        ).fit_transform(data_df)
+
+    # The default of 1000 is capped at the number of samples during fitting.
+    assert scaler.n_quantiles_ == data_df.shape[0]
+    np.testing.assert_allclose(transform_df, expected_transform_df)
+
+
+def test_inverse_normal_transform_fit_transform():
+    """Test that InverseNormalTransform supports sklearn fit_transform usage and returns finite values."""
+    scaler = InverseNormalTransform(n_quantiles=5)
+    transform_df = scaler.fit_transform(data_df)
+
+    assert transform_df.shape == data_df.shape
+    assert np.isfinite(transform_df).all()
+
+
+def test_inverse_normal_transform_normalize_usage():
+    """Test that normalize uses InverseNormalTransform to inverse-normalize features while preserving metadata."""
+    profiles = pd.concat(
+        [
+            pd.DataFrame({
+                "Metadata_plate": ["plate_a"] * data_df.shape[0],
+                "Metadata_well": [f"A{i + 1}" for i in range(data_df.shape[0])],
+            }),
+            data_df,
+        ],
+        axis="columns",
+    )
+
+    normalize_result = normalize(
+        profiles=profiles,
+        features=["a", "b", "c", "d"],
+        meta_features=["Metadata_plate", "Metadata_well"],
+        samples="all",
+        method="inverse_normal",
+        inverse_normal_n_quantiles=5,
+    )
+
+    expected_features = QuantileTransformer(
+        n_quantiles=5,
+        output_distribution="normal",
+    ).fit_transform(data_df)
+    expected_result = pd.concat(
+        [
+            profiles.loc[:, ["Metadata_plate", "Metadata_well"]],
+            pd.DataFrame(expected_features, columns=data_df.columns),
+        ],
+        axis="columns",
+    )
+
+    pd.testing.assert_frame_equal(normalize_result, expected_result)

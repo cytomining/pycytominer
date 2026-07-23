@@ -206,6 +206,7 @@ class PycytominerCLI:
         spherize_center: bool = True,
         spherize_method: str = "ZCA-cor",
         spherize_epsilon: float = 1e-6,
+        inverse_normal_n_quantiles: int = 1000,
     ) -> str:
         """Normalize profiles from a file and write the results to disk.
 
@@ -225,6 +226,9 @@ class PycytominerCLI:
             spherize_center: Whether to center data before sphering.
             spherize_method: Spherize method to use.
             spherize_epsilon: Spherize epsilon parameter.
+            inverse_normal_n_quantiles: Number of cumulative distribution function
+                landmarks used for inverse normal normalization. Values larger than
+                the number of samples are capped at the number of samples.
 
         Returns:
             The output file path.
@@ -254,6 +258,7 @@ class PycytominerCLI:
             spherize_center=spherize_center,
             spherize_method=spherize_method,
             spherize_epsilon=spherize_epsilon,
+            inverse_normal_n_quantiles=inverse_normal_n_quantiles,
         )
         if isinstance(result, str):
             _announce_output_file(result)
