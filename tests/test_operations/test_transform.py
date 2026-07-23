@@ -117,6 +117,21 @@ def test_inverse_normal_transform_matches_quantile_transformer():
     np.testing.assert_allclose(transform_df, expected_transform_df)
 
 
+def test_inverse_normal_transform_matches_quantile_transformer_default_n_quantiles():
+    """Test that the default number of quantiles matches QuantileTransformer."""
+    scaler = InverseNormalTransform().fit(data_df)
+    transform_df = scaler.transform(data_df)
+
+    with pytest.warns(UserWarning, match="n_quantiles .* greater"):
+        expected_transform_df = QuantileTransformer(
+            output_distribution="normal",
+        ).fit_transform(data_df)
+
+    # The default of 1000 is capped at the number of samples during fitting.
+    assert scaler.n_quantiles_ == data_df.shape[0]
+    np.testing.assert_allclose(transform_df, expected_transform_df)
+
+
 def test_inverse_normal_transform_fit_transform():
     """Test that InverseNormalTransform supports sklearn fit_transform usage and returns finite values."""
     scaler = InverseNormalTransform(n_quantiles=5)
