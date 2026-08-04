@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.21"
+    rev: "v0.16.0"
     hooks:
     -   id: ruff-check
         exclude: tutorials/nbconverted/
@@ -28,7 +28,7 @@ repos:
     hooks:
     -   id: hadolint-docker
 -   repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.25.3"
+    rev: "v2.26.0"
     hooks:
     -   id: pyproject-fmt
         # tomli is vendored inside pyproject-fmt but not declared as a direct
