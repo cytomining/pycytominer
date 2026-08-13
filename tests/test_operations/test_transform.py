@@ -49,6 +49,41 @@ def test_spherize():
             assert int(result) == expected_result
 
 
+def test_spherize_whitens_data():
+    """The transformed output of Spherize should be white: cov(XW) should
+    be (near) the identity matrix for every method/center combination.
+
+    test_spherize() above only checks this to the nearest integer (via
+    `.round()`), which is far too coarse to catch a whitening bug: it was
+    passing even when `fit()` computed the SVD of the raw, uncentered
+    input instead of the mean-centered (and, for the -cor variants,
+    standardized) data -- see
+    https://github.com/cytomining/pycytominer/issues/747.
+    """
+    rng = np.random.default_rng(0)
+    # An off-origin mean makes an uncentered-SVD bug visible: with
+    # data centered at/near the origin already, `svd(X)` and
+    # `svd(X_transformed)` coincide, masking the bug.
+    data_off_center = pd.DataFrame(
+        rng.normal(loc=100, scale=25, size=(200, 5)),
+        columns=list("abcde"),
+    )
+
+    spherize_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
+    for method in spherize_methods:
+        scaler = Spherize(method=method, center=True)
+        scaler = scaler.fit(data_off_center)
+        transform_df = scaler.transform(data_off_center)
+
+        cov = np.cov(transform_df.to_numpy(), rowvar=False)
+        max_abs_deviation_from_identity = np.abs(cov - np.eye(cov.shape[0])).max()
+
+        assert max_abs_deviation_from_identity < 1e-6, (
+            f"method={method}: transformed data is not white "
+            f"(max|cov(Y) - I| = {max_abs_deviation_from_identity})"
+        )
+
+
 def test_low_variance_spherize():
     err_str = "Divide by zero error, make sure low variance columns are removed"
     data_no_variance = data_df.assign(e=1)

@@ -139,7 +139,17 @@ class Spherize(BaseEstimator, TransformerMixin):
         # Get the eigenvalues and eigenvectors of the covariance matrix
         # by computing the SVD on the data matrix
         # https://stats.stackexchange.com/q/134282/8494
-        _, Sigma, Vt = np.linalg.svd(X, full_matrices=True)
+        #
+        # This must be the SVD of X_transformed (the centered/standardized
+        # matrix computed above), not of the raw input X: the derivation
+        # below explicitly assumes "X is mean-centered (zero mean for each
+        # feature)", and for PCA-cor/ZCA-cor X_transformed is additionally
+        # scaled to unit variance. Computing the SVD of the untransformed X
+        # silently breaks that precondition -- the resulting W still runs
+        # without error, but the transformed output is not actually
+        # whitened (cov(XW) != I) whenever X isn't already centered (and,
+        # for the -cor variants, scaled) on its own.
+        _, Sigma, Vt = np.linalg.svd(X_transformed, full_matrices=True)
 
         # if n <= d then Sigma has shape (n,) so it will need to be expanded to
         # d filled with the value r'th element of Sigma
