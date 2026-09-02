@@ -14,7 +14,7 @@ from typing import Optional
 
 def run_check_errors(cmd: list[str]) -> None:
     """Run a system command, and exit if an error occurred, otherwise continue"""
-    output = subprocess.run(args=cmd, capture_output=True, text=True, check=False)
+    output = subprocess.run(args=cmd, capture_output=True, text=True, check=False)  # noqa: S603
     if output.returncode != 0:
         print_cmd = " ".join(cmd)
         error_text = output.stderr.strip() or output.stdout.strip() or "unknown error"
