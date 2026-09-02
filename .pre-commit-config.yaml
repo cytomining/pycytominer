@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.16.0"
+    rev: "v0.16.4"
     hooks:
     -   id: ruff-check
         exclude: tutorials/nbconverted/
@@ -24,11 +24,11 @@ repos:
     hooks:
     -   id: actionlint
 -   repo: https://github.com/hadolint/hadolint
-    rev: v2.14.0
+    rev: v2.15.1
     hooks:
     -   id: hadolint-docker
 -   repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.26.0"
+    rev: "v2.28.1"
     hooks:
     -   id: pyproject-fmt
         # tomli is vendored inside pyproject-fmt but not declared as a direct
@@ -41,6 +41,6 @@ repos:
     hooks:
     -   id: validate-cff
 -   repo: https://github.com/software-gardening/almanack
-    rev: v0.1.16
+    rev: v0.1.17
     hooks:
     -   id: almanack-check
