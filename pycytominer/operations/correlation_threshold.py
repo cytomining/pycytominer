@@ -37,9 +37,9 @@ def correlation_threshold(
         function, so you should  structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes).
         If "all", use all samples to calculate.
-    threshold - float, default 0.9
+    threshold : float, default 0.9
         Must be between (0, 1) to exclude features
-    method - str, default "pearson"
+    method : str, default "pearson"
         indicating which correlation metric to use to test cutoff
 
     Returns
