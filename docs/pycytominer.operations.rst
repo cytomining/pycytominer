@@ -12,6 +12,14 @@ pycytominer.operations.correlation\_threshold module
    :undoc-members:
    :show-inheritance:
 
+pycytominer.operations.frequency\_threshold module
+--------------------------------------------------
+
+.. automodule:: pycytominer.operations.frequency_threshold
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pycytominer.operations.get\_na\_columns module
 ----------------------------------------------
 
