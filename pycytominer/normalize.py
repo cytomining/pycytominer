@@ -115,13 +115,12 @@ def normalize(
         normal transformation. Values larger than the number of samples are capped
         at the number of samples. Only used when ``method="inverse_normal"``.
     transform_output_file : str, optional
-        If provided, save the fitted transform's parameters to this path so it can
-        be reapplied later (e.g. to other subsets of data) via
-        `fitted_transform_file`. The parameters are written as a numpy ".npz"
-        archive plus a companion ".json" metadata file with the same basename (no
-        pickling is used). Ignored if `fitted_transform_file` is also provided,
-        since no new fit is performed in that case. Not supported for
-        `method="inverse_normal"`.
+        If provided, save the fitted transform to this path so it can be
+        reapplied later (e.g. to other subsets of data) via
+        `fitted_transform_file`. The transform is written as a single joblib
+        file with a ".joblib" suffix. Ignored if `fitted_transform_file` is
+        also provided, since no new fit is performed in that case. Not
+        supported for `method="inverse_normal"`.
     fitted_transform_file : str, optional
         If provided, skip fitting a new transform and instead load a previously
         saved transform (written by a prior call using `transform_output_file`)

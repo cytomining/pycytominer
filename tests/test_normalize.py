@@ -1052,7 +1052,7 @@ def test_normalize_transform_save_and_apply(method):
     saved transform with `fitted_transform_file` and applying it to a subset
     of the same profiles.
     """
-    transform_file = os.path.join(tmpdir, f"test_normalize_{method}_transform.npz")
+    transform_file = os.path.join(tmpdir, f"test_normalize_{method}_transform.joblib")
 
     fit_result = normalize(
         profiles=data_df.copy(),
@@ -1064,7 +1064,6 @@ def test_normalize_transform_save_and_apply(method):
     )
 
     assert os.path.exists(transform_file)
-    assert os.path.exists(transform_file.replace(".npz", ".json"))
 
     # Apply the saved transform to a subset of the original profiles
     subset_idx = [0, 2, 5]
@@ -1112,7 +1111,7 @@ def test_normalize_fitted_transform_file_mismatched_features():
     match the features the transform was fit on should raise a ValueError.
     """
     transform_file = os.path.join(
-        tmpdir, "test_normalize_mismatch_features_transform.npz"
+        tmpdir, "test_normalize_mismatch_features_transform.joblib"
     )
 
     normalize(
