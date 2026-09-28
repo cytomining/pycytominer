@@ -9,9 +9,10 @@ from typing import Optional, TypeVar
 
 import numpy as np
 import pandas as pd
-from scipy.stats import median_abs_deviation
+from scipy.stats import median_abs_deviation, norm, rankdata
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import QuantileTransformer, StandardScaler
+from sklearn.utils import check_random_state
 
 Spherize_type = TypeVar("Spherize_type", bound="Spherize")
 RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
@@ -360,8 +361,11 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     2) Map the ranks to quantiles of a normal distribution.
     3) Return the transformed values.
 
-    This class wraps sklearn.preprocessing.QuantileTransformer with
-    output_distribution="normal".
+    By default (``method="quantile"``) this class wraps
+    sklearn.preprocessing.QuantileTransformer with output_distribution="normal".
+    With ``method="blom"`` each value is instead replaced by the normal score of its
+    exact rank, using Blom's formula ``(rank - 3/8) / (n + 1/4)`` [2]_ [3]_, as in
+    the JUMP profiling recipe [4]_.
 
     Parameters
     ----------
@@ -372,9 +376,22 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         a larger number of quantiles does not improve the cumulative distribution
         function estimate. The actual number used after fitting is available as
         ``n_quantiles_``. See sklearn.preprocessing.QuantileTransformer for more details.
+        Only used when ``method="quantile"``.
     random_state : int, RandomState instance or None, default=None
-        Determines random number generation for smoothing noise. Pass an int for
-        reproducible results across multiple calls.
+        With ``method="quantile"``, determines random number generation for
+        smoothing noise. With ``method="blom"`` and ``ties="random"``, determines the
+        shuffles that break ties; each feature is shuffled independently. Pass an
+        int for reproducible results across multiple calls.
+    method : {"quantile", "blom"}, default="quantile"
+        How values are mapped to normal scores. ``"quantile"`` interpolates between
+        ``n_quantiles`` landmarks of the empirical distribution (sklearn's
+        QuantileTransformer). ``"blom"`` uses exact ranks, so the scores are bounded
+        by roughly +/-3.8 for 10,000 samples instead of +/-5.2.
+    ties : {"average", "random"}, default="average"
+        How tied values are ranked when ``method="blom"``. ``"average"`` gives tied
+        values the same score. ``"random"`` breaks ties with a random (seeded) order
+        so that every value gets a distinct score, as in the JUMP profiling recipe.
+        Ignored when ``method="quantile"``.
 
     Notes
     -----
@@ -382,15 +399,34 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     then mapped to a normal distribution. The transformed values are therefore
     normal scores, not the original raw measurements, and distances between raw
     values are not preserved.
+
+    With ``method="blom"`` the scores depend only on the ranks of the values passed
+    to ``transform``, so ``fit`` learns nothing and the transform is applied to
+    all rows it receives (in :py:func:`pycytominer.normalize`, use
+    ``samples="all"``).
+
+    References
+    ----------
+    .. [2] Blom, G. (1958). Statistical Estimates and Transformed Beta-Variables.
+       New York: John Wiley & Sons.
+    .. [3] Beasley, T. M., Erickson, S., & Allison, D. B. (2009). Rank-based inverse
+       normal transformations are increasingly used, but are they merited?
+       Behavior Genetics, 39(5), 580-595. https://doi.org/10.1007/s10519-009-9281-0
+    .. [4] JUMP profiling recipe, ``rank_int_array``:
+       https://github.com/broadinstitute/jump-profiling-recipe
     """
 
     def __init__(
         self,
         n_quantiles=1000,
         random_state=None,
+        method="quantile",
+        ties="average",
     ):
         self.n_quantiles = n_quantiles
         self.random_state = random_state
+        self.method = method
+        self.ties = ties
 
     def fit(self, x, y=None):
         """Fit inverse normal transform.
@@ -407,7 +443,19 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         self
             Fitted inverse normal transform.
         """
-        # Set number of quantiles, if n_quantiles is greater than the number of samples\
+        if self.method not in ("quantile", "blom"):
+            raise ValueError(
+                f"method must be 'quantile' or 'blom', not {self.method!r}"
+            )
+        if self.ties not in ("average", "random"):
+            raise ValueError(f"ties must be 'average' or 'random', not {self.ties!r}")
+
+        # Blom scores are computed from the ranks of the data given to transform,
+        # so there is nothing to learn.
+        if self.method == "blom":
+            return self
+
+        # Set number of quantiles, if n_quantiles is greater than the number of samples
         # set it to the number of samples.
         self.n_quantiles_ = min(self.n_quantiles, x.shape[0])
 
@@ -436,4 +484,30 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         numpy.ndarray
             Transformed data.
         """
+        if self.method == "blom":
+            return self._blom_scores(x)
+
         return self.transformer_.transform(x)
+
+    def _blom_scores(self, x):
+        """Normal scores of the exact ranks of each column, using Blom's constant."""
+        values = np.asarray(x, dtype=float)
+        n_samples = values.shape[0]
+        blom_constant = 3.0 / 8
+        scores = np.empty_like(values)
+        random_state = check_random_state(self.random_state)
+
+        for column in range(values.shape[1]):
+            if self.ties == "random":
+                # rank the shuffled values with distinct ranks, then undo the shuffle
+                order = random_state.permutation(n_samples)
+                ranks = np.empty(n_samples)
+                ranks[order] = rankdata(values[order, column], method="ordinal")
+            else:
+                ranks = rankdata(values[:, column], method="average")
+
+            scores[:, column] = norm.ppf(
+                (ranks - blom_constant) / (n_samples - 2 * blom_constant + 1)
+            )
+
+        return scores

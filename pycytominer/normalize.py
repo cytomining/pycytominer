@@ -2,6 +2,7 @@
 Normalize observation features based on specified normalization method
 """
 
+import warnings
 from typing import Any, Literal, Optional, Union
 
 import numpy as np
@@ -30,10 +31,13 @@ def normalize(
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
     mad_robustize_epsilon: Optional[float] = 1e-18,
+    inverse_normal_method: str = "quantile",
+    inverse_normal_n_quantiles: int = 1000,
+    inverse_normal_ties: str = "average",
+    inverse_normal_random_state: Optional[int] = None,
     spherize_center: bool = True,
     spherize_method: str = "ZCA-cor",
     spherize_epsilon: float = 1e-6,
-    inverse_normal_n_quantiles: int = 1000,
 ) -> pd.DataFrame:
     """Normalize profiling features
 
@@ -94,6 +98,24 @@ def normalize(
         The mad_robustize fudge factor parameter. The function only uses
         this variable if method = "mad_robustize". Set this to 0 if
         mad_robustize generates features with large values.
+    inverse_normal_method : {"quantile", "blom"}, default="quantile"
+        How values are mapped to normal scores. "quantile" interpolates between
+        ``inverse_normal_n_quantiles`` landmarks (sklearn's QuantileTransformer);
+        "blom" uses exact ranks with Blom's formula (Blom, 1958), as in the JUMP
+        profiling recipe. With "blom" the ranks are computed over all rows, so
+        ``samples`` is not used (a warning is raised unless ``samples="all"``).
+        Only used when ``method="inverse_normal"``.
+    inverse_normal_n_quantiles : int, default=1000
+        Number of cumulative distribution function landmarks used for the inverse
+        normal transformation. Values larger than the number of samples are capped
+        at the number of samples. Only used when ``method="inverse_normal"`` and
+        ``inverse_normal_method="quantile"``.
+    inverse_normal_ties : {"average", "random"}, default="average"
+        How tied values are ranked when ``inverse_normal_method="blom"``: "average"
+        gives tied values the same score, "random" breaks ties with a random order
+        so that every value gets a distinct score.
+    inverse_normal_random_state : int, optional
+        Seed for the random tie-breaking (``inverse_normal_ties="random"``).
     spherize_center : bool
         If the function should center data before sphering (aka whitening). The
         function only uses this variable if method = "spherize". Defaults to True.
@@ -104,10 +126,6 @@ def normalize(
     spherize_epsilon : float, default 1e-6.
         The sphering (aka whitening) fudge factor parameter. The function only uses
         this variable if method = "spherize".
-    inverse_normal_n_quantiles : int, default=1000
-        Number of cumulative distribution function landmarks used for the inverse
-        normal transformation. Values larger than the number of samples are capped
-        at the number of samples. Only used when ``method="inverse_normal"``.
 
     Returns
     -------
@@ -202,6 +220,18 @@ def normalize(
     if method not in avail_methods:
         raise ValueError(f"operation must be one {avail_methods}")
 
+    if (
+        method == "inverse_normal"
+        and inverse_normal_method == "blom"
+        and samples != "all"
+    ):
+        warnings.warn(
+            'inverse_normal_method="blom" ranks the values of all rows, so `samples` '
+            f'is not used to fit the transform (samples={samples!r}); use samples="all".',
+            UserWarning,
+            stacklevel=2,
+        )
+
     if method == "standardize":
         scaler = StandardScaler()
     elif method == "robustize":
@@ -218,7 +248,12 @@ def normalize(
             return_numpy=True,
         )
     elif method == "inverse_normal":
-        scaler = InverseNormalTransform(n_quantiles=inverse_normal_n_quantiles)
+        scaler = InverseNormalTransform(
+            n_quantiles=inverse_normal_n_quantiles,
+            random_state=inverse_normal_random_state,
+            method=inverse_normal_method,
+            ties=inverse_normal_ties,
+        )
 
     if features == "infer":
         features = infer_cp_features(profiles, image_features=image_features)
