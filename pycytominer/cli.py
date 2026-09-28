@@ -207,6 +207,9 @@ class PycytominerCLI:
         spherize_method: str = "ZCA-cor",
         spherize_epsilon: float = 1e-6,
         inverse_normal_n_quantiles: int = 1000,
+        inverse_normal_method: str = "quantile",
+        inverse_normal_ties: str = "average",
+        inverse_normal_random_state: int | None = None,
     ) -> str:
         """Normalize profiles from a file and write the results to disk.
 
@@ -229,6 +232,11 @@ class PycytominerCLI:
             inverse_normal_n_quantiles: Number of cumulative distribution function
                 landmarks used for inverse normal normalization. Values larger than
                 the number of samples are capped at the number of samples.
+            inverse_normal_method: Inverse normal method, "quantile" (sklearn
+                QuantileTransformer) or "blom" (exact ranks with Blom's formula).
+            inverse_normal_ties: How the "blom" method ranks tied values, "average"
+                or "random".
+            inverse_normal_random_state: Seed for random tie-breaking.
 
         Returns:
             The output file path.
@@ -259,6 +267,9 @@ class PycytominerCLI:
             spherize_method=spherize_method,
             spherize_epsilon=spherize_epsilon,
             inverse_normal_n_quantiles=inverse_normal_n_quantiles,
+            inverse_normal_method=inverse_normal_method,
+            inverse_normal_ties=inverse_normal_ties,
+            inverse_normal_random_state=inverse_normal_random_state,
         )
         if isinstance(result, str):
             _announce_output_file(result)
