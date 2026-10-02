@@ -2,7 +2,6 @@
 Normalize observation features based on specified normalization method
 """
 
-import warnings
 from typing import Any, Literal, Optional, Union
 
 import numpy as np
@@ -13,6 +12,7 @@ from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
 from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
 from pycytominer.operations import InverseNormalTransform, RobustMAD, Spherize
+from pycytominer.operations.transform import _RANKIT_CONSTANTS
 
 
 @write_to_file_if_user_specifies_output_details
@@ -31,13 +31,13 @@ def normalize(
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
     mad_robustize_epsilon: Optional[float] = 1e-18,
+    spherize_center: bool = True,
+    spherize_method: str = "ZCA-cor",
+    spherize_epsilon: float = 1e-6,
     inverse_normal_method: str = "quantile",
     inverse_normal_n_quantiles: int = 1000,
     inverse_normal_ties: str = "average",
     inverse_normal_random_state: Optional[int] = None,
-    spherize_center: bool = True,
-    spherize_method: str = "ZCA-cor",
-    spherize_epsilon: float = 1e-6,
 ) -> pd.DataFrame:
     """Normalize profiling features
 
@@ -98,24 +98,6 @@ def normalize(
         The mad_robustize fudge factor parameter. The function only uses
         this variable if method = "mad_robustize". Set this to 0 if
         mad_robustize generates features with large values.
-    inverse_normal_method : {"quantile", "blom"}, default="quantile"
-        How values are mapped to normal scores. "quantile" interpolates between
-        ``inverse_normal_n_quantiles`` landmarks (sklearn's QuantileTransformer);
-        "blom" uses exact ranks with Blom's formula (Blom, 1958), as in the JUMP
-        profiling recipe. With "blom" the ranks are computed over all rows, so
-        ``samples`` is not used (a warning is raised unless ``samples="all"``).
-        Only used when ``method="inverse_normal"``.
-    inverse_normal_n_quantiles : int, default=1000
-        Number of cumulative distribution function landmarks used for the inverse
-        normal transformation. Values larger than the number of samples are capped
-        at the number of samples. Only used when ``method="inverse_normal"`` and
-        ``inverse_normal_method="quantile"``.
-    inverse_normal_ties : {"average", "random"}, default="average"
-        How tied values are ranked when ``inverse_normal_method="blom"``: "average"
-        gives tied values the same score, "random" breaks ties with a random order
-        so that every value gets a distinct score.
-    inverse_normal_random_state : int, optional
-        Seed for the random tie-breaking (``inverse_normal_ties="random"``).
     spherize_center : bool
         If the function should center data before sphering (aka whitening). The
         function only uses this variable if method = "spherize". Defaults to True.
@@ -126,6 +108,36 @@ def normalize(
     spherize_epsilon : float, default 1e-6.
         The sphering (aka whitening) fudge factor parameter. The function only uses
         this variable if method = "spherize".
+    inverse_normal_method : {"quantile", "blom", "tukey", "van_der_waerden", "hazen"}, default="quantile"
+        How values are mapped to normal scores. "quantile" interpolates between
+        ``inverse_normal_n_quantiles`` landmarks (sklearn's QuantileTransformer).
+        The other four options use exact ranks (a "rank-based inverse normal
+        transformation"), differing only in which published plotting-position
+        constant they use: "blom" (Blom, 1958) is a good general-purpose default
+        and is what the JUMP profiling recipe uses; "tukey" is a close
+        alternative, rarely distinguishable from "blom" in practice; "hazen"
+        (also called "rankit") is the simplest and oldest formula, more
+        common in engineering/hydrology than profiling work; "van_der_waerden"
+        matches the scores used by the van der Waerden normal-scores test.
+        Reach for "blom" unless you have a specific reason to match one of the
+        others (e.g. reproducing a paper or tool that uses a different
+        convention) — see :py:class:`pycytominer.operations.InverseNormalTransform`
+        for more detail on choosing between them. With any of the four, the
+        ranks are computed over all rows, so ``samples`` can never affect the
+        result; a ``ValueError`` is raised unless ``samples="all"``. Only used
+        when ``method="inverse_normal"``.
+    inverse_normal_n_quantiles : int, default=1000
+        Number of cumulative distribution function landmarks used for the inverse
+        normal transformation. Values larger than the number of samples are capped
+        at the number of samples. Only used when ``method="inverse_normal"`` and
+        ``inverse_normal_method="quantile"``.
+    inverse_normal_ties : {"average", "random"}, default="average"
+        How tied values are ranked when ``inverse_normal_method`` is rank-based
+        (``"blom"``, ``"tukey"``, ``"van_der_waerden"``, or ``"hazen"``): "average"
+        gives tied values the same score, "random" breaks ties with a random order
+        so that every value gets a distinct score.
+    inverse_normal_random_state : int, optional
+        Seed for the random tie-breaking (``inverse_normal_ties="random"``).
 
     Returns
     -------
@@ -141,7 +153,11 @@ def normalize(
         because Pycytominer normalization methods operate on numeric features
         only. In that case, select numeric features explicitly before calling
         ``normalize()``, for example by passing a curated feature list or by
-        running ``feature_select()`` first.
+        running ``feature_select()`` first. Also raised when ``samples`` is not
+        ``"all"`` and ``inverse_normal_method`` is a rank-based method
+        (``"blom"``, ``"tukey"``, ``"van_der_waerden"``, or ``"hazen"``), since
+        those methods rank every row and ``samples`` can never affect the
+        result.
 
     Notes
     -----
@@ -222,14 +238,13 @@ def normalize(
 
     if (
         method == "inverse_normal"
-        and inverse_normal_method == "blom"
+        and inverse_normal_method in _RANKIT_CONSTANTS
         and samples != "all"
     ):
-        warnings.warn(
-            'inverse_normal_method="blom" ranks the values of all rows, so `samples` '
-            f'is not used to fit the transform (samples={samples!r}); use samples="all".',
-            UserWarning,
-            stacklevel=2,
+        raise ValueError(
+            f"inverse_normal_method={inverse_normal_method!r} ranks the values of all "
+            f"rows and ignores `samples` entirely, so samples={samples!r} can never "
+            'affect the result. Use samples="all" (the default) instead.'
         )
 
     if method == "standardize":
@@ -354,7 +369,9 @@ def normalize(
     ]
     passthrough_image_df = profiles.loc[:, passthrough_image_columns]
 
-    # Fit the sklearn scaler
+    # Fit the sklearn scaler. A rank-based inverse_normal_method with
+    # samples != "all" already raised above, so by this point samples == "all"
+    # whenever that combination would otherwise apply.
     if samples == "all":
         fitted_scaler = scaler.fit(feature_df)
     else:

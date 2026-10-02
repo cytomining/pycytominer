@@ -233,9 +233,11 @@ class PycytominerCLI:
                 landmarks used for inverse normal normalization. Values larger than
                 the number of samples are capped at the number of samples.
             inverse_normal_method: Inverse normal method, "quantile" (sklearn
-                QuantileTransformer) or "blom" (exact ranks with Blom's formula).
-            inverse_normal_ties: How the "blom" method ranks tied values, "average"
-                or "random".
+                QuantileTransformer) or one of the rank-based methods "blom"
+                (exact ranks with Blom's formula; a good general-purpose
+                default), "tukey", "van_der_waerden", or "hazen".
+            inverse_normal_ties: How a rank-based inverse_normal_method ranks
+                tied values, "average" or "random".
             inverse_normal_random_state: Seed for random tie-breaking.
 
         Returns:

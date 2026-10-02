@@ -9,7 +9,12 @@ from scipy.stats import median_abs_deviation
 from sklearn.preprocessing import QuantileTransformer
 
 from pycytominer.normalize import normalize
-from pycytominer.operations.transform import InverseNormalTransform, RobustMAD, Spherize
+from pycytominer.operations.transform import (
+    _RANKIT_CONSTANTS,
+    InverseNormalTransform,
+    RobustMAD,
+    Spherize,
+)
 
 random.seed(123)
 
@@ -240,77 +245,98 @@ tied_df = pd.DataFrame(
 )
 
 
-def test_inverse_normal_transform_blom_random_ties_scores_match_jump_recipe():
-    """Test that random tie-breaking hands out the same set of scores as the JUMP recipe's rank_int_array.
+RANKIT_METHODS = list(_RANKIT_CONSTANTS)
+# `fit`/`transform`/`_rankit_scores` take the same code path regardless of which
+# rank-based method is chosen -- only the constant plugged into the formula
+# differs. So only tests that check a method's constant against an independent
+# reference (below) are parametrized over every method; tests of method-agnostic
+# behavior (tie handling, missing values, normalize() forwarding, etc.) run
+# against this one representative method, which already exercises every line.
+DEFAULT_RANKIT_METHOD = "blom"
 
-    Only the order in which tied values receive their scores is random, so the sorted
-    scores of every feature equal those of the reference.
-    """
-    scaler = InverseNormalTransform(method="blom", ties="random", random_state=0)
-    transform_df = scaler.fit(tied_df).transform(tied_df)
+
+@pytest.mark.parametrize("ties", ["average", "random"])
+@pytest.mark.parametrize("method", RANKIT_METHODS)
+def test_inverse_normal_transform_rankit_matches_jump_recipe(method, ties):
+    """Test that every rank-based method matches the JUMP recipe's rank_int_array, using that method's constant."""
+    transform_df = InverseNormalTransform(
+        method=method, ties=ties, random_state=0
+    ).fit_transform(tied_df)
 
     assert transform_df.shape == tied_df.shape
     for i, column in enumerate(tied_df.columns):
-        expected = jump_rank_int_array(tied_df[column].to_numpy())
-        np.testing.assert_allclose(np.sort(transform_df[:, i]), np.sort(expected))
-        # random tie-breaking gives every value in a feature its own score
-        assert len(np.unique(transform_df[:, i])) == len(tied_df)
-        # ties are broken randomly, but every score of a lower value stays below every score of a higher value
-        by_value = pd.Series(transform_df[:, i]).groupby(tied_df[column].to_numpy())
-        assert (
-            by_value.max().iloc[:-1].to_numpy() < by_value.min().iloc[1:].to_numpy()
-        ).all()
+        values = tied_df[column].to_numpy()
+        scores = transform_df[:, i]
+        expected = jump_rank_int_array(
+            values, c=_RANKIT_CONSTANTS[method], stochastic=ties == "random"
+        )
+
+        if ties == "average":
+            # deterministic: tied values share one score and match the reference exactly
+            np.testing.assert_allclose(scores, expected)
+            assert len(np.unique(scores)) == len(np.unique(values))
+        else:
+            # only the order in which tied values receive their scores is random
+            np.testing.assert_allclose(np.sort(scores), np.sort(expected))
+            # every value gets its own score, but a lower value still scores below a higher one
+            assert len(np.unique(scores)) == len(values)
+            by_value = pd.Series(scores).groupby(values)
+            assert (
+                by_value.max().iloc[:-1].to_numpy() < by_value.min().iloc[1:].to_numpy()
+            ).all()
 
 
-def test_inverse_normal_transform_blom_average_ties_matches_jump_recipe():
-    """Test that method='blom' with the default average ties matches rank_int_array(stochastic=False)."""
-    transform_df = InverseNormalTransform(method="blom").fit_transform(tied_df)
+@pytest.mark.parametrize("ties", ["average", "random"])
+def test_inverse_normal_transform_rankit_missing_values(ties):
+    """Test that missing values are left out of each column's ranking instead of blanking the column.
 
-    expected = np.column_stack([
-        jump_rank_int_array(tied_df[column].to_numpy(), stochastic=False)
-        for column in tied_df.columns
+    Without that, scipy's rankdata (and therefore every score in the column)
+    would become NaN because of a single missing entry.
+    """
+    values = np.array([
+        [1.0, 1.0, np.nan],
+        [2.0, np.nan, np.nan],
+        [3.0, 3.0, np.nan],
+        [4.0, 4.0, np.nan],
+        [5.0, 5.0, np.nan],
     ])
 
-    np.testing.assert_allclose(transform_df, expected)
-    # tied values share one score
-    assert all(len(np.unique(transform_df[:, i])) == 6 for i in range(3))
+    def score(x):
+        return InverseNormalTransform(
+            method=DEFAULT_RANKIT_METHOD, ties=ties, random_state=0
+        ).fit_transform(x)
 
+    scores = score(values)
 
-def test_inverse_normal_transform_blom_scores():
-    """Test that Blom scores preserve order, are symmetric and are bounded for untied data."""
-    values = np.random.default_rng(1).normal(size=(1000, 1))
-    scores = InverseNormalTransform(method="blom").fit_transform(values)
-
-    np.testing.assert_array_equal(np.argsort(scores[:, 0]), np.argsort(values[:, 0]))
-    assert np.isclose(scores.mean(), 0.0, atol=1e-12)
-    # the extreme ranks map to +/- ppf((1 - 3/8) / (n + 1/4)) rather than being clipped near 5.2
-    assert np.isclose(scores.max(), ss.norm.ppf((1000 - 3 / 8) / (1000 + 1 / 4)))
-    assert np.isclose(scores.min(), -scores.max())
-
-
-def test_inverse_normal_transform_blom_random_ties_reproducible():
-    """Test that random tie-breaking depends on random_state."""
-    first = InverseNormalTransform(method="blom", ties="random", random_state=3)
-    second = InverseNormalTransform(method="blom", ties="random", random_state=3)
-    other = InverseNormalTransform(method="blom", ties="random", random_state=4)
-
-    np.testing.assert_array_equal(
-        first.fit_transform(tied_df), second.fit_transform(tied_df)
+    assert scores.shape == values.shape
+    # a column without missing values is scored as usual
+    np.testing.assert_allclose(scores[:, [0]], score(values[:, [0]]))
+    # a column with one NaN: that row stays NaN, the others are ranked only among themselves
+    valid_rows = [0, 2, 3, 4]
+    assert np.isnan(scores[1, 1])
+    np.testing.assert_allclose(
+        scores[valid_rows][:, [1]], score(values[valid_rows][:, [1]])
     )
-    assert not np.array_equal(
-        first.fit_transform(tied_df), other.fit_transform(tied_df)
-    )
+    # an entirely missing column has nothing to rank, so it stays NaN
+    assert np.isnan(scores[:, 2]).all()
 
 
-def test_inverse_normal_transform_blom_random_ties_independent_across_features():
-    """Test that identical features are shuffled independently when breaking ties."""
+def test_inverse_normal_transform_rankit_random_ties_depend_on_random_state():
+    """Test that random tie-breaking is reproducible per random_state and independent per feature."""
+    # identical features, so any difference between their scores comes from independent shuffles
     identical_df = pd.concat([tied_df["a"], tied_df["a"]], axis="columns")
-    transform_df = InverseNormalTransform(
-        method="blom", ties="random", random_state=0
-    ).fit_transform(identical_df)
 
-    assert not np.array_equal(transform_df[:, 0], transform_df[:, 1])
-    np.testing.assert_allclose(np.sort(transform_df[:, 0]), np.sort(transform_df[:, 1]))
+    def score(random_state):
+        return InverseNormalTransform(
+            method=DEFAULT_RANKIT_METHOD, ties="random", random_state=random_state
+        ).fit_transform(identical_df)
+
+    first = score(3)
+    np.testing.assert_array_equal(first, score(3))
+    assert not np.array_equal(first, score(4))
+    # each feature is shuffled independently, though both receive the same set of scores
+    assert not np.array_equal(first[:, 0], first[:, 1])
+    np.testing.assert_allclose(np.sort(first[:, 0]), np.sort(first[:, 1]))
 
 
 def test_inverse_normal_transform_invalid_method_and_ties():
@@ -322,8 +348,8 @@ def test_inverse_normal_transform_invalid_method_and_ties():
         InverseNormalTransform(method="blom", ties="first").fit(data_df)
 
 
-def test_inverse_normal_transform_blom_normalize_usage():
-    """Test that normalize forwards the Blom options to InverseNormalTransform."""
+def test_inverse_normal_transform_rankit_normalize_usage():
+    """Test that normalize forwards the rank-based inverse-normal options to InverseNormalTransform."""
     profiles = pd.concat(
         [
             pd.DataFrame({
@@ -343,13 +369,13 @@ def test_inverse_normal_transform_blom_normalize_usage():
             meta_features=["Metadata_plate", "Metadata_well"],
             samples="all",
             method="inverse_normal",
-            inverse_normal_method="blom",
+            inverse_normal_method=DEFAULT_RANKIT_METHOD,
             inverse_normal_ties="random",
             inverse_normal_random_state=0,
         )
 
     expected_features = InverseNormalTransform(
-        method="blom", ties="random", random_state=0
+        method=DEFAULT_RANKIT_METHOD, ties="random", random_state=0
     ).fit_transform(tied_df)
     expected_result = pd.concat(
         [
@@ -362,8 +388,21 @@ def test_inverse_normal_transform_blom_normalize_usage():
     pd.testing.assert_frame_equal(normalize_result, expected_result)
 
 
-def test_normalize_blom_warns_when_samples_is_not_all():
-    """Test that normalize warns that method='blom' ignores a samples subset."""
+@pytest.mark.parametrize(
+    "samples",
+    [
+        pytest.param("Metadata_plate == 'plate_a'", id="existing_column"),
+        pytest.param("Metadata_missing_column == 'plate_a'", id="missing_column"),
+    ],
+)
+def test_normalize_rankit_raises_when_samples_is_not_all(samples):
+    """Test that normalize raises when samples != "all" for a rank-based method.
+
+    Rank-based methods rank every row, so `samples` can never affect the
+    result; this must raise (rather than silently ignoring it) even when
+    `samples` queries a metadata column that is not present, since the query
+    is never evaluated either way.
+    """
     profiles = pd.concat(
         [
             pd.DataFrame({"Metadata_plate": ["plate_a"] * 100 + ["plate_b"] * 100}),
@@ -372,16 +411,12 @@ def test_normalize_blom_warns_when_samples_is_not_all():
         axis="columns",
     )
 
-    with pytest.warns(UserWarning, match='samples="all"'):
-        result = normalize(
+    with pytest.raises(ValueError, match='samples="all"'):
+        normalize(
             profiles=profiles,
             features=["a", "b", "c"],
             meta_features=["Metadata_plate"],
-            samples="Metadata_plate == 'plate_a'",
+            samples=samples,
             method="inverse_normal",
-            inverse_normal_method="blom",
+            inverse_normal_method=DEFAULT_RANKIT_METHOD,
         )
-
-    # the scores come from the ranks over all rows, whatever the samples were
-    expected = InverseNormalTransform(method="blom").fit_transform(tied_df)
-    np.testing.assert_allclose(result.loc[:, ["a", "b", "c"]], expected)
