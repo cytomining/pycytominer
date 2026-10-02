@@ -82,9 +82,13 @@ Core functions can infer or reuse a `ProfileSchema` internally so callers do not
 ```python
 import pycytominer as pm
 
-profiles = ...  # Load the data using pandas, pycytominer.load_profiles, or another adapter.
+profiles = (
+    ...
+)  # Load the data using pandas, pycytominer.load_profiles, or another adapter.
 profiles = pm.aggregate(profiles, strata=["Metadata_Well"])
-profiles = pm.normalize(profiles, method="standardize", samples="Metadata_treatment == 'DMSO'")
+profiles = pm.normalize(
+    profiles, method="standardize", samples="Metadata_treatment == 'DMSO'"
+)
 profiles = pm.feature_select(
     profiles,
     operations=["variance_threshold", "correlation_threshold"],
@@ -108,7 +112,8 @@ profiles = pm.feature_select(
 import pycytominer as pm
 
 result = (
-    pm.CytoDataFrame(profiles)
+    pm
+    .CytoDataFrame(profiles)
     .aggregate(strata=["Metadata_Well"])
     .normalize(method="standardize", samples="Metadata_treatment == 'DMSO'")
     .feature_select(operations=["variance_threshold", "correlation_threshold"])

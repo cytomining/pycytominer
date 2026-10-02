@@ -142,9 +142,7 @@ url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-pain
 df = pd.read_csv(url)
 
 normalized_df = pycytominer.normalize(
-    profiles=df,
-    method="standardize",
-    samples="Metadata_broad_sample == 'DMSO'"
+    profiles=df, method="standardize", samples="Metadata_broad_sample == 'DMSO'"
 )
 ```
 
@@ -154,9 +152,7 @@ For CytoTable warehouse layouts, you can either load the profile table directory
 from pycytominer import normalize
 from pycytominer.cyto_utils import load_cytotable_profiles, load_profiles
 
-profiles_from_root_df = load_profiles(
-    "path/to/warehouse_root"
-)
+profiles_from_root_df = load_profiles("path/to/warehouse_root")
 
 profiles_from_helper_df = load_cytotable_profiles(
     "path/to/warehouse_root",
@@ -314,10 +310,7 @@ url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-pain
 df = pd.read_csv(url)
 output_file = f"{plate}.gct"
 
-pycytominer.cyto_utils.write_gct(
-    profiles=df,
-    output_file=output_file
-)
+pycytominer.cyto_utils.write_gct(profiles=df, output_file=output_file)
 ```
 
 ## Citing Pycytominer
