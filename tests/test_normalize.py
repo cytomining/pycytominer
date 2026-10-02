@@ -1040,3 +1040,92 @@ def test_output_type():
 
     # check to make sure both dataframes are the same regardless of the output_type
     pd.testing.assert_frame_equal(csv_df, parquet_df)
+
+
+@pytest.mark.parametrize(
+    "method", ["standardize", "robustize", "mad_robustize", "spherize"]
+)
+def test_normalize_transform_save_and_apply(method):
+    """
+    Fitting a transform on the control samples and saving it via
+    `transform_output_file` should produce the same result as loading that
+    saved transform with `fitted_transform_file` and applying it to a subset
+    of the same profiles.
+    """
+    transform_file = os.path.join(tmpdir, f"test_normalize_{method}_transform.joblib")
+
+    fit_result = normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        samples="Metadata_treatment == 'control'",
+        method=method,
+        transform_output_file=transform_file,
+    )
+
+    assert os.path.exists(transform_file)
+
+    # Apply the saved transform to a subset of the original profiles
+    subset_idx = [0, 2, 5]
+    subset_df = data_df.iloc[subset_idx].reset_index(drop=True)
+
+    applied_result = normalize(
+        profiles=subset_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        fitted_transform_file=transform_file,
+    )
+
+    expected_subset_result = fit_result.iloc[subset_idx].reset_index(drop=True)
+
+    numeric_cols = [
+        col for col in applied_result.columns if not col.startswith("Metadata_")
+    ]
+
+    np.testing.assert_allclose(
+        applied_result.loc[:, numeric_cols].values,
+        expected_subset_result.loc[:, numeric_cols].values,
+        rtol=1e-6,
+        atol=1e-8,
+    )
+
+    # features="infer" should recover the saved feature list and give the
+    # same result
+    applied_result_infer_features = normalize(
+        profiles=subset_df.copy(),
+        meta_features="infer",
+        fitted_transform_file=transform_file,
+    )
+
+    np.testing.assert_allclose(
+        applied_result_infer_features.loc[:, numeric_cols].values,
+        expected_subset_result.loc[:, numeric_cols].values,
+        rtol=1e-6,
+        atol=1e-8,
+    )
+
+
+def test_normalize_fitted_transform_file_mismatched_features():
+    """
+    Applying a saved transform with an explicit `features` list that does not
+    match the features the transform was fit on should raise a ValueError.
+    """
+    transform_file = os.path.join(
+        tmpdir, "test_normalize_mismatch_features_transform.joblib"
+    )
+
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="standardize",
+        transform_output_file=transform_file,
+    )
+
+    with pytest.raises(ValueError):
+        normalize(
+            profiles=data_df.copy(),
+            features=["x", "y", "z"],
+            meta_features="infer",
+            fitted_transform_file=transform_file,
+        )
