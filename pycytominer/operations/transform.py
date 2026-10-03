@@ -9,9 +9,10 @@ from typing import Optional, TypeVar
 
 import numpy as np
 import pandas as pd
-from scipy.stats import median_abs_deviation
+from scipy.stats import median_abs_deviation, norm, rankdata
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import QuantileTransformer, StandardScaler
+from sklearn.utils import check_random_state
 
 Spherize_type = TypeVar("Spherize_type", bound="Spherize")
 RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
@@ -350,6 +351,18 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         return (X - self.median) / (self.mad + self.epsilon)
 
 
+# Plotting-position constants for the general rankit formula
+# norm.ppf((rank - a) / (n - 2a + 1)). Published rank-based normal-score
+# methods differ only in this constant, and are all available via
+# `InverseNormalTransform(method=...)`.
+_RANKIT_CONSTANTS = {
+    "blom": 3.0 / 8,  # Blom, G. (1958)
+    "tukey": 1.0 / 3,  # Tukey, J. W. (1962)
+    "van_der_waerden": 0.0,  # Van der Waerden, B. L. (1952)
+    "hazen": 1.0 / 2,  # Hazen, A. (1914); also called "rankit"
+}
+
+
 class InverseNormalTransform(BaseEstimator, TransformerMixin):
     """Inverse normal transform.
 
@@ -360,8 +373,16 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     2) Map the ranks to quantiles of a normal distribution.
     3) Return the transformed values.
 
-    This class wraps sklearn.preprocessing.QuantileTransformer with
-    output_distribution="normal".
+    By default (``method="quantile"``) this class wraps
+    sklearn.preprocessing.QuantileTransformer with output_distribution="normal".
+    With a rank-based ``method`` (``"blom"``, ``"tukey"``, ``"van_der_waerden"``, or
+    ``"hazen"``) each value is instead replaced by the normal score of its exact
+    rank, using the general rankit formula ``(rank - a) / (n - 2a + 1)`` [2]_ [3]_,
+    where the constant ``a`` depends on the method (``a=3/8`` for ``"blom"``, as in
+    the JUMP profiling recipe [4]_; ``a=1/3`` for ``"tukey"``; ``a=0`` for
+    ``"van_der_waerden"``; ``a=1/2`` for ``"hazen"``, also called "rankit"). The
+    methods differ only in this constant and, for large ``n``, converge to the
+    same scores.
 
     Parameters
     ----------
@@ -372,9 +393,23 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         a larger number of quantiles does not improve the cumulative distribution
         function estimate. The actual number used after fitting is available as
         ``n_quantiles_``. See sklearn.preprocessing.QuantileTransformer for more details.
+        Only used when ``method="quantile"``.
     random_state : int, RandomState instance or None, default=None
-        Determines random number generation for smoothing noise. Pass an int for
-        reproducible results across multiple calls.
+        With ``method="quantile"``, determines random number generation for
+        smoothing noise. With a rank-based ``method`` and ``ties="random"``,
+        determines the shuffles that break ties; each feature is shuffled
+        independently. Pass an int for reproducible results across multiple calls.
+    method : {"quantile", "blom", "tukey", "van_der_waerden", "hazen"}, default="quantile"
+        How values are mapped to normal scores. ``"quantile"`` interpolates between
+        ``n_quantiles`` landmarks of the empirical distribution (sklearn's
+        QuantileTransformer). The other options use exact ranks (see above for the
+        constant each one uses), so the scores are bounded by roughly +/-3.8 for
+        10,000 samples instead of +/-5.2.
+    ties : {"average", "random"}, default="average"
+        How tied values are ranked when ``method`` is rank-based. ``"average"``
+        gives tied values the same score. ``"random"`` breaks ties with a random
+        (seeded) order so that every value gets a distinct score, as in the JUMP
+        profiling recipe. Ignored when ``method="quantile"``.
 
     Notes
     -----
@@ -382,15 +417,56 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     then mapped to a normal distribution. The transformed values are therefore
     normal scores, not the original raw measurements, and distances between raw
     values are not preserved.
+
+    With a rank-based ``method`` the scores depend only on the ranks of the values
+    passed to ``transform``, so ``fit`` learns nothing and the transform is applied
+    to all rows it receives (in :py:func:`pycytominer.normalize`, use
+    ``samples="all"``).
+
+    Choosing a rank-based method: the four methods are all consistent estimators
+    of the same thing (the expected value of the corresponding normal order
+    statistic) and converge to identical scores as ``n`` grows, so the choice
+    mostly matters for small-to-moderate sample sizes and in the tails
+    (extreme ranks).
+
+    - ``"blom"`` is a good general-purpose default and is what the JUMP
+      profiling recipe [4]_ uses; reach for it unless you have a specific
+      reason to match a different convention.
+    - ``"van_der_waerden"`` uses the plain empirical quantile ``rank / (n + 1)``
+      (``a=0``). Use it if you need scores that match the van der Waerden
+      normal-scores test or another tool/paper that specifically uses this
+      convention; it is a slightly less accurate approximation to normal order
+      statistics than ``"blom"`` or ``"tukey"`` in the tails for small ``n``.
+    - ``"tukey"`` (``a=1/3``) is a close alternative to ``"blom"``; the two are
+      rarely distinguishable in practice, so prefer ``"tukey"`` mainly for
+      consistency with a specific reference that uses it.
+    - ``"hazen"`` (``a=1/2``, also the oldest and simplest plotting position) is
+      more common in engineering and hydrology than in genomics/profiling work;
+      use it to match that convention, or when you want the simplest, most
+      directly interpretable formula.
+
+    References
+    ----------
+    .. [2] Blom, G. (1958). Statistical Estimates and Transformed Beta-Variables.
+       New York: John Wiley & Sons.
+    .. [3] Beasley, T. M., Erickson, S., & Allison, D. B. (2009). Rank-based inverse
+       normal transformations are increasingly used, but are they merited?
+       Behavior Genetics, 39(5), 580-595. https://doi.org/10.1007/s10519-009-9281-0
+    .. [4] JUMP profiling recipe, ``rank_int_array``:
+       https://github.com/broadinstitute/jump-profiling-recipe
     """
 
     def __init__(
         self,
         n_quantiles=1000,
         random_state=None,
+        method="quantile",
+        ties="average",
     ):
         self.n_quantiles = n_quantiles
         self.random_state = random_state
+        self.method = method
+        self.ties = ties
 
     def fit(self, x, y=None):
         """Fit inverse normal transform.
@@ -407,7 +483,20 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         self
             Fitted inverse normal transform.
         """
-        # Set number of quantiles, if n_quantiles is greater than the number of samples\
+        avail_methods = ["quantile", *_RANKIT_CONSTANTS]
+        if self.method not in avail_methods:
+            raise ValueError(
+                f"method must be one of {avail_methods}, not {self.method!r}"
+            )
+        if self.ties not in ("average", "random"):
+            raise ValueError(f"ties must be 'average' or 'random', not {self.ties!r}")
+
+        # Rank-based scores are computed from the ranks of the data given to
+        # transform, so there is nothing to learn.
+        if self.method in _RANKIT_CONSTANTS:
+            return self
+
+        # Set number of quantiles, if n_quantiles is greater than the number of samples
         # set it to the number of samples.
         self.n_quantiles_ = min(self.n_quantiles, x.shape[0])
 
@@ -436,4 +525,42 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         numpy.ndarray
             Transformed data.
         """
+        if self.method in _RANKIT_CONSTANTS:
+            return self._rankit_scores(x, constant=_RANKIT_CONSTANTS[self.method])
+
         return self.transformer_.transform(x)
+
+    def _rankit_scores(self, x, constant):
+        """Normal scores of the exact ranks of each column (the general rankit formula).
+
+        Missing values are ranked (and scored) independently per column: each
+        column's ranks, tie-breaking, and denominator are computed from only
+        that column's non-missing values, and missing positions stay missing
+        in the output.
+        """
+        values = np.asarray(x, dtype=float)
+        scores = np.full_like(values, np.nan)
+        random_state = check_random_state(self.random_state)
+
+        for column in range(values.shape[1]):
+            column_values = values[:, column]
+            valid_mask = ~np.isnan(column_values)
+            valid_values = column_values[valid_mask]
+            n_valid = valid_values.shape[0]
+
+            if n_valid == 0:
+                continue
+
+            if self.ties == "random":
+                # rank the shuffled values with distinct ranks, then undo the shuffle
+                order = random_state.permutation(n_valid)
+                ranks = np.empty(n_valid)
+                ranks[order] = rankdata(valid_values[order], method="ordinal")
+            else:
+                ranks = rankdata(valid_values, method="average")
+
+            scores[valid_mask, column] = norm.ppf(
+                (ranks - constant) / (n_valid - 2 * constant + 1)
+            )
+
+        return scores
