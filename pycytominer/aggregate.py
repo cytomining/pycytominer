@@ -13,7 +13,7 @@ from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_d
 
 @write_to_file_if_user_specifies_output_details
 def aggregate(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     strata: list[str] = ["Metadata_Plate", "Metadata_Well"],
     features: Union[list[str], str] = "infer",
     image_features: bool = False,
@@ -32,7 +32,7 @@ def aggregate(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame to group and aggregate.
     strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
         Columns to groupby and aggregate.
@@ -87,17 +87,17 @@ def aggregate(
 
     # Subset the data to specified samples
     if isinstance(subset_data_df, pd.DataFrame):
-        population_df = subset_data_df.merge(
-            population_df, how="inner", on=subset_data_df.columns.tolist()
-        ).reindex(population_df.columns, axis="columns")
+        profiles = subset_data_df.merge(
+            profiles, how="inner", on=subset_data_df.columns.tolist()
+        ).reindex(profiles.columns, axis="columns")
 
     # Subset dataframe to only specified variables if provided
-    strata_df = population_df[strata]
+    strata_df = profiles[strata]
 
     # Only extract single object column in preparation for count
     if compute_object_count:
         count_object_df = (
-            population_df
+            profiles
             .loc[:, list(np.union1d(strata, [object_feature]))]
             .groupby(strata)[object_feature]
             .count()
@@ -106,37 +106,37 @@ def aggregate(
         )
 
     if features == "infer":
-        features = infer_cp_features(population_df, image_features=image_features)
+        features = infer_cp_features(profiles, image_features=image_features)
 
     # recast as dataframe to protect against scenarios where a series may be returned
-    population_df = pd.DataFrame(population_df[features])
+    profiles = pd.DataFrame(profiles[features])
 
     # Fix dtype of input features (they should all be floats!)
-    population_df = population_df.astype(float)
+    profiles = profiles.astype(float)
 
     # Merge back metadata used to aggregate by
-    population_df = pd.concat([strata_df, population_df], axis="columns")
+    profiles = pd.concat([strata_df, profiles], axis="columns")
 
     # Perform aggregating function
     # Note: type ignore added below to address the change in variable types for
-    # label `population_df`.
-    population_df = population_df.groupby(strata, dropna=False)  # type: ignore[assignment]
+    # label `profiles`.
+    profiles = profiles.groupby(strata, dropna=False)  # type: ignore[assignment]
 
     if operation == "median":
-        population_df = population_df.median().reset_index()
+        profiles = profiles.median().reset_index()
     else:
-        population_df = population_df.mean().reset_index()
+        profiles = profiles.mean().reset_index()
 
     # Compute objects counts
     if compute_object_count:
-        population_df = count_object_df.merge(population_df, on=strata, how="right")
+        profiles = count_object_df.merge(profiles, on=strata, how="right")
 
     # Aggregated image number and object number do not make sense
     if columns_to_drop := [
         column
-        for column in population_df.columns
+        for column in profiles.columns
         if column in ["ImageNumber", "ObjectNumber"]
     ]:
-        population_df = population_df.drop(columns=columns_to_drop, axis="columns")
+        profiles = profiles.drop(columns=columns_to_drop, axis="columns")
 
-    return population_df
+    return profiles
