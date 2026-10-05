@@ -53,7 +53,7 @@ def test_aggregate_median_allvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features="infer", operation="median"
+        profiles=data_df, strata=["g"], features="infer", operation="median"
     )
 
     expected_result = pd.concat([
@@ -69,7 +69,7 @@ def test_aggregate_median_allvar():
     data_df_with_imagenumber["ImageNumber"] = "1"
 
     aggregate_result = aggregate(
-        population_df=data_df_with_imagenumber,
+        profiles=data_df_with_imagenumber,
         strata=["g"],
         features="infer",
         operation="median",
@@ -79,7 +79,7 @@ def test_aggregate_median_allvar():
 
     # Test output
     aggregate(
-        population_df=data_df,
+        profiles=data_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -95,7 +95,7 @@ def test_aggregate_mean_allvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features="infer", operation="mean"
+        profiles=data_df, strata=["g"], features="infer", operation="mean"
     )
 
     expected_result = pd.concat([
@@ -112,7 +112,7 @@ def test_aggregate_median_subsetvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features=["Cells_x"], operation="median"
+        profiles=data_df, strata=["g"], features=["Cells_x"], operation="median"
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "Cells_x": [3, 3]})
@@ -126,7 +126,7 @@ def test_aggregate_mean_subsetvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features=["Cells_x"], operation="mean"
+        profiles=data_df, strata=["g"], features=["Cells_x"], operation="mean"
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "Cells_x": [4, 3]})
@@ -144,7 +144,7 @@ def test_aggregate_infer_with_image_features():
     })
 
     aggregate_result = aggregate(
-        population_df=image_data_df,
+        profiles=image_data_df,
         strata=["g"],
         features="infer",
         image_features=True,
@@ -170,7 +170,7 @@ def test_aggregate_median_dtype_confirm():
     data_dtype_df.Cells_x = data_dtype_df.Cells_x.astype(str)
 
     aggregate_result = aggregate(
-        population_df=data_dtype_df, strata=["g"], features="infer", operation="median"
+        profiles=data_dtype_df, strata=["g"], features="infer", operation="median"
     )
     print(aggregate_result)
     expected_result = pd.concat([
@@ -192,7 +192,7 @@ def test_aggregate_median_with_missing_values():
     data_dtype_df.Cells_x = data_dtype_df.Cells_x.astype(str)
 
     aggregate_result = aggregate(
-        population_df=data_dtype_df, strata=["g"], features="infer", operation="median"
+        profiles=data_dtype_df, strata=["g"], features="infer", operation="median"
     )
     print(aggregate_result)
     expected_result = pd.concat([
@@ -210,7 +210,7 @@ def test_aggregate_compute_object_count():
     """
 
     aggregate_result = aggregate(
-        population_df=data_df,
+        profiles=data_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -237,7 +237,7 @@ def test_aggregate_compute_object_count():
 
     # Test output
     aggregate(
-        population_df=data_df,
+        profiles=data_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -258,7 +258,7 @@ def test_aggregate_incorrect_object_feature():
 
     with pytest.raises(KeyError) as err:
         aggregate(
-            population_df=data_df,
+            profiles=data_df,
             strata=["g"],
             features="infer",
             operation="median",
@@ -278,7 +278,7 @@ def test_aggregate_incorrect_object_feature():
     ])
 
     result = aggregate(
-        population_df=data_missing_group_df,
+        profiles=data_missing_group_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -297,7 +297,7 @@ def test_custom_objectnumber_feature():
     )
 
     aggregate_result = aggregate(
-        population_df=data_df_copy,
+        profiles=data_df_copy,
         strata=["g"],
         features="infer",
         operation="median",
@@ -335,7 +335,7 @@ def test_output_type():
     for _type, outname in output_dict.items():
         # Test output
         aggregate(
-            population_df=data_df,
+            profiles=data_df,
             strata=["g"],
             features="infer",
             operation="median",
