@@ -131,7 +131,7 @@ def consensus(
         consensus_df = cast(
             pd.DataFrame,
             aggregate(
-                population_df=profiles,
+                profiles=profiles,
                 strata=replicate_columns,
                 features=features,
                 operation=operation,
