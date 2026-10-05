@@ -23,7 +23,7 @@ env:
   PRE_COMMIT_HOME: ${{ github.workspace }}/.cache/pre-commit
   PYTEST_ADDOPTS: ${{ github.event.inputs.pytest_addopts }}
   PYTHONIOENCODING: "UTF-8"
-  TARGET_PYTHON_VERSION: "3.10"
+  TARGET_PYTHON_VERSION: "3.11"
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv # overridden per-job by setup-env action via $GITHUB_ENV
 
 jobs:
@@ -116,7 +116,7 @@ jobs:
           - macos-14
           - ubuntu-24.04
           - windows-2022
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         exclude:
           # NumPy's MINGW-W64 Windows build for Python 3.14 is self-described as
           # "experimental" with crashes expected. Exclude until NumPy ships a
