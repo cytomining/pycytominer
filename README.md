@@ -3,7 +3,7 @@
 # Data processing for image-based profiling
 
 [![Build Status](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml/badge.svg?branch=main)](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml?query=branch%3Amain)
-[![Python](https://img.shields.io/badge/python-3.10--3.14-blue)](https://pypi.org/project/pycytominer/)
+[![Python](https://img.shields.io/badge/python-3.11--3.14-blue)](https://pypi.org/project/pycytominer/)
 [![codecov](https://codecov.io/gh/cytomining/pycytominer/graph/badge.svg)](https://codecov.io/gh/cytomining/pycytominer)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
