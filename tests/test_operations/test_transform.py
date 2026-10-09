@@ -348,6 +348,25 @@ def test_inverse_normal_transform_invalid_method_and_ties():
         InverseNormalTransform(method="blom", ties="first").fit(data_df)
 
 
+def test_normalize_invalid_inverse_normal_method():
+    """Test that normalize rejects an unknown inverse_normal_method before using `samples`."""
+    profiles = pd.concat(
+        [pd.DataFrame({"Metadata_plate": ["plate_a"] * len(data_df)}), data_df],
+        axis="columns",
+    )
+
+    # the missing `samples` column would raise a different error if it were evaluated first
+    with pytest.raises(ValueError, match="inverse_normal_method must be one of"):
+        normalize(
+            profiles=profiles,
+            features=["a", "b", "c", "d"],
+            meta_features=["Metadata_plate"],
+            samples="Metadata_missing_column == 'plate_a'",
+            method="inverse_normal",
+            inverse_normal_method="rank",
+        )
+
+
 def test_inverse_normal_transform_rankit_normalize_usage():
     """Test that normalize forwards the rank-based inverse-normal options to InverseNormalTransform."""
     profiles = pd.concat(
