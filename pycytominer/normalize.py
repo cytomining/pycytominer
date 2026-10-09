@@ -34,8 +34,8 @@ def normalize(
     spherize_center: bool = True,
     spherize_method: str = "ZCA-cor",
     spherize_epsilon: float = 1e-6,
-    inverse_normal_method: str = "quantile",
     inverse_normal_n_quantiles: int = 1000,
+    inverse_normal_method: str = "quantile",
     inverse_normal_ties: str = "average",
     inverse_normal_random_state: Optional[int] = None,
 ) -> pd.DataFrame:
@@ -108,6 +108,11 @@ def normalize(
     spherize_epsilon : float, default 1e-6.
         The sphering (aka whitening) fudge factor parameter. The function only uses
         this variable if method = "spherize".
+    inverse_normal_n_quantiles : int, default=1000
+        Number of cumulative distribution function landmarks used for the inverse
+        normal transformation. Values larger than the number of samples are capped
+        at the number of samples. Only used when ``method="inverse_normal"`` and
+        ``inverse_normal_method="quantile"``.
     inverse_normal_method : {"quantile", "blom", "tukey", "van_der_waerden", "hazen"}, default="quantile"
         How values are mapped to normal scores. "quantile" interpolates between
         ``inverse_normal_n_quantiles`` landmarks (sklearn's QuantileTransformer).
@@ -126,11 +131,6 @@ def normalize(
         ranks are computed over all rows, so ``samples`` can never affect the
         result; a ``ValueError`` is raised unless ``samples="all"``. Only used
         when ``method="inverse_normal"``.
-    inverse_normal_n_quantiles : int, default=1000
-        Number of cumulative distribution function landmarks used for the inverse
-        normal transformation. Values larger than the number of samples are capped
-        at the number of samples. Only used when ``method="inverse_normal"`` and
-        ``inverse_normal_method="quantile"``.
     inverse_normal_ties : {"average", "random"}, default="average"
         How tied values are ranked when ``inverse_normal_method`` is rank-based
         (``"blom"``, ``"tukey"``, ``"van_der_waerden"``, or ``"hazen"``): "average"
@@ -153,7 +153,9 @@ def normalize(
         because Pycytominer normalization methods operate on numeric features
         only. In that case, select numeric features explicitly before calling
         ``normalize()``, for example by passing a curated feature list or by
-        running ``feature_select()`` first. Also raised when ``samples`` is not
+        running ``feature_select()`` first. Also raised when ``method`` is
+        ``"inverse_normal"`` and ``inverse_normal_method`` is not one of the
+        available methods, and when ``samples`` is not
         ``"all"`` and ``inverse_normal_method`` is a rank-based method
         (``"blom"``, ``"tukey"``, ``"van_der_waerden"``, or ``"hazen"``), since
         those methods rank every row and ``samples`` can never affect the
@@ -235,6 +237,15 @@ def normalize(
     ]
     if method not in avail_methods:
         raise ValueError(f"operation must be one {avail_methods}")
+
+    avail_inverse_normal_methods = ["quantile", *_RANKIT_CONSTANTS]
+    if method == "inverse_normal" and inverse_normal_method not in (
+        avail_inverse_normal_methods
+    ):
+        raise ValueError(
+            f"inverse_normal_method must be one of {avail_inverse_normal_methods}, "
+            f"not {inverse_normal_method!r}"
+        )
 
     if (
         method == "inverse_normal"
