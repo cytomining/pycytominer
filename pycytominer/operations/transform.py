@@ -537,7 +537,9 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         denominator come only from that column's non-missing values, and
         missing positions stay missing in the output.
         """
-        values = pd.DataFrame(np.asarray(x, dtype=float))
+        # na_value lets nullable pandas dtypes (Int64/Float64 with pd.NA) convert
+        # to float with their missing values kept as NaN
+        values = pd.DataFrame(pd.DataFrame(x).to_numpy(dtype=float, na_value=np.nan))
 
         if self.ties == "random":
             # shuffle each column, rank the shuffled values with distinct ranks

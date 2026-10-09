@@ -17,11 +17,15 @@ jobs:
     # reflect the canonical cytomining/pycytominer repository.
     if: github.repository == 'cytomining/pycytominer'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # the check only reads the local clone; don't leave the token in .git/config
+          persist-credentials: false
 
       - name: Setup Python and uv
         uses: ./.github/actions/setup-env
