@@ -9,7 +9,7 @@ from typing import Optional, TypeVar
 
 import numpy as np
 import pandas as pd
-from scipy.stats import median_abs_deviation, norm, rankdata
+from scipy.stats import median_abs_deviation, norm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import QuantileTransformer, StandardScaler
 from sklearn.utils import check_random_state
@@ -533,34 +533,24 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
     def _rankit_scores(self, x, constant):
         """Normal scores of the exact ranks of each column (the general rankit formula).
 
-        Missing values are ranked (and scored) independently per column: each
-        column's ranks, tie-breaking, and denominator are computed from only
-        that column's non-missing values, and missing positions stay missing
-        in the output.
+        Missing values are left out of each column's ranking: ranks and the
+        denominator come only from that column's non-missing values, and
+        missing positions stay missing in the output.
         """
-        values = np.asarray(x, dtype=float)
-        scores = np.full_like(values, np.nan)
-        random_state = check_random_state(self.random_state)
+        values = pd.DataFrame(np.asarray(x, dtype=float))
 
-        for column in range(values.shape[1]):
-            column_values = values[:, column]
-            valid_mask = ~np.isnan(column_values)
-            valid_values = column_values[valid_mask]
-            n_valid = valid_values.shape[0]
+        if self.ties == "random":
+            # shuffle each column, rank the shuffled values with distinct ranks
+            # ("first"), then undo the shuffle
+            random_state = check_random_state(self.random_state)
+            ranks = values.copy()
+            for column in values.columns:
+                order = random_state.permutation(values.shape[0])
+                shuffled_ranks = values[column].iloc[order].rank(method="first")
+                ranks[column] = np.nan
+                ranks.loc[order, column] = shuffled_ranks.to_numpy()
+        else:
+            ranks = values.rank(method="average")
 
-            if n_valid == 0:
-                continue
-
-            if self.ties == "random":
-                # rank the shuffled values with distinct ranks, then undo the shuffle
-                order = random_state.permutation(n_valid)
-                ranks = np.empty(n_valid)
-                ranks[order] = rankdata(valid_values[order], method="ordinal")
-            else:
-                ranks = rankdata(valid_values, method="average")
-
-            scores[valid_mask, column] = norm.ppf(
-                (ranks - constant) / (n_valid - 2 * constant + 1)
-            )
-
-        return scores
+        n_valid = values.count()
+        return norm.ppf((ranks - constant) / (n_valid - 2 * constant + 1))
