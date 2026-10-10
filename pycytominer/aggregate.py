@@ -8,9 +8,13 @@ import numpy as np
 import pandas as pd
 
 from pycytominer.cyto_utils import check_aggregate_operation, infer_cp_features
-from pycytominer.cyto_utils.util import write_to_file_if_user_specifies_output_details
+from pycytominer.cyto_utils.util import (
+    deprecate_renamed_parameter,
+    write_to_file_if_user_specifies_output_details,
+)
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 @write_to_file_if_user_specifies_output_details
 def aggregate(
     profiles: pd.DataFrame,
@@ -28,12 +32,19 @@ def aggregate(
     compression_options: Optional[Union[str, dict[str, Any]]] = None,
     float_format: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Combine population dataframe variables by strata groups using given operation.
+    """Combine profiles by strata groups using given operation.
 
     Parameters
     ----------
     profiles : pd.DataFrame
-        DataFrame to group and aggregate.
+        DataFrame containing single-cell profiles to be aggregated according
+        to the specified grouping criteria.
+
+        .. deprecated:: 2.0
+            The previous name of this parameter, ``population_df``, is still
+            accepted as a keyword argument but emits a ``DeprecationWarning``.
+            Use ``profiles`` instead. ``population_df`` will be removed in a
+            future release.
     strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
         Columns to groupby and aggregate.
     features : list of str, default "infer"
