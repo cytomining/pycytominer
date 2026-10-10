@@ -1,5 +1,6 @@
 import os
 import tempfile
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -354,3 +355,32 @@ def test_output_type():
 
     # check to make sure both dataframes are the same regardless of the output_type
     pd.testing.assert_frame_equal(csv_df, parquet_df)
+
+
+def test_aggregate_population_df_deprecation_warning():
+    """Passing population_df emits a DeprecationWarning."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        aggregate(population_df=data_df, strata=["g"])
+
+    deprecation_warnings = [
+        w for w in caught if issubclass(w.category, DeprecationWarning)
+    ]
+    assert len(deprecation_warnings) == 1
+    assert "population_df" in str(deprecation_warnings[0].message)
+    assert "profiles" in str(deprecation_warnings[0].message)
+
+
+def test_aggregate_population_df_returns_same_result_as_profiles():
+    """Legacy population_df produces the same output as profiles."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        legacy = aggregate(population_df=data_df, strata=["g"])
+
+    pd.testing.assert_frame_equal(legacy, aggregate(profiles=data_df, strata=["g"]))
+
+
+def test_aggregate_population_df_and_profiles_raises():
+    """Passing both population_df and profiles is ambiguous and raises."""
+    with pytest.raises(TypeError, match="both `population_df` and `profiles`"):
+        aggregate(profiles=data_df, population_df=data_df, strata=["g"])
