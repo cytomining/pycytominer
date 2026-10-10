@@ -6,11 +6,13 @@ from typing import Union
 
 import pandas as pd
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def noise_removal(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     noise_removal_perturb_groups: Union[str, list[str]],
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
@@ -20,14 +22,14 @@ def noise_removal(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     noise_removal_perturb_groups : list or array of str
-        The list of unique perturbations corresponding to the rows in population_df. For example,
+        The list of unique perturbations corresponding to the rows in profiles. For example,
         perturb1_well1 and perturb1_well2 would both be "perturb1".
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
-        `population_df` DataFrame. All features listed must be found in `population_df`.
+        `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     samples : str, default "all"
@@ -51,12 +53,12 @@ def noise_removal(
     if samples != "all":
         # Using pandas query to filter rows based on the conditions provided in the
         # samples parameter
-        population_df = population_df.query(expr=samples)
+        profiles = profiles.query(expr=samples)
 
     # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        inferred_features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(profiles)
         # Subset the DataFrame to only include inferred CellProfiler features
     elif isinstance(features, list):
         inferred_features = features
@@ -64,21 +66,21 @@ def noise_removal(
     # if a Metadata columns name is specified, use that as the perturb groups
     if isinstance(noise_removal_perturb_groups, str):
         # Check if the column exists
-        if noise_removal_perturb_groups not in population_df.columns:
+        if noise_removal_perturb_groups not in profiles.columns:
             raise ValueError(
                 'f"{perturb} not found. Are you sure it is a metadata column?'
             )
         # Assign the group info to the specified column
-        group_info = population_df[noise_removal_perturb_groups]
+        group_info = profiles[noise_removal_perturb_groups]
 
     # Otherwise, the user specifies a list of perturbs
     elif isinstance(noise_removal_perturb_groups, list):
         # Check if the length of the noise_removal_perturb_groups is the same as the
         # number of rows in the df
-        if not len(noise_removal_perturb_groups) == len(population_df):
+        if not len(noise_removal_perturb_groups) == len(profiles):
             raise ValueError(
                 f"The length of input list: {len(noise_removal_perturb_groups)} is not equivalent to your "
-                f"data: {population_df.shape[0]}"
+                f"data: {profiles.shape[0]}"
             )
         # Assign the group info to the the noise_removal_perturb_groups
         group_info = pd.Series(noise_removal_perturb_groups)
@@ -90,14 +92,14 @@ def noise_removal(
         )
 
     # Subset and df and assign each row with the identity of its perturbation group
-    population_df = population_df.loc[:, inferred_features]
-    population_df = population_df.assign(group_id=group_info)
+    profiles = profiles.loc[:, inferred_features]
+    profiles = profiles.assign(group_id=group_info)
 
     # Get the standard deviations of features within each group then calculate the mean
     # of these standard deviations.
     # This tells us how much the standard deviation of each feature varies within each
     # perturbation group.
-    stdev_means_df = population_df.groupby("group_id").std(ddof=0).mean()
+    stdev_means_df = profiles.groupby("group_id").std(ddof=0).mean()
 
     # With the stdev_means_df, we can identify features that have a mean stdev greater than
     # the cutoff

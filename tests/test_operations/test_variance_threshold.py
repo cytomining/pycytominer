@@ -12,7 +12,7 @@ def test_variance_threshold():
     }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
-        population_df=data_var_test_df,
+        profiles=data_var_test_df,
         features=data_var_test_df.columns.tolist(),
         min_variance=0.000001,
     )
@@ -28,7 +28,7 @@ def test_variance_threshold_default_min_variance():
     }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
-        population_df=data_var_test_df,
+        profiles=data_var_test_df,
         features=data_var_test_df.columns.tolist(),
     )
 
@@ -43,7 +43,7 @@ def test_variance_threshold_min_variance_zero_excludes_no_features():
     }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
-        population_df=data_var_test_df,
+        profiles=data_var_test_df,
         features=data_var_test_df.columns.tolist(),
         min_variance=0.0,
     )
@@ -56,7 +56,7 @@ def test_variance_threshold_min_variance_invalid(min_variance):
     """Test that variance_threshold rejects invalid min_variance values."""
     with pytest.raises(ValueError):
         variance_threshold(
-            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            profiles=pd.DataFrame({"feature": [1, 2, 3]}),
             features=["feature"],
             min_variance=min_variance,
         )
@@ -69,7 +69,7 @@ def test_variance_threshold_features_invalid(features):
         ValueError, match='features must be a list of column names or "infer"'
     ):
         variance_threshold(
-            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            profiles=pd.DataFrame({"feature": [1, 2, 3]}),
             features=features,
         )
 
@@ -78,7 +78,7 @@ def test_variance_threshold_samples_invalid():
     """Test that variance_threshold rejects non-string sample filters."""
     with pytest.raises(ValueError, match="samples must be a string"):
         variance_threshold(
-            population_df=pd.DataFrame({"feature": [1, 2, 3]}),
+            profiles=pd.DataFrame({"feature": [1, 2, 3]}),
             features=["feature"],
             samples=["feature > 1"],
         )
@@ -92,7 +92,7 @@ def test_variance_threshold_featureinfer():
     }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
-        population_df=data_cp_df, features="infer", min_variance=0.000001
+        profiles=data_cp_df, features="infer", min_variance=0.000001
     )
 
     assert excluded_features == ["Cells_low_var"]
@@ -107,7 +107,7 @@ def test_variance_threshold_samples():
     }).reset_index(drop=True)
 
     excluded_features = variance_threshold(
-        population_df=data_sample_id_df,
+        profiles=data_sample_id_df,
         features=["low_var", "high_var"],
         samples="Metadata_sample != 'sample_5'",
         min_variance=0.000001,

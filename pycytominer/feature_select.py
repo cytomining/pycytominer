@@ -193,14 +193,14 @@ def feature_select(
     for op in operation:
         if op == "variance_threshold":
             exclude = variance_threshold(
-                population_df=profiles,
+                profiles=profiles,
                 features=features,
                 samples=samples,
                 min_variance=min_variance,
             )
         if op == "frequency_threshold":
             exclude = frequency_threshold(
-                population_df=profiles,
+                profiles=profiles,
                 features=features,
                 samples=samples,
                 freq_cut=freq_cut,
@@ -208,14 +208,14 @@ def feature_select(
             )
         elif op == "drop_na_columns":
             exclude = get_na_columns(
-                population_df=profiles,
+                profiles=profiles,
                 features=features,
                 samples=samples,
                 cutoff=na_cutoff,
             )
         elif op == "correlation_threshold":
             exclude = correlation_threshold(
-                population_df=profiles,
+                profiles=profiles,
                 features=features,
                 samples=samples,
                 threshold=corr_threshold,
@@ -223,14 +223,14 @@ def feature_select(
             )
         elif op == "blocklist":
             exclude = get_blocklist_features(
-                population_df=profiles,
+                profiles=profiles,
                 blocklist=blocklist,
                 blocklist_name=blocklist_name,
                 blocklist_file=blocklist_file,
             )
         elif op == "drop_outliers":
             exclude = drop_outlier_features(
-                population_df=profiles,
+                profiles=profiles,
                 features=features,
                 samples=samples,
                 outlier_cutoff=outlier_cutoff,
@@ -245,7 +245,7 @@ def feature_select(
                 )
 
             exclude = noise_removal(
-                population_df=profiles,
+                profiles=profiles,
                 features=features,
                 samples=samples,
                 noise_removal_perturb_groups=noise_removal_perturb_groups,

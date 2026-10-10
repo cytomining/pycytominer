@@ -17,25 +17,25 @@ def test_get_na_columns():
     Testing get_na_columns pycytominer function
     """
     get_na_columns_result = get_na_columns(
-        population_df=data_df, features=["x", "y", "zz"], cutoff=0.4
+        profiles=data_df, features=["x", "y", "zz"], cutoff=0.4
     )
     expected_result = ["zz"]
     assert get_na_columns_result == expected_result
 
     get_na_columns_result = get_na_columns(
-        population_df=data_df, features=data_df.columns.tolist(), cutoff=0.1
+        profiles=data_df, features=data_df.columns.tolist(), cutoff=0.1
     )
     expected_result = ["x", "y", "z", "zz"]
     assert sorted(get_na_columns_result) == expected_result
 
     get_na_columns_result = get_na_columns(
-        population_df=data_df, features=["x", "y", "zz"], cutoff=0.3
+        profiles=data_df, features=["x", "y", "zz"], cutoff=0.3
     )
     expected_result = ["y", "zz"]
     assert sorted(get_na_columns_result) == expected_result
 
     get_na_columns_result = get_na_columns(
-        population_df=data_df, features=["x", "y", "zz"], cutoff=0.5
+        profiles=data_df, features=["x", "y", "zz"], cutoff=0.5
     )
     assert len(get_na_columns_result) == 0
 
@@ -48,7 +48,7 @@ def test_get_na_columns_sample():
         Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
     )
     get_na_columns_result = get_na_columns(
-        population_df=data_sample_id_df,
+        profiles=data_sample_id_df,
         samples="Metadata_sample != 'sample_0'",
         features=["x", "y", "zz"],
         cutoff=0.4,
@@ -57,7 +57,7 @@ def test_get_na_columns_sample():
     assert len(get_na_columns_result) == 0
 
     get_na_columns_result = get_na_columns(
-        population_df=data_sample_id_df,
+        profiles=data_sample_id_df,
         samples="Metadata_sample != 'sample_0'",
         features=["x", "y", "zz"],
         cutoff=0.1,
@@ -68,9 +68,7 @@ def test_get_na_columns_sample():
 
 def test_get_na_columns_featureinfer():
     with pytest.raises(ValueError) as nocp:
-        get_na_columns(
-            population_df=data_df, samples="all", features="infer", cutoff=0.1
-        )
+        get_na_columns(profiles=data_df, samples="all", features="infer", cutoff=0.1)
 
         assert "No features found." in str(nocp.value)
 
@@ -86,5 +84,5 @@ def test_get_na_columns_cutoff_parameter():
             ValueError, match="cutoff variable must be between \\(0 and 1\\)"
         ):
             get_na_columns(
-                population_df=data_df, samples="all", features="infer", cutoff=cutoff
+                profiles=data_df, samples="all", features="infer", cutoff=cutoff
             )

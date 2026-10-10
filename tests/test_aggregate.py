@@ -1,5 +1,6 @@
 import os
 import tempfile
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -53,7 +54,7 @@ def test_aggregate_median_allvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features="infer", operation="median"
+        profiles=data_df, strata=["g"], features="infer", operation="median"
     )
 
     expected_result = pd.concat([
@@ -69,7 +70,7 @@ def test_aggregate_median_allvar():
     data_df_with_imagenumber["ImageNumber"] = "1"
 
     aggregate_result = aggregate(
-        population_df=data_df_with_imagenumber,
+        profiles=data_df_with_imagenumber,
         strata=["g"],
         features="infer",
         operation="median",
@@ -79,7 +80,7 @@ def test_aggregate_median_allvar():
 
     # Test output
     aggregate(
-        population_df=data_df,
+        profiles=data_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -95,7 +96,7 @@ def test_aggregate_mean_allvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features="infer", operation="mean"
+        profiles=data_df, strata=["g"], features="infer", operation="mean"
     )
 
     expected_result = pd.concat([
@@ -112,7 +113,7 @@ def test_aggregate_median_subsetvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features=["Cells_x"], operation="median"
+        profiles=data_df, strata=["g"], features=["Cells_x"], operation="median"
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "Cells_x": [3, 3]})
@@ -126,7 +127,7 @@ def test_aggregate_mean_subsetvar():
     Testing aggregate pycytominer function
     """
     aggregate_result = aggregate(
-        population_df=data_df, strata=["g"], features=["Cells_x"], operation="mean"
+        profiles=data_df, strata=["g"], features=["Cells_x"], operation="mean"
     )
 
     expected_result = pd.DataFrame({"g": ["a", "b"], "Cells_x": [4, 3]})
@@ -144,7 +145,7 @@ def test_aggregate_infer_with_image_features():
     })
 
     aggregate_result = aggregate(
-        population_df=image_data_df,
+        profiles=image_data_df,
         strata=["g"],
         features="infer",
         image_features=True,
@@ -170,7 +171,7 @@ def test_aggregate_median_dtype_confirm():
     data_dtype_df.Cells_x = data_dtype_df.Cells_x.astype(str)
 
     aggregate_result = aggregate(
-        population_df=data_dtype_df, strata=["g"], features="infer", operation="median"
+        profiles=data_dtype_df, strata=["g"], features="infer", operation="median"
     )
     print(aggregate_result)
     expected_result = pd.concat([
@@ -192,7 +193,7 @@ def test_aggregate_median_with_missing_values():
     data_dtype_df.Cells_x = data_dtype_df.Cells_x.astype(str)
 
     aggregate_result = aggregate(
-        population_df=data_dtype_df, strata=["g"], features="infer", operation="median"
+        profiles=data_dtype_df, strata=["g"], features="infer", operation="median"
     )
     print(aggregate_result)
     expected_result = pd.concat([
@@ -210,7 +211,7 @@ def test_aggregate_compute_object_count():
     """
 
     aggregate_result = aggregate(
-        population_df=data_df,
+        profiles=data_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -237,7 +238,7 @@ def test_aggregate_compute_object_count():
 
     # Test output
     aggregate(
-        population_df=data_df,
+        profiles=data_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -258,7 +259,7 @@ def test_aggregate_incorrect_object_feature():
 
     with pytest.raises(KeyError) as err:
         aggregate(
-            population_df=data_df,
+            profiles=data_df,
             strata=["g"],
             features="infer",
             operation="median",
@@ -278,7 +279,7 @@ def test_aggregate_incorrect_object_feature():
     ])
 
     result = aggregate(
-        population_df=data_missing_group_df,
+        profiles=data_missing_group_df,
         strata=["g"],
         features="infer",
         operation="median",
@@ -297,7 +298,7 @@ def test_custom_objectnumber_feature():
     )
 
     aggregate_result = aggregate(
-        population_df=data_df_copy,
+        profiles=data_df_copy,
         strata=["g"],
         features="infer",
         operation="median",
@@ -335,7 +336,7 @@ def test_output_type():
     for _type, outname in output_dict.items():
         # Test output
         aggregate(
-            population_df=data_df,
+            profiles=data_df,
             strata=["g"],
             features="infer",
             operation="median",
@@ -354,3 +355,32 @@ def test_output_type():
 
     # check to make sure both dataframes are the same regardless of the output_type
     pd.testing.assert_frame_equal(csv_df, parquet_df)
+
+
+def test_aggregate_population_df_deprecation_warning():
+    """Passing population_df emits a DeprecationWarning."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        aggregate(population_df=data_df, strata=["g"])
+
+    deprecation_warnings = [
+        w for w in caught if issubclass(w.category, DeprecationWarning)
+    ]
+    assert len(deprecation_warnings) == 1
+    assert "population_df" in str(deprecation_warnings[0].message)
+    assert "profiles" in str(deprecation_warnings[0].message)
+
+
+def test_aggregate_population_df_returns_same_result_as_profiles():
+    """Legacy population_df produces the same output as profiles."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        legacy = aggregate(population_df=data_df, strata=["g"])
+
+    pd.testing.assert_frame_equal(legacy, aggregate(profiles=data_df, strata=["g"]))
+
+
+def test_aggregate_population_df_and_profiles_raises():
+    """Passing both population_df and profiles is ambiguous and raises."""
+    with pytest.raises(TypeError, match="both `population_df` and `profiles`"):
+        aggregate(profiles=data_df, population_df=data_df, strata=["g"])

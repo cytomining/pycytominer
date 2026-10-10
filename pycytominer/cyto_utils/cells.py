@@ -677,7 +677,7 @@ class SingleCells:
                 aggregate_features = self.features
 
             partial_object_df = aggregate(
-                population_df=population_df,
+                profiles=population_df,
                 strata=self.strata,
                 compute_object_count=compute_counts,
                 operation=self.aggregation_operation,
