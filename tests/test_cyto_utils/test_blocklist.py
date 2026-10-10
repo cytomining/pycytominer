@@ -69,15 +69,15 @@ def test_blocklist_explicit_name_not_overridden_by_default():
 
 
 def test_blocklist_df_no_args_filters_default_to_population():
-    # With only a population_df, the default blocklist is filtered to matching columns.
-    blocklist_from_func = get_blocklist_features(population_df=data_blocklist_df)
+    # With only profiles, the default blocklist is filtered to matching columns.
+    blocklist_from_func = get_blocklist_features(profiles=data_blocklist_df)
     assert blocklist_from_func == data_blocklist_df.columns.tolist()
 
 
 def test_default_blocklist_df():
     blocklist_from_func = get_blocklist_features(
         blocklist_name=DEFAULT_BLOCKLIST_NAME,
-        population_df=data_blocklist_df,
+        profiles=data_blocklist_df,
     )
 
     assert packaged_blocklist_name == DEFAULT_BLOCKLIST_NAME
@@ -87,7 +87,7 @@ def test_default_blocklist_df():
 def test_named_blocklist_df():
     blocklist_from_func = get_blocklist_features(
         blocklist_name=packaged_blocklist_name,
-        population_df=data_blocklist_df,
+        profiles=data_blocklist_df,
     )
     assert data_blocklist_df.columns.tolist() == blocklist_from_func
 
@@ -147,7 +147,7 @@ def test_named_blocklists_from_dummy_file_filters_to_population_features(
     )
     blocklist_from_func = get_blocklist_features(
         blocklist=blocklist_from_object,
-        population_df=data_blocklist_df,
+        profiles=data_blocklist_df,
     )
 
     assert blocklist_from_func == data_blocklist_df.columns.tolist()
@@ -199,7 +199,7 @@ def test_blocklist_object_filters_to_population_features():
     )
     blocklist_from_func = get_blocklist_features(
         blocklist=blocklist_from_object,
-        population_df=data_blocklist_df,
+        profiles=data_blocklist_df,
     )
     assert blocklist_from_func == ["Nuclei_Correlation_Manders_AGP_DNA"]
 
@@ -207,7 +207,7 @@ def test_blocklist_object_filters_to_population_features():
 def test_blocklist_from_list():
     blocklist_from_func = get_blocklist_features(
         blocklist=["Nuclei_Correlation_Manders_AGP_DNA", "Cells_Custom"],
-        population_df=data_blocklist_df,
+        profiles=data_blocklist_df,
     )
     assert blocklist_from_func == ["Nuclei_Correlation_Manders_AGP_DNA"]
 
@@ -317,7 +317,7 @@ def test_blocklist_file_missing_column_raises(tmp_path):
 
 
 def test_blocklist_file_filters_to_population(tmp_path):
-    """blocklist_file respects population_df filtering."""
+    """blocklist_file respects profiles filtering."""
     csv_file = tmp_path / "my_blocklist.txt"
     csv_file.write_text(
         "blocklist\nNuclei_Correlation_Manders_AGP_DNA\nCells_Custom\n",
@@ -328,7 +328,7 @@ def test_blocklist_file_filters_to_population(tmp_path):
         warnings.simplefilter("always")
         result = get_blocklist_features(
             blocklist_file=csv_file,
-            population_df=data_blocklist_df,
+            profiles=data_blocklist_df,
         )
 
     assert result == ["Nuclei_Correlation_Manders_AGP_DNA"]

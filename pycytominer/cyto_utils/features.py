@@ -6,6 +6,8 @@ from typing import Union
 
 import pandas as pd
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
+
 
 def label_compartment(
     cp_features: list[str], compartment: str, metadata_cols: list[str]
@@ -41,8 +43,9 @@ def label_compartment(
     return cp_features
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def infer_cp_features(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     compartments: Union[str, list[str]] = ["Cells", "Nuclei", "Cytoplasm"],
     metadata: bool = False,
     image_features: bool = False,
@@ -59,7 +62,7 @@ def infer_cp_features(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame from which features are to be inferred.
     compartments : list of str, default ["Cells", "Nuclei", "Cytoplasm"]
         Compartments from which Cell Painting features were extracted.
@@ -88,26 +91,26 @@ def infer_cp_features(
         compartments = list({"Image", *compartments})
 
     features = []
-    for col in population_df.columns.tolist():
+    for col in profiles.columns.tolist():
         if not any(col.startswith(x.title()) for x in compartments):
             continue
 
         # Exclude nested object payloads while allowing scalar object values.
-        if population_df[col].dtype == "object":
-            non_null_values = population_df[col].dropna()
+        if profiles[col].dtype == "object":
+            non_null_values = profiles[col].dropna()
             if any(not pd.api.types.is_scalar(value) for value in non_null_values):
                 continue
 
         if col.startswith("Image_") and not pd.api.types.is_numeric_dtype(
-            population_df[col]
+            profiles[col]
         ):
             continue
 
         features.append(col)
 
     if metadata:
-        features = population_df.columns[
-            population_df.columns.str.startswith("Metadata_")
+        features = profiles.columns[
+            profiles.columns.str.startswith("Metadata_")
         ].tolist()
 
     if len(features) == 0:
@@ -120,12 +123,13 @@ def infer_cp_features(
     return features
 
 
-def count_na_features(population_df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
+def count_na_features(profiles: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     """Given a population dataframe and features, count how many nas per feature.
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame of profiles.
     features : list of str
         Features present in the population dataframe.
@@ -135,11 +139,12 @@ def count_na_features(population_df: pd.DataFrame, features: list[str]) -> pd.Da
     Dataframe of NA counts per feature
     """
 
-    return pd.DataFrame(population_df.loc[:, features].isna().sum(), columns=["num_na"])
+    return pd.DataFrame(profiles.loc[:, features].isna().sum(), columns=["num_na"])
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def drop_outlier_features(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
     outlier_cutoff: Union[int, float] = 500,
@@ -148,7 +153,7 @@ def drop_outlier_features(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     features : list of str or str, default "infer"
         Features present in the population dataframe. If "infer",
@@ -174,23 +179,23 @@ def drop_outlier_features(
     if samples != "all":
         # Using pandas query to filter rows based on the conditions provided in the
         # samples parameter
-        population_df = population_df.query(expr=samples)
+        profiles = profiles.query(expr=samples)
 
     # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        feature_list: list[str] = infer_cp_features(population_df)
+        feature_list: list[str] = infer_cp_features(profiles)
 
     else:
         # Subset the DataFrame to only include the features of interest
         # this would be more tailored to non-CellProfiler features
         feature_list = [features] if isinstance(features, str) else list(features)
 
-    population_df = population_df.loc[:, feature_list]
+    profiles = profiles.loc[:, feature_list]
 
     # Get the max and min values for each feature
-    max_feature_values = population_df.max().abs()
-    min_feature_values = population_df.min().abs()
+    max_feature_values = profiles.max().abs()
+    min_feature_values = profiles.min().abs()
 
     # Identify features with max or min values greater than the outlier cutoff
     outlier_features = max_feature_values[

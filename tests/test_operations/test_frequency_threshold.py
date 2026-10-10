@@ -84,7 +84,7 @@ def test_frequency_threshold_returns_low_frequency_feature_names():
     })
 
     excluded_features = frequency_threshold(
-        population_df=population_df,
+        profiles=population_df,
         features=population_df.columns.tolist(),
         freq_cut=0.5,
         unique_cut=0.0,
@@ -98,7 +98,7 @@ def test_frequency_threshold():
     """Test that frequency_threshold removes low-frequency and low-unique features."""
     unique_cut = 0.01
     excluded_features = frequency_threshold(
-        population_df=data_unique_test_df,
+        profiles=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         unique_cut=unique_cut,
     )
@@ -108,7 +108,7 @@ def test_frequency_threshold():
 
     unique_cut = 0.03
     excluded_features = frequency_threshold(
-        population_df=data_unique_test_df,
+        profiles=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         unique_cut=unique_cut,
     )
@@ -144,7 +144,7 @@ def test_frequency_threshold():
 def test_frequency_threshold_invalid_inputs(kwargs, expected_error):
     """Test that frequency_threshold rejects invalid threshold and subset inputs."""
     threshold_kwargs = {
-        "population_df": data_unique_test_df,
+        "profiles": data_unique_test_df,
         "features": data_unique_test_df.columns.tolist(),
     }
     threshold_kwargs.update(kwargs)
@@ -158,7 +158,7 @@ def test_frequency_threshold_featureinfer():
     unique_cut = 0.01
     with pytest.raises(ValueError) as nocp:
         frequency_threshold(
-            population_df=data_unique_test_df, features="infer", unique_cut=unique_cut
+            profiles=data_unique_test_df, features="infer", unique_cut=unique_cut
         )
 
     assert "No features or metadata found." in str(nocp.value)
@@ -167,7 +167,7 @@ def test_frequency_threshold_featureinfer():
     data_cp_df.columns = [f"Cells_{x}" for x in data_unique_test_df.columns]
 
     excluded_features = frequency_threshold(
-        population_df=data_cp_df, features="infer", unique_cut=unique_cut
+        profiles=data_cp_df, features="infer", unique_cut=unique_cut
     )
 
     expected_result = ["Cells_a"]
@@ -179,7 +179,7 @@ def test_frequency_threshold_samples():
     """Test that frequency_threshold calculates exclusions from selected samples."""
     unique_cut = 0.01
     excluded_features = frequency_threshold(
-        population_df=data_unique_test_df,
+        profiles=data_unique_test_df,
         features=data_unique_test_df.columns.tolist(),
         samples="all",
         unique_cut=unique_cut,
@@ -194,7 +194,7 @@ def test_frequency_threshold_samples():
     )
 
     excluded_features = frequency_threshold(
-        population_df=data_sample_id_df,
+        profiles=data_sample_id_df,
         features=data_sample_id_df.columns.tolist(),
         samples="Metadata_sample != 'sample_5'",
         unique_cut=unique_cut,

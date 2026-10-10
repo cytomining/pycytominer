@@ -39,12 +39,6 @@ def aggregate(
     profiles : pd.DataFrame
         DataFrame containing single-cell profiles to be aggregated according
         to the specified grouping criteria.
-
-        .. deprecated:: 2.0
-            The previous name of this parameter, ``population_df``, is still
-            accepted as a keyword argument but emits a ``DeprecationWarning``.
-            Use ``profiles`` instead. ``population_df`` will be removed in a
-            future release.
     strata : list of str, default ["Metadata_Plate", "Metadata_Well"]
         Columns to groupby and aggregate.
     features : list of str, default "infer"

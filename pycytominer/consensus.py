@@ -116,7 +116,7 @@ def consensus(
 
     if operation == "modz":
         consensus_df = modz(
-            population_df=profiles,
+            profiles=profiles,
             replicate_columns=replicate_columns,
             features=features,
             method="spearman"

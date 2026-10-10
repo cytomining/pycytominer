@@ -21,7 +21,7 @@ data_uncorrelated_df = pd.DataFrame({
 
 def test_correlation_threshold():
     correlation_threshold_result = correlation_threshold(
-        population_df=data_df,
+        profiles=data_df,
         features=data_df.columns.tolist(),
         samples="all",
         threshold=0.9,
@@ -33,7 +33,7 @@ def test_correlation_threshold():
     assert correlation_threshold_result == expected_result
 
     correlation_threshold_result = correlation_threshold(
-        population_df=data_df,
+        profiles=data_df,
         features=data_df.columns.tolist(),
         samples="all",
         threshold=0.2,
@@ -47,7 +47,7 @@ def test_correlation_threshold():
 
 def test_correlation_threshold_uncorrelated():
     correlation_threshold_result = correlation_threshold(
-        population_df=data_uncorrelated_df,
+        profiles=data_uncorrelated_df,
         features=data_uncorrelated_df.columns.tolist(),
         samples="all",
         threshold=0.9,
@@ -63,7 +63,7 @@ def test_correlation_threshold_samples():
         Metadata_sample=[f"sample_{x}" for x in range(0, data_df.shape[0])]
     )
     correlation_threshold_result = correlation_threshold(
-        population_df=data_sample_id_df,
+        profiles=data_sample_id_df,
         features=data_df.columns.tolist(),
         samples="Metadata_sample != 'sample_2'",
         threshold=0.9,
@@ -77,7 +77,7 @@ def test_correlation_threshold_samples():
 def test_correlation_threshold_featureinfer():
     with pytest.raises(ValueError) as nocp:
         correlation_threshold_result = correlation_threshold(
-            population_df=data_df,
+            profiles=data_df,
             features="infer",
             samples="all",
             threshold=0.9,
@@ -90,7 +90,7 @@ def test_correlation_threshold_featureinfer():
     data_cp_df.columns = [f"Cells_{x}" for x in data_df.columns]
 
     correlation_threshold_result = correlation_threshold(
-        population_df=data_cp_df,
+        profiles=data_cp_df,
         features="infer",
         samples="all",
         threshold=0.9,
