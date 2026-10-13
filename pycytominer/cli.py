@@ -105,7 +105,7 @@ class PycytominerCLI:
         subset_df = load_profiles(subset_data_file) if subset_data_file else None
 
         result = aggregate(
-            population_df=profiles_df,
+            profiles=profiles_df,
             strata=strata_list,
             features=features_value,
             image_features=image_features,

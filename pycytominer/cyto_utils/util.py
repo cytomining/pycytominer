@@ -11,6 +11,7 @@ from typing import Callable, Literal, Union, cast
 import numpy as np
 import pandas as pd
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
 from pycytominer.cyto_utils.features import convert_compartment_format_to_list
 from pycytominer.cyto_utils.output import output
 
@@ -377,14 +378,15 @@ def extract_image_features(
     return image_features_df
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def get_pairwise_correlation(
-    population_df: pd.DataFrame, method: str = "pearson"
+    profiles: pd.DataFrame, method: str = "pearson"
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Given a population dataframe, calculate all pairwise correlations.
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         Includes metadata and observation features.
     method : str, default "pearson"
         Which correlation matrix to use to test cutoff.
@@ -401,15 +403,15 @@ def get_pairwise_correlation(
     )
 
     # Get a symmetrical correlation matrix. Use numpy for non NaN/Inf matrices.
-    has_nan = np.any(np.isnan(population_df.values))
-    has_inf = np.any(np.isinf(population_df.values))
+    has_nan = np.any(np.isnan(profiles.values))
+    has_inf = np.any(np.isinf(profiles.values))
     if corrected_method == "pearson" and not (has_nan or has_inf):
-        pop_names = population_df.columns
+        pop_names = profiles.columns
         data_cor_df = pd.DataFrame(
-            np.corrcoef(population_df.transpose()), index=pop_names, columns=pop_names
+            np.corrcoef(profiles.transpose()), index=pop_names, columns=pop_names
         )
     else:
-        data_cor_df = population_df.corr(method=corrected_method)
+        data_cor_df = profiles.corr(method=corrected_method)
 
     # Create a copy of the dataframe to generate upper triangle of zeros
     data_cor_natri_df = data_cor_df.copy()

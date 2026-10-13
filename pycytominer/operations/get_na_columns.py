@@ -7,11 +7,13 @@ from typing import Union
 
 import pandas as pd
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def get_na_columns(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
     cutoff: float = 0.05,
@@ -20,7 +22,7 @@ def get_na_columns(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
@@ -38,7 +40,7 @@ def get_na_columns(
     Returns
     -------
     excluded_features : list of str
-         List of features to exclude from the population_df.
+         List of features to exclude from the profiles.
     """
 
     # Checking if the cutoff is between 0 and 1
@@ -50,21 +52,21 @@ def get_na_columns(
     if samples != "all":
         # Using pandas query to filter rows based on the conditions provided in the
         # samples parameter
-        population_df = population_df.query(expr=samples)
+        profiles = profiles.query(expr=samples)
 
     # Infer  CellProfiler features if 'features' is set to 'infer'
     if features == "infer":
         # Infer CellProfiler features
-        inferred_features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(profiles)
     elif isinstance(features, list):
         inferred_features = features
 
     # Subset the DataFrame to only include the features of interest
-    population_df = population_df.loc[:, inferred_features]
+    profiles = profiles.loc[:, inferred_features]
 
     # Get the proportion of NA values for each feature
-    num_rows = population_df.shape[0]
-    na_prop_df = population_df.isna().sum() / num_rows
+    num_rows = profiles.shape[0]
+    na_prop_df = profiles.isna().sum() / num_rows
 
     # Get the features that have more NA values than the cutoff
     na_prop_df = na_prop_df[na_prop_df > cutoff]

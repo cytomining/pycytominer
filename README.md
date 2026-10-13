@@ -100,6 +100,19 @@ We'd love to hear from you so that we can learn how to best support broad and mu
 
 ## API
 
+### What is a profile?
+
+A **profile** is one row of a table: metadata columns describing an observation plus its feature measurements.
+Pycytominer works with profiles at three levels:
+
+- **Single-cell profiles:** one row per cell.
+- **Aggregated profiles:** one row per group of cells (most often a well).
+- **Consensus profiles:** one row per condition, after collapsing replicates.
+
+Each function's documentation states which level of profiles it expects.
+
+### Processing functions
+
 Pycytominer has five major processing functions:
 
 1. Aggregate - Average single-cell profiles based on metadata information (most often "well").

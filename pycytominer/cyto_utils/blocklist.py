@@ -15,6 +15,8 @@ from typing import Optional, Union
 import pandas as pd
 import yaml
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
+
 blocklists_file = os.path.join(
     os.path.dirname(__file__), "..", "data", "default_blocklists.yaml"
 )
@@ -234,10 +236,11 @@ class Blocklist:
         raise TypeError("blocklist_name must be a string, a list of strings, or None.")
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def get_blocklist_features(
     blocklist: Optional[Union[str, list[str], "Blocklist"]] = None,
     blocklist_name: Optional[Union[str, list[str]]] = None,
-    population_df: Optional[pd.DataFrame] = None,
+    profiles: Optional[pd.DataFrame] = None,
     blocklist_file: Optional[Union[str, pathlib.Path]] = None,
 ) -> list[str]:
     """Resolve blocklist inputs to a list of feature names present in a DataFrame.
@@ -245,7 +248,7 @@ def get_blocklist_features(
     Accepts the same shorthand forms supported by
     :func:`~pycytominer.feature_select.feature_select` and returns a plain
     list of feature names, optionally filtered to only those that exist in
-    ``population_df``.  When both ``blocklist`` and ``blocklist_name`` are
+    ``profiles``.  When both ``blocklist`` and ``blocklist_name`` are
     ``None``, the packaged default blocklist is used.  For full details on
     blocklist construction and customization, see :class:`Blocklist`.
 
@@ -260,7 +263,7 @@ def get_blocklist_features(
         Name(s) of packaged blocklists to load when ``blocklist`` is
         ``None``.  If both are ``None``, falls back to
         ``DEFAULT_BLOCKLIST_NAME`` (``"default"``).
-    population_df : pd.DataFrame, optional
+    profiles : pd.DataFrame, optional
         When provided, the returned list is filtered to only feature names
         that appear as columns in this DataFrame.
     blocklist_file : str or path-like, optional
@@ -320,8 +323,8 @@ def get_blocklist_features(
             "or a Blocklist."
         )
 
-    if isinstance(population_df, pd.DataFrame):
-        population_features = population_df.columns.tolist()
+    if isinstance(profiles, pd.DataFrame):
+        population_features = profiles.columns.tolist()
         # Keep only blocklisted features that are present in this profile table.
         blocklist_features = [x for x in blocklist_features if x in population_features]
 

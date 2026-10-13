@@ -7,6 +7,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.util import (
     check_correlation_method,
@@ -14,8 +15,9 @@ from pycytominer.cyto_utils.util import (
 )
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def modz_base(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     method: str = "spearman",
     min_weight: float = 0.01,
     precision: int = 4,
@@ -24,12 +26,12 @@ def modz_base(
 
     This code is modified from cmapPy.
     (see https://github.com/cytomining/pycytominer/issues/52). Note that this will
-    apply the transformation to the FULL population_df.
+    apply the transformation to the FULL profiles.
     See modz() for replicate level procedures.
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     method : str, default "spearman"
         indicating which correlation metric to use.
@@ -44,15 +46,15 @@ def modz_base(
         modz transformed pd.Series - a consensus signature of the input data
         weighted by replicate correlation
     """
-    if not population_df.shape[0] > 0:
-        raise ValueError("population_df must include at least one sample")
+    if not profiles.shape[0] > 0:
+        raise ValueError("profiles must include at least one sample")
 
     method = check_correlation_method(method=method)
 
     # Step 1: Extract pairwise correlations of samples
     # Transpose so samples are columns
-    population_df = population_df.transpose()
-    cor_df, pair_df = get_pairwise_correlation(population_df, method=method)
+    profiles = profiles.transpose()
+    cor_df, pair_df = get_pairwise_correlation(profiles, method=method)
 
     # Round correlation results
     pair_df = pair_df.round(precision)
@@ -89,18 +91,19 @@ def modz_base(
     weights = weights.round(precision)
 
     # Step 3: Normalize
-    if population_df.shape[1] == 1:
+    if profiles.shape[1] == 1:
         # There is only one sample (note that columns are now samples)
-        modz_df = population_df.sum(axis=1)
+        modz_df = profiles.sum(axis=1)
     else:
-        weighted_df: pd.DataFrame = population_df.mul(weights, axis="columns")
+        weighted_df: pd.DataFrame = profiles.mul(weights, axis="columns")
         modz_df = weighted_df.sum(axis="columns")
 
     return modz_df
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def modz(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     replicate_columns: Union[str, list[str]],
     features: Union[str, list[str]] = "infer",
     method: str = "spearman",
@@ -111,14 +114,14 @@ def modz(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     replicate_columns : str, list
         a string or list of column(s) in the population dataframe that
         indicate replicate level information
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
-        `population_df` DataFrame. All features listed must be found in `population_df`.
+        `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     method : str, default "spearman"
@@ -133,7 +136,7 @@ def modz(
     modz_df : pd.DataFrame
         Consensus signatures with metadata for all replicates in the given DataFrame
     """
-    population_features = population_df.columns.tolist()
+    population_features = profiles.columns.tolist()
     error_msg = f"{replicate_columns} not in input dataframe"
     if isinstance(replicate_columns, list):
         if not all(x in population_features for x in replicate_columns):
@@ -146,17 +149,17 @@ def modz(
         return ValueError("replicate_columns must be a list or string")
 
     if features == "infer":
-        features = infer_cp_features(population_df)
+        features = infer_cp_features(profiles)
 
     # Ensure features conform as list for processing below
     if isinstance(features, str):
         features = [features]
 
     subset_features = list(set(replicate_columns + features))
-    population_df = population_df.loc[:, subset_features]
+    profiles = profiles.loc[:, subset_features]
 
     modz_df = (
-        population_df
+        profiles
         .groupby(replicate_columns, dropna=False)
         .apply(
             lambda x: modz_base(

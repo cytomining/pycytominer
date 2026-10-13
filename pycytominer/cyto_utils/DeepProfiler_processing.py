@@ -310,7 +310,7 @@ class AggregateDeepProfiler:
             # perform the aggregation
             df = df.assign(Metadata_Aggregate_On=self.aggregate_on)
             df = aggregate.aggregate(
-                population_df=df,
+                profiles=df,
                 strata="Metadata_Aggregate_On",
                 features=profiles,
                 operation=self.aggregate_operation,

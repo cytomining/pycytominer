@@ -40,6 +40,7 @@ from .util import (
     check_fields_of_view,
     check_fields_of_view_format,
     check_image_features,
+    deprecate_renamed_parameter,
     extract_image_features,
     get_default_compartments,
     get_pairwise_correlation,
