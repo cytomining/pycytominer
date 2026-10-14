@@ -1092,21 +1092,36 @@ def test_normalize_transform_save_and_apply(method):
         atol=1e-8,
     )
 
-    # same result
-    applied_result_infer_features = normalize(
-        profiles=subset_df.copy(),
+
+def test_normalize_fitted_transform_file_with_inferred_features():
+    """With CellProfiler-style column names, features="infer" should resolve
+    to the features the saved transform was fit on."""
+    transform_file = os.path.join(tmpdir, "test_normalize_infer_transform.joblib")
+    cp_df = data_df.rename(
+        columns={
+            "x": "Cells_AreaShape_x",
+            "y": "Cells_AreaShape_y",
+            "z": "Cells_AreaShape_z",
+            "zz": "Cells_AreaShape_zz",
+        }
+    )
+
+    fit_result = normalize(
+        profiles=cp_df.copy(),
         features="infer",
         meta_features="infer",
-        method=method,
+        method="standardize",
+        transform_output_file=transform_file,
+    )
+    applied_result = normalize(
+        profiles=cp_df.copy(),
+        features="infer",
+        meta_features="infer",
+        method="standardize",
         fitted_transform_file=transform_file,
     )
 
-    np.testing.assert_allclose(
-        applied_result_infer_features.loc[:, numeric_cols].values,
-        expected_subset_result.loc[:, numeric_cols].values,
-        rtol=1e-6,
-        atol=1e-8,
-    )
+    pd.testing.assert_frame_equal(applied_result, fit_result)
 
 
 def test_normalize_transform_save_and_apply_explicit_features():

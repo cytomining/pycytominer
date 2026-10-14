@@ -237,6 +237,7 @@ class PycytominerCLI:
             transform_output_file: If provided, save the fitted transform (as a
                 joblib file) to this path so it can be reapplied later via
                 fitted_transform_file. The parent directory must already exist.
+                Mutually exclusive with fitted_transform_file.
             fitted_transform_file: If provided, skip fitting and instead load and
                 apply a previously saved transform (written via
                 transform_output_file by a prior call). method must match the

@@ -11,7 +11,7 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
 from pycytominer.cyto_utils.normalize_transform_io import (
-    avail_methods,
+    AVAIL_METHODS,
     load_normalize_transform,
     save_normalize_transform,
 )
@@ -81,7 +81,7 @@ def normalize(
         structure samples in this fashion. An example is
         "Metadata_treatment == 'control'" (include all quotes). Defaults to "all".
     method : str
-        How to normalize the dataframe. Defaults to "standardize". Check avail_methods
+        How to normalize the dataframe. Defaults to "standardize". Check AVAIL_METHODS
         for available normalization methods.
     drop_cosmicqc_rows : bool
         Whether to drop rows that are flagged as QC failures. The function looks for columns
@@ -359,8 +359,8 @@ def normalize(
             features = saved_features
     else:
         # Define which scaler to use
-        if method not in avail_methods:
-            raise ValueError(f"operation must be one {avail_methods}")
+        if method not in AVAIL_METHODS:
+            raise ValueError(f"operation must be one {AVAIL_METHODS}")
 
         if method == "standardize":
             scaler = StandardScaler()
@@ -491,7 +491,6 @@ def normalize(
             save_normalize_transform(
                 scaler=fitted_scaler,
                 method=method,
-                method_params=method_params.get(method, {}),
                 joblib_output_file=transform_output_file,
             )
 

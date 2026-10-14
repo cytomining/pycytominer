@@ -8,7 +8,7 @@ import pytest
 from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from pycytominer.cyto_utils.normalize_transform_io import (
-    avail_methods,
+    AVAIL_METHODS,
     load_normalize_transform,
     save_normalize_transform,
 )
@@ -41,7 +41,7 @@ def _fitted_scaler(method):
     raise ValueError(method)
 
 
-@pytest.mark.parametrize("method", avail_methods)
+@pytest.mark.parametrize("method", AVAIL_METHODS)
 def test_save_and_load_roundtrip(method):
     """Saving and loading a fitted scaler should preserve the method, the
     feature order, and the ability to reproduce the original transform()
@@ -212,7 +212,7 @@ def test_load_normalize_transform_missing_file_raises():
 
 
 def test_load_normalize_transform_unsupported_method_raises():
-    """A joblib file recording a method outside `avail_methods` (e.g. from a
+    """A joblib file recording a method outside `AVAIL_METHODS` (e.g. from a
     future/foreign version of the file) should be rejected on load."""
     transform_file = os.path.join(tmpdir, "test_transform_io_bad_method.joblib")
     scaler = _fitted_scaler("standardize")
@@ -224,3 +224,47 @@ def test_load_normalize_transform_unsupported_method_raises():
 
     with pytest.raises(ValueError):
         load_normalize_transform(transform_file)
+
+
+@pytest.mark.parametrize(
+    ("method", "attr_by_param"),
+    [
+        ("mad_robustize", {"mad_robustize_epsilon": "epsilon"}),
+        (
+            "spherize",
+            {
+                "spherize_center": "center",
+                "spherize_method": "method",
+                "spherize_epsilon": "epsilon",
+            },
+        ),
+        ("inverse_normal", {"inverse_normal_n_quantiles": "n_quantiles"}),
+    ],
+)
+def test_stored_params_match_restored_scaler_attributes(method, attr_by_param):
+    """The recorded params should agree with the parameters on the scaler
+    restored from the same joblib file."""
+    transform_file = os.path.join(tmpdir, f"test_transform_io_attrs_{method}.joblib")
+    save_normalize_transform(
+        scaler=_fitted_scaler(method),
+        method=method,
+        joblib_output_file=transform_file,
+    )
+
+    loaded_scaler, _, _, params = load_normalize_transform(transform_file)
+
+    assert set(params) == set(attr_by_param)
+    for param_name, attr in attr_by_param.items():
+        assert params[param_name] == getattr(loaded_scaler, attr)
+
+
+def test_load_normalize_transform_without_params_entry_returns_empty_dict():
+    """Files lacking the optional "params" entry should still load."""
+    transform_file = os.path.join(tmpdir, "test_transform_io_no_params.joblib")
+    joblib.dump(
+        {"scaler": _fitted_scaler("standardize"), "method": "standardize"},
+        transform_file,
+    )
+
+    _, _, _, params = load_normalize_transform(transform_file)
+    assert params == {}
