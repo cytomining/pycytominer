@@ -11,6 +11,7 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
 from pycytominer.cyto_utils.normalize_transform_io import (
+    avail_methods,
     load_normalize_transform,
     save_normalize_transform,
 )
@@ -118,17 +119,24 @@ def normalize(
         If provided, save the fitted transform to this path so it can be
         reapplied later (e.g. to other subsets of data) via
         `fitted_transform_file`. The transform is written as a single joblib
-        file with a ".joblib" suffix. Ignored if `fitted_transform_file` is
-        also provided, since no new fit is performed in that case. Not
-        supported for `method="inverse_normal"`.
+        file at exactly this path (no suffix is required or appended).
+        Mutually exclusive with `fitted_transform_file`: since that skips
+        fitting entirely, providing both raises a ``ValueError``.
+        Pycytominer does not create missing parent directories for this
+        path; the directory must already exist.
     fitted_transform_file : str, optional
         If provided, skip fitting a new transform and instead load a previously
         saved transform (written by a prior call using `transform_output_file`)
-        and apply it directly to `profiles`. The `method`, `samples`, and
-        method-specific fitting parameters (e.g. `mad_robustize_epsilon`,
-        `spherize_center`, `spherize_method`, `spherize_epsilon`) are ignored, since
-        they are loaded from the saved transform instead. `features` must either be
-        "infer" or match the feature columns the transform was fit on.
+        and apply it directly to `profiles`. The `samples` argument and the
+        method-specific fitting parameters (`mad_robustize_epsilon`,
+        `spherize_center`, `spherize_method`, `spherize_epsilon`,
+        `inverse_normal_n_quantiles`) are ignored, since they are embedded in
+        the loaded, already-fitted scaler. `method` must equal the method
+        the loaded transform was fit with (including when left at its
+        "standardize" default), or a ``ValueError`` is raised. `features`,
+        if not "infer", must contain the same feature columns the transform
+        was fit on (any order); they are reordered to match the order the
+        transform expects.
 
     Returns
     -------
@@ -189,6 +197,11 @@ def normalize(
             method="standardize",
         )
     """
+    # check for clashes in the args
+    if fitted_transform_file is not None and transform_output_file is not None:
+        raise ValueError(
+            "Only one of `fitted_transform_file` or `transform_output_file` should be specified."
+        )
 
     # Load Data
     profiles = load_profiles(profiles)
@@ -210,31 +223,54 @@ def normalize(
                 "No QC columns found with prefix 'Metadata_cqc_'. Cannot drop QC rows."
             )
 
+    method = method.lower()
+    method_params = {
+        "standardize": {},
+        "robustize": {},
+        "mad_robustize": {"mad_robustize_epsilon": mad_robustize_epsilon},
+        "spherize": {
+            "spherize_center": spherize_center,
+            "spherize_method": spherize_method,
+            "spherize_epsilon": spherize_epsilon,
+        },
+        "inverse_normal": {"inverse_normal_n_quantiles": inverse_normal_n_quantiles},
+    }
+
     if fitted_transform_file is not None:
         # Load a previously-fit transform and apply it directly, skipping
-        # `method`/`samples`/method-specific fitting parameters entirely
-        fitted_scaler, method, saved_features = load_normalize_transform(
-            fitted_transform_file
+        # `samples`/method-specific fitting parameters entirely
+        fitted_scaler, loaded_method, saved_features, params_for_method = (
+            load_normalize_transform(fitted_transform_file)
         )
 
+        # check that method matches the loaded transform
+        if method != loaded_method:
+            raise ValueError(
+                f"The specified method '{method}' does not match the method '{loaded_method}' "
+                f"used to fit the transform loaded from `fitted_transform_file`."
+            )
+
+        # check that method parameters match the loaded transform
+        if method_params.get(method, {}) != params_for_method:
+            raise ValueError(
+                "The specified method parameters do not match the parameters used to fit the transform loaded from `fitted_transform_file`."
+            )
         if features == "infer":
-            features = saved_features
-        elif list(features) != list(saved_features):
+            features = infer_cp_features(profiles, image_features=image_features)
+
+        if set(features) != set(saved_features):
             raise ValueError(
                 "The provided `features` do not match the features used to fit "
                 "the transform loaded from `fitted_transform_file`."
             )
+        else:
+            # Reorder to the order the transform was fit on: the fitted
+            # scaler applies positionally, so the saved order must win even
+            # when the caller's list contains the same columns in a
+            # different order.
+            features = saved_features
     else:
         # Define which scaler to use
-        method = method.lower()
-
-        avail_methods = [
-            "standardize",
-            "robustize",
-            "mad_robustize",
-            "spherize",
-            "inverse_normal",
-        ]
         if method not in avail_methods:
             raise ValueError(f"operation must be one {avail_methods}")
 
@@ -367,8 +403,8 @@ def normalize(
             save_normalize_transform(
                 scaler=fitted_scaler,
                 method=method,
-                features=features,
-                output_file=transform_output_file,
+                method_params=method_params.get(method, {}),
+                joblib_output_file=transform_output_file,
             )
 
     fitted_scaled = fitted_scaler.transform(feature_df)
