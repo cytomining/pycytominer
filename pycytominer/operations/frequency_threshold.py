@@ -6,11 +6,13 @@ from typing import Union
 
 import pandas as pd
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def frequency_threshold(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
     freq_cut: float = 0.05,
@@ -25,11 +27,11 @@ def frequency_threshold(
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
-        `population_df` DataFrame. All features listed must be found in `population_df`.
+        `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     samples : str, default "all"
@@ -50,7 +52,7 @@ def frequency_threshold(
     Returns
     -------
     excluded_features : list[str]
-         List of features to exclude from the population_df.
+         List of features to exclude from the profiles.
 
     """
     # check if freq_cut and unique_cut are between 0 and 1
@@ -63,34 +65,34 @@ def frequency_threshold(
     if not isinstance(samples, str):
         raise ValueError("samples must be a string")
 
-    # Subset the population_df based on features and samples
+    # Subset the profiles based on features and samples
     if samples != "all":
-        population_df = population_df.query(expr=samples)
+        profiles = profiles.query(expr=samples)
 
     # infer features or set features based on user input
     if features == "infer":
-        inferred_features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(profiles)
     elif isinstance(features, list):
         inferred_features = features
     else:
         raise ValueError('features must be a list of column names or "infer"')
 
     # set population df with only the features of interest
-    population_df = population_df.loc[:, inferred_features]
+    profiles = profiles.loc[:, inferred_features]
 
     # Calculate the frequency ratio (2nd most common value count / most common value
     # count) for each feature. Returns a pandas Series [feature name, ratio].
-    freq_ratios = population_df.apply(calculate_frequency, axis=0)
+    freq_ratios = profiles.apply(calculate_frequency, axis=0)
 
     # Get the feature names that have a frequency ratio below the freq_cut threshold
     low_freq_mask = freq_ratios < freq_cut
     excluded_features_freq_index_list = low_freq_mask[low_freq_mask].index.tolist()
 
     # Get the number of samples
-    n = population_df.shape[0]
+    n = profiles.shape[0]
 
     # Get the number of unique features
-    num_unique_features = population_df.nunique()
+    num_unique_features = profiles.nunique()
 
     # Exclude features with too many (defined by unique_ratio) values in common, where
     # unique_ratio is defined as the number of unique features divided by the total
@@ -119,7 +121,7 @@ def calculate_frequency(feature_column: pd.Series) -> float:
     Parameters
     ----------
     feature_column : pd.Series
-        Pandas series of the specific feature in the population_df
+        Pandas series of the specific feature in the profiles
 
     Returns
     -------

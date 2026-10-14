@@ -3,7 +3,7 @@
 # Data processing for image-based profiling
 
 [![Build Status](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml/badge.svg?branch=main)](https://github.com/cytomining/pycytominer/actions/workflows/integration-test.yml?query=branch%3Amain)
-[![Python](https://img.shields.io/badge/python-3.10--3.14-blue)](https://pypi.org/project/pycytominer/)
+[![Python](https://img.shields.io/badge/python-3.11--3.14-blue)](https://pypi.org/project/pycytominer/)
 [![codecov](https://codecov.io/gh/cytomining/pycytominer/graph/badge.svg)](https://codecov.io/gh/cytomining/pycytominer)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![RTD](https://readthedocs.org/projects/pycytominer/badge/?version=latest&style=flat)](https://pycytominer.readthedocs.io/)
@@ -100,6 +100,19 @@ We'd love to hear from you so that we can learn how to best support broad and mu
 
 ## API
 
+### What is a profile?
+
+A **profile** is one row of a table: metadata columns describing an observation plus its feature measurements.
+Pycytominer works with profiles at three levels:
+
+- **Single-cell profiles:** one row per cell.
+- **Aggregated profiles:** one row per group of cells (most often a well).
+- **Consensus profiles:** one row per condition, after collapsing replicates.
+
+Each function's documentation states which level of profiles it expects.
+
+### Processing functions
+
 Pycytominer has five major processing functions:
 
 1. Aggregate - Average single-cell profiles based on metadata information (most often "well").
@@ -142,9 +155,7 @@ url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-pain
 df = pd.read_csv(url)
 
 normalized_df = pycytominer.normalize(
-    profiles=df,
-    method="standardize",
-    samples="Metadata_broad_sample == 'DMSO'"
+    profiles=df, method="standardize", samples="Metadata_broad_sample == 'DMSO'"
 )
 ```
 
@@ -154,9 +165,7 @@ For CytoTable warehouse layouts, you can either load the profile table directory
 from pycytominer import normalize
 from pycytominer.cyto_utils import load_cytotable_profiles, load_profiles
 
-profiles_from_root_df = load_profiles(
-    "path/to/warehouse_root"
-)
+profiles_from_root_df = load_profiles("path/to/warehouse_root")
 
 profiles_from_helper_df = load_cytotable_profiles(
     "path/to/warehouse_root",
@@ -314,10 +323,7 @@ url = f"https://media.githubusercontent.com/media/broadinstitute/lincs-cell-pain
 df = pd.read_csv(url)
 output_file = f"{plate}.gct"
 
-pycytominer.cyto_utils.write_gct(
-    profiles=df,
-    output_file=output_file
-)
+pycytominer.cyto_utils.write_gct(profiles=df, output_file=output_file)
 ```
 
 ## Citing Pycytominer

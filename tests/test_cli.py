@@ -8,6 +8,7 @@ import fire
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.stats import norm
 from sklearn.preprocessing import QuantileTransformer
 
 from pycytominer import cli as pycytominer_cli
@@ -128,6 +129,33 @@ def test_cli_normalize_inverse_normal(tmp_path: pathlib.Path) -> None:
     assert result.loc[:, ["Metadata_Plate", "Metadata_Well"]].equals(
         df.loc[:, ["Metadata_Plate", "Metadata_Well"]]
     )
+    np.testing.assert_allclose(
+        result.loc[:, ["Feature_1", "Feature_2"]],
+        expected_features,
+    )
+
+
+def test_cli_normalize_inverse_normal_blom(tmp_path: pathlib.Path) -> None:
+    """Ensure CLI normalize forwards the Blom inverse normal options."""
+    df, profiles_path = _write_profiles(tmp_path)
+    output_path = tmp_path / "normalized_inverse_normal_blom.csv"
+
+    cli = PycytominerCLI()
+    cli.normalize(
+        profiles=str(profiles_path),
+        output_file=str(output_path),
+        features="Feature_1,Feature_2",
+        meta_features="Metadata_Plate,Metadata_Well",
+        method="inverse_normal",
+        inverse_normal_method="blom",
+        inverse_normal_ties="average",
+    )
+
+    result = pd.read_csv(output_path)
+    n_samples = len(df)
+    ranks = df.loc[:, ["Feature_1", "Feature_2"]].rank(method="average")
+    expected_features = norm.ppf((ranks - 3 / 8) / (n_samples - 2 * 3 / 8 + 1))
+
     np.testing.assert_allclose(
         result.loc[:, ["Feature_1", "Feature_2"]],
         expected_features,

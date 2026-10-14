@@ -14,6 +14,7 @@ from pycytominer.cyto_utils.util import (
     check_fields_of_view,
     check_fields_of_view_format,
     check_image_features,
+    deprecate_renamed_parameter,
     extract_image_features,
     get_default_compartments,
     get_pairwise_correlation,
@@ -356,3 +357,30 @@ def test_write_to_file_if_user_specifies_output_details(tmpdir):
     # Read back the file and check contents
     written_df = pd.read_csv(output_file_path)
     pd.testing.assert_frame_equal(written_df, sample_df)
+
+
+def test_deprecate_renamed_parameter():
+    """
+    Testing deprecate_renamed_parameter decorator
+    """
+
+    @deprecate_renamed_parameter(old_name="old", new_name="new")
+    def sample_function(new: int, other: int = 0) -> int:
+        return new + other
+
+    # Test case 1: New keyword and positional calls do not warn
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert sample_function(new=1) == 1
+        assert sample_function(1, other=2) == 3
+
+    # Test case 2: Old keyword is forwarded to the new one with a warning
+    with pytest.warns(DeprecationWarning, match="`old` parameter in sample_function"):
+        assert sample_function(old=1, other=2) == 3
+
+    # Test case 3: Passing both names is ambiguous
+    with pytest.raises(TypeError, match="both `old` and `new`"):
+        sample_function(old=1, new=2)
+
+    # The decorator preserves the wrapped function's metadata
+    assert sample_function.__name__ == "sample_function"

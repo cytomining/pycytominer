@@ -7,29 +7,31 @@ from typing import Union
 import pandas as pd
 from sklearn.feature_selection import VarianceThreshold
 
+from pycytominer.cyto_utils.deprecation import deprecate_renamed_parameter
 from pycytominer.cyto_utils.features import infer_cp_features
 
 
+@deprecate_renamed_parameter(old_name="population_df", new_name="profiles")
 def variance_threshold(
-    population_df: pd.DataFrame,
+    profiles: pd.DataFrame,
     features: Union[str, list[str]] = "infer",
     samples: str = "all",
     min_variance: Union[int, float] = 1e-6,
 ) -> list[str]:
     """Exclude features that have low variance (low information content)
 
-    This is done by calculating the variance of each feature in the population_df and then
+    This is done by calculating the variance of each feature in the profiles and then
     removing features with variance less than the `min_variance` threshold. A low value
     will remove features that have very low variance (e.g. this will remove a
     feature: [1.0000, 1.0001, 1.0000, 1.0001, 1.0000]).
 
     Parameters
     ----------
-    population_df : pd.DataFrame
+    profiles : pd.DataFrame
         DataFrame that includes metadata and observation features.
     features : list, default "infer"
         A list of strings corresponding to feature measurement column names in the
-        `population_df` DataFrame. All features listed must be found in `population_df`.
+        `profiles` DataFrame. All features listed must be found in `profiles`.
         Defaults to "infer". If "infer", then assume CellProfiler features are those
         prefixed with "Cells", "Nuclei", or "Cytoplasm".
     samples : str, default "all"
@@ -43,7 +45,7 @@ def variance_threshold(
     Returns
     -------
     excluded_features : list[str]
-         List of features to exclude from the population_df.
+         List of features to exclude from the profiles.
 
     """
 
@@ -57,32 +59,30 @@ def variance_threshold(
     if not isinstance(samples, str):
         raise ValueError("samples must be a string")
 
-    # Subset the population_df based on features and samples
+    # Subset the profiles based on features and samples
     if samples != "all":
-        population_df = population_df.query(expr=samples)
+        profiles = profiles.query(expr=samples)
 
     # infer features or set features based on user input
     if features == "infer":
-        inferred_features = infer_cp_features(population_df)
+        inferred_features = infer_cp_features(profiles)
     elif isinstance(features, list):
         inferred_features = features
     else:
         raise ValueError('features must be a list of column names or "infer"')
 
-    # Subset the population_df based on the inferred features
-    population_df = population_df.loc[:, inferred_features]
+    # Subset the profiles based on the inferred features
+    profiles = profiles.loc[:, inferred_features]
 
     # Create a VarianceThreshold object with the specified min_variance threshold
-    # and fit it to the population_df to identify low-variance features.
+    # and fit it to the profiles to identify low-variance features.
     variance_selector = VarianceThreshold(threshold=min_variance)
-    variance_selector.fit(population_df)
+    variance_selector.fit(profiles)
 
     # Set a mask for features with variance less than min_variance.
     is_low_variance_mask = ~variance_selector.get_support()
 
     # return features with low variance as a list of feature names
-    excluded_low_variance_features = population_df.columns[
-        is_low_variance_mask
-    ].tolist()
+    excluded_low_variance_features = profiles.columns[is_low_variance_mask].tolist()
 
     return excluded_low_variance_features

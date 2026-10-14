@@ -141,7 +141,7 @@ def aggregate_image_features(
         )
         features = list(np.setdiff1d(list(image_features_df.columns), strata))
         result = aggregate.aggregate(
-            population_df=image_features_df,
+            profiles=image_features_df,
             strata=strata,
             features=features,
             operation=aggregation_operation,

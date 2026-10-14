@@ -105,7 +105,7 @@ class PycytominerCLI:
         subset_df = load_profiles(subset_data_file) if subset_data_file else None
 
         result = aggregate(
-            population_df=profiles_df,
+            profiles=profiles_df,
             strata=strata_list,
             features=features_value,
             image_features=image_features,
@@ -209,6 +209,9 @@ class PycytominerCLI:
         inverse_normal_n_quantiles: int = 1000,
         transform_output_file: str | None = None,
         fitted_transform_file: str | None = None,
+        inverse_normal_method: str = "quantile",
+        inverse_normal_ties: str = "average",
+        inverse_normal_random_state: int | None = None,
     ) -> str:
         """Normalize profiles from a file and write the results to disk.
 
@@ -238,6 +241,13 @@ class PycytominerCLI:
                 apply a previously saved transform (written via
                 transform_output_file by a prior call). method must match the
                 method the loaded transform was fit with.
+            inverse_normal_method: Inverse normal method, "quantile" (sklearn
+                QuantileTransformer) or one of the rank-based methods "blom"
+                (exact ranks with Blom's formula; a good general-purpose
+                default), "tukey", "van_der_waerden", or "hazen".
+            inverse_normal_ties: How a rank-based inverse_normal_method ranks
+                tied values, "average" or "random".
+            inverse_normal_random_state: Seed for random tie-breaking.
 
         Returns:
             The output file path.
@@ -270,6 +280,9 @@ class PycytominerCLI:
             inverse_normal_n_quantiles=inverse_normal_n_quantiles,
             transform_output_file=transform_output_file,
             fitted_transform_file=fitted_transform_file,
+            inverse_normal_method=inverse_normal_method,
+            inverse_normal_ties=inverse_normal_ties,
+            inverse_normal_random_state=inverse_normal_random_state,
         )
         if isinstance(result, str):
             _announce_output_file(result)
