@@ -44,12 +44,12 @@ CSV and TSV files are supported across Linux, macOS, and Windows.
 ### Feature Selection
 
 - [ ] Faster correlation computation ([#633](https://github.com/cytomining/pycytominer/issues/633))
-- [ ] Numerical variance filtering ([#656](https://github.com/cytomining/pycytominer/issues/656))
-- [ ] Rename variance thresholding for clarity ([#634](https://github.com/cytomining/pycytominer/issues/634))
+- [x] Numerical variance filtering ([#656](https://github.com/cytomining/pycytominer/issues/656))
+- [x] Rename variance thresholding for clarity ([#634](https://github.com/cytomining/pycytominer/issues/634))
 
 ### API Consistency
 
-- [ ] Align `aggregate` parameter naming with other core functions ([#635](https://github.com/cytomining/pycytominer/issues/635))
+- [x] Align `aggregate` parameter naming with other core functions ([#635](https://github.com/cytomining/pycytominer/issues/635))
 - [ ] Improve `annotate` to avoid unintended column renaming ([#660](https://github.com/cytomining/pycytominer/issues/660))
 - [ ] Minor schema decisions (e.g., handling of location columns ([#224](https://github.com/cytomining/pycytominer/issues/224)))
 - [ ] Consolidate repeated output handling through `write_to_file_if_user_specifies_output_details`, keeping file output as a compatibility path while richer data containers handle persistence outside Pycytominer when appropriate
@@ -62,7 +62,7 @@ CSV and TSV files are supported across Linux, macOS, and Windows.
 
 ### Documentation
 
-- [ ] Fix `Returns` docstrings across all core functions ([#636](https://github.com/cytomining/pycytominer/issues/636))
+- [x] Fix `Returns` docstrings across all core functions ([#636](https://github.com/cytomining/pycytominer/issues/636))
 
 ---
 
