@@ -232,7 +232,7 @@ pycytominer normalize \
 pycytominer feature_select \
   --profiles path/to/profiles_normalized.parquet \
   --output_file path/to/profiles_feature_selected.parquet \
-  --output_type parquet
+  --output_type parquet \
   --features Cells_AreaShape_Area,Cytoplasm_AreaShape_Area \
   --operation variance_threshold,correlation_threshold
 
