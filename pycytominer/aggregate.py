@@ -104,7 +104,7 @@ def aggregate(
         count_object_df = (
             profiles
             .loc[:, list(np.union1d(strata, [object_feature]))]
-            .groupby(strata)[object_feature]
+            .groupby(strata, dropna=False)[object_feature]
             .count()
             .reset_index()
             .rename(columns={f"{object_feature}": "Metadata_Object_Count"})
