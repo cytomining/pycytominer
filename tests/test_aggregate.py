@@ -250,6 +250,37 @@ def test_aggregate_compute_object_count():
     pd.testing.assert_frame_equal(test_df, expected_result)
 
 
+@pytest.mark.parametrize("missing_batch", [None, np.nan, pd.NA])
+@pytest.mark.parametrize("operation", ["mean", "median"])
+def test_aggregate_compute_object_count_with_missing_stratum(missing_batch, operation):
+    """Counts include the same missing-metadata groups as feature aggregation."""
+    profiles = pd.DataFrame({
+        "Metadata_Plate": ["P"] * 4,
+        "Metadata_Well": ["A01"] * 4,
+        "Metadata_Batch": ["batch-1", "batch-1", missing_batch, missing_batch],
+        "Metadata_ObjectNumber": [1, 2, 3, 4],
+        "Cells_AreaShape_Area": [1.0, 3.0, 5.0, 7.0],
+    })
+
+    result = aggregate(
+        profiles=profiles,
+        strata=["Metadata_Plate", "Metadata_Well", "Metadata_Batch"],
+        operation=operation,
+        compute_object_count=True,
+    )
+
+    assert result.loc[result.Metadata_Batch.isna(), "Metadata_Object_Count"].item() == 2
+
+    expected = pd.DataFrame({
+        "Metadata_Plate": ["P", "P"],
+        "Metadata_Well": ["A01", "A01"],
+        "Metadata_Batch": ["batch-1", np.nan],
+        "Metadata_Object_Count": [2, 2],
+        "Cells_AreaShape_Area": [2.0, 6.0],
+    })
+    pd.testing.assert_frame_equal(result, expected)
+
+
 def test_aggregate_incorrect_object_feature():
     """
     Testing aggregate pycytominer function
