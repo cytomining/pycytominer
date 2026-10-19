@@ -94,7 +94,7 @@ def save_normalize_transform(
         {
             "scaler": scaler,
             "method": method,
-            "params": _extract_params(scaler, method),
+            "params": _extract_normalize_scaler_params(scaler, method),
         },
         joblib_output_file,
     )
@@ -125,7 +125,7 @@ def load_normalize_transform(
         from `scaler.feature_names_in_`.
     params : dict
         The method-specific fitting parameters recorded for provenance (see
-        `_extract_params`). Not required to reapply the transform.
+        `_extract_normalize_scaler_params`). Not required to reapply the transform.
 
     Raises
     ------
