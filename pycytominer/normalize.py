@@ -311,7 +311,13 @@ def normalize(
     elif method == "mad_robustize":
         if fitted_transform_file is None and mad_robustize_epsilon is None:
             raise ValueError("mad_robustize_epsilon must be a float")
-        scaler = RobustMAD(epsilon=mad_robustize_epsilon)
+        # epsilon is None only when a fitted transform is loaded below, which
+        # replaces this scaler, so the default is never used for fitting
+        scaler = (
+            RobustMAD()
+            if mad_robustize_epsilon is None
+            else RobustMAD(epsilon=mad_robustize_epsilon)
+        )
     elif method == "spherize":
         scaler = Spherize(
             center=spherize_center,

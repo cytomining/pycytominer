@@ -17,7 +17,7 @@ reads back, instead of pycytominer keeping its own separate copy.
 """
 
 import pathlib
-from typing import Union
+from typing import Any, Union
 
 AVAIL_NORM_METHODS = [
     "standardize",
@@ -28,7 +28,7 @@ AVAIL_NORM_METHODS = [
 ]
 
 
-def _extract_normalize_scaler_params(scaler: any, method: str) -> dict[str, any]:
+def _extract_normalize_scaler_params(scaler: Any, method: str) -> dict[str, Any]:
     """Pull the method-specific fitting parameters off a fitted scaler.
 
     These are already embedded in the pickled scaler object itself (they're
@@ -52,7 +52,7 @@ def _extract_normalize_scaler_params(scaler: any, method: str) -> dict[str, any]
 
 
 def save_normalize_transform(
-    scaler: any, method: str, joblib_output_file: Union[str, pathlib.Path]
+    scaler: Any, method: str, joblib_output_file: Union[str, pathlib.Path]
 ) -> Union[str, pathlib.Path]:
     """Save the fitted parameters of a normalize() scaler to disk.
 
@@ -103,7 +103,7 @@ def save_normalize_transform(
 
 def load_normalize_transform(
     joblib_input_file: Union[str, pathlib.Path],
-) -> tuple[any, str, list[str], dict[str, any]]:
+) -> tuple[Any, str, list[str], dict[str, Any]]:
     """Load a previously-saved normalize() transform from disk.
 
     Parameters
