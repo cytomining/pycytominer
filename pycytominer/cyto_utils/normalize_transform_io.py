@@ -28,7 +28,7 @@ AVAIL_METHODS = [
 ]
 
 
-def _extract_params(scaler: any, method: str) -> dict[str, any]:
+def _extract_normalize_scaler_params(scaler: any, method: str) -> dict[str, any]:
     """Pull the method-specific fitting parameters off a fitted scaler.
 
     These are already embedded in the pickled scaler object itself (they're
