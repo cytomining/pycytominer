@@ -82,7 +82,7 @@ def save_normalize_transform(
 
     method = method.lower()
     if method not in AVAIL_METHODS:
-        raise ValueError(f"method must be one of {AVAIL_METHODS}")
+        raise ValueError(f"method '{method}' must be one of {AVAIL_METHODS}")
 
     if not hasattr(scaler, "feature_names_in_"):
         raise ValueError(
