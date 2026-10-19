@@ -19,7 +19,7 @@ reads back, instead of pycytominer keeping its own separate copy.
 import pathlib
 from typing import Union
 
-AVAIL_METHODS = [
+AVAIL_NORM_METHODS = [
     "standardize",
     "robustize",
     "mad_robustize",
@@ -81,8 +81,8 @@ def save_normalize_transform(
     import joblib
 
     method = method.lower()
-    if method not in AVAIL_METHODS:
-        raise ValueError(f"method '{method}' must be one of {AVAIL_METHODS}")
+    if method not in AVAIL_NORM_METHODS:
+        raise ValueError(f"method '{method}' must be one of {AVAIL_NORM_METHODS}")
 
     if not hasattr(scaler, "feature_names_in_"):
         raise ValueError(
@@ -132,7 +132,7 @@ def load_normalize_transform(
     FileNotFoundError
         If `joblib_input_file` does not exist.
     ValueError
-        If the loaded payload records a method outside `AVAIL_METHODS`.
+        If the loaded payload records a method outside `AVAIL_NORM_METHODS`.
     """
     import joblib
 
@@ -146,7 +146,7 @@ def load_normalize_transform(
     payload = joblib.load(input_path)
     method = payload["method"]
 
-    if method not in AVAIL_METHODS:
+    if method not in AVAIL_NORM_METHODS:
         raise ValueError(f"Cannot load transform for unsupported method '{method}'")
 
     scaler = payload["scaler"]

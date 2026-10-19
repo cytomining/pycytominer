@@ -21,7 +21,20 @@ RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
 def _set_feature_names(estimator: BaseEstimator, X: pd.DataFrame) -> None:
     """Record the column names/order seen at fit time, mirroring the
     ``feature_names_in_``/``n_features_in_`` convention sklearn's own
-    estimators populate automatically for DataFrame input."""
+    estimators populate automatically for DataFrame input.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The estimator to record feature names for.
+    X : pd.DataFrame
+        The DataFrame used to fit the estimator, which will be used
+        to record the feature names at fit time.
+
+    Returns
+    -------
+    None
+    """
     if hasattr(X, "columns"):
         estimator.feature_names_in_ = np.asarray(X.columns, dtype=object)
     estimator.n_features_in_ = X.shape[1]
@@ -29,7 +42,19 @@ def _set_feature_names(estimator: BaseEstimator, X: pd.DataFrame) -> None:
 
 def _check_feature_names_match(estimator: BaseEstimator, X: pd.DataFrame) -> None:
     """Ensure a DataFrame passed to transform() has the same column names, in
-    the same order, as the DataFrame the estimator was fit on."""
+    the same order, as the DataFrame the estimator was fit on.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The estimator to check feature names for.
+    X : pd.DataFrame
+        The DataFrame to check against the estimator's feature names.
+
+    Returns
+    -------
+    None
+    """
     if not hasattr(estimator, "feature_names_in_") or not hasattr(X, "columns"):
         return
     incoming = np.asarray(X.columns, dtype=object)

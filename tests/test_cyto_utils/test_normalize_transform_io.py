@@ -8,7 +8,7 @@ import pytest
 from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from pycytominer.cyto_utils.normalize_transform_io import (
-    AVAIL_METHODS,
+    AVAIL_NORM_METHODS,
     load_normalize_transform,
     save_normalize_transform,
 )
@@ -41,7 +41,7 @@ def _fitted_scaler(method):
     raise ValueError(method)
 
 
-@pytest.mark.parametrize("method", AVAIL_METHODS)
+@pytest.mark.parametrize("method", AVAIL_NORM_METHODS)
 def test_save_and_load_roundtrip(method):
     """Saving and loading a fitted scaler should preserve the method, the
     feature order, and the ability to reproduce the original transform()
@@ -212,7 +212,7 @@ def test_load_normalize_transform_missing_file_raises():
 
 
 def test_load_normalize_transform_unsupported_method_raises():
-    """A joblib file recording a method outside `AVAIL_METHODS` (e.g. from a
+    """A joblib file recording a method outside `AVAIL_NORM_METHODS` (e.g. from a
     future/foreign version of the file) should be rejected on load."""
     transform_file = os.path.join(tmpdir, "test_transform_io_bad_method.joblib")
     scaler = _fitted_scaler("standardize")

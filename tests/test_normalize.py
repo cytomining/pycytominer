@@ -1381,3 +1381,176 @@ def test_normalize_transform_output_file_does_not_create_parent_directory():
         )
 
     assert not os.path.exists(missing_parent)
+
+
+def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
+    """
+    When `fitted_transform_file` is given, fit-only arguments are ignored, so
+    the checks that only make sense when fitting should not fire: a rank-based
+    inverse normal with a non-"all" `samples`, and a missing
+    `mad_robustize_epsilon`. Fitting a new transform with the same arguments
+    should still raise.
+    """
+    transform_file = os.path.join(tmpdir, "test_fit_only_args_transform.joblib")
+
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="inverse_normal",
+        inverse_normal_method="blom",
+        transform_output_file=transform_file,
+    )
+
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="inverse_normal",
+        inverse_normal_method="blom",
+        samples="Metadata_treatment == 'control'",
+        fitted_transform_file=transform_file,
+    )
+
+    with pytest.raises(ValueError):
+        normalize(
+            profiles=data_df.copy(),
+            features=["x", "y", "z", "zz"],
+            meta_features="infer",
+            method="inverse_normal",
+            inverse_normal_method="blom",
+            samples="Metadata_treatment == 'control'",
+        )
+
+    mad_file = os.path.join(tmpdir, "test_fit_only_args_mad_transform.joblib")
+
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="mad_robustize",
+        transform_output_file=mad_file,
+    )
+
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="mad_robustize",
+        mad_robustize_epsilon=None,
+        fitted_transform_file=mad_file,
+    )
+
+    with pytest.raises(ValueError):
+        normalize(
+            profiles=data_df.copy(),
+            features=["x", "y", "z", "zz"],
+            meta_features="infer",
+            method="mad_robustize",
+            mad_robustize_epsilon=None,
+        )
+
+
+def test_normalize_does_not_mutate_input_dataframe():
+    """
+    Missing-value cleanup of feature columns should happen on a copy, so the
+    caller's DataFrame keeps its original object columns.
+    """
+    profiles = pd.DataFrame({
+        "Metadata_treatment": ["control", "drug", "control"],
+        "x": pd.Series([1.0, "nan", 3.0], dtype=object),
+        "y": [1.0, 2.0, 3.0],
+    })
+    original = profiles.copy()
+
+    normalize(
+        profiles=profiles,
+        features=["x", "y"],
+        meta_features=["Metadata_treatment"],
+        method="standardize",
+    )
+
+    pd.testing.assert_frame_equal(profiles, original)
+
+
+def test_normalize_accepts_object_column_of_only_numbers():
+    """
+    An object-dtype feature column that holds only Python numbers should be
+    coerced to numeric instead of rejected.
+    """
+    profiles = pd.DataFrame({
+        "Metadata_treatment": ["control", "drug", "control"],
+        "x": pd.Series([1, 2, 3], dtype=object),
+        "y": [1.0, 2.0, 3.0],
+    })
+
+    result = normalize(
+        profiles=profiles,
+        features=["x", "y"],
+        meta_features=["Metadata_treatment"],
+        method="standardize",
+    )
+
+    assert set(result.columns) == {"Metadata_treatment", "x", "y"}
+
+
+def test_normalize_rejects_feature_listed_as_meta_feature():
+    """A column cannot be both a feature and a meta feature."""
+    with pytest.raises(ValueError, match="both `features` and `meta_features`"):
+        normalize(
+            profiles=data_df.copy(),
+            features=["x", "y", "z", "zz"],
+            meta_features=["Metadata_treatment", "x"],
+            method="standardize",
+        )
+
+
+def test_normalize_inverse_normal_args_are_case_insensitive_and_validated():
+    """
+    `inverse_normal_method` should be lowercased like `method`, and an invalid
+    `inverse_normal_ties` should be rejected up front.
+    """
+    result = normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="Inverse_Normal",
+        inverse_normal_method="Blom",
+        inverse_normal_ties="Average",
+    )
+    assert not result.empty
+
+    with pytest.raises(ValueError, match="inverse_normal_ties"):
+        normalize(
+            profiles=data_df.copy(),
+            features=["x", "y", "z", "zz"],
+            meta_features="infer",
+            method="inverse_normal",
+            inverse_normal_ties="avg",
+        )
+
+
+def test_normalize_fitted_transform_file_infer_uses_saved_features(tmp_path):
+    """
+    With `features="infer"`, applying a saved transform should use the features
+    it was fit on rather than re-inferring them from `profiles`.
+    """
+    transform_file = os.path.join(str(tmp_path), "infer_saved_features.joblib")
+
+    fitted = normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="standardize",
+        transform_output_file=transform_file,
+    )
+
+    applied = normalize(
+        profiles=data_df.copy(),
+        features="infer",
+        meta_features="infer",
+        method="standardize",
+        fitted_transform_file=transform_file,
+    )
+
+    pd.testing.assert_frame_equal(applied, fitted)
