@@ -515,7 +515,7 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         """
         _set_feature_names(self, x)
 
-        # Set number of quantiles, if n_quantiles is greater than the number of samples\
+        # Set number of quantiles, if n_quantiles is greater than the number of samples
         avail_methods = ["quantile", *_RANKIT_CONSTANTS]
         if self.method not in avail_methods:
             raise ValueError(
