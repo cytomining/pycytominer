@@ -199,6 +199,7 @@ module = [
   "cytominer_database.*",
   "fire.*",
   "h5py.*",
+  "joblib.*",
   "scipy.*",
   "sklearn.*",
   "zarr.*",

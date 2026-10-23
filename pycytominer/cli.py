@@ -210,6 +210,8 @@ class PycytominerCLI:
         inverse_normal_method: str = "quantile",
         inverse_normal_ties: str = "average",
         inverse_normal_random_state: int | None = None,
+        transform_output_file: str | None = None,
+        fitted_transform_file: str | None = None,
     ) -> str:
         """Normalize profiles from a file and write the results to disk.
 
@@ -239,6 +241,14 @@ class PycytominerCLI:
             inverse_normal_ties: How a rank-based inverse_normal_method ranks
                 tied values, "average" or "random".
             inverse_normal_random_state: Seed for random tie-breaking.
+            transform_output_file: If provided, save the fitted transform (as a
+                joblib file) to this path so it can be reapplied later via
+                fitted_transform_file. The parent directory must already exist.
+                Mutually exclusive with fitted_transform_file.
+            fitted_transform_file: If provided, skip fitting and instead load and
+                apply a previously saved transform (written via
+                transform_output_file by a prior call). method must match the
+                method the loaded transform was fit with.
 
         Returns:
             The output file path.
@@ -272,6 +282,8 @@ class PycytominerCLI:
             inverse_normal_method=inverse_normal_method,
             inverse_normal_ties=inverse_normal_ties,
             inverse_normal_random_state=inverse_normal_random_state,
+            transform_output_file=transform_output_file,
+            fitted_transform_file=fitted_transform_file,
         )
         if isinstance(result, str):
             _announce_output_file(result)
