@@ -252,8 +252,10 @@ def normalize(
         )
 
     # Load Data
-    # Copy so the cleanup below never modifies the caller's DataFrame
-    profiles = load_profiles(profiles).copy()
+    # Only a caller-supplied DataFrame needs protecting; anything loaded from
+    # disk is already ours. The copy is deferred until a column must be modified.
+    owns_profiles = not isinstance(profiles, pd.DataFrame)
+    profiles = load_profiles(profiles)
 
     # If drop_cosmicqc_rows is True, drop rows that are flagged (True) as QC failures from coSMicQC
     if drop_cosmicqc_rows:
@@ -263,6 +265,7 @@ def normalize(
         if qc_columns:
             passed_qc = ~profiles[qc_columns].any(axis="columns")
             profiles = profiles[passed_qc].copy()
+            owns_profiles = True
             if profiles.empty:
                 raise ValueError(
                     "All rows were dropped after QC filtering; cannot normalize an empty dataset."
@@ -411,6 +414,8 @@ def normalize(
 
         # Object columns holding only numbers (no strings) just need a numeric dtype
         if string_values.empty:
+            if not owns_profiles:
+                profiles, owns_profiles = profiles.copy(), True
             profiles[feature] = pd.to_numeric(profiles[feature], errors="coerce")
             continue
 
@@ -422,6 +427,8 @@ def normalize(
             .isin(missing_string_tokens)
             .all()
         ):
+            if not owns_profiles:
+                profiles, owns_profiles = profiles.copy(), True
             profiles[feature] = profiles[feature].map(
                 lambda value: (
                     np.nan

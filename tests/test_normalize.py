@@ -1556,3 +1556,44 @@ def test_normalize_fitted_transform_file_infer_uses_saved_features(tmp_path):
     )
 
     pd.testing.assert_frame_equal(applied, fitted)
+
+
+def test_normalize_does_not_copy_input_without_cleanup(monkeypatch):
+    """Clean numeric input must not pay for a DataFrame copy."""
+    df = pd.DataFrame({
+        "Metadata_a": ["a", "b", "c", "d"],
+        "x": [1.0, 2.0, 3.0, 4.0],
+        "y": [4.0, 3.0, 1.0, 2.0],
+    })
+
+    def fail_copy(self, *args, **kwargs):
+        raise AssertionError("DataFrame.copy() should not be called")
+
+    monkeypatch.setattr(pd.DataFrame, "copy", fail_copy)
+
+    normalize(
+        profiles=df,
+        features=["x", "y"],
+        meta_features=["Metadata_a"],
+        method="standardize",
+    )
+
+
+def test_normalize_does_not_mutate_input_when_coercing():
+    """Coercion of missing-value strings must happen on a copy of the caller's frame."""
+    df = pd.DataFrame({
+        "Metadata_a": ["a", "b", "c", "d"],
+        "x": [1.0, "nan", 3.0, 4.0],
+        "y": pd.Series([4, 3, 1, 2], dtype=object),
+    })
+    original = df.copy()
+
+    result = normalize(
+        profiles=df,
+        features=["x", "y"],
+        meta_features=["Metadata_a"],
+        method="standardize",
+    )
+
+    pd.testing.assert_frame_equal(df, original)
+    assert pd.api.types.is_numeric_dtype(result["x"])
