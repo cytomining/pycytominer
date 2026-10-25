@@ -241,8 +241,8 @@ class PycytominerCLI:
             inverse_normal_ties: How a rank-based inverse_normal_method ranks
                 tied values, "average" or "random".
             inverse_normal_random_state: Seed for random tie-breaking.
-            transform_output_file: If provided, save the fitted transform (as a
-                joblib file) to this path so it can be reapplied later via
+            transform_output_file: If provided, save the fitted transform (as an
+                ONNX file) to this path so it can be reapplied later via
                 fitted_transform_file. The parent directory must already exist.
                 Mutually exclusive with fitted_transform_file.
             fitted_transform_file: If provided, skip fitting and instead load and

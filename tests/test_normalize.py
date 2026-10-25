@@ -2,12 +2,12 @@ import os
 import random
 import tempfile
 
-import joblib
 import numpy as np
 import pandas as pd
 import pytest
 from sklearn.preprocessing import QuantileTransformer
 
+from pycytominer.cyto_utils.normalize_transform_io import load_normalize_transform
 from pycytominer.normalize import normalize
 
 random.seed(123)
@@ -1054,7 +1054,7 @@ def test_normalize_transform_save_and_apply(method):
     saved transform with `fitted_transform_file` and applying it to a subset
     of the same profiles.
     """
-    transform_file = os.path.join(tmpdir, f"test_normalize_{method}_transform.joblib")
+    transform_file = os.path.join(tmpdir, f"test_normalize_{method}_transform.onnx")
 
     fit_result = normalize(
         profiles=data_df.copy(),
@@ -1096,7 +1096,7 @@ def test_normalize_transform_save_and_apply(method):
 def test_normalize_fitted_transform_file_with_inferred_features():
     """With CellProfiler-style column names, features="infer" should resolve
     to the features the saved transform was fit on."""
-    transform_file = os.path.join(tmpdir, "test_normalize_infer_transform.joblib")
+    transform_file = os.path.join(tmpdir, "test_normalize_infer_transform.onnx")
     cp_df = data_df.rename(
         columns={
             "x": "Cells_AreaShape_x",
@@ -1132,7 +1132,7 @@ def test_normalize_transform_save_and_apply_explicit_features():
     transform.
     """
     transform_file = os.path.join(
-        tmpdir, "test_normalize_explicit_features_transform.joblib"
+        tmpdir, "test_normalize_explicit_features_transform.onnx"
     )
     explicit_features = ["x", "y", "z", "zz"]
     explicit_meta_features = ["Metadata_plate", "Metadata_treatment"]
@@ -1170,7 +1170,7 @@ def test_normalize_fitted_transform_file_mismatched_features():
     match the features the transform was fit on should raise a ValueError.
     """
     transform_file = os.path.join(
-        tmpdir, "test_normalize_mismatch_features_transform.joblib"
+        tmpdir, "test_normalize_mismatch_features_transform.onnx"
     )
 
     normalize(
@@ -1199,7 +1199,7 @@ def test_normalize_fitted_transform_file_reorders_features():
     order directly.
     """
     transform_file = os.path.join(
-        tmpdir, "test_normalize_reorder_features_transform.joblib"
+        tmpdir, "test_normalize_reorder_features_transform.onnx"
     )
 
     normalize(
@@ -1237,7 +1237,7 @@ def test_normalize_transform_output_file_and_fitted_transform_file_mutually_excl
     and there is nothing to save.
     """
     transform_file = os.path.join(
-        tmpdir, "test_normalize_mutually_exclusive_transform.joblib"
+        tmpdir, "test_normalize_mutually_exclusive_transform.onnx"
     )
 
     normalize(
@@ -1249,7 +1249,7 @@ def test_normalize_transform_output_file_and_fitted_transform_file_mutually_excl
     )
 
     other_transform_file = os.path.join(
-        tmpdir, "test_normalize_mutually_exclusive_other_transform.joblib"
+        tmpdir, "test_normalize_mutually_exclusive_other_transform.onnx"
     )
     with pytest.raises(ValueError):
         normalize(
@@ -1269,7 +1269,7 @@ def test_normalize_fitted_transform_file_method_mismatch():
     "standardize" default.
     """
     transform_file = os.path.join(
-        tmpdir, "test_normalize_method_mismatch_transform.joblib"
+        tmpdir, "test_normalize_method_mismatch_transform.onnx"
     )
 
     normalize(
@@ -1335,12 +1335,12 @@ def test_normalize_transform_output_file_stores_provenance_params(
     method, kwargs, expected_params
 ):
     """
-    The joblib file written via `transform_output_file` should record the
+    The ONNX file written via `transform_output_file` should record the
     method-specific fitting parameters (for provenance/inspection), not just
     the fitted scaler.
     """
     transform_file = os.path.join(
-        tmpdir, f"test_normalize_{method}_provenance_transform.joblib"
+        tmpdir, f"test_normalize_{method}_provenance_transform.onnx"
     )
 
     normalize(
@@ -1352,11 +1352,13 @@ def test_normalize_transform_output_file_stores_provenance_params(
         **kwargs,
     )
 
-    payload = joblib.load(transform_file)
+    _, loaded_method, loaded_features, loaded_params = load_normalize_transform(
+        transform_file
+    )
 
-    assert payload["method"] == method
-    assert payload["params"] == expected_params
-    assert list(payload["scaler"].feature_names_in_) == ["x", "y", "z", "zz"]
+    assert loaded_method == method
+    assert loaded_params == expected_params
+    assert loaded_features == ["x", "y", "z", "zz"]
 
 
 def test_normalize_transform_output_file_does_not_create_parent_directory():
@@ -1364,10 +1366,10 @@ def test_normalize_transform_output_file_does_not_create_parent_directory():
     Pycytominer should not be opinionated about creating directories: if the
     parent directory for `transform_output_file` does not exist, `normalize`
     should raise rather than silently creating it, matching the behavior of
-    the underlying `joblib.dump`/file-write call.
+    the underlying file-write call.
     """
     missing_parent = os.path.join(tmpdir, "does_not_exist_normalize_dir")
-    transform_file = os.path.join(missing_parent, "transform.joblib")
+    transform_file = os.path.join(missing_parent, "transform.onnx")
 
     assert not os.path.exists(missing_parent)
 
@@ -1391,7 +1393,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
     `mad_robustize_epsilon`. Fitting a new transform with the same arguments
     should still raise.
     """
-    transform_file = os.path.join(tmpdir, "test_fit_only_args_transform.joblib")
+    transform_file = os.path.join(tmpdir, "test_fit_only_args_transform.onnx")
 
     normalize(
         profiles=data_df.copy(),
@@ -1422,7 +1424,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
             samples="Metadata_treatment == 'control'",
         )
 
-    mad_file = os.path.join(tmpdir, "test_fit_only_args_mad_transform.joblib")
+    mad_file = os.path.join(tmpdir, "test_fit_only_args_mad_transform.onnx")
 
     normalize(
         profiles=data_df.copy(),
@@ -1535,7 +1537,7 @@ def test_normalize_fitted_transform_file_infer_uses_saved_features(tmp_path):
     With `features="infer"`, applying a saved transform should use the features
     it was fit on rather than re-inferring them from `profiles`.
     """
-    transform_file = os.path.join(str(tmp_path), "infer_saved_features.joblib")
+    transform_file = os.path.join(str(tmp_path), "infer_saved_features.onnx")
 
     fitted = normalize(
         profiles=data_df.copy(),

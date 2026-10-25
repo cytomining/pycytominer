@@ -147,8 +147,9 @@ def normalize(
     transform_output_file : str, optional
         If provided, save the fitted transform to this path so it can be
         reapplied later (e.g. to other subsets of data) via
-        `fitted_transform_file`. The transform is written as a single joblib
-        file at exactly this path (no suffix is required or appended).
+        `fitted_transform_file`. The transform is written as a single ONNX
+        file at exactly this path (".onnx" is the suggested extension, but no
+        suffix is required or appended).
         Mutually exclusive with `fitted_transform_file`: since that skips
         fitting entirely, providing both raises a ``ValueError``.
         Pycytominer does not create missing parent directories for this
@@ -489,7 +490,7 @@ def normalize(
             save_normalize_transform(
                 scaler=fitted_scaler,
                 method=method,
-                joblib_output_file=transform_output_file,
+                output_file=transform_output_file,
             )
 
     fitted_scaled = fitted_scaler.transform(feature_df)

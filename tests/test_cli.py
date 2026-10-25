@@ -206,7 +206,7 @@ def test_cli_normalize_transform_save_and_apply(tmp_path: pathlib.Path) -> None:
     """Ensure CLI normalize forwards transform_output_file/fitted_transform_file."""
     _, profiles_path = _write_profiles(tmp_path)
     fit_output_path = tmp_path / "normalized.csv"
-    transform_path = tmp_path / "transform.joblib"
+    transform_path = tmp_path / "transform.onnx"
 
     cli = PycytominerCLI()
     cli.normalize(
