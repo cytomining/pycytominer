@@ -285,10 +285,13 @@ def save_normalize_transform(
 
     if not hasattr(scaler, "feature_names_in_"):
         raise ValueError(
-            "scaler must be fit on a pandas DataFrame so its feature names "
-            "(scaler.feature_names_in_) are recorded before saving."
+            "scaler must be fit on a DataFrame with named columns (not a bare "
+            "array) so its feature names (scaler.feature_names_in_) are "
+            "recorded before saving."
         )
 
+    # feature_names_in_ is an object array that may hold non-str labels (ints,
+    # np.str_); the names go into ONNX metadata as JSON, so they must be plain str.
     features = [str(name) for name in scaler.feature_names_in_]
     n_features = len(features)
     metadata = {

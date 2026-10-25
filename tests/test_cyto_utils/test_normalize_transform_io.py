@@ -110,6 +110,18 @@ def test_save_normalize_transform_requires_feature_names_in():
     assert not os.path.exists(transform_file)
 
 
+def test_save_normalize_transform_numpy_error_message_is_not_pandas_specific():
+    """The error should point at missing column names, not demand pandas."""
+    scaler = StandardScaler().fit(data_df.to_numpy())
+
+    with pytest.raises(ValueError, match="named columns"):
+        save_normalize_transform(
+            scaler=scaler,
+            method="standardize",
+            output_file=os.path.join(tmpdir, "test_transform_io_numpy_message.onnx"),
+        )
+
+
 @pytest.mark.parametrize(
     ("method", "extra_kwargs", "expected_params"),
     [
