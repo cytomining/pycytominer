@@ -146,6 +146,16 @@ class Spherize(BaseEstimator, TransformerMixin):
         # Get Numpy representation of the DataFrame
         X_vals = X.values
 
+        # The covariance/SVD below needs complete rows; NaNs would otherwise
+        # surface as an opaque LinAlgError
+        if pd.isna(X_vals).any():
+            nan_columns = list(X.columns[pd.isna(X_vals).any(axis=0)])
+            raise ValueError(
+                "Spherize cannot be fit on data with missing values (NaN). "
+                f"Columns with missing values: {nan_columns}. Impute or drop "
+                "the affected rows or columns first."
+            )
+
         if self.method in ["PCA-cor", "ZCA-cor"]:
             # The projection matrix for PCA-cor and ZCA-cor is the same as the
             # projection matrix for PCA and ZCA, respectively, on the standardized
