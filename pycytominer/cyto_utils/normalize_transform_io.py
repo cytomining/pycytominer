@@ -4,8 +4,9 @@ Save and load the fitted parameters of a normalize() transform.
 Fitted transforms are stored as a single ONNX file (at whatever path the
 caller provides, with no suffix or parent-directory requirements imposed
 here). ONNX stores plain data -- a small computation graph plus its weights --
-rather than pickled Python objects, so loading a file never executes code and
-does not depend on the scikit-learn, NumPy or Python versions that wrote it.
+rather than pickled Python objects, so loading a file never executes code. The
+versions of the software that wrote a file are recorded, and loading raises an
+error if they differ from the current environment, to keep results reproducible.
 This lets a transform fit on one set of samples (e.g. controls) be reapplied
 later to other subsets of data without re-fitting.
 
@@ -26,13 +27,16 @@ What is stored, by method:
   rebuilds the estimator from them on load. This is still data-only: nothing
   in the file is executed.
 
-The method, the feature order the transform was fit on, and the method-specific
-fitting parameters are stored in the model's ``metadata_props`` so the file is
-self-documenting (e.g. in a viewer such as Netron).
+The method, the feature order the transform was fit on, the method-specific
+fitting parameters, and the Python, pandas, scikit-learn and pycytominer
+versions in use at save time (for provenance) are stored in the model's
+``metadata_props`` so the file is self-documenting (e.g. in a viewer such as
+Netron).
 """
 
 import json
 import pathlib
+import platform
 from typing import Any, Union
 
 import numpy as np
@@ -243,6 +247,50 @@ def _inverse_normal_config(scaler: Any) -> dict[str, Any]:
     return config
 
 
+def _software_versions() -> dict[str, str]:
+    """Versions of the software used to write a transform, for provenance only."""
+    import sklearn
+
+    from pycytominer.__about__ import __version__
+
+    return {
+        "python": platform.python_version(),
+        "pandas": pd.__version__,
+        "scikit-learn": sklearn.__version__,
+        "pycytominer": __version__,
+    }
+
+
+def _check_software_versions(input_path: pathlib.Path, saved: Any) -> None:
+    """Raise if the versions recorded at save time differ from this environment.
+
+    Files without a versions entry (e.g. written before it was recorded) are not
+    checked.
+    """
+    if saved is None:
+        return
+    current = _software_versions()
+    if not isinstance(saved, dict):
+        raise ValueError(
+            f"'{input_path}' is not a valid pycytominer normalize transform: its "
+            "versions metadata must be a mapping of package name to version."
+        )
+    mismatched = {
+        name: (saved.get(name), current_version)
+        for name, current_version in current.items()
+        if saved.get(name) != current_version
+    }
+    if mismatched:
+        details = "; ".join(
+            f"{name}: saved with {was}, current {now}"
+            for name, (was, now) in mismatched.items()
+        )
+        raise ValueError(
+            f"'{input_path}' was saved in a different software environment ({details}). "
+            "Recreate the original environment to reproduce its results."
+        )
+
+
 def _spherize_output_columns(scaler: Any, features: list[str]) -> list[str]:
     if scaler.method in ("PCA", "PCA-cor"):
         return [f"PC{i}" for i in range(1, len(features) + 1)]
@@ -304,6 +352,7 @@ def save_normalize_transform(
         "method": method,
         "features": features,
         "params": _extract_normalize_scaler_params(scaler, method),
+        "versions": _software_versions(),
     }
 
     if method == "inverse_normal":
@@ -322,6 +371,7 @@ def save_normalize_transform(
     model = helper.make_model(
         graph,
         producer_name=_PRODUCER_NAME,
+        producer_version=metadata["versions"]["pycytominer"],
         opset_imports=[helper.make_opsetid("", _OPSET_VERSION)],
     )
     model.ir_version = 8
@@ -399,8 +449,10 @@ def load_normalize_transform(
         If `input_file` does not exist.
     ValueError
         If the file cannot be parsed as ONNX, is not a pycytominer normalize
-        transform, records a method outside `AVAIL_NORM_METHODS`, or carries a
-        malformed payload (bad features, missing tensors or columns).
+        transform, records a method outside `AVAIL_NORM_METHODS`, carries a
+        malformed payload (bad features, missing tensors or columns), or was
+        saved with different Python, pandas, scikit-learn or pycytominer
+        versions than the current environment.
 
     Examples
     --------
@@ -436,6 +488,8 @@ def load_normalize_transform(
             f"'{_METADATA_PREFIX}method'/'{_METADATA_PREFIX}features' metadata "
             "is missing."
         )
+
+    _check_software_versions(input_path, metadata.get("versions"))
 
     method = metadata["method"]
     if method not in AVAIL_NORM_METHODS:

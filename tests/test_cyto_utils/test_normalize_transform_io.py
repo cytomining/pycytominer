@@ -352,3 +352,66 @@ def test_loaded_transform_handles_missing_values():
     np.testing.assert_allclose(
         loaded.transform(with_nan), scaler.transform(with_nan), equal_nan=True
     )
+
+
+def test_save_records_software_versions():
+    import platform
+
+    import sklearn
+
+    from pycytominer.__about__ import __version__
+
+    transform_file = os.path.join(tmpdir, "test_transform_io_versions.onnx")
+    save_normalize_transform(
+        scaler=_fitted_scaler("standardize"),
+        method="standardize",
+        output_file=transform_file,
+    )
+
+    assert json.loads(_metadata(transform_file)["pycytominer_versions"]) == {
+        "python": platform.python_version(),
+        "pandas": pd.__version__,
+        "scikit-learn": sklearn.__version__,
+        "pycytominer": __version__,
+    }
+    assert onnx.load(transform_file).producer_version == __version__
+
+
+def _rewrite_versions(path, versions):
+    model = onnx.load(path)
+    for entry in model.metadata_props:
+        if entry.key == "pycytominer_versions":
+            if versions is None:
+                model.metadata_props.remove(entry)
+            else:
+                entry.value = json.dumps(versions)
+            break
+    onnx.save(model, path)
+
+
+def test_load_raises_on_version_mismatch():
+    transform_file = os.path.join(tmpdir, "test_transform_io_version_mismatch.onnx")
+    save_normalize_transform(
+        scaler=_fitted_scaler("standardize"),
+        method="standardize",
+        output_file=transform_file,
+    )
+    versions = json.loads(_metadata(transform_file)["pycytominer_versions"])
+    versions["pandas"] = "0.0.1"
+    _rewrite_versions(transform_file, versions)
+
+    with pytest.raises(ValueError, match=r"pandas: saved with 0\.0\.1"):
+        load_normalize_transform(transform_file)
+
+
+def test_load_skips_version_check_when_not_recorded():
+    transform_file = os.path.join(tmpdir, "test_transform_io_no_versions.onnx")
+    save_normalize_transform(
+        scaler=_fitted_scaler("standardize"),
+        method="standardize",
+        output_file=transform_file,
+    )
+    _rewrite_versions(transform_file, None)
+
+    _, method, _, _ = load_normalize_transform(transform_file)
+    assert method == "standardize"
