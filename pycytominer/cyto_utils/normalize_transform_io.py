@@ -75,6 +75,12 @@ class OnnxNormalizeTransform:
             model_bytes, providers=["CPUExecutionProvider"]
         )
         self._input_name = self._session.get_inputs()[0].name
+        n_inputs = self._session.get_inputs()[0].shape[-1]
+        if isinstance(n_inputs, int) and n_inputs != len(feature_names):
+            raise ValueError(
+                f"the graph takes {n_inputs} inputs but {len(feature_names)} "
+                "features are recorded"
+            )
         self.feature_names_in_ = np.asarray(feature_names, dtype=object)
         self.n_features_in_ = len(feature_names)
         self.columns = pd.Index(columns)
@@ -392,8 +398,9 @@ def load_normalize_transform(
     FileNotFoundError
         If `input_file` does not exist.
     ValueError
-        If the file is not a pycytominer normalize transform, or records a
-        method outside `AVAIL_NORM_METHODS`.
+        If the file cannot be parsed as ONNX, is not a pycytominer normalize
+        transform, records a method outside `AVAIL_NORM_METHODS`, or carries a
+        malformed payload (bad features, missing tensors or columns).
 
     Examples
     --------
@@ -410,13 +417,18 @@ def load_normalize_transform(
             f"Could not find '{input_path}', as written by save_normalize_transform()."
         )
 
-    model = onnx.load(str(input_path))
-    onnx.checker.check_model(model)
-    metadata = {
-        entry.key[len(_METADATA_PREFIX) :]: json.loads(entry.value)
-        for entry in model.metadata_props
-        if entry.key.startswith(_METADATA_PREFIX)
-    }
+    not_a_transform = f"'{input_path}' is not a valid pycytominer normalize transform"
+
+    try:
+        model = onnx.load(str(input_path))
+        onnx.checker.check_model(model)
+        metadata = {
+            entry.key[len(_METADATA_PREFIX) :]: json.loads(entry.value)
+            for entry in model.metadata_props
+            if entry.key.startswith(_METADATA_PREFIX)
+        }
+    except Exception as exc:
+        raise ValueError(f"{not_a_transform}: it could not be parsed ({exc}).") from exc
 
     if "method" not in metadata or "features" not in metadata:
         raise ValueError(
@@ -429,14 +441,29 @@ def load_normalize_transform(
     if method not in AVAIL_NORM_METHODS:
         raise ValueError(f"Cannot load transform for unsupported method '{method}'")
 
-    features = list(metadata["features"])
+    features = metadata["features"]
+    if (
+        not isinstance(features, list)
+        or not features
+        or not all(isinstance(f, str) for f in features)
+    ):
+        raise ValueError(
+            f"{not_a_transform}: its features metadata must be a non-empty list "
+            "of strings."
+        )
     params = metadata.get("params", {})
 
-    if method == "inverse_normal":
-        scaler = _load_inverse_normal(model, metadata, features)
-    else:
-        scaler = OnnxNormalizeTransform(
-            model.SerializeToString(), features, metadata["columns"]
-        )
+    try:
+        if method == "inverse_normal":
+            scaler = _load_inverse_normal(model, metadata, features)
+        else:
+            scaler = OnnxNormalizeTransform(
+                model.SerializeToString(), features, metadata["columns"]
+            )
+    except Exception as exc:
+        raise ValueError(
+            f"{not_a_transform}: its '{method}' payload is incomplete or "
+            f"inconsistent ({type(exc).__name__}: {exc})."
+        ) from exc
 
     return scaler, method, features, params

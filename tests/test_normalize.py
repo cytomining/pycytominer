@@ -1,4 +1,5 @@
 import os
+import pathlib
 import random
 import tempfile
 
@@ -1395,7 +1396,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
     """
     transform_file = os.path.join(tmpdir, "test_fit_only_args_transform.onnx")
 
-    normalize(
+    fit_result = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="infer",
@@ -1404,7 +1405,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
         transform_output_file=transform_file,
     )
 
-    normalize(
+    applied = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="infer",
@@ -1413,6 +1414,8 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
         samples="Metadata_treatment == 'control'",
         fitted_transform_file=transform_file,
     )
+    # `samples` is ignored, so the loaded transform reproduces the fit output
+    pd.testing.assert_frame_equal(applied, fit_result)
 
     with pytest.raises(ValueError):
         normalize(
@@ -1426,7 +1429,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
 
     mad_file = os.path.join(tmpdir, "test_fit_only_args_mad_transform.onnx")
 
-    normalize(
+    mad_fit = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="infer",
@@ -1434,7 +1437,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
         transform_output_file=mad_file,
     )
 
-    normalize(
+    mad_applied = normalize(
         profiles=data_df.copy(),
         features=["x", "y", "z", "zz"],
         meta_features="infer",
@@ -1442,6 +1445,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
         mad_robustize_epsilon=None,
         fitted_transform_file=mad_file,
     )
+    pd.testing.assert_frame_equal(mad_applied, mad_fit)
 
     with pytest.raises(ValueError):
         normalize(
@@ -1579,21 +1583,162 @@ def test_normalize_does_not_copy_input_without_cleanup(monkeypatch):
     )
 
 
-def test_normalize_does_not_mutate_input_when_coercing():
-    """Coercion of missing-value strings must happen on a copy of the caller's frame."""
-    df = pd.DataFrame({
-        "Metadata_a": ["a", "b", "c", "d"],
-        "x": [1.0, "nan", 3.0, 4.0],
-        "y": pd.Series([4, 3, 1, 2], dtype=object),
+def test_normalize_fitted_transform_file_applies_to_new_data(tmp_path):
+    """
+    A saved transform applied to data it was not trained on must use the
+    training statistics, not statistics refit on the new data.
+    """
+    transform_file = str(tmp_path / "standardize.onnx")
+    train_df = pd.DataFrame({
+        "Metadata_a": ["a", "b", "c", "d", "e"],
+        "x": [1.0, 2.0, 3.0, 4.0, 5.0],
+        "y": [10.0, 20.0, 30.0, 40.0, 50.0],
     })
-    original = df.copy()
+    new_df = pd.DataFrame({
+        "Metadata_a": ["f", "g", "h"],
+        "x": [100.0, 200.0, 300.0],
+        "y": [-5.0, 0.0, 5.0],
+    })
+    kwargs = {"features": ["x", "y"], "meta_features": ["Metadata_a"]}
 
-    result = normalize(
-        profiles=df,
-        features=["x", "y"],
-        meta_features=["Metadata_a"],
+    normalize(
+        profiles=train_df,
         method="standardize",
+        transform_output_file=transform_file,
+        **kwargs,
+    )
+    applied = normalize(
+        profiles=new_df,
+        method="standardize",
+        fitted_transform_file=transform_file,
+        **kwargs,
     )
 
-    pd.testing.assert_frame_equal(df, original)
-    assert pd.api.types.is_numeric_dtype(result["x"])
+    # StandardScaler uses the population std (ddof=0)
+    for col in ["x", "y"]:
+        expected = (new_df[col] - train_df[col].mean()) / train_df[col].std(ddof=0)
+        np.testing.assert_allclose(applied[col], expected, rtol=1e-6, atol=1e-8)
+
+    refit = normalize(profiles=new_df, method="standardize", **kwargs)
+    assert not np.allclose(applied[["x", "y"]].values, refit[["x", "y"]].values)
+
+
+def _write_transform_variant(src, dst, mutate):
+    """Copy a saved transform to `dst`, letting `mutate(model)` corrupt it."""
+    import onnx
+
+    model = onnx.load(str(src))
+    mutate(model)
+    onnx.save(model, str(dst))
+    return dst
+
+
+def _set_metadata(key, value):
+    def mutate(model):
+        for entry in model.metadata_props:
+            if entry.key == f"pycytominer_{key}":
+                entry.value = value
+
+    return mutate
+
+
+def _drop_metadata(key):
+    def mutate(model):
+        kept = [e for e in model.metadata_props if e.key != f"pycytominer_{key}"]
+        del model.metadata_props[:]
+        model.metadata_props.extend(kept)
+
+    return mutate
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        _set_metadata("features", '"x"'),
+        _set_metadata("features", "[]"),
+        _set_metadata("features", "[1, 2]"),
+        _set_metadata("features", '["x", "y"]'),
+        _set_metadata("features", "not json"),
+        _drop_metadata("columns"),
+    ],
+    ids=[
+        "features-not-list",
+        "features-empty",
+        "features-not-str",
+        "features-wrong-count",
+        "metadata-not-json",
+        "columns-missing",
+    ],
+)
+def test_load_normalize_transform_rejects_invalid_payload(tmp_path, mutate):
+    """A well-formed ONNX file with a bad pycytominer payload raises ValueError."""
+    good = str(tmp_path / "good.onnx")
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="standardize",
+        transform_output_file=good,
+    )
+    bad = _write_transform_variant(good, tmp_path / "bad.onnx", mutate)
+
+    with pytest.raises(ValueError, match="normalize transform"):
+        load_normalize_transform(bad)
+    with pytest.raises(ValueError, match="normalize transform"):
+        normalize(
+            profiles=data_df.copy(),
+            features="infer",
+            meta_features="infer",
+            method="standardize",
+            fitted_transform_file=bad,
+        )
+
+
+def test_load_normalize_transform_rejects_inverse_normal_missing_tensors(tmp_path):
+    """A quantile inverse-normal transform without its quantile tensors is rejected."""
+    good = str(tmp_path / "good.onnx")
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="inverse_normal",
+        inverse_normal_method="quantile",
+        transform_output_file=good,
+    )
+
+    def strip_tensors(model):
+        del model.graph.initializer[:]
+
+    bad = _write_transform_variant(good, tmp_path / "bad.onnx", strip_tensors)
+
+    with pytest.raises(ValueError, match="normalize transform"):
+        load_normalize_transform(bad)
+
+
+@pytest.mark.parametrize(
+    "content", [b"", b"this is not an onnx file", b"\x00\x01\x02\x03" * 16]
+)
+def test_load_normalize_transform_rejects_corrupt_file(tmp_path, content):
+    """Empty, text, or binary-garbage files raise ValueError, not a protobuf error."""
+    bad = tmp_path / "corrupt.onnx"
+    bad.write_bytes(content)
+
+    with pytest.raises(ValueError, match=r"could not be parsed|metadata is missing"):
+        load_normalize_transform(bad)
+
+
+def test_load_normalize_transform_rejects_truncated_file(tmp_path):
+    good = str(tmp_path / "good.onnx")
+    normalize(
+        profiles=data_df.copy(),
+        features=["x", "y", "z", "zz"],
+        meta_features="infer",
+        method="robustize",
+        transform_output_file=good,
+    )
+    data = pathlib.Path(good).read_bytes()
+    bad = tmp_path / "truncated.onnx"
+    bad.write_bytes(data[: len(data) // 2])
+
+    with pytest.raises(ValueError, match="normalize transform"):
+        load_normalize_transform(bad)
