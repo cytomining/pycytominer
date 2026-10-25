@@ -348,7 +348,7 @@ def save_normalize_transform(
     # np.str_); the names go into ONNX metadata as JSON, so they must be plain str.
     features = [str(name) for name in scaler.feature_names_in_]
     n_features = len(features)
-    metadata = {
+    metadata: dict[str, Any] = {
         "method": method,
         "features": features,
         "params": _extract_normalize_scaler_params(scaler, method),

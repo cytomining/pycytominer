@@ -149,7 +149,7 @@ class Spherize(BaseEstimator, TransformerMixin):
         # The covariance/SVD below needs complete rows; NaNs would otherwise
         # surface as an opaque LinAlgError
         if pd.isna(X_vals).any():
-            nan_columns = list(X.columns[pd.isna(X_vals).any(axis=0)])
+            nan_columns = [col for col in X.columns if X[col].isna().any()]
             raise ValueError(
                 "Spherize cannot be fit on data with missing values (NaN). "
                 f"Columns with missing values: {nan_columns}. Impute or drop "
