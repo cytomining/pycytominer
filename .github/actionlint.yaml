@@ -1,0 +1,10 @@
+# actionlint 1.7.12 does not yet recognize these GitHub-hosted GA labels.
+# GA announcements:
+#   https://github.com/actions/runner-images/issues/14747 (ubuntu-26.04)
+#   https://github.com/actions/runner-images/issues/14017 (windows-2025)
+# Remove each entry once actionlint's built-in catalog includes it.
+# This validation-only setting does not select a self-hosted runner.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - windows-2025

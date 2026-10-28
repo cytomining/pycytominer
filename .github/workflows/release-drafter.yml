@@ -13,7 +13,7 @@ permissions:
 jobs:
   update-release-draft:
     name: Update release draft
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Update release draft
         uses: release-drafter/release-drafter@v7.7.0

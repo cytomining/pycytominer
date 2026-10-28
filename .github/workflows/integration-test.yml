@@ -35,7 +35,7 @@ jobs:
     # This job doesn't fail fast to ensure that feedback on function is still provided
     strategy:
       fail-fast: false
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
@@ -63,7 +63,7 @@ jobs:
     # Avoid fail-fast to retain output
     strategy:
       fail-fast: false
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: github.event_name != 'schedule'
     steps:
       - name: Checkout repo
@@ -85,7 +85,7 @@ jobs:
     # Avoid fail-fast to observe gh actions output
     strategy:
       fail-fast: false
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: github.event_name != 'schedule'
     steps:
       - name: Install pandoc
@@ -113,16 +113,16 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-14
-          - ubuntu-24.04
-          - windows-2022
+          - macos-26
+          - ubuntu-26.04
+          - windows-2025
         python-version: ["3.11", "3.12", "3.13", "3.14"]
         exclude:
           # NumPy's MINGW-W64 Windows build for Python 3.14 is self-described as
           # "experimental" with crashes expected. Exclude until NumPy ships a
           # stable Windows wheel for 3.14.
           # https://github.com/numpy/numpy/issues/26038
-          - os: windows-2022
+          - os: windows-2025
             python-version: "3.14"
     runs-on: ${{ matrix.os }}
     env:
@@ -148,11 +148,11 @@ jobs:
       - name: Run pytest and generate coverage report
         # For the target version and ubuntu, run pytest and generate coverage report
         # Minimal wheel build tests run separately to confirm successful install.
-        if: (matrix.os == 'ubuntu-24.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
+        if: (matrix.os == 'ubuntu-26.04')  && (matrix.python-version == env.TARGET_PYTHON_VERSION)
         run: uv run pytest --ignore=tests/minimal_wheel_build_tests --cov=./ --cov-report=xml ${{ github.event.inputs.pytest_addopts }}
       - name: Upload coverage to Codecov
         # For the target version and ubuntu, upload coverage to Codecov
-        if: (matrix.os == 'ubuntu-24.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
+        if: (matrix.os == 'ubuntu-26.04') && (matrix.python-version == env.TARGET_PYTHON_VERSION )
         uses: codecov/codecov-action@v7
         env:
           OS: ${{ matrix.os }}
@@ -170,13 +170,13 @@ jobs:
       - name: Run pytest
         # For every other version and/or OS, run pytest without coverage
         # Minimal wheel build tests run separately to confirm successful install.
-        if: (matrix.os != 'ubuntu-24.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
+        if: (matrix.os != 'ubuntu-26.04') || (matrix.python-version != env.TARGET_PYTHON_VERSION )
         run: uv run pytest --ignore=tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   build:
     name: Build versioned package
     # This job is used to build the package and upload the artifacts to GitHub Actions workflow results.
     # See https://github.com/actions/upload-artifact?tab=readme-ov-file#where-does-the-upload-go
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -217,7 +217,7 @@ jobs:
     name: Minimal wheel build tests
     # Validate the built wheel in an isolated environment so packaging and
     # runtime dependency issues are caught outside the normal source checkout.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build
     if: github.event_name != 'schedule'
     steps:
@@ -257,7 +257,7 @@ jobs:
           cd "$test_root"
           "$venv/bin/python" -m pytest tests/minimal_wheel_build_tests ${{ github.event.inputs.pytest_addopts }}
   docker-image-test-and-push:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # set a dependency sequence to occur after build job completion
     needs: build
     env:
