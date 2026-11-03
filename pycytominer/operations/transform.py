@@ -141,7 +141,6 @@ class Spherize(BaseEstimator, TransformerMixin):
         self
             With computed weights attribute
         """
-        _set_feature_names(self, X)
 
         # Get Numpy representation of the DataFrame
         X_vals = X.values
@@ -387,7 +386,6 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         self
             With computed median and mad attributes
         """
-        _set_feature_names(self, X)
 
         # Get the mean of the features (columns) and center if specified
         self.median = X.median()
@@ -548,7 +546,6 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         self
             Fitted inverse normal transform.
         """
-        _set_feature_names(self, x)
 
         # Set number of quantiles, if n_quantiles is greater than the number of samples
         avail_methods = ["quantile", *_RANKIT_CONSTANTS]

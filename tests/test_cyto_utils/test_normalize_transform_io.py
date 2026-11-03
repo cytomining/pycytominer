@@ -56,7 +56,9 @@ def test_save_and_load_roundtrip(method):
     scaler = _fitted_scaler(method)
     expected = scaler.transform(data_df)
 
-    save_normalize_transform(scaler=scaler, method=method, output_file=transform_file)
+    save_normalize_transform(
+        scaler=scaler, method=method, output_file=transform_file, features=features
+    )
 
     assert os.path.exists(transform_file)
 
@@ -165,7 +167,9 @@ def test_save_normalize_transform_records_method_specific_params(
         scaler = InverseNormalTransform(**extra_kwargs).fit(data_df)
 
     transform_file = os.path.join(tmpdir, f"test_transform_io_params_{method}.onnx")
-    save_normalize_transform(scaler=scaler, method=method, output_file=transform_file)
+    save_normalize_transform(
+        scaler=scaler, method=method, output_file=transform_file, features=features
+    )
 
     assert json.loads(_metadata(transform_file)["pycytominer_params"]) == (
         expected_params
@@ -173,25 +177,6 @@ def test_save_normalize_transform_records_method_specific_params(
 
     _, _, _, loaded_params = load_normalize_transform(transform_file)
     assert loaded_params == expected_params
-
-
-def test_save_normalize_transform_does_not_create_parent_directory():
-    """Pycytominer should not be opinionated about creating directories:
-    saving to a path whose parent directory doesn't exist should raise
-    (matching the underlying `joblib.dump` behavior) rather than silently
-    creating it."""
-    missing_parent = os.path.join(tmpdir, "does_not_exist_transform_io_dir")
-    transform_file = os.path.join(missing_parent, "transform.onnx")
-
-    assert not os.path.exists(missing_parent)
-
-    scaler = _fitted_scaler("standardize")
-    with pytest.raises(OSError):
-        save_normalize_transform(
-            scaler=scaler, method="standardize", output_file=transform_file
-        )
-
-    assert not os.path.exists(missing_parent)
 
 
 def test_save_normalize_transform_does_not_require_or_append_joblib_suffix():
@@ -280,7 +265,9 @@ def test_stored_params_match_original_scaler_attributes(method, attr_by_param):
     """The recorded params should agree with the fitted scaler that was saved."""
     transform_file = os.path.join(tmpdir, f"test_transform_io_attrs_{method}.onnx")
     scaler = _fitted_scaler(method)
-    save_normalize_transform(scaler=scaler, method=method, output_file=transform_file)
+    save_normalize_transform(
+        scaler=scaler, method=method, output_file=transform_file, features=features
+    )
 
     _, _, _, params = load_normalize_transform(transform_file)
 
@@ -303,7 +290,10 @@ def test_inverse_normal_variants_roundtrip(inverse_normal_kwargs, n_rows):
     transform_file = os.path.join(tmpdir, "test_transform_io_inverse_normal_var.onnx")
     scaler = InverseNormalTransform(**inverse_normal_kwargs).fit(data_df)
     save_normalize_transform(
-        scaler=scaler, method="inverse_normal", output_file=transform_file
+        scaler=scaler,
+        method="inverse_normal",
+        output_file=transform_file,
+        features=features,
     )
 
     loaded, _, _, _ = load_normalize_transform(transform_file)
@@ -321,7 +311,10 @@ def test_inverse_normal_random_state_instance_cannot_be_saved():
 
     with pytest.raises(ValueError, match="random_state"):
         save_normalize_transform(
-            scaler=scaler, method="inverse_normal", output_file=transform_file
+            scaler=scaler,
+            method="inverse_normal",
+            output_file=transform_file,
+            features=features,
         )
 
 

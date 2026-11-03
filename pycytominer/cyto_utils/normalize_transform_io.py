@@ -37,7 +37,7 @@ Netron).
 import json
 import pathlib
 import platform
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -73,6 +73,22 @@ class OnnxNormalizeTransform:
     def __init__(
         self, model_bytes: bytes, feature_names: list[str], columns: list[str]
     ) -> None:
+        """Initialize the transform from a serialized ONNX model.
+
+        Parameters
+        ----------
+        model_bytes : bytes
+            The serialized ONNX model as a byte string.
+        feature_names : list[str]
+            The names of the input features, in the order they were fit on.
+        columns : list[str]
+            The names of the output columns.
+
+        Raises
+        ------
+        ValueError
+            If the number of input features in the ONNX model does not match the number of feature names provided.
+        """
         import onnxruntime as ort
 
         self._session = ort.InferenceSession(
@@ -101,6 +117,12 @@ class OnnxNormalizeTransform:
         -------
         numpy.ndarray
             The transformed values.
+
+        Raises
+        ------
+        ValueError
+            If the columns of `X` do not match the feature names (and order)
+            the transform was fit on.
         """
         incoming = np.asarray(X.columns, dtype=object)
         if not np.array_equal(incoming, self.feature_names_in_):
@@ -118,6 +140,18 @@ def _affine_parts(scaler: Any, method: str) -> dict[str, Any]:
 
     Every affine method computes ``((X - offset) / divisor) @ projection`` where
     any of the three may be absent.
+
+    Parameters
+    ----------
+    scaler : Any
+        The fitted scaler object.
+    method : str
+        The name of the normalization method.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary containing the offset, divisor, and projection arrays.
     """
     if method in ("standardize", "robustize"):
         center, scale = (
@@ -143,7 +177,26 @@ def _affine_parts(scaler: Any, method: str) -> dict[str, Any]:
 
 
 def _build_affine_graph(parts: dict[str, Any], n_features: int, n_outputs: int):
-    """Build the ONNX graph for ``((X - offset) / divisor) @ projection``."""
+    """Build the ONNX graph for ``((X - offset) / divisor) @ projection``.
+
+    Steps whose array is None are omitted; if all are absent the graph is a
+    single identity node.
+
+    Parameters
+    ----------
+    parts : dict[str, Any]
+        The offset, divisor, and projection arrays, as returned by
+        `_affine_parts`. Any of them may be None.
+    n_features : int
+        The number of input features.
+    n_outputs : int
+        The number of output columns.
+
+    Returns
+    -------
+    onnx.GraphProto
+        The ONNX graph computing the affine transform.
+    """
     from onnx import TensorProto, helper, numpy_helper
 
     nodes, initializers = [], []
@@ -180,6 +233,19 @@ def _build_inverse_normal_graph(scaler: Any, n_features: int):
 
     The graph itself does not compute the transform (see the module docstring);
     the tensors are read back by `load_normalize_transform`.
+
+    Parameters
+    ----------
+    scaler : Any
+        The fitted InverseNormalTransform object.
+    n_features : int
+        The number of input features.
+
+    Returns
+    -------
+    onnx.GraphProto
+        An identity graph carrying the quantile landmarks (if any) as
+        initializer tensors.
     """
     from onnx import TensorProto, helper, numpy_helper
 
@@ -214,6 +280,18 @@ def _extract_normalize_scaler_params(scaler: Any, method: str) -> dict[str, Any]
     needed to reapply the transform. They're recorded as their own metadata
     entry purely so the file is self-documenting: a user can see which
     parameters a saved transform was fit with without loading it.
+
+    Parameters
+    ----------
+    scaler : Any
+        The fitted scaler object.
+    method : str
+        The name of the normalization method.
+
+    Returns
+    -------
+    dict[str, Any]
+        The method-specific fitting parameters (empty for methods with none).
     """
     if method == "mad_robustize":
         return {"mad_robustize_epsilon": scaler.epsilon}
@@ -229,7 +307,24 @@ def _extract_normalize_scaler_params(scaler: Any, method: str) -> dict[str, Any]
 
 
 def _inverse_normal_config(scaler: Any) -> dict[str, Any]:
-    """The constructor arguments needed to rebuild an InverseNormalTransform."""
+    """Get the constructor arguments needed to rebuild an InverseNormalTransform.
+
+    Parameters
+    ----------
+    scaler : Any
+        The fitted InverseNormalTransform object.
+
+    Returns
+    -------
+    dict[str, Any]
+        The constructor arguments, plus the fitted ``n_quantiles_`` when the
+        method is "quantile".
+
+    Raises
+    ------
+    ValueError
+        If the scaler's `random_state` is not an int or None.
+    """
     random_state = scaler.random_state
     if random_state is not None and not isinstance(random_state, (int, np.integer)):
         raise ValueError(
@@ -248,7 +343,16 @@ def _inverse_normal_config(scaler: Any) -> dict[str, Any]:
 
 
 def _software_versions() -> dict[str, str]:
-    """Versions of the software used to write a transform, for provenance only."""
+    """Get the versions of the software used to write a transform.
+
+    These are recorded for provenance and reproducibility only.
+
+    Returns
+    -------
+    dict[str, str]
+        A mapping of package name to version for Python, pandas,
+        scikit-learn, and pycytominer.
+    """
     import sklearn
 
     from pycytominer.__about__ import __version__
@@ -266,6 +370,19 @@ def _check_software_versions(input_path: pathlib.Path, saved: Any) -> None:
 
     Files without a versions entry (e.g. written before it was recorded) are not
     checked.
+
+    Parameters
+    ----------
+    input_path : pathlib.Path
+        The path of the file being loaded, used in error messages.
+    saved : Any
+        The versions mapping recorded in the file, or None if absent.
+
+    Raises
+    ------
+    ValueError
+        If `saved` is not a mapping, or any recorded version differs from the
+        current environment.
     """
     if saved is None:
         return
@@ -291,20 +408,17 @@ def _check_software_versions(input_path: pathlib.Path, saved: Any) -> None:
         )
 
 
-def _spherize_output_columns(scaler: Any, features: list[str]) -> list[str]:
-    if scaler.method in ("PCA", "PCA-cor"):
-        return [f"PC{i}" for i in range(1, len(features) + 1)]
-    return features
-
-
 def save_normalize_transform(
-    scaler: Any, method: str, output_file: Union[str, pathlib.Path]
+    scaler: Any,
+    method: str,
+    output_file: Union[str, pathlib.Path],
+    features: Optional[list[str]] = None,
 ) -> Union[str, pathlib.Path]:
     """Save the fitted parameters of a normalize() scaler to disk as ONNX.
 
     Parameters
     ----------
-    scaler : fitted scaler object
+    scaler : Any
         The fitted StandardScaler, RobustScaler, RobustMAD, Spherize, or
         InverseNormalTransform instance produced by the fitting step of
         `pycytominer.normalize`. Must have been fit on a pandas DataFrame,
@@ -316,12 +430,22 @@ def save_normalize_transform(
         Where to write the transform. Pycytominer does not create any missing
         parent directories, and does not require or append an ".onnx" suffix.
         The suggested extension is ".onnx", e.g. "controls_standardize.onnx".
+    features : list[str] or None, default None
+        The feature columns (in order) `scaler` was fit on. If None, they are
+        read from `scaler.feature_names_in_`, which only scikit-learn scalers
+        fit on a DataFrame provide; the other scalers require this argument.
+
+    Returns
+    -------
+    str or pathlib.Path
+        The `output_file` path that was written.
 
     Raises
     ------
     ValueError
-        If `method` is not a supported method, if `scaler` was not fit on
-        a pandas DataFrame (i.e. has no `feature_names_in_` attribute), or if
+        If `method` is not a supported method, if the feature names are
+        unavailable (`features` is None and `scaler` has no
+        `feature_names_in_` attribute), or if
         an inverse normal transform's `random_state` is not an int or None.
 
     Examples
@@ -337,16 +461,19 @@ def save_normalize_transform(
     if method not in AVAIL_NORM_METHODS:
         raise ValueError(f"method '{method}' must be one of {AVAIL_NORM_METHODS}")
 
-    if not hasattr(scaler, "feature_names_in_"):
-        raise ValueError(
-            "scaler must be fit on a DataFrame with named columns (not a bare "
-            "array) so its feature names (scaler.feature_names_in_) are "
-            "recorded before saving."
-        )
+    if features is None:
+        if not hasattr(scaler, "feature_names_in_"):
+            raise ValueError(
+                "scaler must be fit on a DataFrame with named columns (not a bare "
+                "array) so its feature names (scaler.feature_names_in_) are "
+                "recorded before saving, or the features must be passed "
+                "explicitly."
+            )
+        features = list(scaler.feature_names_in_)
 
     # feature_names_in_ is an object array that may hold non-str labels (ints,
     # np.str_); the names go into ONNX metadata as JSON, so they must be plain str.
-    features = [str(name) for name in scaler.feature_names_in_]
+    features = [str(name) for name in features]
     n_features = len(features)
     metadata: dict[str, Any] = {
         "method": method,
@@ -360,12 +487,11 @@ def save_normalize_transform(
         graph = _build_inverse_normal_graph(scaler, n_features)
     else:
         parts = _affine_parts(scaler, method)
-        if parts["projection"] is None:
-            n_outputs = n_features
-            metadata["columns"] = features
-        else:
-            n_outputs = parts["projection"].shape[1]
-            metadata["columns"] = _spherize_output_columns(scaler, features)
+        # Outputs stay in the original feature space, so they keep the input names.
+        metadata["columns"] = features
+        n_outputs = (
+            n_features if parts["projection"] is None else parts["projection"].shape[1]
+        )
         graph = _build_affine_graph(parts, n_features, n_outputs)
 
     model = helper.make_model(
@@ -389,7 +515,22 @@ def save_normalize_transform(
 def _load_inverse_normal(
     model: Any, metadata: dict[str, Any], features: list[str]
 ) -> Any:
-    """Rebuild a fitted InverseNormalTransform from tensors and config."""
+    """Rebuild a fitted InverseNormalTransform from tensors and config.
+
+    Parameters
+    ----------
+    model : Any
+        The loaded ONNX model holding the stored quantile tensors.
+    metadata : dict[str, Any]
+        The decoded model metadata, including the ``config`` entry.
+    features : list[str]
+        The feature names, in the order the transform was fit on.
+
+    Returns
+    -------
+    Any
+        The InverseNormalTransform with its fitted state restored.
+    """
     from onnx import numpy_helper
     from sklearn.preprocessing import QuantileTransformer
 
@@ -430,16 +571,16 @@ def load_normalize_transform(
 
     Returns
     -------
-    scaler : fitted transform object
+    scaler : Any
         An object with its fitted state restored, ready to call `.transform()`
         on a DataFrame with the saved features. For the affine methods this is
         an `OnnxNormalizeTransform` executed by ONNX Runtime; for
         "inverse_normal" it is a rebuilt `InverseNormalTransform`.
     method : str
         The normalization method the scaler was fit with.
-    features : list of str
+    features : list[str]
         The feature columns (in order) the scaler expects as input.
-    params : dict
+    params : dict[str, Any]
         The method-specific fitting parameters recorded for provenance (see
         `_extract_normalize_scaler_params`). Not required to reapply the transform.
 

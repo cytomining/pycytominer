@@ -201,7 +201,6 @@ module = [
   "cytominer_database.*",
   "fire.*",
   "h5py.*",
-  "joblib.*",
   "onnx.*",
   "onnxruntime.*",
   "scipy.*",

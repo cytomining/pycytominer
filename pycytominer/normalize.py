@@ -498,6 +498,7 @@ def normalize(
                 scaler=fitted_scaler,
                 method=method,
                 output_file=transform_output_file,
+                features=features,
             )
 
     fitted_scaled = fitted_scaler.transform(feature_df)
