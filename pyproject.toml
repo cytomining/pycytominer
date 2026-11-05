@@ -77,6 +77,10 @@ optional-dependencies.collate = [
   # setuptools deprecated in v70
   "setuptools>=65,<85",
 ]
+optional-dependencies.onnx = [
+  "onnx>=1.23.2",
+  "onnxruntime>=1.31",
+]
 urls.Homepage = "https://pycytominer.readthedocs.io/"
 urls.Repository = "https://github.com/cytomining/pycytominer"
 scripts.pycytominer = "pycytominer.cli:main"
@@ -199,6 +203,8 @@ module = [
   "cytominer_database.*",
   "fire.*",
   "h5py.*",
+  "onnx.*",
+  "onnxruntime.*",
   "scipy.*",
   "sklearn.*",
   "zarr.*",
