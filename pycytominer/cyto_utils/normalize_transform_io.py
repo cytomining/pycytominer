@@ -56,6 +56,28 @@ _PRODUCER_NAME = "pycytominer"
 _OPSET_VERSION = 13
 
 
+def _require_onnx() -> None:
+    """Raise a helpful error if the optional ONNX dependencies are missing.
+
+    Saving and loading normalize transforms needs ``onnx`` and ``onnxruntime``,
+    which are an optional extra so core pycytominer stays lightweight.
+
+    Raises
+    ------
+    ImportError
+        If ``onnx`` or ``onnxruntime`` cannot be imported.
+    """
+    try:
+        import onnx  # noqa: F401
+        import onnxruntime  # noqa: F401
+    except ImportError as exc:
+        raise ImportError(
+            "Optional dependencies `onnx` and `onnxruntime` are required to save "
+            "or load normalize transforms. Please install the `onnx` optional "
+            'dependency group: e.g. `pip install "pycytominer[onnx]"`'
+        ) from exc
+
+
 class OnnxNormalizeTransform:
     """A fitted affine normalize() transform backed by an ONNX Runtime session.
 
@@ -454,6 +476,7 @@ def save_normalize_transform(
     ...     scaler, "standardize", "controls_standardize.onnx"
     ... )  # doctest: +SKIP
     """
+    _require_onnx()
     import onnx
     from onnx import helper
 
@@ -487,11 +510,18 @@ def save_normalize_transform(
         graph = _build_inverse_normal_graph(scaler, n_features)
     else:
         parts = _affine_parts(scaler, method)
-        # Outputs stay in the original feature space, so they keep the input names.
-        metadata["columns"] = features
         n_outputs = (
             n_features if parts["projection"] is None else parts["projection"].shape[1]
         )
+        # Most methods keep the input names. PCA-based spherizing instead
+        # renames its outputs to PC1..PCn (mirrors Spherize.transform).
+        if method == "spherize" and getattr(scaler, "method", None) in (
+            "PCA",
+            "PCA-cor",
+        ):
+            metadata["columns"] = [f"PC{i}" for i in range(1, n_outputs + 1)]
+        else:
+            metadata["columns"] = features
         graph = _build_affine_graph(parts, n_features, n_outputs)
 
     model = helper.make_model(
@@ -601,6 +631,7 @@ def load_normalize_transform(
     ...     "controls_standardize.onnx"
     ... )  # doctest: +SKIP
     """
+    _require_onnx()
     import onnx
 
     input_path = pathlib.Path(input_file)

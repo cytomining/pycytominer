@@ -12,6 +12,7 @@ from pycytominer.cyto_utils.features import infer_cp_features
 from pycytominer.cyto_utils.load import load_profiles
 from pycytominer.cyto_utils.normalize_transform_io import (
     AVAIL_NORM_METHODS,
+    _require_onnx,
     load_normalize_transform,
     save_normalize_transform,
 )
@@ -154,6 +155,7 @@ def normalize(
         fitting entirely, providing both raises a ``ValueError``.
         Pycytominer does not create missing parent directories for this
         path; the directory must already exist.
+        Requires the optional ``onnx`` extra: ``pip install "pycytominer[onnx]"``.
     fitted_transform_file : str, optional
         If provided, skip fitting a new transform and instead load a previously
         saved transform (written by a prior call using `transform_output_file`)
@@ -179,6 +181,9 @@ def normalize(
 
     Raises
     ------
+    ImportError
+        If `transform_output_file` or `fitted_transform_file` is given but the
+        optional ``onnx`` extra (``onnx`` and ``onnxruntime``) is not installed.
     ValueError
         Raised when inferred or manually selected feature columns are non-numeric,
         because Pycytominer normalization methods operate on numeric features
@@ -246,6 +251,11 @@ def normalize(
         )
     """
     # check for clashes in the args
+    # ONNX is an optional extra: fail fast, before any fitting work, if a
+    # transform file is requested without it installed.
+    if fitted_transform_file is not None or transform_output_file is not None:
+        _require_onnx()
+
     if fitted_transform_file is not None and transform_output_file is not None:
         raise ValueError(
             "Only one of `fitted_transform_file` or `transform_output_file` should be specified."

@@ -408,3 +408,70 @@ def test_load_skips_version_check_when_not_recorded():
 
     _, method, _, _ = load_normalize_transform(transform_file)
     assert method == "standardize"
+
+
+@pytest.mark.parametrize(
+    "spherize_method, expected_columns",
+    [
+        ("PCA", ["PC1", "PC2", "PC3", "PC4"]),
+        ("PCA-cor", ["PC1", "PC2", "PC3", "PC4"]),
+        ("ZCA", features),
+        ("ZCA-cor", features),
+    ],
+)
+def test_spherize_roundtrip_preserves_output_column_names(
+    spherize_method, expected_columns
+):
+    """PCA spherizing renames outputs to PC1..PCn; ZCA keeps input names."""
+    scaler = Spherize(center=True, method=spherize_method, epsilon=0.25).fit(data_df)
+    expected = scaler.transform(data_df)
+    assert list(scaler.columns) == expected_columns
+
+    output_file = os.path.join(tmpdir, f"spherize_columns_{spherize_method}.onnx")
+    save_normalize_transform(scaler, "spherize", output_file, features=features)
+    loaded, _, _, _ = load_normalize_transform(output_file)
+
+    assert list(loaded.columns) == expected_columns
+    np.testing.assert_allclose(loaded.transform(data_df), expected, atol=1e-6)
+
+
+@pytest.fixture
+def no_onnx(monkeypatch):
+    """Make `import onnx` / `import onnxruntime` fail, as without the extra."""
+    import sys
+
+    for name in ("onnx", "onnxruntime"):
+        monkeypatch.setitem(sys.modules, name, None)
+
+
+def test_save_and_load_require_onnx_extra(no_onnx, tmp_path):
+    """Without the optional onnx extra, save/load fail with install guidance."""
+    scaler = _fitted_scaler("standardize")
+    path = str(tmp_path / "t.onnx")
+
+    with pytest.raises(ImportError, match=r"pycytominer\[onnx\]"):
+        save_normalize_transform(scaler, "standardize", path, features=features)
+    with pytest.raises(ImportError, match=r"pycytominer\[onnx\]"):
+        load_normalize_transform(path)
+
+
+@pytest.mark.parametrize("arg", ["transform_output_file", "fitted_transform_file"])
+def test_normalize_fails_fast_without_onnx_extra(no_onnx, tmp_path, arg):
+    """normalize() raises before fitting when a transform file needs onnx."""
+    from pycytominer import normalize
+
+    with pytest.raises(ImportError, match=r"pycytominer\[onnx\]"):
+        normalize(
+            data_df.copy(),
+            features=features,
+            meta_features=[],
+            **{arg: str(tmp_path / "t.onnx")},
+        )
+
+
+def test_normalize_without_transform_files_does_not_need_onnx(no_onnx):
+    """Core normalize() works without the extra when no transform file is used."""
+    from pycytominer import normalize
+
+    result = normalize(data_df.copy(), features=features, meta_features=[])
+    assert list(result.columns) == features

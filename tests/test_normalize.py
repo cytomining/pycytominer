@@ -1721,6 +1721,113 @@ def test_normalize_fitted_transform_file_applies_to_new_data(tmp_path, method, k
     refit = normalize(profiles=new_df, **common, **kwargs)
     assert not np.allclose(applied[features].to_numpy(), refit[features].to_numpy())
 
+    # Loading a transform must yield the same columns, in the same order, as
+    # fitting directly (metadata first, then the feature columns).
+    assert list(applied.columns) == list(refit.columns)
+
+
+def _spherize(**kw):
+    return Spherize(return_numpy=True, **kw)
+
+
+@pytest.mark.parametrize(
+    "method,kwargs,make_scaler",
+    [
+        ("standardize", {}, StandardScaler),
+        ("robustize", {}, RobustScaler),
+        (
+            "mad_robustize",
+            {"mad_robustize_epsilon": 0.5},
+            lambda: RobustMAD(epsilon=0.5),
+        ),
+        *[
+            pytest.param(
+                "spherize",
+                {
+                    "spherize_method": sph,
+                    "spherize_center": center,
+                    "spherize_epsilon": eps,
+                },
+                lambda sph=sph, center=center, eps=eps: _spherize(
+                    method=sph, center=center, epsilon=eps
+                ),
+                id=f"spherize-{sph}-center{center}-eps{eps}",
+            )
+            for sph, center, eps in [
+                ("ZCA", True, 1e-6),
+                ("ZCA", False, 1e-6),
+                ("ZCA", True, 0.1),
+                ("PCA", True, 1e-6),
+                ("PCA", False, 1e-6),
+                ("PCA-cor", True, 1e-6),
+                ("ZCA-cor", True, 0.1),
+            ]
+        ],
+        *[
+            pytest.param(
+                "inverse_normal",
+                {"inverse_normal_n_quantiles": nq},
+                lambda nq=nq: InverseNormalTransform(n_quantiles=nq, method="quantile"),
+                id=f"inverse_normal-quantile-nq{nq}",
+            )
+            for nq in (5, 20, 1000)
+        ],
+    ],
+)
+@pytest.mark.parametrize("samples", ["all", "Metadata_group == 'ctrl'"])
+def test_normalize_fitted_transform_file_kwarg_combinations_roundtrip(
+    tmp_path, method, kwargs, make_scaler, samples
+):
+    """
+    Across fit-time kwargs (and a `samples` subset), applying the saved
+    transform to new data equals the in-memory scaler fit on the same training
+    rows, so the kwargs survive the ONNX round trip.
+    """
+    train_df, new_df = _new_data_frames()
+    train_df["Metadata_group"] = ["ctrl", "trt"] * (len(train_df) // 2)
+    new_df["Metadata_group"] = "trt"
+    features = ["x", "y", "z"]
+    transform_file = str(tmp_path / "combo.onnx")
+    common = {
+        "features": features,
+        "meta_features": ["Metadata_a", "Metadata_group"],
+        "method": method,
+    }
+
+    normalize(
+        profiles=train_df,
+        samples=samples,
+        transform_output_file=transform_file,
+        **common,
+        **kwargs,
+    )
+    applied = normalize(profiles=new_df, fitted_transform_file=transform_file, **common)
+
+    fit_rows = train_df if samples == "all" else train_df.query(samples)
+    expected = make_scaler().fit(fit_rows[features]).transform(new_df[features])
+    expected = np.asarray(expected)
+
+    # PCA spherizing renames outputs to PC1..PCn; every other case keeps the
+    # input feature names
+    is_pca = kwargs.get("spherize_method") in ("PCA", "PCA-cor")
+    expected_cols = (
+        [f"PC{i}" for i in range(1, len(features) + 1)] if is_pca else features
+    )
+    output_cols = [c for c in applied.columns if not c.startswith("Metadata_")]
+    assert output_cols == expected_cols
+
+    # Same columns, in the same order, as a direct fit on the new data
+    direct = normalize(profiles=new_df, **common, **kwargs)
+    assert list(applied.columns) == list(direct.columns)
+    # Metadata passes through untouched
+    pd.testing.assert_frame_equal(
+        applied[["Metadata_a", "Metadata_group"]],
+        new_df[["Metadata_a", "Metadata_group"]],
+    )
+    np.testing.assert_allclose(
+        applied[output_cols].to_numpy(), expected, rtol=1e-6, atol=1e-8
+    )
+
 
 @pytest.mark.parametrize("rankit", ["blom", "tukey", "van_der_waerden", "hazen"])
 def test_normalize_fitted_transform_file_rankit_ranks_new_data(tmp_path, rankit):
