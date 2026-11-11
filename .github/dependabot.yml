@@ -59,6 +59,12 @@ updates:
       # csvkit>=2 drops the csvclean `-n` flag that cytominer-database==0.3.4 depends on
       - dependency-name: "csvkit"
         update-types: ["version-update:semver-major"]
+      # pandas-stubs 3.x stubs pandas 3.x, which removes keyword arguments still
+      # used against the supported pandas 2.x runtime (e.g. `rename(copy=...)`
+      # in pycytominer.cyto_utils.cells). Keep stubs on the runtime major until
+      # the project migrates to pandas 3.
+      - dependency-name: "pandas-stubs"
+        update-types: ["version-update:semver-major"]
 
   # Perform checks and updates for pre-commit hook versions.
   - package-ecosystem: "pre-commit"

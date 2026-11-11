@@ -85,7 +85,7 @@ scripts.pycytominer = "pycytominer.cli:main"
 dev = [
   "codecov>=2.1.12",
   "mypy>=1.11.2,<2.5",
-  "pandas-stubs==3.0.5.260914",
+  "pandas-stubs==2.3.3.260113",
   "pre-commit>=3.3.2",
   "pytest>=5.0.1",
   "pytest-cov>=4.1,<8",
