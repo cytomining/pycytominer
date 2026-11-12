@@ -202,6 +202,39 @@ def test_cli_normalize_drop_cosmicqc_rows(tmp_path: pathlib.Path) -> None:
     )
 
 
+def test_cli_normalize_transform_save_and_apply(tmp_path: pathlib.Path) -> None:
+    """Ensure CLI normalize forwards transform_output_file/fitted_transform_file."""
+    _, profiles_path = _write_profiles(tmp_path)
+    fit_output_path = tmp_path / "normalized.csv"
+    transform_path = tmp_path / "transform.onnx"
+
+    cli = PycytominerCLI()
+    cli.normalize(
+        profiles=str(profiles_path),
+        output_file=str(fit_output_path),
+        features="Feature_1,Feature_2",
+        meta_features="Metadata_Plate,Metadata_Well",
+        method="standardize",
+        transform_output_file=str(transform_path),
+    )
+
+    assert transform_path.exists()
+
+    applied_output_path = tmp_path / "normalized_applied.csv"
+    cli.normalize(
+        profiles=str(profiles_path),
+        output_file=str(applied_output_path),
+        features="Feature_1,Feature_2",
+        meta_features="Metadata_Plate,Metadata_Well",
+        method="standardize",
+        fitted_transform_file=str(transform_path),
+    )
+
+    fit_result = pd.read_csv(fit_output_path)
+    applied_result = pd.read_csv(applied_output_path)
+    pd.testing.assert_frame_equal(fit_result, applied_result)
+
+
 def test_cli_feature_select(tmp_path: pathlib.Path) -> None:
     """Ensure CLI feature_select drops low-variance features."""
     _, profiles_path = _write_profiles(tmp_path)

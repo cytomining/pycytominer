@@ -18,6 +18,54 @@ Spherize_type = TypeVar("Spherize_type", bound="Spherize")
 RobustMAD_type = TypeVar("RobustMAD_type", bound="RobustMAD")
 
 
+def _set_feature_names(estimator: BaseEstimator, X: pd.DataFrame) -> None:
+    """Record the column names/order seen at fit time, mirroring the
+    ``feature_names_in_``/``n_features_in_`` convention sklearn's own
+    estimators populate automatically for DataFrame input.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The estimator to record feature names for.
+    X : pd.DataFrame
+        The DataFrame used to fit the estimator, which will be used
+        to record the feature names at fit time.
+
+    Returns
+    -------
+    None
+    """
+    if hasattr(X, "columns"):
+        estimator.feature_names_in_ = np.asarray(X.columns, dtype=object)
+    estimator.n_features_in_ = X.shape[1]
+
+
+def _check_feature_names_match(estimator: BaseEstimator, X: pd.DataFrame) -> None:
+    """Ensure a DataFrame passed to transform() has the same column names, in
+    the same order, as the DataFrame the estimator was fit on.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The estimator to check feature names for.
+    X : pd.DataFrame
+        The DataFrame to check against the estimator's feature names.
+
+    Returns
+    -------
+    None
+    """
+    if not hasattr(estimator, "feature_names_in_") or not hasattr(X, "columns"):
+        return
+    incoming = np.asarray(X.columns, dtype=object)
+    if not np.array_equal(incoming, estimator.feature_names_in_):
+        raise ValueError(
+            "The feature names should match those that were passed during fit. "
+            f"Features seen at fit time: {list(estimator.feature_names_in_)}. "
+            f"Features seen now: {list(incoming)}."
+        )
+
+
 class Spherize(BaseEstimator, TransformerMixin):
     """Class to apply a sphering transform (aka whitening) data in the base sklearn
     transform API. Note, this implementation is modified/inspired from the following
@@ -93,8 +141,19 @@ class Spherize(BaseEstimator, TransformerMixin):
         self
             With computed weights attribute
         """
+
         # Get Numpy representation of the DataFrame
         X_vals = X.values
+
+        # The covariance/SVD below needs complete rows; NaNs would otherwise
+        # surface as an opaque LinAlgError
+        if pd.isna(X_vals).any():
+            nan_columns = [col for col in X.columns if X[col].isna().any()]
+            raise ValueError(
+                "Spherize cannot be fit on data with missing values (NaN). "
+                f"Columns with missing values: {nan_columns}. Impute or drop "
+                "the affected rows or columns first."
+            )
 
         if self.method in ["PCA-cor", "ZCA-cor"]:
             # The projection matrix for PCA-cor and ZCA-cor is the same as the
@@ -266,6 +325,8 @@ class Spherize(BaseEstimator, TransformerMixin):
             Spherized dataframe
         """
 
+        _check_feature_names_match(self, X)
+
         columns = X.columns
 
         # Get Numpy representation of the DataFrame
@@ -325,6 +386,7 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         self
             With computed median and mad attributes
         """
+
         # Get the mean of the features (columns) and center if specified
         self.median = X.median()
         # The scale param is required to preserve previous behavior. More info at:
@@ -348,6 +410,7 @@ class RobustMAD(BaseEstimator, TransformerMixin):
         pd.DataFrame
             RobustMAD transformed dataframe
         """
+        _check_feature_names_match(self, X)
         return (X - self.median) / (self.mad + self.epsilon)
 
 
@@ -483,6 +546,8 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         self
             Fitted inverse normal transform.
         """
+
+        # Set number of quantiles, if n_quantiles is greater than the number of samples
         avail_methods = ["quantile", *_RANKIT_CONSTANTS]
         if self.method not in avail_methods:
             raise ValueError(
@@ -525,6 +590,7 @@ class InverseNormalTransform(BaseEstimator, TransformerMixin):
         numpy.ndarray
             Transformed data.
         """
+        _check_feature_names_match(self, x)
         if self.method in _RANKIT_CONSTANTS:
             return self._rankit_scores(x, constant=_RANKIT_CONSTANTS[self.method])
 
