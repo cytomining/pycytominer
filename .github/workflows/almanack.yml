@@ -16,7 +16,7 @@ jobs:
     # Only run on the upstream repo, never on forks, so results always
     # reflect the canonical cytomining/pycytominer repository.
     if: github.repository == 'cytomining/pycytominer'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:

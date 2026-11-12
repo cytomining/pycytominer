@@ -13,7 +13,7 @@ env:
 jobs:
   build-and-publish:
     name: Build and publish Python 🐍 distributions
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: release
     permissions:
       contents: read
