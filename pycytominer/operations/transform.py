@@ -345,7 +345,7 @@ class Spherize(BaseEstimator, TransformerMixin):
                 "PC" + str(i) for i in range(1, X_transformed.shape[1] + 1)
             ])
 
-        self.columns = columns
+        self.column_names = columns
 
         XW = X_transformed @ self.W
 

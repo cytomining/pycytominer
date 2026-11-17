@@ -513,7 +513,7 @@ def normalize(
 
     fitted_scaled = fitted_scaler.transform(feature_df)
 
-    columns = fitted_scaler.columns if method == "spherize" else feature_df.columns
+    columns = fitted_scaler.column_names if method == "spherize" else feature_df.columns
 
     feature_df = pd.DataFrame(
         fitted_scaled,

@@ -1940,7 +1940,8 @@ def _drop_metadata(key):
         _set_metadata("features", "[1, 2]"),
         _set_metadata("features", '["x", "y"]'),
         _set_metadata("features", "not json"),
-        _drop_metadata("columns"),
+        _drop_metadata("column_names"),
+        _set_metadata("column_names", '["x", "y"]'),
     ],
     ids=[
         "features-not-list",
@@ -1948,7 +1949,8 @@ def _drop_metadata(key):
         "features-not-str",
         "features-wrong-count",
         "metadata-not-json",
-        "columns-missing",
+        "column_names-missing",
+        "column_names-wrong-count",
     ],
 )
 def test_load_normalize_transform_rejects_invalid_payload(tmp_path, mutate):

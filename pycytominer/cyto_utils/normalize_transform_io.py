@@ -30,7 +30,7 @@ What is stored, by method:
 The method, the feature order the transform was fit on, the method-specific
 fitting parameters, and the Python, pandas, scikit-learn and pycytominer
 versions in use at save time (for provenance) are stored in the model's
-``metadata_props`` so the file is self-documenting (e.g. in a viewer such as
+``metadata_props`` (onnx.model.metadata_props) so the file is self-documenting (e.g. in a viewer such as
 Netron).
 """
 
@@ -54,6 +54,11 @@ _METADATA_PREFIX = "pycytominer_"
 _PRODUCER_NAME = "pycytominer"
 # Smallest ONNX opset providing every operator used here (Sub, Div, MatMul, Identity)
 _OPSET_VERSION = 13
+# ONNX IR version written to the file. make_model() otherwise stamps the newest
+# IR version of the installed `onnx`, which older onnxruntime releases refuse to
+# load. IR 8 is the IR version that goes with opset 13, so pinning it keeps files
+# loadable across onnx/onnxruntime versions and byte-stable across onnx upgrades.
+_IR_VERSION = 8
 
 
 def _require_onnx() -> None:
@@ -82,18 +87,18 @@ class OnnxNormalizeTransform:
     """A fitted affine normalize() transform backed by an ONNX Runtime session.
 
     Mimics the small part of the sklearn transformer API that `normalize()`
-    relies on: `transform()`, `feature_names_in_` and, for spherize, `columns`.
+    relies on: `transform()`, `feature_names_in_` and, for spherize, `column_names`.
 
     Attributes
     ----------
     feature_names_in_ : numpy.ndarray
         The feature columns (in order) the transform was fit on.
-    columns : pandas.Index
+    column_names : pandas.Index
         Names of the output columns.
     """
 
     def __init__(
-        self, model_bytes: bytes, feature_names: list[str], columns: list[str]
+        self, model_bytes: bytes, feature_names: list[str], column_names: list[str]
     ) -> None:
         """Initialize the transform from a serialized ONNX model.
 
@@ -103,13 +108,15 @@ class OnnxNormalizeTransform:
             The serialized ONNX model as a byte string.
         feature_names : list[str]
             The names of the input features, in the order they were fit on.
-        columns : list[str]
+        column_names : list[str]
             The names of the output columns.
 
         Raises
         ------
         ValueError
-            If the number of input features in the ONNX model does not match the number of feature names provided.
+            If the number of input features in the ONNX model does not match the
+            number of feature names provided, or the number of outputs does not
+            match the number of column names.
         """
         import onnxruntime as ort
 
@@ -123,9 +130,15 @@ class OnnxNormalizeTransform:
                 f"the graph takes {n_inputs} inputs but {len(feature_names)} "
                 "features are recorded"
             )
+        n_outputs = self._session.get_outputs()[0].shape[-1]
+        if isinstance(n_outputs, int) and n_outputs != len(column_names):
+            raise ValueError(
+                f"the graph produces {n_outputs} outputs but {len(column_names)} "
+                "column names are recorded"
+            )
         self.feature_names_in_ = np.asarray(feature_names, dtype=object)
         self.n_features_in_ = len(feature_names)
-        self.columns = pd.Index(columns)
+        self.column_names = pd.Index(column_names)
 
     def transform(self, X: pd.DataFrame) -> np.ndarray:
         """Apply the transform.
@@ -283,14 +296,15 @@ def _build_inverse_normal_graph(scaler: Any, n_features: int):
             ),
         ]
     return helper.make_graph(
-        [helper.make_node("Identity", ["X"], ["Y"], name="placeholder_identity")],
+        [helper.make_node("Identity", ["X"], ["Y"], name="identity")],
         "pycytominer_normalize_inverse_normal",
         [helper.make_tensor_value_info("X", TensorProto.DOUBLE, [None, n_features])],
         [helper.make_tensor_value_info("Y", TensorProto.DOUBLE, [None, n_features])],
         initializer=initializers,
         doc_string=(
-            "Placeholder: the inverse normal transform is applied by pycytominer "
-            "from the stored tensors and metadata, not by this graph."
+            "This identity graph does not compute the inverse normal transform, "
+            "which has no standard ONNX operators. pycytominer applies it from "
+            "the stored tensors and metadata (see load_normalize_transform)."
         ),
     )
 
@@ -499,7 +513,7 @@ def save_normalize_transform(
     # np.str_); the names go into ONNX metadata as JSON, so they must be plain str.
     features = [str(name) for name in features]
     n_features = len(features)
-    metadata: dict[str, Any] = {
+    model_metadata: dict[str, Any] = {
         "method": method,
         "features": features,
         "params": _extract_normalize_scaler_params(scaler, method),
@@ -507,7 +521,7 @@ def save_normalize_transform(
     }
 
     if method == "inverse_normal":
-        metadata["config"] = _inverse_normal_config(scaler)
+        model_metadata["config"] = _inverse_normal_config(scaler)
         graph = _build_inverse_normal_graph(scaler, n_features)
     else:
         parts = _affine_parts(scaler, method)
@@ -520,19 +534,19 @@ def save_normalize_transform(
             "PCA",
             "PCA-cor",
         ):
-            metadata["columns"] = [f"PC{i}" for i in range(1, n_outputs + 1)]
+            model_metadata["column_names"] = [f"PC{i}" for i in range(1, n_outputs + 1)]
         else:
-            metadata["columns"] = features
+            model_metadata["column_names"] = features
         graph = _build_affine_graph(parts, n_features, n_outputs)
 
     model = helper.make_model(
         graph,
         producer_name=_PRODUCER_NAME,
-        producer_version=metadata["versions"]["pycytominer"],
+        producer_version=model_metadata["versions"]["pycytominer"],
         opset_imports=[helper.make_opsetid("", _OPSET_VERSION)],
     )
-    model.ir_version = 8
-    for key, value in metadata.items():
+    model.ir_version = _IR_VERSION
+    for key, value in model_metadata.items():
         entry = model.metadata_props.add()
         entry.key = _METADATA_PREFIX + key
         entry.value = json.dumps(value)
@@ -544,7 +558,7 @@ def save_normalize_transform(
 
 
 def _load_inverse_normal(
-    model: Any, metadata: dict[str, Any], features: list[str]
+    model: Any, model_metadata: dict[str, Any], features: list[str]
 ) -> Any:
     """Rebuild a fitted InverseNormalTransform from tensors and config.
 
@@ -567,7 +581,7 @@ def _load_inverse_normal(
 
     from pycytominer.operations.transform import InverseNormalTransform
 
-    config = dict(metadata["config"])
+    config = dict(model_metadata["config"])
     n_quantiles_ = config.pop("n_quantiles_", None)
     scaler = InverseNormalTransform(**config)
     scaler.feature_names_in_ = np.asarray(features, dtype=object)
@@ -598,7 +612,8 @@ def load_normalize_transform(
     ----------
     input_file : str or pathlib.Path
         Path to the saved transform, exactly as passed to
-        `save_normalize_transform`.
+        `save_normalize_transform`
+        this is an ONNX file type (.onnx)
 
     Returns
     -------
@@ -642,12 +657,17 @@ def load_normalize_transform(
             f"Could not find '{input_path}', as written by save_normalize_transform()."
         )
 
+    if input_path.suffix != ".onnx":
+        raise ValueError(
+            f"Expected an ONNX file (with .onnx extension), but got '{input_path}'."
+        )
+
     not_a_transform = f"'{input_path}' is not a valid pycytominer normalize transform"
 
     try:
         model = onnx.load(str(input_path))
         onnx.checker.check_model(model)
-        metadata = {
+        model_metadata = {
             entry.key[len(_METADATA_PREFIX) :]: json.loads(entry.value)
             for entry in model.metadata_props
             if entry.key.startswith(_METADATA_PREFIX)
@@ -655,20 +675,20 @@ def load_normalize_transform(
     except Exception as exc:
         raise ValueError(f"{not_a_transform}: it could not be parsed ({exc}).") from exc
 
-    if "method" not in metadata or "features" not in metadata:
+    if "method" not in model_metadata or "features" not in model_metadata:
         raise ValueError(
             f"'{input_path}' is not a pycytominer normalize transform: its "
             f"'{_METADATA_PREFIX}method'/'{_METADATA_PREFIX}features' metadata "
             "is missing."
         )
 
-    _check_software_versions(input_path, metadata.get("versions"))
+    _check_software_versions(input_path, model_metadata.get("versions"))
 
-    method = metadata["method"]
+    method = model_metadata["method"]
     if method not in AVAIL_NORM_METHODS:
         raise ValueError(f"Cannot load transform for unsupported method '{method}'")
 
-    features = metadata["features"]
+    features = model_metadata["features"]
     if (
         not isinstance(features, list)
         or not features
@@ -678,14 +698,14 @@ def load_normalize_transform(
             f"{not_a_transform}: its features metadata must be a non-empty list "
             "of strings."
         )
-    params = metadata.get("params", {})
+    params = model_metadata.get("params", {})
 
     try:
         if method == "inverse_normal":
-            scaler = _load_inverse_normal(model, metadata, features)
+            scaler = _load_inverse_normal(model, model_metadata, features)
         else:
             scaler = OnnxNormalizeTransform(
-                model.SerializeToString(), features, metadata["columns"]
+                model.SerializeToString(), features, model_metadata["column_names"]
             )
     except Exception as exc:
         raise ValueError(

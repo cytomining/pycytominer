@@ -203,8 +203,6 @@ module = [
   "cytominer_database.*",
   "fire.*",
   "h5py.*",
-  "onnx.*",
-  "onnxruntime.*",
   "scipy.*",
   "sklearn.*",
   "zarr.*",

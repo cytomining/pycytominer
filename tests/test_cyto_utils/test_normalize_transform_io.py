@@ -425,13 +425,13 @@ def test_spherize_roundtrip_preserves_output_column_names(
     """PCA spherizing renames outputs to PC1..PCn; ZCA keeps input names."""
     scaler = Spherize(center=True, method=spherize_method, epsilon=0.25).fit(data_df)
     expected = scaler.transform(data_df)
-    assert list(scaler.columns) == expected_columns
+    assert list(scaler.column_names) == expected_columns
 
     output_file = os.path.join(tmpdir, f"spherize_columns_{spherize_method}.onnx")
     save_normalize_transform(scaler, "spherize", output_file, features=features)
     loaded, _, _, _ = load_normalize_transform(output_file)
 
-    assert list(loaded.columns) == expected_columns
+    assert list(loaded.column_names) == expected_columns
     np.testing.assert_allclose(loaded.transform(data_df), expected, atol=1e-6)
 
 
