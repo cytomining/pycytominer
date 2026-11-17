@@ -269,6 +269,18 @@ pip install "pycytominer[collate] @ git+https://github.com/cytomining/pycytomine
 
 If using `pycytominer` in a conda environment, in order to run `collate.py`, you will also want to make sure to add `cytominer-database=0.3.4` to your list of dependencies.
 
+### Saving and reapplying a fitted normalization
+
+`normalize` can save a fitted transform with `transform_output_file` and reapply it later with `fitted_transform_file`.
+Transforms are stored as [ONNX](https://onnx.ai/) files (plain data, so loading never executes code, unlike pickles).
+ONNX support is an optional extra, which keeps the core installation lightweight:
+
+```bash
+pip install "pycytominer[onnx]"
+```
+
+Using `transform_output_file` or `fitted_transform_file` without the extra raises an `ImportError` with this instruction.
+
 ### Creating a cell locations lookup table
 
 The `CellLocation` class offers a convenient way to augment a [LoadData](https://cellprofiler-manual.s3.amazonaws.com/CPmanual/LoadData.html) file with X,Y locations of cells in each image.

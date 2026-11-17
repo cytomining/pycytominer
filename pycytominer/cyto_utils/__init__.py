@@ -26,6 +26,7 @@ from .load import (
     load_profiles,
 )
 from .modz import modz
+from .normalize_transform_io import load_normalize_transform, save_normalize_transform
 from .output import output
 from .single_cell_ingest_utils import (
     assert_linking_cols_complete,
