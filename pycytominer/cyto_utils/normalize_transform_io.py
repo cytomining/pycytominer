@@ -552,7 +552,7 @@ def _load_inverse_normal(
     ----------
     model : Any
         The loaded ONNX model holding the stored quantile tensors.
-    metadata : dict[str, Any]
+    model_metadata : dict[str, Any]
         The decoded model metadata, including the ``config`` entry.
     features : list[str]
         The feature names, in the order the transform was fit on.
