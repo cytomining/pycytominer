@@ -1099,70 +1099,6 @@ def test_normalize_transform_save_and_apply(method):
     )
 
 
-@pytest.mark.parametrize(
-    "method,scaler",
-    [
-        ("standardize", StandardScaler()),
-        ("robustize", RobustScaler()),
-    ],
-)
-def test_normalize_saved_transform_applied_to_different_data(method, scaler):
-    """
-    A transform fit on one dataset and saved should, when applied to a
-    different dataset, use the saved (training) parameters rather than
-    re-fitting on the new data.
-    """
-    features = ["x", "y", "z", "zz"]
-    transform_file = os.path.join(
-        tmpdir, f"test_normalize_{method}_different_data_transform.onnx"
-    )
-
-    normalize(
-        profiles=data_df.copy(),
-        features=features,
-        meta_features="infer",
-        samples="Metadata_treatment == 'control'",
-        method=method,
-        transform_output_file=transform_file,
-    )
-
-    # New data with a different distribution than the training data
-    new_df = data_df.copy()
-    new_df[features] = new_df[features] * 3 + 10
-    new_df["Metadata_plate"] = ["c"] * len(new_df)
-
-    applied_result = normalize(
-        profiles=new_df.copy(),
-        features=features,
-        meta_features="infer",
-        method=method,
-        fitted_transform_file=transform_file,
-    )
-
-    # Expected: training-data parameters applied to the new data
-    train_controls = data_df.query("Metadata_treatment == 'control'")
-    expected = scaler.fit(train_controls[features]).transform(new_df[features])
-    np.testing.assert_allclose(
-        applied_result[features].values, expected, rtol=1e-6, atol=1e-8
-    )
-
-    # Re-fitting on the new data would give a different result
-    refit_result = normalize(
-        profiles=new_df.copy(),
-        features=features,
-        meta_features="infer",
-        method=method,
-    )
-    assert not np.allclose(
-        applied_result[features].values, refit_result[features].values
-    )
-
-    # Metadata is passed through untouched
-    pd.testing.assert_series_equal(
-        applied_result["Metadata_plate"], new_df["Metadata_plate"]
-    )
-
-
 def test_normalize_fitted_transform_file_with_inferred_features():
     """With CellProfiler-style column names, features="infer" should resolve
     to the features the saved transform was fit on."""
@@ -1194,46 +1130,6 @@ def test_normalize_fitted_transform_file_with_inferred_features():
     pd.testing.assert_frame_equal(applied_result, fit_result)
 
 
-def test_normalize_transform_save_and_apply_explicit_features():
-    """
-    The save/apply round trip should also work end-to-end when every
-    "infer"-defaulted argument (`features`, `meta_features`) is instead
-    passed explicitly, both when fitting/saving and when applying the saved
-    transform.
-    """
-    transform_file = os.path.join(
-        tmpdir, "test_normalize_explicit_features_transform.onnx"
-    )
-    explicit_features = ["x", "y", "z", "zz"]
-    explicit_meta_features = ["Metadata_plate", "Metadata_treatment"]
-
-    fit_result = normalize(
-        profiles=data_df.copy(),
-        features=explicit_features,
-        meta_features=explicit_meta_features,
-        samples="Metadata_treatment == 'control'",
-        method="standardize",
-        transform_output_file=transform_file,
-    )
-
-    assert os.path.exists(transform_file)
-
-    subset_idx = [0, 2, 5]
-    subset_df = data_df.iloc[subset_idx].reset_index(drop=True)
-
-    applied_result = normalize(
-        profiles=subset_df.copy(),
-        features=explicit_features,
-        meta_features=explicit_meta_features,
-        method="standardize",
-        fitted_transform_file=transform_file,
-    )
-
-    expected_subset_result = fit_result.iloc[subset_idx].reset_index(drop=True)
-
-    pd.testing.assert_frame_equal(applied_result, expected_subset_result)
-
-
 def test_normalize_fitted_transform_file_mismatched_features():
     """
     Applying a saved transform with an explicit `features` list that does not
@@ -1251,7 +1147,7 @@ def test_normalize_fitted_transform_file_mismatched_features():
         transform_output_file=transform_file,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="do not match the features"):
         normalize(
             profiles=data_df.copy(),
             features=["x", "y", "z"],
@@ -1321,7 +1217,7 @@ def test_normalize_transform_output_file_and_fitted_transform_file_mutually_excl
     other_transform_file = os.path.join(
         tmpdir, "test_normalize_mutually_exclusive_other_transform.onnx"
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Only one of"):
         normalize(
             profiles=data_df.copy(),
             features=["x", "y", "z", "zz"],
@@ -1352,7 +1248,7 @@ def test_normalize_fitted_transform_file_method_mismatch():
     )
 
     # Default method ("standardize") does not match the saved "robustize" transform
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="does not match the method"):
         normalize(
             profiles=data_df.copy(),
             features=["x", "y", "z", "zz"],
@@ -1361,7 +1257,7 @@ def test_normalize_fitted_transform_file_method_mismatch():
         )
 
     # Explicit, mismatched method
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="does not match the method"):
         normalize(
             profiles=data_df.copy(),
             features=["x", "y", "z", "zz"],
@@ -1486,7 +1382,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
     # `samples` is ignored, so the loaded transform reproduces the fit output
     pd.testing.assert_frame_equal(applied, fit_result)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ignores `samples`"):
         normalize(
             profiles=data_df.copy(),
             features=["x", "y", "z", "zz"],
@@ -1516,7 +1412,7 @@ def test_normalize_fitted_transform_file_ignores_fit_only_arguments():
     )
     pd.testing.assert_frame_equal(mad_applied, mad_fit)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mad_robustize_epsilon"):
         normalize(
             profiles=data_df.copy(),
             features=["x", "y", "z", "zz"],
@@ -1585,15 +1481,22 @@ def test_normalize_inverse_normal_args_are_case_insensitive_and_validated():
     `inverse_normal_method` should be lowercased like `method`, and an invalid
     `inverse_normal_ties` should be rejected up front.
     """
+    common = {"features": ["x", "y", "z", "zz"], "meta_features": "infer"}
     result = normalize(
         profiles=data_df.copy(),
-        features=["x", "y", "z", "zz"],
-        meta_features="infer",
         method="Inverse_Normal",
         inverse_normal_method="Blom",
         inverse_normal_ties="Average",
+        **common,
     )
-    assert not result.empty
+    expected = normalize(
+        profiles=data_df.copy(),
+        method="inverse_normal",
+        inverse_normal_method="blom",
+        inverse_normal_ties="average",
+        **common,
+    )
+    pd.testing.assert_frame_equal(result, expected)
 
     with pytest.raises(ValueError, match="inverse_normal_ties"):
         normalize(
@@ -1661,71 +1564,6 @@ def _new_data_frames():
     return train, new
 
 
-@pytest.mark.parametrize(
-    "method,kwargs",
-    [
-        ("standardize", {}),
-        ("robustize", {}),
-        ("mad_robustize", {"mad_robustize_epsilon": 1e-6}),
-        ("spherize", {"spherize_method": "ZCA-cor", "spherize_epsilon": 1e-6}),
-        ("inverse_normal", {"inverse_normal_method": "quantile"}),
-    ],
-)
-def test_normalize_fitted_transform_file_applies_to_new_data(tmp_path, method, kwargs):
-    """
-    A saved transform applied to data it was not trained on must reproduce the
-    training-fit transform, not statistics refit on the new data. Expected
-    values come from fitting the in-memory scaler on the training data.
-    """
-    train_df, new_df = _new_data_frames()
-    features = ["x", "y", "z"]
-    transform_file = str(tmp_path / f"{method}.onnx")
-    common = {"features": features, "meta_features": ["Metadata_a"], "method": method}
-
-    normalize(
-        profiles=train_df, transform_output_file=transform_file, **common, **kwargs
-    )
-    applied = normalize(
-        profiles=new_df, fitted_transform_file=transform_file, **common, **kwargs
-    )
-
-    train_x, new_x = train_df[features], new_df[features]
-    if method == "standardize":
-        expected = StandardScaler().fit(train_x).transform(new_x)
-    elif method == "robustize":
-        expected = RobustScaler().fit(train_x).transform(new_x)
-    elif method == "mad_robustize":
-        expected = RobustMAD(epsilon=1e-6).fit(train_x).transform(new_x).to_numpy()
-    elif method == "spherize":
-        expected = (
-            Spherize(
-                center=True,
-                method="ZCA-cor",
-                epsilon=1e-6,
-                return_numpy=True,
-            )
-            .fit(train_x)
-            .transform(new_x)
-        )
-    else:
-        expected = (
-            InverseNormalTransform(n_quantiles=1000, method="quantile")
-            .fit(train_x)
-            .transform(new_x)
-        )
-
-    np.testing.assert_allclose(
-        applied[features].to_numpy(), expected, rtol=1e-6, atol=1e-8
-    )
-
-    refit = normalize(profiles=new_df, **common, **kwargs)
-    assert not np.allclose(applied[features].to_numpy(), refit[features].to_numpy())
-
-    # Loading a transform must yield the same columns, in the same order, as
-    # fitting directly (metadata first, then the feature columns).
-    assert list(applied.columns) == list(refit.columns)
-
-
 def _spherize(**kw):
     return Spherize(return_numpy=True, **kw)
 
@@ -1761,6 +1599,7 @@ def _spherize(**kw):
                 ("PCA", False, 1e-6),
                 ("PCA-cor", True, 1e-6),
                 ("ZCA-cor", True, 0.1),
+                ("ZCA-cor", True, 1e-6),
             ]
         ],
         *[
@@ -1808,9 +1647,8 @@ def test_normalize_fitted_transform_file_kwarg_combinations_roundtrip(
     expected = np.asarray(expected)
 
     # Every method keeps the input feature names
-    expected_cols = features
     output_cols = [c for c in applied.columns if not c.startswith("Metadata_")]
-    assert output_cols == expected_cols
+    assert output_cols == features
 
     # Same columns, in the same order, as a direct fit on the new data
     direct = normalize(profiles=new_df, **common, **kwargs)
@@ -1936,8 +1774,6 @@ def _drop_metadata(key):
         _set_metadata("features", "[1, 2]"),
         _set_metadata("features", '["x", "y"]'),
         _set_metadata("features", "not json"),
-        _drop_metadata("column_names"),
-        _set_metadata("column_names", '["x", "y"]'),
     ],
     ids=[
         "features-not-list",
@@ -1945,8 +1781,6 @@ def _drop_metadata(key):
         "features-not-str",
         "features-wrong-count",
         "metadata-not-json",
-        "column_names-missing",
-        "column_names-wrong-count",
     ],
 )
 def test_load_normalize_transform_rejects_invalid_payload(tmp_path, mutate):

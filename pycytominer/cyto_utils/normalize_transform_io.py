@@ -86,19 +86,15 @@ class OnnxNormalizeTransform:
     """A fitted affine normalize() transform backed by an ONNX Runtime session.
 
     Mimics the small part of the sklearn transformer API that `normalize()`
-    relies on: `transform()`, `feature_names_in_` and, for spherize, `column_names`.
+    relies on: `transform()` and `feature_names_in_`.
 
     Attributes
     ----------
     feature_names_in_ : numpy.ndarray
         The feature columns (in order) the transform was fit on.
-    column_names : pandas.Index
-        Names of the output columns.
     """
 
-    def __init__(
-        self, model_bytes: bytes, feature_names: list[str], column_names: list[str]
-    ) -> None:
+    def __init__(self, model_bytes: bytes, feature_names: list[str]) -> None:
         """Initialize the transform from a serialized ONNX model.
 
         Parameters
@@ -107,8 +103,6 @@ class OnnxNormalizeTransform:
             The serialized ONNX model as a byte string.
         feature_names : list[str]
             The names of the input features, in the order they were fit on.
-        column_names : list[str]
-            The names of the output columns.
 
         Raises
         ------
@@ -129,15 +123,8 @@ class OnnxNormalizeTransform:
                 f"the graph takes {n_inputs} inputs but {len(feature_names)} "
                 "features are recorded"
             )
-        n_outputs = self._session.get_outputs()[0].shape[-1]
-        if isinstance(n_outputs, int) and n_outputs != len(column_names):
-            raise ValueError(
-                f"the graph produces {n_outputs} outputs but {len(column_names)} "
-                "column names are recorded"
-            )
         self.feature_names_in_ = np.asarray(feature_names, dtype=object)
         self.n_features_in_ = len(feature_names)
-        self.column_names = pd.Index(column_names)
 
     def transform(self, X: pd.DataFrame) -> np.ndarray:
         """Apply the transform.
@@ -533,8 +520,6 @@ def save_normalize_transform(
         n_outputs = (
             n_features if parts["projection"] is None else parts["projection"].shape[1]
         )
-        # Every method keeps the input feature names.
-        model_metadata["column_names"] = features
         graph = _build_affine_graph(parts, n_features, n_outputs)
 
     model = helper.make_model(
@@ -702,9 +687,7 @@ def load_normalize_transform(
         if method == "inverse_normal":
             scaler = _load_inverse_normal(model, model_metadata, features)
         else:
-            scaler = OnnxNormalizeTransform(
-                model.SerializeToString(), features, model_metadata["column_names"]
-            )
+            scaler = OnnxNormalizeTransform(model.SerializeToString(), features)
     except Exception as exc:
         raise ValueError(
             f"{not_a_transform}: its '{method}' payload is incomplete or "

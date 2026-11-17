@@ -340,8 +340,6 @@ class Spherize(BaseEstimator, TransformerMixin):
             else:
                 X_transformed = X_vals
 
-        self.column_names = columns
-
         XW = X_transformed @ self.W
 
         if self.return_numpy:
