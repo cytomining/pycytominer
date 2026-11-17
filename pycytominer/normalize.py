@@ -384,6 +384,11 @@ def normalize(
     elif features == "infer":
         features = infer_cp_features(profiles, image_features=image_features)
 
+    # By here a single string or "infer" has been rejected or replaced; this
+    # narrows the type for the code below.
+    if not isinstance(features, list):
+        raise ValueError("features must be a list of strings")
+
     # Temporary compatibility path for accommodating CellProfiler-style imports
     # that encode
     # missing feature values as strings such as "nan" or "None". Only
