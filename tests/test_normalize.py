@@ -1807,12 +1807,8 @@ def test_normalize_fitted_transform_file_kwarg_combinations_roundtrip(
     expected = make_scaler().fit(fit_rows[features]).transform(new_df[features])
     expected = np.asarray(expected)
 
-    # PCA spherizing renames outputs to PC1..PCn; every other case keeps the
-    # input feature names
-    is_pca = kwargs.get("spherize_method") in ("PCA", "PCA-cor")
-    expected_cols = (
-        [f"PC{i}" for i in range(1, len(features) + 1)] if is_pca else features
-    )
+    # Every method keeps the input feature names
+    expected_cols = features
     output_cols = [c for c in applied.columns if not c.startswith("Metadata_")]
     assert output_cols == expected_cols
 

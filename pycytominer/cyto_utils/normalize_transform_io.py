@@ -2,18 +2,17 @@
 Save and load the fitted parameters of a normalize() transform.
 
 Fitted transforms are stored as a single ONNX file (at whatever path the
-caller provides, with no suffix or parent-directory requirements imposed
-here). ONNX stores plain data -- a small computation graph plus its weights --
+caller provides, which must end in ".onnx"; no parent-directory requirements
+are imposed here). ONNX stores plain data -- a small computation graph plus its weights --
 rather than pickled Python objects, so loading a file never executes code. The
 versions of the software that wrote a file are recorded, and loading raises an
 error if they differ from the current environment, to keep results reproducible.
 This lets a transform fit on one set of samples (e.g. controls) be reapplied
 later to other subsets of data without re-fitting.
 
-By convention, use the ".onnx" extension (e.g. "controls_standardize.onnx") so
-that humans and agents encountering the file can tell what it is and that it
-should be read back with `load_normalize_transform`. This is a suggestion only
-and is not enforced.
+The ".onnx" extension (e.g. "controls_standardize.onnx") is required, for both
+saving and loading, so that humans and agents encountering the file can tell
+what it is and that it should be read back with `load_normalize_transform`.
 
 What is stored, by method:
 
@@ -464,9 +463,9 @@ def save_normalize_transform(
         The normalization method used to fit `scaler`. One of "standardize",
         "robustize", "mad_robustize", "spherize", "inverse_normal".
     output_file : str or pathlib.Path
-        Where to write the transform. Pycytominer does not create any missing
-        parent directories, and does not require or append an ".onnx" suffix.
-        The suggested extension is ".onnx", e.g. "controls_standardize.onnx".
+        Where to write the transform. Must end in ".onnx", e.g.
+        "controls_standardize.onnx". Pycytominer does not create any missing
+        parent directories.
     features : list[str] or None, default None
         The feature columns (in order) `scaler` was fit on. If None, they are
         read from `scaler.feature_names_in_`, which only scikit-learn scalers
@@ -480,7 +479,8 @@ def save_normalize_transform(
     Raises
     ------
     ValueError
-        If `method` is not a supported method, if the feature names are
+        If `output_file` does not end in ".onnx", if `method` is not a
+        supported method, if the feature names are
         unavailable (`features` is None and `scaler` has no
         `feature_names_in_` attribute), or if
         an inverse normal transform's `random_state` is not an int or None.
@@ -494,6 +494,11 @@ def save_normalize_transform(
     _require_onnx()
     import onnx
     from onnx import helper
+
+    if pathlib.Path(output_file).suffix != ".onnx":
+        raise ValueError(
+            f"Expected an ONNX file (with .onnx extension), but got '{output_file}'."
+        )
 
     method = method.lower()
     if method not in AVAIL_NORM_METHODS:
@@ -528,15 +533,8 @@ def save_normalize_transform(
         n_outputs = (
             n_features if parts["projection"] is None else parts["projection"].shape[1]
         )
-        # Most methods keep the input names. PCA-based spherizing instead
-        # renames its outputs to PC1..PCn (mirrors Spherize.transform).
-        if method == "spherize" and getattr(scaler, "method", None) in (
-            "PCA",
-            "PCA-cor",
-        ):
-            model_metadata["column_names"] = [f"PC{i}" for i in range(1, n_outputs + 1)]
-        else:
-            model_metadata["column_names"] = features
+        # Every method keeps the input feature names.
+        model_metadata["column_names"] = features
         graph = _build_affine_graph(parts, n_features, n_outputs)
 
     model = helper.make_model(

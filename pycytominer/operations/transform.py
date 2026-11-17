@@ -340,11 +340,6 @@ class Spherize(BaseEstimator, TransformerMixin):
             else:
                 X_transformed = X_vals
 
-        if self.method in ["PCA", "PCA-cor"]:
-            columns = pd.Index([
-                "PC" + str(i) for i in range(1, X_transformed.shape[1] + 1)
-            ])
-
         self.column_names = columns
 
         XW = X_transformed @ self.W

@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import tempfile
 
 import numpy as np
@@ -179,28 +180,25 @@ def test_save_normalize_transform_records_method_specific_params(
     assert loaded_params == expected_params
 
 
-def test_save_normalize_transform_does_not_require_or_append_joblib_suffix():
-    """Pycytominer should not be opinionated about the output filename
-    either: a path with no ".onnx" suffix should be written to, and read
-    back from, exactly as given (no suffix appended)."""
+def test_save_and_load_require_onnx_suffix(tmp_path):
+    """Both saving and loading require a ".onnx" path, and nothing is written
+    or appended for a path without one."""
     scaler = _fitted_scaler("standardize")
-    no_suffix_path = os.path.join(tmpdir, "test_transform_io_no_suffix")
+    no_suffix_path = str(tmp_path / "no_suffix")
 
-    save_normalize_transform(
-        scaler=scaler, method="standardize", output_file=no_suffix_path
-    )
-
-    assert os.path.exists(no_suffix_path)
+    with pytest.raises(ValueError, match=r"\.onnx"):
+        save_normalize_transform(
+            scaler=scaler, method="standardize", output_file=no_suffix_path
+        )
+    assert not os.path.exists(no_suffix_path)
     assert not os.path.exists(no_suffix_path + ".onnx")
 
-    loaded_scaler, loaded_method, loaded_features, _ = load_normalize_transform(
-        no_suffix_path
-    )
-    assert loaded_method == "standardize"
-    assert loaded_features == features
-    np.testing.assert_allclose(
-        loaded_scaler.transform(data_df), scaler.transform(data_df)
-    )
+    # A real transform file copied to a path without the suffix is rejected on load
+    good = str(tmp_path / "ok.onnx")
+    save_normalize_transform(scaler=scaler, method="standardize", output_file=good)
+    shutil.copy(good, no_suffix_path)
+    with pytest.raises(ValueError, match=r"\.onnx"):
+        load_normalize_transform(no_suffix_path)
 
 
 def test_load_normalize_transform_missing_file_raises():
@@ -281,7 +279,12 @@ def test_stored_params_match_original_scaler_attributes(method, attr_by_param):
     [
         ({"method": "blom"}, 8),
         ({"method": "tukey", "ties": "random", "random_state": 3}, 8),
+        ({"method": "van_der_waerden"}, 8),
+        ({"method": "hazen"}, 8),
+        ({"method": "hazen", "ties": "random", "random_state": 3}, 8),
+        ({"method": "quantile"}, 8),
         ({"method": "quantile", "n_quantiles": 1000}, 8),
+        ({"method": "quantile", "n_quantiles": 4, "random_state": 0}, 8),
     ],
 )
 def test_inverse_normal_variants_roundtrip(inverse_normal_kwargs, n_rows):
@@ -413,8 +416,8 @@ def test_load_skips_version_check_when_not_recorded():
 @pytest.mark.parametrize(
     "spherize_method, expected_columns",
     [
-        ("PCA", ["PC1", "PC2", "PC3", "PC4"]),
-        ("PCA-cor", ["PC1", "PC2", "PC3", "PC4"]),
+        ("PCA", features),
+        ("PCA-cor", features),
         ("ZCA", features),
         ("ZCA-cor", features),
     ],
@@ -422,7 +425,7 @@ def test_load_skips_version_check_when_not_recorded():
 def test_spherize_roundtrip_preserves_output_column_names(
     spherize_method, expected_columns
 ):
-    """PCA spherizing renames outputs to PC1..PCn; ZCA keeps input names."""
+    """Spherizing keeps the input feature names for every method."""
     scaler = Spherize(center=True, method=spherize_method, epsilon=0.25).fit(data_df)
     expected = scaler.transform(data_df)
     assert list(scaler.column_names) == expected_columns
