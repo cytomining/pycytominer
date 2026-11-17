@@ -426,7 +426,8 @@ def _check_software_versions(input_path: pathlib.Path, saved: Any) -> None:
         )
         raise ValueError(
             f"'{input_path}' was saved in a different software environment ({details}). "
-            "Recreate the original environment to reproduce its results."
+            "We recommend recreating the original environment to use this scalar. "
+            "Proceed at your own risk!"
         )
 
 
